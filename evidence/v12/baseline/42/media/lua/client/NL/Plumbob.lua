@@ -21,9 +21,7 @@ function NLPlumbob:new(id, character, observerIndex, color)
     o.texture = getTexture(self.texturePath)
     o.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
     o.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-    -- UIManager skips invisible panels, so the first frame must be eligible to
-    -- render; positionOverCharacter hides it when the character is unavailable.
-    o:setVisible(true)
+    o:setVisible(false)
     return o
 end
 
@@ -39,14 +37,13 @@ function NLPlumbob:positionOverCharacter()
     local zoom = 1
     if getCore and getCore().getZoom then zoom = math.max(0.5, getCore():getZoom(index)) end
     local scale = math.max(0.75, math.min(1.35, 1 / zoom))
-    local width, height = math.floor(40 * scale), math.floor(56 * scale)
+    local width, height = math.floor(32 * scale), math.floor(48 * scale)
     self:setWidth(width)
     self:setHeight(height)
     local sx = isoToScreenX(index, character:getX(), character:getY(), character:getZ())
     local sy = isoToScreenY(index, character:getX(), character:getY(), character:getZ())
     local left, top = getPlayerScreenLeft(index), getPlayerScreenTop(index)
-    -- Lift the bottom tip past the full player model, leaving the gem above the head.
-    local x, y = NLPlumbob.screenPosition(sx, sy, left, top, width, height, math.floor(128 * scale))
+    local x, y = NLPlumbob.screenPosition(sx, sy, left, top, width, height, math.floor(48 * scale))
     self:setX(x)
     self:setY(y)
     self:setVisible(true)
@@ -57,15 +54,16 @@ function NLPlumbob:prerender()
     if not self:positionOverCharacter() then return end
     ISPanel.prerender(self)
     if self.texture then
-        self:drawTextureScaled(self.texture, 0, 0, self.width, self.height, 0.96, 1, 1, 1)
+        self:drawTextureScaled(self.texture, 0, 0, self.width, self.height, 0.96,
+            self.color.r, self.color.g, self.color.b)
     else
         -- Keep a visible fallback if the texture cache is unavailable during load.
         local cx = math.floor(self.width / 2)
-        self:drawRect(cx - 2, 0, 4, 8, 0.96, self.color.r, self.color.g, self.color.b)
-        self:drawRect(cx - 10, 8, 20, 10, 0.96, self.color.r, self.color.g, self.color.b)
-        self:drawRect(cx - 16, 18, 32, 12, 0.96, self.color.r, self.color.g, self.color.b)
-        self:drawRect(cx - 10, 30, 20, 14, 0.96, self.color.r, self.color.g, self.color.b)
-        self:drawRect(cx - 2, 44, 4, 12, 0.96, self.color.r, self.color.g, self.color.b)
+        self:drawRect(cx - 2, 0, 4, 5, 0.96, self.color.r, self.color.g, self.color.b)
+        self:drawRect(cx - 8, 5, 16, 8, 0.96, self.color.r, self.color.g, self.color.b)
+        self:drawRect(cx - 12, 13, 24, 8, 0.96, self.color.r, self.color.g, self.color.b)
+        self:drawRect(cx - 8, 21, 16, 8, 0.96, self.color.r, self.color.g, self.color.b)
+        self:drawRect(cx - 2, 29, 4, 7, 0.96, self.color.r, self.color.g, self.color.b)
     end
 end
 

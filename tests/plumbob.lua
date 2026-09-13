@@ -23,14 +23,15 @@ function getCore() return {getZoom=function() return 1 end} end
 function getPlayerScreenLeft() return 0 end
 function getPlayerScreenTop() return 0 end
 function isoToScreenX() return 100 end
-function isoToScreenY() return 200 end
+function isoToScreenY() return 300 end
 
 dofile(root .. '/42/media/lua/client/NL/Plumbob.lua')
-assert(NLPlumbob.screenPosition(100,200,0,0,32,48,48)==84)
+assert(NLPlumbob.screenPosition(100,200,0,0,40,56,128)==80)
 local character={getX=function() return 12 end,getY=function() return 13 end,getZ=function() return 0 end,isDead=function() return false end}
 local panel=NLPlumbob.register('test:character',character,0)
 assert(panel.texture.path=='media/textures/NL_Plumbob.png')
-panel:prerender(); assert(panel.visible and panel.x==84 and panel.y==104)
+assert(panel.visible,"registered plumbob must start visible so UIManager can prerender it")
+panel:prerender(); assert(panel.visible and panel.x==80 and panel.y==116)
 character.isDead=function() return true end; panel:prerender(); assert(not panel.visible)
 NLPlumbob.unregister('test:character'); assert(NLPlumbob.instances['test:character']==nil)
 print('PASS: plumbob asset lookup, screen anchoring, dead-character hide, registration and cleanup')

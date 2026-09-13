@@ -1,0 +1,55 @@
+--- baseline/42/media/lua/client/NL/Plumbob.lua
++++ modified/42/media/lua/client/NL/Plumbob.lua
+@@ -21,7 +21,9 @@
+     o.texture = getTexture(self.texturePath)
+     o.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
+     o.borderColor = { r = 0, g = 0, b = 0, a = 0 }
+-    o:setVisible(false)
++    -- UIManager skips invisible panels, so the first frame must be eligible to
++    -- render; positionOverCharacter hides it when the character is unavailable.
++    o:setVisible(true)
+     return o
+ end
+ 
+@@ -37,13 +39,14 @@
+     local zoom = 1
+     if getCore and getCore().getZoom then zoom = math.max(0.5, getCore():getZoom(index)) end
+     local scale = math.max(0.75, math.min(1.35, 1 / zoom))
+-    local width, height = math.floor(32 * scale), math.floor(48 * scale)
++    local width, height = math.floor(40 * scale), math.floor(56 * scale)
+     self:setWidth(width)
+     self:setHeight(height)
+     local sx = isoToScreenX(index, character:getX(), character:getY(), character:getZ())
+     local sy = isoToScreenY(index, character:getX(), character:getY(), character:getZ())
+     local left, top = getPlayerScreenLeft(index), getPlayerScreenTop(index)
+-    local x, y = NLPlumbob.screenPosition(sx, sy, left, top, width, height, math.floor(48 * scale))
++    -- Lift the bottom tip past the full player model, leaving the gem above the head.
++    local x, y = NLPlumbob.screenPosition(sx, sy, left, top, width, height, math.floor(128 * scale))
+     self:setX(x)
+     self:setY(y)
+     self:setVisible(true)
+@@ -54,16 +57,15 @@
+     if not self:positionOverCharacter() then return end
+     ISPanel.prerender(self)
+     if self.texture then
+-        self:drawTextureScaled(self.texture, 0, 0, self.width, self.height, 0.96,
+-            self.color.r, self.color.g, self.color.b)
++        self:drawTextureScaled(self.texture, 0, 0, self.width, self.height, 0.96, 1, 1, 1)
+     else
+         -- Keep a visible fallback if the texture cache is unavailable during load.
+         local cx = math.floor(self.width / 2)
+-        self:drawRect(cx - 2, 0, 4, 5, 0.96, self.color.r, self.color.g, self.color.b)
+-        self:drawRect(cx - 8, 5, 16, 8, 0.96, self.color.r, self.color.g, self.color.b)
+-        self:drawRect(cx - 12, 13, 24, 8, 0.96, self.color.r, self.color.g, self.color.b)
+-        self:drawRect(cx - 8, 21, 16, 8, 0.96, self.color.r, self.color.g, self.color.b)
+-        self:drawRect(cx - 2, 29, 4, 7, 0.96, self.color.r, self.color.g, self.color.b)
++        self:drawRect(cx - 2, 0, 4, 8, 0.96, self.color.r, self.color.g, self.color.b)
++        self:drawRect(cx - 10, 8, 20, 10, 0.96, self.color.r, self.color.g, self.color.b)
++        self:drawRect(cx - 16, 18, 32, 12, 0.96, self.color.r, self.color.g, self.color.b)
++        self:drawRect(cx - 10, 30, 20, 14, 0.96, self.color.r, self.color.g, self.color.b)
++        self:drawRect(cx - 2, 44, 4, 12, 0.96, self.color.r, self.color.g, self.color.b)
+     end
+ end
+ 
+BINARY FILE CHANGED: baseline/42/media/textures/NL_Plumbob.png -> modified/42/media/textures/NL_Plumbob.png
+BINARY FILE CHANGED: baseline/42/mod.info -> modified/42/mod.info
