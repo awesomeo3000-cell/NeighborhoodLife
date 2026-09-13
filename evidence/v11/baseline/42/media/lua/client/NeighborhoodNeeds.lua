@@ -2,7 +2,6 @@ require "ISUI/ISPanel"
 require "NL/Journal"
 require "NL/Relationships"
 require "NL/WardrobePanel"
-require "NL/Plumbob"
 
 NeighborhoodNeeds = ISPanel:derive("NeighborhoodNeeds")
 NeighborhoodNeeds.enabled = true

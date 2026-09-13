@@ -33,6 +33,9 @@ function NLQANpc.start()
         assert(npc:isNpc(),"NPC flag did not attach AI component")
         assert(npc:getHumanVisual(),"No human visual")
         NLQANpc.body=npc
+        if NLPlumbob then
+            NLPlumbob.register("qa:marisol",npc,0,{r=0.28,g=0.86,b=0.95})
+        end
         NLQANpc.origin={x=npc:getX(),y=npc:getY()}
         NLQANpc.target={x=px,y=py,z=pz}
         if NLSocialAuthority then

@@ -38,6 +38,13 @@ Events.OnGameStart.Add(function()
         assert(not isClient(),"Run initial gameplay smoke in an isolated single-player save")
         local p=getSpecificPlayer(0)
         assert(p and NLAuthority,"Player or authority missing")
+        if NLPlumbob and not NLPlumbob.instances["player:0"] then
+            NLPlumbob.createPlayer(0,p)
+        end
+        local plumbob=NLPlumbob and NLPlumbob.instances["player:0"]
+        assert(plumbob,"Plumbob panel was not registered for the real player")
+        assert(plumbob:positionOverCharacter(),"Plumbob panel did not anchor over the real player")
+        print("NLQA PASS: real engine plumbob panel registered and anchored at "..plumbob:getX()..","..plumbob:getY())
         NLAuthority.lastRequest={}
         NLClient.request(0,"refresh")
         local profile=NLClient.profiles[0]

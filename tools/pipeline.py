@@ -51,6 +51,8 @@ def suites(target: Path, engine: bool, record: list[str]) -> None:
     suite_names = ["gameplay", "wardrobe", "social", "social-authority"]
     if (target / "42/media/lua/shared/NL/Neighbors.lua").exists():
         suite_names.append("neighbors")
+    if (target / "42/media/lua/client/NL/Plumbob.lua").exists():
+        suite_names.append("plumbob")
     suite_names += ["interfaces", "wardrobe-panel", "aspirations"]
     for suite in suite_names:
         run("LUA", [LUA, ROOT / f"tests/{suite}.lua", target], record=record)
@@ -68,7 +70,7 @@ def test(target: Path) -> None:
     print("PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites")
 
 
-def package(version: str) -> None:
+def package(version: str, baseline: Path) -> None:
     target = ROOT / "NeighborhoodLife"
     evidence = ROOT / "evidence" / version
     evidence.mkdir(parents=True, exist_ok=True)
@@ -86,13 +88,16 @@ def package(version: str) -> None:
         assert archive.testzip() is None
         assert not any(name.startswith("NeighborhoodQA/") for name in archive.namelist())
 
-    baseline = ROOT / "evidence" / "v09" / "baseline"
     old, new = files(baseline), files(target)
     diff: list[str] = []
     for name in sorted(set(old) | set(new)):
-        before = old[name].read_text(encoding="utf-8").splitlines(True) if name in old else []
-        after = new[name].read_text(encoding="utf-8").splitlines(True) if name in new else []
-        diff.extend(difflib.unified_diff(before, after, fromfile=f"baseline/{name}", tofile=f"modified/{name}"))
+        is_text = Path(name).suffix.lower() in {".lua", ".py", ".ps1", ".sh", ".md", ".txt", ".json", ".ini"}
+        if is_text:
+            before = old[name].read_text(encoding="utf-8").splitlines(True) if name in old else []
+            after = new[name].read_text(encoding="utf-8").splitlines(True) if name in new else []
+            diff.extend(difflib.unified_diff(before, after, fromfile=f"baseline/{name}", tofile=f"modified/{name}"))
+        elif name in old or name in new:
+            diff.append(f"BINARY FILE CHANGED: baseline/{name} -> modified/{name}\n")
         if name in new:
             record.append(f"HASH {name} BASELINE {(sha(old[name]) if name in old else 'ABSENT')} MODIFIED {sha(new[name])}")
     (evidence / "DIFF_FILE.patch").write_text("".join(diff), encoding="utf-8")
@@ -112,11 +117,12 @@ def main() -> None:
     test_parser.add_argument("--target", type=Path, default=ROOT / "NeighborhoodLife")
     package_parser = sub.add_parser("package")
     package_parser.add_argument("--version", default="v10")
+    package_parser.add_argument("--baseline", type=Path, default=ROOT / "evidence" / "v09" / "baseline")
     args = parser.parse_args()
     if args.command == "test":
         test(args.target.resolve())
     else:
-        package(args.version)
+        package(args.version, args.baseline.resolve())
 
 
 if __name__ == "__main__":

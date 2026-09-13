@@ -13,3 +13,4 @@ tests/classes/
 .vscode/
 *.user
 Thumbs.db
+evidence/*/rollback-target/

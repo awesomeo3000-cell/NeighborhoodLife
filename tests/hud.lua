@@ -3,6 +3,7 @@ package.preload['ISUI/ISPanel'] = function() end
 package.preload['NL/Journal'] = function() NLJournal={open=function() end} end
 package.preload['NL/Relationships'] = function() NLRelationships={open=function() end} end
 package.preload['NL/WardrobePanel'] = function() NLWardrobePanel={open=function() end} end
+package.preload['NL/Plumbob'] = function() NLPlumbob={} return NLPlumbob end
 ISPanel = {}
 function ISPanel:derive() local t = {}; t.__index = t; setmetatable(t, {__index=self}); return t end
 function ISPanel:new(x,y,w,h) return setmetatable({x=x,y=y,width=w,height=h}, self) end

@@ -7,6 +7,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Requirement | Current implementation | Completion evidence still required |
 |---|---|---|
 | Sims-inspired HUD | Six live adverse-stat bars, fold control, career journal link | Actual host+guest independent values; resolution and accessibility polish |
+| Character markers | Production client plumbob asset and world-to-screen panel for active characters; adapter ready for authoritative NPC bodies | Two-client remote-character marker and NPC marker after replicated bodies exist |
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence | Actual multiplayer inventory sync, rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
@@ -86,3 +87,15 @@ The original broad goal remains active. This ledger is not a reduced definition 
   NLQA MP CLIENT START or NLQA MP SNAPSHOT. Host+guest gameplay remains open.
 - Native NPC movement remains open: the latest real engine probe reports
   PATH RESULT: Working followed by PATH RESULT: Failed and distance=0.
+
+## v0.5 presentation evidence
+
+- `NL/Plumbob.lua` registers a screen-space marker without creating or substituting
+  a character. It uses the engine's isometric projection and player viewport offsets,
+  scales with zoom, hides dead bodies, and exposes `register`/`unregister` for future
+  authoritative NPC adapters.
+- `NL_Plumbob.png` is included in the production package. The installed B42.20.4
+  single-player QA run logged `NLQA PASS: real engine plumbob panel registered and
+  anchored at 1248,672`.
+- This is actual single-player UI evidence. It does not prove remote-player
+  replication, host/invite multiplayer, or native NPC movement.
