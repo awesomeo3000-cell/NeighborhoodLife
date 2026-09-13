@@ -3,11 +3,6 @@ require "NL/Journal"
 require "NL/Relationships"
 require "NL/WardrobePanel"
 require "NL/Plumbob"
-if Events.OnTick then
-    Events.OnTick.Add(function()
-        if NLNpcAuthority and NLNpcAuthority.update then NLNpcAuthority.update() end
-    end)
-end
 
 NeighborhoodNeeds = ISPanel:derive("NeighborhoodNeeds")
 NeighborhoodNeeds.enabled = true

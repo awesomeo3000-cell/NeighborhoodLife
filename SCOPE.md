@@ -11,7 +11,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence | Actual multiplayer inventory sync, rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
-| Persistent neighborhood NPCs | QA-only humanoid body renders and path-follows a three-waypoint route in isolated single-player when the probe emulates the engine frame; no production spawner | Obstacle handling, two-client replication, persistence, damage/death and offscreen behavior; production server-side ticking |
+| Persistent neighborhood NPCs | Production `NpcAuthority` now creates Marisol as a native `IsoPlayer` body in isolated single-player, persists the authoritative ModData position, follows two nearby waypoints with native path behavior, and restores the body on save/reload; QA remains the observer and launcher helper | Obstacle handling, two-client replication, persistence across a normal user session, damage/death and offscreen behavior; dedicated-server body distribution |
 | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented; bodies supplied by adapter | Actual world-body integration and two-client conversations |
 | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel | In-world UI/interaction checks, richer date activities and two-client synchronization |
 | Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
@@ -58,6 +58,23 @@ The original broad goal remains active. This ledger is not a reduced definition 
 3. NPC body/movement/network experiment in the isolated world, then persistent neighbors.
 4. Integrate conversations, relationships, romance and neighborhood careers.
 5. Expand appearance/clothing assets, households, aspirations, furnishings and UI polish.
+
+## v1.1 production NPC vertical-slice evidence
+
+- `NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua` is now a
+  production native-body adapter. It restores the `marisol` identity and
+  position from `ModData`, creates an actual `IsoPlayer` with `setNpc(true)`,
+  registers that body with the social authority, and persists route positions.
+- The first isolated world anchors Marisol near the player, then alternates two
+  free nearby waypoints. Single-player uses the local client event queue for
+  native cadence; dedicated servers use the server tick. No synthetic body or
+  client-supplied coordinates are used.
+- The real engine run in `evidence/v18/` logged production spawn, plumbob
+  anchoring, repeated native path completion, `GameWindow.save(false)`, and a
+  second launch restoring `x=10777.50,y=10256.50,revision=21`. This is actual
+  single-player production NPC evidence, not a mock or Kahlua-only test.
+- The same run does not prove two-client NPC replication. Native remote-body
+  visibility and dedicated-server distribution remain open.
 
 ## v0.3 investigation results
 

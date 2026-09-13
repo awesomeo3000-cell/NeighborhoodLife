@@ -1,0 +1,115 @@
+[13-09-26 19:33:18.261] LOG  : Lua          f:0> NLQA PASS: career credits survived actual save/reload.
+[13-09-26 19:33:18.268] LOG  : Lua          f:0> NLQA NPC PRODUCTION SPAWN id=marisol x=10775.50 y=10256.50 z=0.
+[13-09-26 19:33:18.446] LOG  : Lua          f:0> NLQA NPC PRODUCTION BODY: adapter owns Marisol.
+[13-09-26 19:33:18.447] LOG  : Lua          f:0> NLQA PASS: production NPC body, persisted position and plumbob verified at 10775.50,10256.50.
+[13-09-26 19:33:18.688] LOG  : Lua          f:1> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10256.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:19.450] LOG  : Lua          f:33> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:19.450] LOG  : Lua          f:33> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:20.315] LOG  : Lua          f:85> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:20.315] LOG  : Lua          f:85> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:21.230] LOG  : Lua          f:140> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:21.247] LOG  : Lua          f:141> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:21.397] LOG  : Lua          f:150> NLQA NPC PRODUCTION TICK id=marisol x=10777.40 y=10256.60.
+[13-09-26 19:33:22.165] LOG  : Lua          f:196> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:22.179] LOG  : Lua          f:197> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:23.099] LOG  : Lua          f:252> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:23.112] LOG  : Lua          f:253> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:23.898] LOG  : Lua          f:300> NLQA NPC PRODUCTION TICK id=marisol x=10775.60 y=10258.40.
+[13-09-26 19:33:24.032] LOG  : Lua          f:308> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:24.046] LOG  : Lua          f:309> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:24.962] LOG  : Lua          f:364> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:24.980] LOG  : Lua          f:365> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:25.848] LOG  : Lua          f:417> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:25.864] LOG  : Lua          f:418> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:26.396] LOG  : Lua          f:450> NLQA NPC PRODUCTION TICK id=marisol x=10776.67 y=10257.33.
+[13-09-26 19:33:26.780] LOG  : Lua          f:473> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:26.795] LOG  : Lua          f:474> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:27.714] LOG  : Lua          f:529> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:27.729] LOG  : Lua          f:530> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:28.647] LOG  : Lua          f:585> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:28.663] LOG  : Lua          f:586> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:29.076] LOG  : Lua          f:599> NLQA NPC SAVE OK.
+[13-09-26 19:33:29.081] LOG  : Lua          f:600> NLQA NPC PRODUCTION TICK id=marisol x=10777.11 y=10256.89.
+[13-09-26 19:33:29.698] LOG  : Lua          f:638> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:29.712] LOG  : Lua          f:639> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:30.629] LOG  : Lua          f:694> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:30.646] LOG  : Lua          f:695> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:31.563] LOG  : Lua          f:750> NLQA NPC PRODUCTION TICK id=marisol x=10775.50 y=10258.50.
+[13-09-26 19:33:31.563] LOG  : Lua          f:750> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:31.579] LOG  : Lua          f:751> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:32.497] LOG  : Lua          f:806> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:32.512] LOG  : Lua          f:807> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:33.429] LOG  : Lua          f:862> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:33.445] LOG  : Lua          f:863> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:34.063] LOG  : Lua          f:900> NLQA NPC PRODUCTION TICK id=marisol x=10776.92 y=10257.08.
+[13-09-26 19:33:34.363] LOG  : Lua          f:918> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:34.379] LOG  : Lua          f:919> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:35.296] LOG  : Lua          f:974> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:35.312] LOG  : Lua          f:975> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:36.230] LOG  : Lua          f:1030> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:36.247] LOG  : Lua          f:1031> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:36.563] LOG  : Lua          f:1050> NLQA NPC PRODUCTION TICK id=marisol x=10776.96 y=10257.04.
+[13-09-26 19:33:37.163] LOG  : Lua          f:1086> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:37.179] LOG  : Lua          f:1087> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:38.095] LOG  : Lua          f:1142> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:38.112] LOG  : Lua          f:1143> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:39.029] LOG  : Lua          f:1198> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:39.046] LOG  : Lua          f:1199> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:39.063] LOG  : Lua          f:1200> NLQA NPC PRODUCTION TICK id=marisol x=10775.50 y=10258.50.
+[13-09-26 19:33:39.964] LOG  : Lua          f:1254> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:39.979] LOG  : Lua          f:1255> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:40.898] LOG  : Lua          f:1310> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:40.913] LOG  : Lua          f:1311> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:41.563] LOG  : Lua          f:1350> NLQA NPC PRODUCTION TICK id=marisol x=10777.02 y=10256.98.
+[13-09-26 19:33:41.829] LOG  : Lua          f:1366> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:41.845] LOG  : Lua          f:1367> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:42.763] LOG  : Lua          f:1422> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:42.781] LOG  : Lua          f:1423> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:43.698] LOG  : Lua          f:1478> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:43.712] LOG  : Lua          f:1479> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:44.064] LOG  : Lua          f:1500> NLQA NPC PRODUCTION TICK id=marisol x=10776.86 y=10257.14.
+[13-09-26 19:33:44.629] LOG  : Lua          f:1534> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:44.645] LOG  : Lua          f:1535> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:45.563] LOG  : Lua          f:1590> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:45.580] LOG  : Lua          f:1591> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:46.512] LOG  : Lua          f:1647> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:46.512] LOG  : Lua          f:1647> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:46.562] LOG  : Lua          f:1650> NLQA NPC PRODUCTION TICK id=marisol x=10775.52 y=10258.48.
+[13-09-26 19:33:47.432] LOG  : Lua          f:1702> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:47.445] LOG  : Lua          f:1703> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:48.362] LOG  : Lua          f:1758> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:48.379] LOG  : Lua          f:1759> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:49.062] LOG  : Lua          f:1800> NLQA NPC PRODUCTION TICK id=marisol x=10777.10 y=10256.90.
+[13-09-26 19:33:49.296] LOG  : Lua          f:1814> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:49.312] LOG  : Lua          f:1815> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:50.229] LOG  : Lua          f:1870> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:50.246] LOG  : Lua          f:1871> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:51.162] LOG  : Lua          f:1926> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:51.179] LOG  : Lua          f:1927> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:51.562] LOG  : Lua          f:1950> NLQA NPC PRODUCTION TICK id=marisol x=10776.76 y=10257.24.
+[13-09-26 19:33:52.096] LOG  : Lua          f:1982> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:52.112] LOG  : Lua          f:1983> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:53.029] LOG  : Lua          f:2038> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:53.048] LOG  : Lua          f:2039> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:53.963] LOG  : Lua          f:2094> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:53.979] LOG  : Lua          f:2095> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:54.064] LOG  : Lua          f:2100> NLQA NPC PRODUCTION TICK id=marisol x=10775.55 y=10258.45.
+[13-09-26 19:33:54.896] LOG  : Lua          f:2150> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:54.912] LOG  : Lua          f:2151> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:55.830] LOG  : Lua          f:2206> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:55.847] LOG  : Lua          f:2207> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:56.563] LOG  : Lua          f:2250> NLQA NPC PRODUCTION TICK id=marisol x=10777.20 y=10256.80.
+[13-09-26 19:33:56.762] LOG  : Lua          f:2262> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:56.779] LOG  : Lua          f:2263> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:57.696] LOG  : Lua          f:2318> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:57.712] LOG  : Lua          f:2319> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:33:58.629] LOG  : Lua          f:2374> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:33:58.646] LOG  : Lua          f:2375> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:33:59.062] LOG  : Lua          f:2400> NLQA NPC PRODUCTION TICK id=marisol x=10776.67 y=10257.33.
+[13-09-26 19:33:59.563] LOG  : Lua          f:2430> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:33:59.579] LOG  : Lua          f:2431> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:34:00.496] LOG  : Lua          f:2486> NLQA NPC PRODUCTION MOVE id=marisol x=10777.50 y=10256.50 waypoint=2.
+[13-09-26 19:34:00.512] LOG  : Lua          f:2487> NLQA NPC PRODUCTION PATH id=marisol from=10777.50,10256.50 to=10775.00,10258.00 waypoint=2.
+[13-09-26 19:34:01.429] LOG  : Lua          f:2542> NLQA NPC PRODUCTION MOVE id=marisol x=10775.50 y=10258.50 waypoint=1.
+[13-09-26 19:34:01.446] LOG  : Lua          f:2543> NLQA NPC PRODUCTION PATH id=marisol from=10775.50,10258.50 to=10777.00,10256.00 waypoint=1.
+[13-09-26 19:34:01.564] LOG  : Lua          f:2550> NLQA NPC PRODUCTION TICK id=marisol x=10775.58 y=10258.42.

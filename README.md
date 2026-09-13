@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, wardrobe and relationship prototype (v0.3)
+# Neighborhood Life: careers, wardrobe and relationship prototype (v1.1)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -24,8 +24,10 @@ It does not remove unrelated worn layers or create missing clothes.
 The HUD footer opens Careers on the left and Relationships on the right.
 Relationships use separate friendship, trust and attraction bars, with introductions,
 chat, jokes, flirting, dates, partnerships and breakups. They only operate on a neighbor
-registered with a real server-side body. The production NPC spawn adapter is unfinished,
-so existing worlds currently show an empty-neighborhood message rather than fake neighbors.
+registered with a real server-side body. In a new or loaded single-player world,
+Neighborhood Life now creates the persistent Marisol native body, gives her a small
+two-point route, and anchors the reduced plumbob above her model. Multiplayer NPC
+distribution is still under active verification.
 
 ## Required game checks (not yet performed)
 - Host and guest join: each sees one panel with their own six current stats.
@@ -37,19 +39,18 @@ so existing worlds currently show an empty-neighborhood message rather than fake
 
 ## Roadmap
 1. In-game host/guest HUD verification and layout polish.
-2. One persistent server-controlled NPC feasibility spike: rendering, movement,
-   danger reactions, save/restart, replication to two clients. Do not promise a
-   neighborhood until this passes; engine integration may need another approach.
+2. Complete the persistent server-controlled NPC gate: obstacle/danger reactions,
+   damage/death, offscreen behavior and replication to two clients.
 3. Individual friendship/trust, server-validated requests and exactly-once rewards.
 4. Tailoring career, clothing variants and wardrobe; new meshes are separate art work.
 5. Adult NPC mutual-interest romance, routines and shared households.
 6. Richer customization, aspirations and optional zombie-free life-sim balance.
 
-NPC world spawning, portraits and households remain unfinished. Relationship/romance
+NPC breadth, portraits and households remain unfinished. Relationship/romance
 logic is implemented and unit-tested, but its full world/multiplayer integration is pending.
-The isolated QA probe now proves single-player native NPC path-following movement
-(three waypoint legs, evidence/v13); replication, persistence and production spawning
-are still open. No new clothing meshes/textures are included yet.
+The v1.1 production adapter now proves single-player native spawning, path-following,
+plumbob anchoring and ModData save/reload restoration in `evidence/v18/`; native
+two-client NPC replication remains open. No new clothing meshes/textures are included yet.
 
 ## Developer verification
 tools/launch-qa.ps1 starts a separate no-Steam game process with its own profile
@@ -110,6 +111,15 @@ remains an engine/API investigation gate.
 
 Production clients now send a periodic presence heartbeat. The server derives
 positions from authoritative player objects and rebroadcasts them to every
-client. In `evidence/v17/`, hands-free QA moved `nl-host` from
+ client. In `evidence/v17/`, hands-free QA moved `nl-host` from
 `6817.50,5259.50` to `6819.50,5259.50`; the guest received the changed
 position repeatedly. Native remote-body rendering remains a separate open gate.
+
+## v1.1 production NPC vertical slice
+
+`evidence/v18/` records the production native `IsoPlayer` neighbor: spawn near the
+player, real Build 42 pathfinding over repeated two-point legs, a plumbob anchored to
+the body, `GameWindow.save(false)`, and a second launch restoring the saved position.
+The QA mod only observes and drives the isolated test profile; it is not in the release
+package. This is single-player gameplay evidence, not proof of two-client NPC
+replication or completed household life.

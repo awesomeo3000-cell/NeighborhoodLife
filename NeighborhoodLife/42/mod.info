@@ -1,4 +1,4 @@
 name=Neighborhood Life - Needs HUD
 id=NeighborhoodLifeHUD
-description=Life sim prototype: needs HUD, careers, outfit presets and relationship framework. NPC world integration and hosted multiplayer verification are in development.
+description=Life sim vertical slice: needs HUD, careers, outfit presets, relationships and a persistent native single-player neighbor. Hosted NPC replication and broader household systems remain in development.
 versionMin=42.0

@@ -1,0 +1,54 @@
+Neighborhood Life v1.1 production NPC vertical-slice verification
+
+CHANGED BRANCH/FIELD: production `NLNpcAuthority` native neighbor lifecycle. `ModData` owns the `marisol` identity, home, position, waypoint, alive state and revision; the adapter creates a native `IsoPlayer`, registers it with social authority, runs Build 42 `preupdate/update/PathFindBehavior2/postupdate`, and restores the saved body. Single-player cadence is connected through the loaded HUD client event queue; dedicated servers retain server tick ownership. QA only observes/drives the isolated profile.
+BASELINE SOURCE: E:\pzmod\evidence\v18\baseline extracted from commit 07a064a
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v18\baseline
+BASELINE INPUT: E:\pzmod\evidence\v18\baseline
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE RESULT: pre-change production package passed the consolidated mock, syntax and Kahlua suites
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod\NeighborhoodLife
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED RESULT: production adapter, existing HUD/career/wardrobe/social/replication suites and npc-authority suite passed; QA Lua syntax also passed separately
+MODIFIED EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v18 --baseline evidence\v18\baseline
+PACKAGE INPUT: E:\pzmod\NeighborhoodLife compared with E:\pzmod\evidence\v18\baseline
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v18\MODIFIED_FILE.zip
+PACKAGE EXIT: 0
+
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; z=zipfile.ZipFile('evidence/v18/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('NPC_AUTHORITY',any(n.endswith('server/NL/NpcAuthority.lua') for n in z.namelist())); print('NPC_TEST',any(n.endswith('tests/npc-authority.lua') for n in z.namelist()))"
+PACKAGE VALIDATION INPUT: E:\pzmod
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; NPC_AUTHORITY True; NPC_TEST False
+PACKAGE VALIDATION RESULT: valid production ZIP; QA helpers and test sources excluded; production NPC adapter included
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v18/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' evidence/v18/ROLLBACK.sh
+ROLLBACK INPUT: copied final modified NeighborhoodLife into E:\pzmod\evidence\v18\rollback-target\NeighborhoodLife
+ROLLBACK LITERAL OUTPUT: ROLLBACK RESTORED: /e/pzmod/evidence/v18/rollback-target/NeighborhoodLife from E:\pzmod\evidence\v18\baseline
+ROLLBACK RESULT: rollback copy has no production `NpcAuthority.lua`; final source still has `NpcAuthority.lua`
+ROLLBACK EXIT: 0
+
+REAL ENGINE COMMAND: & .\tools\launch-qa.ps1
+REAL ENGINE INPUT: E:\pzmod\test-profile, isolated no-Steam B42.20.4 process, hands-free Java QA agent, no mouse or keyboard control
+REAL ENGINE LITERAL OUTPUT: QA process: 28076; isolated profile: E:\pzmod\test-profile
+REAL ENGINE RESULT: first run logged `SPAWN id=marisol`, `PRODUCTION BODY`, plumbob anchoring, repeated native path legs between `10775.50,10256.50`, `10777.50,10256.50`, and `10775.50,10258.50`, and `NLQA NPC SAVE OK`.
+REAL ENGINE RELOAD COMMAND: & .\tools\launch-qa.ps1
+REAL ENGINE RELOAD INPUT: same isolated profile after the saved first run
+REAL ENGINE RELOAD LITERAL OUTPUT: QA process: 23616; isolated profile: E:\pzmod\test-profile
+REAL ENGINE RELOAD RESULT: second run logged `RESTORE id=marisol x=10777.50 y=10256.50 revision=21`, native body recreation, and plumbob anchoring.
+REAL ENGINE EXIT: 0 for each launcher invocation
+REAL ENGINE EVIDENCE: E:\pzmod\evidence\v18\npc-first-run.log; E:\pzmod\evidence\v18\npc-reload-run.log; E:\pzmod\evidence\v18\npc-run-command.txt
+CLASSIFICATION: tests/npc-authority.lua is a mock native-body contract test. The consolidated Kahlua suites are engine-VM tests with explicit mocks. The two v18 logs are actual isolated Project Zomboid single-player gameplay evidence. They prove production native spawn, movement, plumbob anchoring and save/reload restoration. They do not prove dedicated-server NPC distribution, two-client NPC replication, damage/death, obstacle reactions, households, or full feature completion.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v18\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v18\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v18\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v18\ROLLBACK.sh
+SHA256 MODIFIED_FILE: BE934CCF3A309490235C899A1934FA5C33153621F8233B7F1D22EBD044F8B28E
+SHA256 DIFF_FILE: 0B2B058C72C3CC798D6D393E9942EEBDC14AF54DA2783B6112BEF3FB4817363F
+SHA256 ROLLBACK: DDC938EB87F3E851DF008F2DE64094B33F0EB526719D93F072D20C70450DC46B

@@ -21,7 +21,7 @@ function ISPanel:drawTextRight() end
 function ISPanel:drawRect(x,y,w,h) assert(w>=0 and h>=0) end
 UIFont={Small=1}
 function getTextManager() return {getFontHeight=function() return 14 end} end
-Events={OnCreatePlayer={Add=function(f) end},OnMainMenuEnter={Add=function(f) end}}
+Events={OnCreatePlayer={Add=function(f) end},OnMainMenuEnter={Add=function(f) end},OnTick={Add=function(f) end}}
 CharacterStat={}
 for _, key in ipairs({'HUNGER','THIRST','FATIGUE','BOREDOM','STRESS','UNHAPPINESS'}) do
     local max = (key=='BOREDOM' or key=='UNHAPPINESS') and 100 or 1

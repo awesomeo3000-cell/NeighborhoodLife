@@ -31,6 +31,18 @@ end
 
 function NLQANpc.start()
     if isClient() then return end
+    -- Once the production adapter is loaded, this helper becomes an observer.
+    -- It must never create a second body beside the real persisted neighbor.
+    if NLNpcAuthority then
+        NLQANpc.productionPending=true
+        if UIManager.getSpeedControls() then UIManager.getSpeedControls():SetCurrentGameSpeed(1) end
+        if NLNpcAuthority.bodies and NLNpcAuthority.bodies.marisol then
+            NLQANpc.body=NLNpcAuthority.bodies.marisol
+            NLQANpc.production=true
+            emit("PRODUCTION BODY: adapter owns Marisol")
+        end
+        return
+    end
     local ok,err=pcall(function()
         local player=getSpecificPlayer(0)
         local cell=getCell()
@@ -96,6 +108,7 @@ function NLQANpc.status(npc,pfb)
 end
 
 function NLQANpc.update()
+    if NLQANpc.production then return end
     local npc=NLQANpc.body
     if not npc or npc:isDead() then return end
     NLQANpc.tick=NLQANpc.tick+1
@@ -162,3 +175,25 @@ end
 
 Events.OnGameStart.Add(NLQANpc.start)
 Events.OnTick.Add(NLQANpc.update)
+Events.OnRenderTick.Add(function()
+    if not NLQANpc.productionPending or NLQANpc.production then return end
+    NLQANpc.observeFrame=(NLQANpc.observeFrame or 0)+1
+    if NLNpcAuthority and NLNpcAuthority.bodies and NLNpcAuthority.bodies.marisol then
+        NLQANpc.body=NLNpcAuthority.bodies.marisol
+        NLQANpc.production=true
+        emit("PRODUCTION BODY: adapter owns Marisol")
+    elseif NLQANpc.observeFrame==300 then
+        emit("PRODUCTION BODY MISSING: adapter did not create Marisol")
+    end
+end)
+
+-- Persist the real isolated world without desktop input so the next launcher
+-- run can verify native-body restoration from ModData.
+Events.OnRenderTick.Add(function()
+    if not NLQANpc.production or NLQANpc.saveAttempted then return end
+    NLQANpc.saveFrame=(NLQANpc.saveFrame or 0)+1
+    if NLQANpc.saveFrame<600 then return end
+    NLQANpc.saveAttempted=true
+    local ok,err=pcall(function() GameWindow.save(false) end)
+    emit("SAVE "..(ok and "OK" or ("FAILED: "..tostring(err))))
+end)

@@ -1,5 +1,27 @@
 require "NL/Journal"
 
+local productionNpcChecked=false
+Events.OnRenderTick.Add(function()
+    if productionNpcChecked or not NLNpcAuthority or not NLNpcAuthority.bodies then return end
+    local body=NLNpcAuthority.bodies.marisol
+    if not body then return end
+    local data=body:getModData()
+    local row=NLAuthority.world().neighbors and NLAuthority.world().neighbors.marisol
+    assert(body:isNpc() and data.NeighborhoodNpcId=="marisol","production NPC identity missing")
+    assert(row and row.position and math.abs(row.position.x-body:getX())<0.01,
+        "production NPC position is not persisted")
+    if NLPlumbob and NLPlumbob.instances["npc:marisol"] then
+        assert(NLPlumbob.instances["npc:marisol"]:positionOverCharacter(),
+            "production NPC plumbob did not anchor")
+        print("NLQA PASS: production NPC body, persisted position and plumbob verified at "
+            ..string.format("%.2f,%.2f",body:getX(),body:getY()))
+    else
+        print("NLQA PASS: production NPC body and persisted position verified at "
+            ..string.format("%.2f,%.2f",body:getX(),body:getY()))
+    end
+    productionNpcChecked=true
+end)
+
 local function menuCheck()
     local ok,err=pcall(function()
         for _,career in pairs(NLDefinitions.careers) do

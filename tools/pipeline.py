@@ -54,6 +54,8 @@ def suites(target: Path, engine: bool, record: list[str]) -> None:
     if (target / "42/media/lua/client/NL/Plumbob.lua").exists():
         suite_names.append("plumbob")
     suite_names += ["interfaces", "wardrobe-panel", "aspirations", "replication"]
+    if (target / "42/media/lua/server/NL/NpcAuthority.lua").exists():
+        suite_names.append("npc-authority")
     for suite in suite_names:
         run("LUA", [LUA, ROOT / f"tests/{suite}.lua", target], record=record)
     if engine:
@@ -91,7 +93,7 @@ def package(version: str, baseline: Path) -> None:
     old, new = files(baseline), files(target)
     diff: list[str] = []
     for name in sorted(set(old) | set(new)):
-        is_text = Path(name).suffix.lower() in {".lua", ".py", ".ps1", ".sh", ".md", ".txt", ".json", ".ini"}
+        is_text = Path(name).suffix.lower() in {".lua", ".py", ".ps1", ".sh", ".md", ".txt", ".json", ".ini", ".info"}
         if is_text:
             before = old[name].read_text(encoding="utf-8").splitlines(True) if name in old else []
             after = new[name].read_text(encoding="utf-8").splitlines(True) if name in new else []
