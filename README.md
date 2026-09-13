@@ -84,3 +84,13 @@ synchronized movement, inventory, reconnect, or full remote-character gameplay.
 - This is actual engine multiplayer evidence, distinct from Lua mock tests and
   installed-game Kahlua VM tests. It does not yet prove synchronized movement,
   inventory delivery, reconnect/restart behavior, or remote NPC replication.
+
+## v0.8 native remote marker evidence
+
+The production plumbob now discovers native Build 42 remote bodies through the
+client `getOnlinePlayers()` list and anchors markers to those bodies. In the
+real run in `evidence/v15/`, the host observed `nl-guest` and logged
+`productionRemoteMarkers=1`. The guest still observed only itself, and the
+host's remote entry later disappeared. Remote marker replication is therefore
+started and engine-proven in one direction, but not yet a stable two-way
+multiplayer result.

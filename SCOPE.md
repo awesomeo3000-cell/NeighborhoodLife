@@ -7,7 +7,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Requirement | Current implementation | Completion evidence still required |
 |---|---|---|
 | Sims-inspired HUD | Six live adverse-stat bars, fold control, career journal link | Actual host+guest independent values; resolution and accessibility polish |
-| Character markers | Production client plumbob asset and world-to-screen panel for active characters; adapter ready for authoritative NPC bodies | Two-client remote-character marker and NPC marker after replicated bodies exist |
+| Character markers | Production client plumbob asset and world-to-screen panel for active characters; native remote-player discovery now attaches markers when Build 42 exposes a body | Stable two-way remote-character markers and NPC marker after replicated bodies exist |
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence | Actual multiplayer inventory sync, rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
@@ -17,7 +17,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
 | Aspirations and home activities | Not implemented | Goals, progress/rewards, hobbies and functional furnishings |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter and private snapshots implemented; v0.7 real host plus guest refresh loop recorded | Reconnect, simultaneous gameplay/inventory delivery, restart, mod distribution, remote movement and replicated-character UI |
+| Host multiplayer | Server command adapter and private snapshots implemented; v0.7 real host plus guest refresh loop; v0.8 host observed a native guest body and production plumbob | Reconnect, simultaneous gameplay/inventory delivery, restart, mod distribution, stable two-way remote movement and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -133,3 +133,17 @@ The original broad goal remains active. This ledger is not a reduced definition 
   inventory/actions, reconnect/restart, remote-character markers, and NPC
   replication/persistence. The native NPC movement result remains QA-only
   single-player frame-emulated evidence from v0.6.
+
+## v0.8 native remote-player marker evidence
+
+- The production plumbob now enumerates Build 42's client `getOnlinePlayers()`
+  list and attaches a marker to each non-local native player body. It never
+  creates a substitute body or uses client-supplied coordinates.
+- In the real two-client run recorded under `evidence/v15/`, the host saw the
+  native guest body in `ObjectListForLua` and `OnlinePlayers` at
+  `10754.00,10214.00,0`, with `productionRemoteMarkers=1`.
+- The guest initially saw only itself (`OnlinePlayersCount=1` and
+  `productionRemoteMarkers=0`), and the host's remote entry later disappeared.
+  This is evidence of a one-way/unstable native remote-body replication gap,
+  not completion. The next gate is server-side repair or a reliable native
+  join/update path, followed by stable remote movement and persistence.

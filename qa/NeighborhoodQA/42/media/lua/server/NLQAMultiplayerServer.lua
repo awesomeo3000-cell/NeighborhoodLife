@@ -13,3 +13,32 @@ Events.OnClientCommand.Add(function(module, command, player, args)
             .. " argsType=" .. tostring(type(args)))
     end
 end)
+
+-- Diagnostic only: re-announce native player bodies once after both QA clients
+-- are present. This tests whether Build 42's server-side player announcement
+-- can repair a one-way remote-body visibility gap; it is not production logic.
+local reannounceFrame = 0
+local reannounced = false
+Events.OnTick.Add(function()
+    if reannounced then return end
+    reannounceFrame = reannounceFrame + 1
+    if reannounceFrame < 300 then return end
+    local ok, players = pcall(GameServer.getPlayers)
+    if not ok or not players or players:size() < 2 then return end
+    local sent = 0
+    for sourceIndex = 0, players:size() - 1 do
+        local source = players:get(sourceIndex)
+        for targetIndex = 0, players:size() - 1 do
+            local target = players:get(targetIndex)
+            if source ~= target then
+                local connOk, connection = pcall(GameServer.getConnectionFromPlayer, target)
+                if connOk and connection then
+                    local sendOk = pcall(GameServer.sendPlayerConnected, source, connection)
+                    if sendOk then sent = sent + 1 end
+                end
+            end
+        end
+    end
+    reannounced = true
+    print("NLQA MP SERVER REANNOUNCE: players=" .. tostring(players:size()) .. " sent=" .. tostring(sent))
+end)

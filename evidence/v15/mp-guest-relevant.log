@@ -1,0 +1,15 @@
+[13-09-26 18:43:18.776] LOG  : Lua          f:0> NLQA MP CONNECT ARMED: 127.0.0.1:16261.
+[13-09-26 18:43:20.789] LOG  : Lua          f:0> NLQA MP CONNECT REQUEST: nl-guest -> 127.0.0.1:16261 accountPassword=true.
+[13-09-26 18:43:21.236] LOG  : Lua          f:0 st:0> NLQA MP CONNECTION STATE: Connected message=nil arg=nil.
+[13-09-26 18:43:33.843] LOG  : Lua          f:0 st:0> NLQA MP CONNECTED: nl-guest.
+[13-09-26 18:44:00.973] LOG  : Lua          f:0 st:0> NLQA MP CLIENT START: username=nl-guest isClient=true isServer=false.
+[13-09-26 18:44:04.877] LOG  : Lua          f:119 st:191,360,911> NLQA MP REFRESH SENT: attempt=1 player=nl-guest.
+[13-09-26 18:44:04.901] LOG  : Lua          f:120 st:191,360,936> NLQA MP SNAPSHOT: username=nl-guest revision=1 snapshotCount=1.
+[13-09-26 18:44:07.877] LOG  : Lua          f:299 st:191,363,911> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=30 [local=nl-guest] OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0.
+[13-09-26 18:44:12.876] LOG  : Lua          f:599 st:191,368,910> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=30 [local=nl-guest] OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0.
+[13-09-26 18:44:17.874] LOG  : Lua          f:899 st:191,373,909> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=30 [local=nl-guest] OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0.
+[13-09-26 18:44:22.874] LOG  : Lua          f:1199 st:191,378,909> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=30 [local=nl-guest] OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0.
+[13-09-26 18:44:27.875] LOG  : Lua          f:1499 st:191,383,909> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=30 [local=nl-guest] OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0.
+[13-09-26 18:44:32.878] LOG  : Lua          f:1799 st:191,388,912> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=30 [local=nl-guest] OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0.
+[13-09-26 18:44:37.876] LOG  : Lua          f:2099 st:191,393,910> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=30 [local=nl-guest] OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0.
+[13-09-26 18:44:42.876] LOG  : Lua          f:2399 st:191,398,910> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=30 [local=nl-guest] OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0.

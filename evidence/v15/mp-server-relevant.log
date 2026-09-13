@@ -1,0 +1,12 @@
+LOG  : Lua          f:0 st:191,280,265> NLQA MP SERVER BOOT: authority=true requireOk=true error=nil
+LOG  : Network      f:0 st:191,285,409> *** SERVER STARTED ****
+LOG  : Network      f:252 st:191,312,360> Connected new client 328762964090088712 ID # 0
+LOG  : Network      f:300 st:191,317,203> Connected new client 342273762977421446 ID # 4
+LOG  : Lua          f:671 st:191,354,347> NLQA PRODUCTION AUTHORITY COMMAND: refresh username=nl-host
+LOG  : Lua          f:671 st:191,354,349> NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-host revision=1
+LOG  : Lua          f:671 st:191,354,349> NLQA MP SERVER COMMAND: refresh username=nl-host
+LOG  : Lua          f:671 st:191,354,349> NLQA MP SERVER PLAYER: dead=false authorityKey=nl-host argsType=nil
+LOG  : Lua          f:737 st:191,360,933> NLQA PRODUCTION AUTHORITY COMMAND: refresh username=nl-guest
+LOG  : Lua          f:737 st:191,360,933> NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-guest revision=1
+LOG  : Lua          f:737 st:191,360,933> NLQA MP SERVER COMMAND: refresh username=nl-guest
+LOG  : Lua          f:737 st:191,360,934> NLQA MP SERVER PLAYER: dead=false authorityKey=nl-guest argsType=nil

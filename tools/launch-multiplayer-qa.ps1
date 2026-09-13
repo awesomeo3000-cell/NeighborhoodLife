@@ -11,6 +11,10 @@ New-Item -ItemType Directory -Force $evidence | Out-Null
 
 foreach ($profile in $profiles) {
     New-Item -ItemType Directory -Force "$profile\mods" | Out-Null
+    foreach ($modId in @('NeighborhoodLife','NeighborhoodQA')) {
+        $stale = Join-Path $profile "mods\$modId"
+        if (Test-Path $stale) { Remove-Item -LiteralPath $stale -Recurse -Force }
+    }
     Copy-Item "$root\NeighborhoodLife" "$profile\mods" -Recurse -Force
     Copy-Item "$root\qa\NeighborhoodQA" "$profile\mods" -Recurse -Force
     @'

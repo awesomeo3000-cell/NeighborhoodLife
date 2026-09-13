@@ -1,0 +1,78 @@
+--- baseline/42/media/lua/client/NL/Plumbob.lua
++++ modified/42/media/lua/client/NL/Plumbob.lua
+@@ -7,6 +7,7 @@
+ NLPlumbob.instances = {}
+ NLPlumbob.texturePath = "media/textures/NL_Plumbob.png"
+ NLPlumbob.defaultColor = { r = 0.22, g = 0.88, b = 0.58 }
++NLPlumbob.remoteColor = { r = 0.28, g = 0.86, b = 0.95 }
+ 
+ function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, lift)
+     return math.floor(screenX - left - width / 2), math.floor(screenY - top - height - lift)
+@@ -72,6 +73,10 @@
+ function NLPlumbob.register(id, character, observerIndex, color)
+     if not id or not character then return nil end
+     local old = NLPlumbob.instances[id]
++    if old and old.character == character then
++        old.observerIndex = observerIndex or old.observerIndex
++        return old
++    end
+     if old then old:removeFromUIManager() end
+     local panel = NLPlumbob:new(id, character, observerIndex, color)
+     panel:initialise()
+@@ -79,6 +84,45 @@
+     panel:bringToTop()
+     NLPlumbob.instances[id] = panel
+     return panel
++end
++
++local function isLocalCharacter(character)
++    if not character then return true end
++    for i = 0, getNumActivePlayers() - 1 do
++        if getSpecificPlayer(i) == character then return true end
++    end
++    return false
++end
++
++-- Build 42 exposes the native remote-player bodies through getOnlinePlayers()
++-- on clients. Attach the same world-to-screen marker to those bodies without
++-- constructing a substitute character or trusting client-supplied positions.
++function NLPlumbob.syncRemotePlayers()
++    if not getOnlinePlayers then return 0 end
++    local ok, players = pcall(getOnlinePlayers)
++    if not ok or not players then return 0 end
++    local seen = {}
++    local count = players:size()
++    for i = 0, count - 1 do
++        local character = players:get(i)
++        local username
++        if character and not isLocalCharacter(character) and character.getUsername then
++            local usernameOk
++            usernameOk, username = pcall(character.getUsername, character)
++            if not usernameOk then username = nil end
++        end
++        if character and username and username ~= "" then
++            local id = "remote:" .. tostring(username)
++            seen[id] = true
++            NLPlumbob.register(id, character, 0, NLPlumbob.remoteColor)
++        end
++    end
++    for id, panel in pairs(NLPlumbob.instances) do
++        if string.sub(id, 1, 7) == "remote:" and not seen[id] then
++            NLPlumbob.unregister(id)
++        end
++    end
++    return count
+ end
+ 
+ function NLPlumbob.unregister(id)
+@@ -97,4 +141,8 @@
+ end
+ 
+ Events.OnCreatePlayer.Add(NLPlumbob.createPlayer)
++Events.OnRenderTick.Add(function()
++    if not isClient() then return end
++    NLPlumbob.syncRemotePlayers()
++end)
+ Events.OnMainMenuEnter.Add(NLPlumbob.cleanup)
+BINARY FILE CHANGED: baseline/42/media/textures/NL_Plumbob.png -> modified/42/media/textures/NL_Plumbob.png
+BINARY FILE CHANGED: baseline/42/mod.info -> modified/42/mod.info

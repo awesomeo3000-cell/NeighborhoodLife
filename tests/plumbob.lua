@@ -16,7 +16,7 @@ function ISPanel:setY(v) self.y=v end
 function ISPanel:prerender() end
 function ISPanel:drawTextureScaled() end
 function ISPanel:drawRect() end
-Events={OnCreatePlayer={Add=function() end},OnMainMenuEnter={Add=function() end}}
+Events={OnCreatePlayer={Add=function() end},OnRenderTick={Add=function() end},OnMainMenuEnter={Add=function() end}}
 function getTexture(path) return {path=path} end
 function getSpecificPlayer() return {alive=true} end
 function getCore() return {getZoom=function() return 1 end} end
@@ -34,4 +34,15 @@ assert(panel.visible,"registered plumbob must start visible so UIManager can pre
 panel:prerender(); assert(panel.visible and panel.x==80 and panel.y==116)
 character.isDead=function() return true end; panel:prerender(); assert(not panel.visible)
 NLPlumbob.unregister('test:character'); assert(NLPlumbob.instances['test:character']==nil)
+local localPlayer={getX=function() return 12 end,getY=function() return 13 end,getZ=function() return 0 end,isDead=function() return false end}
+local remotePlayer={getUsername=function() return 'nl-guest' end,getX=function() return 14 end,getY=function() return 13 end,getZ=function() return 0 end,isDead=function() return false end}
+function getNumActivePlayers() return 1 end
+function getSpecificPlayer() return localPlayer end
+function getOnlinePlayers() return {size=function() return 2 end,get=function(_,i) return i==0 and localPlayer or remotePlayer end} end
+if NLPlumbob.syncRemotePlayers then
+    assert(NLPlumbob.syncRemotePlayers()==2)
+    assert(NLPlumbob.instances['remote:nl-guest'].character==remotePlayer)
+    function getOnlinePlayers() return {size=function() return 1 end,get=function() return localPlayer end} end
+    NLPlumbob.syncRemotePlayers(); assert(NLPlumbob.instances['remote:nl-guest']==nil)
+end
 print('PASS: plumbob asset lookup, screen anchoring, dead-character hide, registration and cleanup')
