@@ -1,0 +1,463 @@
+--- baseline/42\media\lua\client\NeighborhoodNeeds.lua
++++ modified/42\media\lua\client\NeighborhoodNeeds.lua
+@@ -1,4 +1,5 @@
+ require "ISUI/ISPanel"
++require "NL/Journal"
+ 
+ NeighborhoodNeeds = ISPanel:derive("NeighborhoodNeeds")
+ NeighborhoodNeeds.enabled = true
+@@ -9,7 +10,7 @@
+     { "Stress", "STRESS" }, { "Unhappiness", "UNHAPPINESS" }
+ }
+ 
+--- Bars show adverse stat intensity: lower is better. No gameplay writes.
++-- Numbers show adverse intensity; bar fill shows remaining wellbeing. No gameplay writes.
+ function NeighborhoodNeeds.read(player, key)
+     local stat = CharacterStat[key]
+     if not player or not stat then return nil end
+@@ -26,8 +27,8 @@
+     o.rowHeight, o.headerHeight = font + 17, font + 16
+     o.expandedHeight = o.headerHeight + 6 * o.rowHeight + font + 20
+     o.collapsed = false
+-    o.backgroundColor = { r = 0.055, g = 0.095, b = 0.13, a = 0.94 }
+-    o.borderColor = { r = 0.3, g = 0.8, b = 0.68, a = 0.9 }
++    o.backgroundColor = { r = 0.96, g = 0.98, b = 1, a = 0.97 }
++    o.borderColor = { r = 0.62, g = 0.76, b = 0.88, a = 1 }
+     o:setHeight(o.expandedHeight)
+     return o
+ end
+@@ -36,6 +37,8 @@
+     if y <= self.headerHeight then
+         self.collapsed = not self.collapsed
+         self:setHeight(self.collapsed and self.headerHeight or self.expandedHeight)
++    elseif not self.collapsed and y >= self.headerHeight + 6 * self.rowHeight then
++        NLJournal.open(self.playerIndex)
+     end
+     return true
+ end
+@@ -50,26 +53,26 @@
+     self:setX(left + 12)
+     self:setY(top + math.max(12, height - self.height - 84))
+     ISPanel.prerender(self)
+-    self:drawText("NEIGHBORHOOD / NEEDS", 12, 7, 0.8, 1, 0.92, 1, UIFont.Small)
+-    self:drawTextRight(self.collapsed and "+" or "-", self.width - 12, 7, 1, 1, 1, 1, UIFont.Small)
++    self:drawText("NEIGHBORHOOD / NEEDS", 12, 7, 0.12, 0.38, 0.63, 1, UIFont.Small)
++    self:drawTextRight(self.collapsed and "+" or "-", self.width - 12, 7, 0.12, 0.38, 0.63, 1, UIFont.Small)
+     if self.collapsed then return end
+     for i, row in ipairs(self.rows) do
+         local y = self.headerHeight + (i - 1) * self.rowHeight
+         local value = self.read(player, row[2])
+         local label = value and (tostring(math.floor(value * 100 + 0.5)) .. "%") or "N/A"
+-        self:drawText(row[1], 12, y, 0.94, 0.95, 1, 1, UIFont.Small)
+-        self:drawTextRight(label, self.width - 12, y, 0.94, 0.95, 1, 1, UIFont.Small)
++        self:drawText(row[1], 12, y, 0.18, 0.24, 0.32, 1, UIFont.Small)
++        self:drawTextRight(label, self.width - 12, y, 0.18, 0.24, 0.32, 1, UIFont.Small)
+         local by = y + self.rowHeight - 10
+-        self:drawRect(12, by, self.width - 24, 5, 1, 0.16, 0.22, 0.27)
++        self:drawRect(12, by, self.width - 24, 5, 1, 0.82, 0.87, 0.90)
+         if value then
+             local r, g = 0.3, 0.85
+             if value >= 0.7 then r, g = 0.96, 0.35
+             elseif value >= 0.35 then r, g = 0.95, 0.73 end
+-            self:drawRect(12, by, (self.width - 24) * value, 5, 1, r, g, 0.55)
++            self:drawRect(12, by, (self.width - 24) * (1 - value), 5, 1, r, g, 0.18)
+         end
+     end
+-    self:drawText("Lower = better | click header to fold", 12,
+-        self.headerHeight + 6 * self.rowHeight + 3, 0.68, 0.78, 0.82, 1, UIFont.Small)
++    self:drawText("Full bar = healthy | Careers >", 12,
++        self.headerHeight + 6 * self.rowHeight + 3, 0.12, 0.38, 0.63, 1, UIFont.Small)
+ end
+ 
+ function NeighborhoodNeeds.create(index, player)
+--- baseline/42\media\lua\client\NL\Client.lua
++++ modified/42\media\lua\client\NL\Client.lua
+@@ -0,0 +1,29 @@
++require "NL/Domain"
++NLClient = { profiles = {} }
++
++function NLClient.receive(module, command, args)
++    if module ~= "NeighborhoodLife" or command ~= "snapshot" or type(args) ~= "table" then return end
++    -- Route only to local characters matching the server snapshot. No global getPlayer().
++    for i = 0, getNumActivePlayers() - 1 do
++        local player = getSpecificPlayer(i)
++        if player then
++            local key = player:getUsername()
++            if not key or key == "" then key = "local:" .. i end
++            if key == args.username then
++                local old = NLClient.profiles[i]
++                if not old or args.revision >= old.revision then NLClient.profiles[i] = args end
++            end
++        end
++    end
++end
++
++function NLClient.request(index, command, args)
++    local player = getSpecificPlayer(index)
++    if not player or player:isDead() then return end
++    if isClient() then sendClientCommand(player, "NeighborhoodLife", command, args or {})
++    elseif NLAuthority then NLAuthority.command("NeighborhoodLife", command, player, args or {}) end
++end
++
++Events.OnServerCommand.Add(NLClient.receive)
++Events.OnMainMenuEnter.Add(function() NLClient.profiles = {} end)
++return NLClient
+--- baseline/42\media\lua\client\NL\Journal.lua
++++ modified/42\media\lua\client\NL\Journal.lua
+@@ -0,0 +1,108 @@
++require "ISUI/ISPanel"
++require "ISUI/ISButton"
++require "NL/Client"
++NLJournal = ISPanel:derive("NLJournal")
++NLJournal.instances = {}
++
++function NLJournal:new(index)
++    local o = ISPanel.new(self, 330, 130, 590, 450)
++    o.playerIndex = index
++    o.backgroundColor = { r=0.96, g=0.98, b=1, a=0.98 }
++    o.borderColor = { r=0.62, g=0.76, b=0.88, a=1 }
++    o.moveWithMouse = true
++    return o
++end
++
++function NLJournal:button(x,y,w,text,action,value)
++    local button = ISButton:new(x,y,w,28,text,self,NLJournal.onButton)
++    button.action, button.value = action, value
++    button.backgroundColor = {r=0.86,g=0.92,b=0.97,a=1}
++    button.backgroundColorMouseOver = {r=0.69,g=0.87,b=0.98,a=1}
++    button.borderColor = {r=0.53,g=0.69,b=0.82,a=1}
++    button.textColor = {r=0.12,g=0.30,b=0.47,a=1}
++    button:initialise()
++    self:addChild(button)
++    return button
++end
++
++function NLJournal:initialise()
++    ISPanel.initialise(self)
++    self:button(self.width-75,10,60,"Close","close")
++    self.careerButtons = {}
++    for i,id in ipairs(NLDefinitions.careerOrder) do
++        self.careerButtons[id] = self:button(16+(i-1)*150,48,140,NLDefinitions.careers[id].name,"select",id)
++    end
++    self.deliverButtons = {}
++    for i=1,3 do self.deliverButtons[i] = self:button(455,162+(i-1)*48,115,"Deliver","deliver",i) end
++    self:button(16,325,180,"Check promotion","promote")
++    self:button(210,325,100,"Refresh","refresh")
++end
++
++function NLJournal:onButton(button)
++    if button.action=="close" then self:setVisible(false); return end
++    local args = {}
++    if button.action=="select" then args.career = button.value end
++    if button.action=="deliver" then
++        local p = NLClient.profiles[self.playerIndex]
++        if not p then return end
++        args.id = NLDomain.contracts(p)[button.value].id
++    end
++    NLClient.request(self.playerIndex,button.action,args)
++end
++
++function NLJournal:prerender()
++    ISPanel.prerender(self)
++    self:drawText("NEIGHBORHOOD / CAREER JOURNAL",16,14,0.12,0.38,0.63,1,UIFont.Small)
++    local p = NLClient.profiles[self.playerIndex]
++    if not p then
++        self:drawText("Waiting for world data. Try Refresh.",16,95,0.18,0.24,0.32,1,UIFont.Small)
++        for _,b in ipairs(self.deliverButtons) do b:setEnable(false) end
++        return
++    end
++    for id,button in pairs(self.careerButtons) do
++        button.backgroundColor = id==p.career and {r=0.65,g=0.88,b=0.36,a=1}
++            or {r=0.86,g=0.92,b=0.97,a=1}
++    end
++    local def,progress = NLDefinitions.careers[p.career],p.careers[p.career]
++    self:drawText(def.ranks[progress.rank] .. " | Skill " .. p.skill .. " | Career XP " .. progress.xp,
++        16,90,0.18,0.24,0.32,1,UIFont.Small)
++    self:drawText("Community credits: " .. p.credits .. " | Deliveries: " .. progress.delivered,
++        16,115,0.30,0.38,0.47,1,UIFont.Small)
++    self:drawText("SUPPLY REQUESTS / refresh each world day",16,142,0.12,0.38,0.63,1,UIFont.Small)
++    for i,c in ipairs(NLDomain.contracts(p)) do
++        local y = 170+(i-1)*48
++        local done = p.claimed[c.id]
++        self:drawText(c.amount .. " x " .. c.item .. (done and " / DONE" or ""),16,y,0.18,0.24,0.32,1,UIFont.Small)
++        self.deliverButtons[i]:setEnable(not done)
++    end
++    self:drawText("Delivery consumes items in your main inventory.",16,303,0.46,0.32,0.12,1,UIFont.Small)
++    local nextRank = NLDefinitions.promotions[progress.rank+1]
++    local text = nextRank and ("Next: skill "..nextRank.skill..", "..nextRank.xp.." XP, "..nextRank.variety.." delivery types") or "Top career rank reached"
++    self:drawText(text,16,366,0.30,0.38,0.47,1,UIFont.Small)
++    -- Wrap status rather than drawing arbitrarily long server feedback off-panel.
++    local message = p.message or ""
++    self:drawText(string.sub(message,1,72),16,392,0.12,0.38,0.63,1,UIFont.Small)
++    if #message>72 then self:drawText(string.sub(message,73,144),16,411,0.12,0.38,0.63,1,UIFont.Small) end
++end
++
++function NLJournal.open(index)
++    local panel = NLJournal.instances[index]
++    if not panel then
++        panel = NLJournal:new(index); panel:initialise()
++        NLJournal.instances[index] = panel
++    end
++    -- The engine can clear UIManager at a world transition without clearing Lua.
++    -- Reattach on every open, removing first so repeated opens never duplicate it.
++    panel:removeFromUIManager(); panel:addToUIManager()
++    local left,top = getPlayerScreenLeft(index),getPlayerScreenTop(index)
++    panel:setX(left + math.max(12, math.min(330,getPlayerScreenWidth(index)-panel.width-12)))
++    panel:setY(top + math.max(12, math.min(130,getPlayerScreenHeight(index)-panel.height-12)))
++    panel:setVisible(true); panel:bringToTop()
++    NLClient.request(index,"refresh")
++end
++
++Events.OnMainMenuEnter.Add(function()
++    for _,panel in pairs(NLJournal.instances) do panel:removeFromUIManager() end
++    NLJournal.instances = {}
++end)
++return NLJournal
+--- baseline/42\media\lua\client\NL\Wardrobe.lua
++++ modified/42\media\lua\client\NL\Wardrobe.lua
+@@ -0,0 +1,48 @@
++require "TimedActions/ISWearClothing"
++require "TimedActions/ISTimedActionQueue"
++NLWardrobe = {}
++
++function NLWardrobe.save(player, slot)
++    local outfits = player:getModData().NeighborhoodOutfits or {}
++    local items, saved = player:getWornItems(), {}
++    for i=0,items:size()-1 do
++        saved[#saved+1] = items:get(i):getItem():getFullType()
++    end
++    outfits[slot] = saved
++    player:getModData().NeighborhoodOutfits = outfits
++    player:Say("Outfit "..slot.." saved ("..#saved.." pieces).")
++end
++
++function NLWardrobe.wear(player, slot)
++    local outfits = player:getModData().NeighborhoodOutfits or {}
++    local saved = outfits[slot]
++    if not saved then player:Say("Save this outfit slot first."); return end
++    local missing,used = 0,{}
++    local inventory = player:getInventory():getItems()
++    for _,fullType in ipairs(saved) do
++        local match = nil
++        for i=0,inventory:size()-1 do
++            local item=inventory:get(i)
++            if not used[item] and item:getFullType()==fullType then match=item; break end
++        end
++        if match then
++            used[match]=true
++            ISTimedActionQueue.add(ISWearClothing:new(player,match))
++        else missing=missing+1 end
++    end
++    if missing>0 then player:Say(missing.." outfit pieces missing from main inventory.") end
++end
++
++function NLWardrobe.menu(index, context)
++    local player=getSpecificPlayer(index)
++    if not player or player:isDead() then return end
++    local option=context:addOption("Neighborhood wardrobe")
++    local sub=ISContextMenu:getNew(context)
++    context:addSubMenu(option,sub)
++    for slot=1,3 do
++        sub:addOption("Save current outfit "..slot,player,NLWardrobe.save,slot)
++        sub:addOption("Wear saved outfit "..slot,player,NLWardrobe.wear,slot)
++    end
++end
++Events.OnFillWorldObjectContextMenu.Add(NLWardrobe.menu)
++return NLWardrobe
+--- baseline/42\media\lua\server\NL\Authority.lua
++++ modified/42\media\lua\server\NL\Authority.lua
+@@ -0,0 +1,80 @@
++if isClient() then return end
++require "NL/Domain"
++
++NLAuthority = { module = "NeighborhoodLife", lastRequest = {} }
++
++function NLAuthority.world()
++    local world = ModData.getOrCreate("NeighborhoodLife_v2")
++    world.version = world.version or NLDefinitions.version
++    world.players = world.players or {}
++    return world
++end
++
++function NLAuthority.key(player)
++    -- Server-supplied player, never a username from packet args. Accounts retain
++    -- careers across character deaths; each world owns a separate profile store.
++    local name = player:getUsername()
++    if not name or name == "" then name = "local:" .. player:getPlayerNum() end
++    return name
++end
++
++function NLAuthority.snapshot(player, profile, message)
++    local result = NLDomain.copy(profile)
++    result.playerNum = player:getPlayerNum()
++    result.username = NLAuthority.key(player)
++    result.message = message or "Updated"
++    result.skill = player:getPerkLevel(Perks[NLDefinitions.careers[profile.career].perk])
++    if isServer() then sendServerCommand(player, NLAuthority.module, "snapshot", result)
++    elseif NLClient then NLClient.receive(NLAuthority.module, "snapshot", result) end
++    return result
++end
++
++function NLAuthority.delivery(player, profile, id)
++    if type(id) ~= "string" or #id > 100 then return false, "Invalid delivery" end
++    local contract = NLDomain.findContract(profile, id)
++    if not contract then return false, "Delivery expired; refresh the board" end
++    if profile.claimed[id] then return false, "Already delivered" end
++    -- Main inventory only. Bags/worn/held items are never silently consumed.
++    local inv = player:getInventory()
++    local all = inv:getItems()
++    local chosen = {}
++    for i = 0, all:size() - 1 do
++        local item = all:get(i)
++        if item:getFullType() == contract.item and not player:isEquipped(item) then
++            chosen[#chosen + 1] = item
++            if #chosen == contract.amount then break end
++        end
++    end
++    if #chosen < contract.amount then
++        return false, "Need " .. contract.amount .. " " .. contract.item .. " in main inventory"
++    end
++    for _, item in ipairs(chosen) do
++        inv:Remove(item)
++        if isServer() then sendRemoveItemFromContainer(inv, item) end
++    end
++    return NLDomain.complete(profile, contract)
++end
++
++function NLAuthority.command(module, command, player, args)
++    if module ~= NLAuthority.module or not player or player:isDead() then return end
++    if command ~= "refresh" and command ~= "select" and command ~= "deliver" and command ~= "promote" then return end
++    if type(args) ~= "table" then return end
++    local key = NLAuthority.key(player)
++    local now = getTimestampMs()
++    if NLAuthority.lastRequest[key] and now - NLAuthority.lastRequest[key] < 200 then return end
++    NLAuthority.lastRequest[key] = now
++    local profile = NLDomain.profile(NLAuthority.world(), key)
++    NLDomain.day(profile, math.floor(getGameTime():getWorldAgeHours() / 24))
++    local ok, message = true, "Updated"
++    if command == "select" then ok, message = NLDomain.select(profile, args.career)
++    elseif command == "deliver" then ok, message = NLAuthority.delivery(player, profile, args.id)
++    elseif command == "promote" then
++        ok, message = NLDomain.promote(profile, player:getPerkLevel(Perks[NLDefinitions.careers[profile.career].perk]))
++    end
++    if not ok then message = "Not completed: " .. message end
++    NLAuthority.snapshot(player, profile, message)
++end
++
++Events.OnClientCommand.Add(NLAuthority.command)
++Events.OnMainMenuEnter.Add(function() NLAuthority.lastRequest = {} end)
++return NLAuthority
+--- baseline/42\media\lua\shared\NL\Definitions.lua
++++ modified/42\media\lua\shared\NL\Definitions.lua
+@@ -0,0 +1,20 @@
++NLDefinitions = {}
++NLDefinitions.version = 2
++NLDefinitions.careerOrder = { "tailor", "carpenter", "medic" }
++NLDefinitions.careers = {
++    tailor = { name = "Tailor", perk = "Tailoring", ranks = {
++        "Mending Apprentice", "Neighborhood Tailor", "Pattern Maker", "Master Clothier"
++    }, materials = { { "Base.RippedSheets", 6 }, { "Base.Sheet", 2 }, { "Base.Bandage", 3 } } },
++    carpenter = { name = "Carpenter", perk = "Woodwork", ranks = {
++        "Workshop Helper", "Repair Carpenter", "House Builder", "Master Carpenter"
++    }, materials = { { "Base.Plank", 2 }, { "Base.Nails", 12 }, { "Base.Plank", 4 } } },
++    medic = { name = "Medic", perk = "Doctor", ranks = {
++        "First Aid Volunteer", "Neighborhood Medic", "Clinic Lead", "Community Physician"
++    }, materials = { { "Base.RippedSheets", 8 }, { "Base.Bandage", 3 }, { "Base.Bandage", 5 } } }
++}
++-- Promotion requires deliveries AND the actual game skill; career XP is not skill XP.
++NLDefinitions.promotions = {
++    { xp = 0, skill = 0, variety = 0 }, { xp = 60, skill = 1, variety = 2 },
++    { xp = 180, skill = 3, variety = 3 }, { xp = 360, skill = 5, variety = 3 }
++}
++return NLDefinitions
+--- baseline/42\media\lua\shared\NL\Domain.lua
++++ modified/42\media\lua\shared\NL\Domain.lua
+@@ -0,0 +1,88 @@
++require "NL/Definitions"
++NLDomain = {}
++
++function NLDomain.newWorld()
++    return { version = NLDefinitions.version, players = {} }
++end
++
++function NLDomain.profile(world, key)
++    world.players = world.players or {}
++    if not world.players[key] then
++        world.players[key] = { career = "tailor", careers = {}, credits = 0,
++            revision = 0, day = -1, claimed = {}, outfits = {} }
++    end
++    local p = world.players[key]
++    for _, id in ipairs(NLDefinitions.careerOrder) do
++        p.careers[id] = p.careers[id] or { rank = 1, xp = 0, delivered = 0, variety = {} }
++    end
++    return p
++end
++
++function NLDomain.day(profile, day)
++    if day > profile.day then
++        profile.day, profile.claimed = day, {}
++        profile.revision = profile.revision + 1
++    end
++end
++
++function NLDomain.contracts(profile)
++    local result = {}
++    local career = NLDefinitions.careers[profile.career]
++    for i, material in ipairs(career.materials) do
++        result[i] = { id = profile.career .. ":" .. profile.day .. ":" .. i,
++            item = material[1], amount = material[2], xp = 20, credits = 10, slot = i }
++    end
++    return result
++end
++
++function NLDomain.findContract(profile, id)
++    for _, contract in ipairs(NLDomain.contracts(profile)) do
++        if contract.id == id then return contract end
++    end
++end
++
++function NLDomain.select(profile, id)
++    if type(id) ~= "string" or not NLDefinitions.careers[id] then return false, "Unknown career" end
++    if profile.career ~= id then
++        profile.career = id
++        profile.revision = profile.revision + 1
++    end
++    return true, "Career selected"
++end
++
++-- Call only after the authoritative adapter has removed the complete delivery.
++function NLDomain.complete(profile, contract)
++    if profile.claimed[contract.id] then return false, "Already delivered" end
++    profile.claimed[contract.id] = true
++    local progress = profile.careers[profile.career]
++    progress.xp = progress.xp + contract.xp
++    progress.delivered = progress.delivered + 1
++    progress.variety[contract.slot] = true
++    profile.credits = profile.credits + contract.credits
++    profile.revision = profile.revision + 1
++    return true, "Delivery complete: +20 career XP, +10 community credits"
++end
++
++function NLDomain.promote(profile, skill)
++    local progress = profile.careers[profile.career]
++    local nextRank = NLDefinitions.promotions[progress.rank + 1]
++    if not nextRank then return false, "Highest rank reached" end
++    local variety = 0
++    for _, done in pairs(progress.variety) do if done then variety = variety + 1 end end
++    if skill < nextRank.skill or progress.xp < nextRank.xp or variety < nextRank.variety then
++        return false, "Promotion needs skill " .. nextRank.skill .. ", XP " .. nextRank.xp
++            .. " and " .. nextRank.variety .. " different delivery types"
++    end
++    progress.rank = progress.rank + 1
++    profile.revision = profile.revision + 1
++    return true, "Promoted to " .. NLDefinitions.careers[profile.career].ranks[progress.rank]
++end
++
++function NLDomain.copy(value)
++    if type(value) ~= "table" then return value end
++    local result = {}
++    for k, v in pairs(value) do result[k] = NLDomain.copy(v) end
++    return result
++end
++
++return NLDomain

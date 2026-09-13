@@ -1,0 +1,156 @@
+COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\hud.lua E:\pzmod\NeighborhoodLife\42\media\lua\client\NeighborhoodNeeds.lua enabled
+CWD: E:\pzmod
+OUTPUT: PASS: normalization, clamping, missing/NaN, isolated players, duplicate prevention, fold, render, reconnect, cleanup
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NeighborhoodNeeds.lua
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\shared\NL\Aspirations.lua
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\shared\NL\Definitions.lua
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\shared\NL\Domain.lua
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\shared\NL\Social.lua
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\server\NL\Authority.lua
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\server\NL\SocialAuthority.lua
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Client.lua
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Journal.lua
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Relationships.lua
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\SocialClient.lua
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Wardrobe.lua
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\WardrobePanel.lua
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\gameplay.lua E:\pzmod\NeighborhoodLife
+CWD: E:\pzmod
+OUTPUT: PASS: 24 gameplay assertions (authority, deliveries, promotions, routing, persistence, replay and malformed input)
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\wardrobe.lua E:\pzmod\NeighborhoodLife
+CWD: E:\pzmod
+OUTPUT: PASS: exact garment identity, replacement fallback, legacy presets and duplicate exclusion
+PASS: wardrobe save, vanilla wear action queue, missing pieces and empty slot
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\social.lua E:\pzmod\NeighborhoodLife
+CWD: E:\pzmod
+OUTPUT: PASS: 20 social assertions (individual relationships, pacing, mutual interest, partnership conflict, breakup, memories)
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\social-authority.lua E:\pzmod\NeighborhoodLife
+CWD: E:\pzmod
+OUTPUT: PASS: 16 social authority assertions (proximity, visibility, private snapshots, death and absent bodies)
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\interfaces.lua E:\pzmod\NeighborhoodLife
+CWD: E:\pzmod
+OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\wardrobe-panel.lua E:\pzmod\NeighborhoodLife
+CWD: E:\pzmod
+OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+PASS: wardrobe panel empty/saved/dead states, save/wear callbacks and reopen
+STDERR: 
+EXIT: 0
+COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\aspirations.lua E:\pzmod\NeighborhoodLife
+CWD: E:\pzmod
+OUTPUT: PASS: aspiration milestones, delivery hook, promotion gate, one-time rewards, reload and player isolation
+STDERR: 
+EXIT: 0
+COMMAND: javac -cp E:\SteamLibrary\steamapps\common\ProjectZomboid\projectzomboid.jar -d E:\pzmod\tests\classes E:\pzmod\tests\EngineLua.java
+CWD: E:\pzmod
+OUTPUT: 
+STDERR: 
+EXIT: 0
+COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\gameplay.lua
+CWD: E:\SteamLibrary\steamapps\common\ProjectZomboid
+OUTPUT: PASS: 24 gameplay assertions (authority, deliveries, promotions, routing, persistence, replay and malformed input)
+PASS: installed Project Zomboid Kahlua VM execution
+STDERR: 
+EXIT: 0
+COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\wardrobe.lua
+CWD: E:\SteamLibrary\steamapps\common\ProjectZomboid
+OUTPUT: PASS: exact garment identity, replacement fallback, legacy presets and duplicate exclusion
+PASS: wardrobe save, vanilla wear action queue, missing pieces and empty slot
+PASS: installed Project Zomboid Kahlua VM execution
+STDERR: 
+EXIT: 0
+COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\social.lua
+CWD: E:\SteamLibrary\steamapps\common\ProjectZomboid
+OUTPUT: PASS: 20 social assertions (individual relationships, pacing, mutual interest, partnership conflict, breakup, memories)
+PASS: installed Project Zomboid Kahlua VM execution
+STDERR: 
+EXIT: 0
+COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\social-authority.lua
+CWD: E:\SteamLibrary\steamapps\common\ProjectZomboid
+OUTPUT: PASS: 16 social authority assertions (proximity, visibility, private snapshots, death and absent bodies)
+PASS: installed Project Zomboid Kahlua VM execution
+STDERR: 
+EXIT: 0
+COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\interfaces.lua
+CWD: E:\SteamLibrary\steamapps\common\ProjectZomboid
+OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+PASS: installed Project Zomboid Kahlua VM execution
+STDERR: 
+EXIT: 0
+COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\wardrobe-panel.lua
+CWD: E:\SteamLibrary\steamapps\common\ProjectZomboid
+OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+PASS: wardrobe panel empty/saved/dead states, save/wear callbacks and reopen
+PASS: installed Project Zomboid Kahlua VM execution
+STDERR: 
+EXIT: 0
+COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\aspirations.lua
+CWD: E:\SteamLibrary\steamapps\common\ProjectZomboid
+OUTPUT: PASS: aspiration milestones, delivery hook, promotion gate, one-time rewards, reload and player isolation
+PASS: installed Project Zomboid Kahlua VM execution
+STDERR: 
+EXIT: 0

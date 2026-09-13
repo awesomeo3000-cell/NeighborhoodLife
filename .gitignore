@@ -1,0 +1,15 @@
+# Disposable engine profiles and generated QA output
+test-profile/
+evidence/*/MODIFIED_FILE.zip
+evidence/*/rollback-test/
+evidence/*/*-engine.log
+evidence/*/qa-process-id.txt
+
+# Generated Java test classes
+tests/classes/
+
+# Local editor/OS files
+.idea/
+.vscode/
+*.user
+Thumbs.db

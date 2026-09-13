@@ -1,0 +1,18 @@
+--- baseline.lua
++++ E:\pzmod\qa\NeighborhoodQA\42\media\lua\client\NLQANpc.lua
+@@ -50,6 +50,15 @@
+     local npc=NLQANpc.body
+     if not npc then return end
+     NLQANpc.tick=NLQANpc.tick+1
++    if NLQANpc.tick>60 and NLQANpc.tick<1800 and not NLQANpc.pathError then
++        local ok,result=pcall(function() return npc:getPathFindBehavior2():update() end)
++        if not ok then
++            NLQANpc.pathError=true
++            print("NLQA NPC PATH FAIL: "..tostring(result))
++        elseif NLQANpc.tick%300==0 then
++            print("NLQA NPC PATH RESULT: "..tostring(result))
++        end
++    end
+     if NLQANpc.tick==60 then
+         if UIManager.getSpeedControls() then UIManager.getSpeedControls():SetCurrentGameSpeed(1) end
+         npc:pathToLocation(NLQANpc.target.x,NLQANpc.target.y,NLQANpc.target.z)

@@ -1,0 +1,32 @@
+Changed: HUD adds journal link; careers, wardrobe and authority modules; light blue/white theme and green selected tabs; wellbeing bar fill=1-adverse intensity.
+MODIFIED_FILE: E:/pzmod/evidence/v02/MODIFIED_FILE.zip
+DIFF_FILE: E:/pzmod/evidence/v02/DIFF_FILE.patch
+VERIFICATION: E:/pzmod/evidence/v02/VERIFICATION.txt
+ROLLBACK: E:/pzmod/evidence/v02/ROLLBACK.sh
+BASELINE
+COMMAND: python E:\pzmod\tools\verify.py baseline
+INPUT: baseline
+OUTPUT: PASS: baseline HUD regression
+EXIT: 0
+MODIFIED
+COMMAND: python E:\pzmod\tools\verify.py modified
+INPUT: modified
+OUTPUT: PASS: HUD, syntax, 24 gameplay assertions, wardrobe; Lua 5.1 and game Kahlua
+EXIT: 0
+ROLLBACK
+COMMAND: "C:/Program Files/Git/bin/bash.exe" E:\pzmod\evidence\v02\ROLLBACK.sh E:\pzmod\evidence\v02\rollback-test
+INPUT: E:\pzmod\evidence\v02\rollback-test
+OUTPUT: PASS: restored baseline file hashes; HUD-only behavior
+EXIT: 0
+Restored status: baseline files match original hashes on separate rollback copy; source remains modified.
+Game evidence: actual B42.20.4 UI construction, real player snapshot/stat access, real inventory delivery +10 credits and replay rejection passed; see engine-delivery.log.
+Style refresh running in separate QA process; real multiplayer, NPCs, romance, households, assets and full scope unfinished.
+Source file SHA256:
+42\media\lua\client\NeighborhoodNeeds.lua eadca831694a1e39350cedc9989488cd0ab5ef4db99eb29c33e0a5361a9ce6d3
+42\media\lua\client\NL\Client.lua aa521b93ad2fc937032e419c330d92feaacca142ec05f202d970bec9aa47e415
+42\media\lua\client\NL\Journal.lua d50d5ad8ea780b2e8571b2d1d0fa935ae2687c640e0a4a6ff374b9fc89f11687
+42\media\lua\client\NL\Wardrobe.lua c8ef60370014c80de2fb33a45ad401eb23cafb7f6d958a07bb5f2351d2b49939
+42\media\lua\server\NL\Authority.lua b41c1aa1f673b634a4080f75adfbf73446a41d31ecb8066f90929f8d42bbc612
+42\media\lua\shared\NL\Definitions.lua ff34ca4838d8ce9f373ac673946ea54bf8c6348d56bb5b1ebb8cdcea64d22277
+42\media\lua\shared\NL\Domain.lua ce52dd8211674133c2f4b1fc94ead008860ae5ba423372ff6353da5e131e8e1b
+42\mod.info ab5f740c51c86a9ef1d643e9f0f97ca045d6e24735308dde3609f9c829f262c8Visual QA: light-theme journal inspected in actual B42.20.4 main-menu fixture; screenshot light-theme-engine.png. Updated production mod copied to C:/Users/clare/Zomboid/mods/NeighborhoodLife (QA-only mod excluded).

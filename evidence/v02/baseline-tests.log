@@ -1,0 +1,5 @@
+COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\hud.lua E:\pzmod\evidence\v02\baseline\42\media\lua\client\NeighborhoodNeeds.lua enabled
+CWD: E:\pzmod
+OUTPUT: PASS: normalization, clamping, missing/NaN, isolated players, duplicate prevention, fold, render, reconnect, cleanup
+STDERR: 
+EXIT: 0

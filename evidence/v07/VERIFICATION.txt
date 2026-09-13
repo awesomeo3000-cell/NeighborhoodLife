@@ -1,0 +1,25 @@
+Changed field: QA GameLoadingState.forceDone; only after done and showedClickToSkip, with error gates. No OS input.
+BASELINE: previous isolated engine logs show Click to Start required manual input; no new baseline game run.
+MODIFIED COMMAND: powershell -File E:/pzmod/tools/launch-qa.ps1
+INPUT: isolated E:/pzmod/test-profile
+OUTPUT: QA process: 18076; isolated profile: E:\pzmod\test-profile
+EXIT: launcher 0; game remains running
+ENGINE RESULT: PASS: ready loading screen acknowledged without OS input
+ENGINE RESULT: NLQA PASS: real player, authority, persistent world store, snapshot routing and hunger read
+ENGINE RESULT: NLQA PASS: career credits survived actual save/reload
+REGRESSION COMMAND: python E:/pzmod/tools/verify.py modified
+INPUT: modified
+OUTPUT: PASS: HUD, syntax, 60 gameplay/social assertions, wardrobe; Lua 5.1 and game Kahlua
+EXIT: 0
+ROLLBACK COMMAND: "C:/Program Files/Git/bin/bash.exe" E:/pzmod/evidence/v07/ROLLBACK.sh E:/pzmod/evidence/v07/rollback-test.ps1
+INPUT: separate launcher copy
+OUTPUT: PASS: original launcher restored; QA agent disabled
+EXIT: 0
+BASELINE HASH: 6ccc681723716840a8cfa12737580a06c9132a718a197588bd66d80daff6799d
+RESTORED HASH: 6ccc681723716840a8cfa12737580a06c9132a718a197588bd66d80daff6799d
+MODIFIED HASH: 5d108c251a3d06e5565d5bf8f3e1d1fe2eead8f38d76827aab0c0d31d8e728d9
+Game jar current SHA256: 80e405a4bfc42f6072e75b3735f458a6514143da011d3226007ded305a442f44
+ARTIFACT: E:\pzmod\evidence\v07\MODIFIED_FILE.zip
+ARTIFACT: E:\pzmod\evidence\v07\DIFF_FILE.patch
+ARTIFACT: E:\pzmod\evidence\v07\VERIFICATION.txt
+ARTIFACT: E:\pzmod\evidence\v07\ROLLBACK.sh

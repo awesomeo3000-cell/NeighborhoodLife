@@ -1,0 +1,93 @@
+Changed: three career aspiration milestones, one-time credit rewards, journal progress, authoritative delivery/promotion hooks.
+Mouse and keyboard automation: none. NPC engine probe: model allocated, alpha=0, movement=0; integration unfinished.
+BASELINE COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\hud.lua E:\pzmod\evidence\v06\baseline\42\media\lua\client\NeighborhoodNeeds.lua enabled
+INPUT: enabled
+OUTPUT: PASS: normalization, clamping, missing/NaN, isolated players, duplicate prevention, fold, render, reconnect, cleanup
+STDERR: 
+EXIT: 0
+BASELINE COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\gameplay.lua E:\pzmod\evidence\v06\baseline
+INPUT: E:\pzmod\evidence\v06\baseline
+OUTPUT: PASS: 24 gameplay assertions (authority, deliveries, promotions, routing, persistence, replay and malformed input)
+STDERR: 
+EXIT: 0
+BASELINE COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\wardrobe.lua E:\pzmod\evidence\v06\baseline
+INPUT: E:\pzmod\evidence\v06\baseline
+OUTPUT: PASS: exact garment identity, replacement fallback, legacy presets and duplicate exclusion
+PASS: wardrobe save, vanilla wear action queue, missing pieces and empty slot
+STDERR: 
+EXIT: 0
+BASELINE COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\social.lua E:\pzmod\evidence\v06\baseline
+INPUT: E:\pzmod\evidence\v06\baseline
+OUTPUT: PASS: 20 social assertions (individual relationships, pacing, mutual interest, partnership conflict, breakup, memories)
+STDERR: 
+EXIT: 0
+BASELINE COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\social-authority.lua E:\pzmod\evidence\v06\baseline
+INPUT: E:\pzmod\evidence\v06\baseline
+OUTPUT: PASS: 16 social authority assertions (proximity, visibility, private snapshots, death and absent bodies)
+STDERR: 
+EXIT: 0
+BASELINE COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\interfaces.lua E:\pzmod\evidence\v06\baseline
+INPUT: E:\pzmod\evidence\v06\baseline
+OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+STDERR: 
+EXIT: 0
+MODIFIED COMMAND: python E:\pzmod\tools\verify.py modified
+INPUT: modified
+OUTPUT: PASS: HUD, syntax, 60 gameplay/social assertions, wardrobe; Lua 5.1 and game Kahlua
+STDERR: 
+EXIT: 0
+ROLLBACK COMMAND: "C:/Program Files/Git/bin/bash.exe" E:\pzmod\evidence\v06\ROLLBACK.sh E:\pzmod\evidence\v06\rollback-test
+INPUT: E:\pzmod\evidence\v06\rollback-test
+OUTPUT: PASS: original v0.5 hashes restored; garment preset behavior restored on test copy
+STDERR: 
+EXIT: 0
+RESTORED COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\hud.lua E:\pzmod\evidence\v06\rollback-test\42\media\lua\client\NeighborhoodNeeds.lua enabled
+INPUT: enabled
+OUTPUT: PASS: normalization, clamping, missing/NaN, isolated players, duplicate prevention, fold, render, reconnect, cleanup
+STDERR: 
+EXIT: 0
+RESTORED COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\gameplay.lua E:\pzmod\evidence\v06\rollback-test
+INPUT: E:\pzmod\evidence\v06\rollback-test
+OUTPUT: PASS: 24 gameplay assertions (authority, deliveries, promotions, routing, persistence, replay and malformed input)
+STDERR: 
+EXIT: 0
+RESTORED COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\wardrobe.lua E:\pzmod\evidence\v06\rollback-test
+INPUT: E:\pzmod\evidence\v06\rollback-test
+OUTPUT: PASS: exact garment identity, replacement fallback, legacy presets and duplicate exclusion
+PASS: wardrobe save, vanilla wear action queue, missing pieces and empty slot
+STDERR: 
+EXIT: 0
+RESTORED COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\social.lua E:\pzmod\evidence\v06\rollback-test
+INPUT: E:\pzmod\evidence\v06\rollback-test
+OUTPUT: PASS: 20 social assertions (individual relationships, pacing, mutual interest, partnership conflict, breakup, memories)
+STDERR: 
+EXIT: 0
+RESTORED COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\social-authority.lua E:\pzmod\evidence\v06\rollback-test
+INPUT: E:\pzmod\evidence\v06\rollback-test
+OUTPUT: PASS: 16 social authority assertions (proximity, visibility, private snapshots, death and absent bodies)
+STDERR: 
+EXIT: 0
+RESTORED COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\interfaces.lua E:\pzmod\evidence\v06\rollback-test
+INPUT: E:\pzmod\evidence\v06\rollback-test
+OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+STDERR: 
+EXIT: 0
+HASH 42/media/lua/client/NL/Client.lua BASELINE aa521b93ad2fc937032e419c330d92feaacca142ec05f202d970bec9aa47e415 MODIFIED aa521b93ad2fc937032e419c330d92feaacca142ec05f202d970bec9aa47e415
+HASH 42/media/lua/client/NL/Journal.lua BASELINE 880f75fa0765efb0fb4b075efcbaf7637aeac4138355689190c7178b8fdd0aa5 MODIFIED b8b8da9ca9eeb88cc50dd6bee77d005135f961373925331f68152daefb11999e
+HASH 42/media/lua/client/NL/Relationships.lua BASELINE e39d6b0bd5d768f20b066ae4918ec37b7a531714e4345cb110ccf825b27629e4 MODIFIED e39d6b0bd5d768f20b066ae4918ec37b7a531714e4345cb110ccf825b27629e4
+HASH 42/media/lua/client/NL/SocialClient.lua BASELINE cd5b892fb4954722838d2db60a3d431fd82dbd0bf7065bf11655aa4a3a0ea456 MODIFIED cd5b892fb4954722838d2db60a3d431fd82dbd0bf7065bf11655aa4a3a0ea456
+HASH 42/media/lua/client/NL/Wardrobe.lua BASELINE c3d4da2978622a73f54f98fbc1912170d9fc4c8df8c0da4770ab0133d062f510 MODIFIED c3d4da2978622a73f54f98fbc1912170d9fc4c8df8c0da4770ab0133d062f510
+HASH 42/media/lua/client/NL/WardrobePanel.lua BASELINE 0248c786e32117f0460eebedd91fc9c35be6d9a977601f9346e00043f1c81d6d MODIFIED 0248c786e32117f0460eebedd91fc9c35be6d9a977601f9346e00043f1c81d6d
+HASH 42/media/lua/client/NeighborhoodNeeds.lua BASELINE 30e2c0ca073fcbf082ad371d9bc91ef14feb40975c8d6fa0bcf523003492f255 MODIFIED 30e2c0ca073fcbf082ad371d9bc91ef14feb40975c8d6fa0bcf523003492f255
+HASH 42/media/lua/server/NL/Authority.lua BASELINE b41c1aa1f673b634a4080f75adfbf73446a41d31ecb8066f90929f8d42bbc612 MODIFIED b41c1aa1f673b634a4080f75adfbf73446a41d31ecb8066f90929f8d42bbc612
+HASH 42/media/lua/server/NL/SocialAuthority.lua BASELINE 5b07639547ae70abf1d07b791c8671bb152ee9d29bb672816d3b306de42292a1 MODIFIED 5b07639547ae70abf1d07b791c8671bb152ee9d29bb672816d3b306de42292a1
+HASH 42/media/lua/shared/NL/Aspirations.lua BASELINE ABSENT MODIFIED 69e0173d6a44aabc22dea26d317cf71625c53be6b117ca3a49a97699161cfdc8
+HASH 42/media/lua/shared/NL/Definitions.lua BASELINE ff34ca4838d8ce9f373ac673946ea54bf8c6348d56bb5b1ebb8cdcea64d22277 MODIFIED ff34ca4838d8ce9f373ac673946ea54bf8c6348d56bb5b1ebb8cdcea64d22277
+HASH 42/media/lua/shared/NL/Domain.lua BASELINE ce52dd8211674133c2f4b1fc94ead008860ae5ba423372ff6353da5e131e8e1b MODIFIED 424ebfde542def44f722d946e5c5f6508bed9a1ef093cec81168fa671e789f1c
+HASH 42/media/lua/shared/NL/Social.lua BASELINE 5cdb93c53741dd33de4cb891d6ada0a022280fab254f962fe603859ec5385c47 MODIFIED 5cdb93c53741dd33de4cb891d6ada0a022280fab254f962fe603859ec5385c47
+HASH 42/mod.info BASELINE a2b1cc900ec81894f07785a8a165e04443de8bcd90c89af0b44a395bf408acc1 MODIFIED a2b1cc900ec81894f07785a8a165e04443de8bcd90c89af0b44a395bf408acc1
+Restored behavior: baseline HUD, careers, social and wardrobe regressions pass; exact original hashes restored on separate copy. Working source retains new panel.
+ARTIFACT: E:\pzmod\evidence\v06\MODIFIED_FILE.zip
+ARTIFACT: E:\pzmod\evidence\v06\DIFF_FILE.patch
+ARTIFACT: E:\pzmod\evidence\v06\VERIFICATION.txt
+ARTIFACT: E:\pzmod\evidence\v06\ROLLBACK.sh

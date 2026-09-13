@@ -1,0 +1,10 @@
+--- default.original.txt
++++ C:\Users\clare\Zomboid\mods\default.txt
+@@ -2,6 +2,7 @@
+ 
+ mods
+ {
++    mod = NeighborhoodLifeHUD,
+     mod = LifeSim,
+ }
+ 

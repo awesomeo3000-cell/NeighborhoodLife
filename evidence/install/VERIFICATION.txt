@@ -1,0 +1,26 @@
+Changed field: default.txt mods adds NeighborhoodLifeHUD; existing LifeSim preserved.
+Installed: C:\Users\clare\Zomboid\mods\NeighborhoodLife
+Original SHA256: 272bf5537e69588d39746140d9242e7059a5dd277f1bf3f91a743ba61e8ff1e9
+Modified SHA256: 678c42f4a9b451bed1326f75fe221c1773185a00e2a2e09e82681bd6ba72a8c9
+BASELINE
+COMMAND: python E:\pzmod\evidence\install\check.py E:\pzmod\evidence\install\default.original.txt disabled
+INPUT: disabled
+OUTPUT: PASS: HUD disabled; LifeSim preserved
+EXIT: 0
+MODIFIED
+COMMAND: python E:\pzmod\evidence\install\check.py C:\Users\clare\Zomboid\mods\default.txt enabled
+INPUT: enabled
+OUTPUT: PASS: HUD enabled; LifeSim preserved
+EXIT: 0
+ROLLBACK
+COMMAND: "C:/Program Files/Git/bin/bash.exe" E:\pzmod\evidence\install\ROLLBACK.sh E:\pzmod\evidence\install\rollback-test.txt
+INPUT: E:\pzmod\evidence\install\rollback-test.txt
+OUTPUT: PASS: original mod list restored
+EXIT: 0
+ROLLBACK TEST
+COMMAND: python E:\pzmod\evidence\install\check.py E:\pzmod\evidence\install\rollback-test.txt disabled
+INPUT: disabled
+OUTPUT: PASS: HUD disabled; LifeSim preserved
+EXIT: 0
+PASS: all installed files match source SHA256; original settings restored on test copy; live settings remain enabled.
+Game not launched; visual and multiplayer validation pending.

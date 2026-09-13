@@ -1,0 +1,76 @@
+--- baseline/42/media/lua/client/NL/Journal.lua
++++ modified/42/media/lua/client/NL/Journal.lua
+@@ -75,6 +75,7 @@
+         self:drawText(c.amount .. " x " .. c.item .. (done and " / DONE" or ""),16,y,0.18,0.24,0.32,1,UIFont.Small)
+         self.deliverButtons[i]:setEnable(not done)
+     end
++    self:drawText(NLAspirations.label(p),16,284,0.12,0.38,0.63,1,UIFont.Small)
+     self:drawText("Delivery consumes items in your main inventory.",16,303,0.46,0.32,0.12,1,UIFont.Small)
+     local nextRank = NLDefinitions.promotions[progress.rank+1]
+     local text = nextRank and ("Next: skill "..nextRank.skill..", "..nextRank.xp.." XP, "..nextRank.variety.." delivery types") or "Top career rank reached"
+--- baseline/42/media/lua/shared/NL/Aspirations.lua
++++ modified/42/media/lua/shared/NL/Aspirations.lua
+@@ -0,0 +1,39 @@
++NLAspirations={milestones={
++    {name="Helping Hands",deliveries=3,ranks=0,reward=15},
++    {name="Community Regular",deliveries=9,ranks=1,reward=30},
++    {name="Neighborhood Pillar",deliveries=24,ranks=3,reward=60}
++}}
++function NLAspirations.progress(profile)
++    local deliveries,ranks=0,0
++    for _,career in pairs(profile.careers) do
++        deliveries=deliveries+career.delivered
++        ranks=ranks+career.rank-1
++    end
++    return deliveries,ranks
++end
++function NLAspirations.advance(profile)
++    profile.aspiration=profile.aspiration or {stage=1}
++    local state=profile.aspiration
++    local deliveries,ranks=NLAspirations.progress(profile)
++    local reward=0
++    while NLAspirations.milestones[state.stage] do
++        local milestone=NLAspirations.milestones[state.stage]
++        if deliveries<milestone.deliveries or ranks<milestone.ranks then break end
++        reward=reward+milestone.reward
++        state.stage=state.stage+1
++    end
++    if reward>0 then
++        profile.credits=profile.credits+reward
++        profile.revision=profile.revision+1
++    end
++    return reward
++end
++function NLAspirations.label(profile)
++    local stage=profile.aspiration and profile.aspiration.stage or 1
++    local m=NLAspirations.milestones[stage]
++    if not m then return "Aspiration complete: Neighborhood Pillar" end
++    local deliveries,ranks=NLAspirations.progress(profile)
++    return m.name..": "..math.min(deliveries,m.deliveries).."/"..m.deliveries
++        .." deliveries, "..math.min(ranks,m.ranks).."/"..m.ranks.." promotions (+"..m.reward.." credits)"
++end
++return NLAspirations
+--- baseline/42/media/lua/shared/NL/Domain.lua
++++ modified/42/media/lua/shared/NL/Domain.lua
+@@ -1,4 +1,5 @@
+ require "NL/Definitions"
++require "NL/Aspirations"
+ NLDomain = {}
+ 
+ function NLDomain.newWorld()
+@@ -60,6 +61,7 @@
+     progress.variety[contract.slot] = true
+     profile.credits = profile.credits + contract.credits
+     profile.revision = profile.revision + 1
++    NLAspirations.advance(profile)
+     return true, "Delivery complete: +20 career XP, +10 community credits"
+ end
+ 
+@@ -75,6 +77,7 @@
+     end
+     progress.rank = progress.rank + 1
+     profile.revision = profile.revision + 1
++    NLAspirations.advance(profile)
+     return true, "Promoted to " .. NLDefinitions.careers[profile.career].ranks[progress.rank]
+ end
+ 

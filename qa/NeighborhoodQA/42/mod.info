@@ -1,0 +1,4 @@
+name=Neighborhood QA - isolated test profile only
+id=NeighborhoodQA
+require=NeighborhoodLifeHUD
+description=Development-only UI fixture and real-engine smoke checks. Do not enable in normal saves.

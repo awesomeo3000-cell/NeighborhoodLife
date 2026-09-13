@@ -1,0 +1,36 @@
+--- baseline/42/media/lua/client/NL/Wardrobe.lua
++++ modified/42/media/lua/client/NL/Wardrobe.lua
+@@ -6,7 +6,8 @@
+     local outfits = player:getModData().NeighborhoodOutfits or {}
+     local items, saved = player:getWornItems(), {}
+     for i=0,items:size()-1 do
+-        saved[#saved+1] = items:get(i):getItem():getFullType()
++        local item=items:get(i):getItem()
++        saved[#saved+1] = {fullType=item:getFullType(),itemId=item:getID()}
+     end
+     outfits[slot] = saved
+     player:getModData().NeighborhoodOutfits = outfits
+@@ -19,12 +20,20 @@
+     if not saved then player:Say("Save this outfit slot first."); return end
+     local missing,used = 0,{}
+     local inventory = player:getInventory():getItems()
+-    for _,fullType in ipairs(saved) do
+-        local match = nil
++    for _,entry in ipairs(saved) do
++        -- Old presets stored strings. New presets keep the garment identity,
++        -- preserving the chosen color/pattern when several pieces share a type.
++        local fullType=type(entry)=="table" and entry.fullType or entry
++        local itemId=type(entry)=="table" and entry.itemId or nil
++        local match,fallback = nil,nil
+         for i=0,inventory:size()-1 do
+             local item=inventory:get(i)
+-            if not used[item] and item:getFullType()==fullType then match=item; break end
++            if not used[item] and item:getFullType()==fullType then
++                fallback=fallback or item
++                if itemId~=nil and item:getID()==itemId then match=item; break end
++            end
+         end
++        match=match or fallback
+         if match then
+             used[match]=true
+             ISTimedActionQueue.add(ISWearClothing:new(player,match))

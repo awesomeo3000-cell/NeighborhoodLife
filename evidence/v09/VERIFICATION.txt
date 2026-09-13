@@ -1,0 +1,27 @@
+Changed: QA probe calls PathFindBehavior2.pathToLocation directly, sets bPathfind, and logs the target.
+BASELINE INPUT: prior isolated live-game NPC probe
+BASELINE RESULT: distance=0, alpha=1; evidence/v09/baseline-engine.log
+BASELINE EXIT: game process was live, then stopped for controlled restart
+MODIFIED COMMAND: powershell -File E:/pzmod/tools/launch-qa.ps1
+INPUT: E:/pzmod/test-profile
+OUTPUT: QA process: 5520; isolated profile: E:\pzmod\test-profile
+EXIT: launcher 0; game remains running
+MODIFIED ENGINE RESULT: TARGET: 10778.5,10266.5,0; PATH RESULT: Working at tick 300; Failed at tick 600; movement distance=0. Navigation NOT verified. The installed method inspection also confirms the original pathToLocation delegates to the behavior.
+REGRESSION COMMAND: python E:/pzmod/tools/verify.py modified
+INPUT: modified
+OUTPUT: PASS: HUD, syntax, 60 gameplay/social assertions, wardrobe; Lua 5.1 and game Kahlua
+EXIT: 0
+ROLLBACK COMMAND: "C:/Program Files/Git/bin/bash.exe" E:/pzmod/evidence/v09/ROLLBACK.sh E:/pzmod/evidence/v09/rollback-test.lua
+INPUT: separate QA Lua copy
+OUTPUT: PASS: original QA probe restored
+EXIT: 0
+RESTORED COMMAND: "C:/Program Files (x86)/Lua/5.1/luac.exe" -p E:/pzmod/evidence/v09/rollback-test.lua
+OUTPUT: (empty)
+EXIT: 0
+Restored status: exact original QA source hash; original behavior previously observed stationary.
+BASELINE SHA256: 656949eef1d27235de83e636d2e1c77a8fb7a5ba4cc5e050bfd9d1e5de6d7ea9
+MODIFIED SHA256: 6d438db8677eb8cb7166f08efb4c5cfe896ce43378aa801497599d9a299fc447
+ARTIFACT: E:\pzmod\evidence\v09\MODIFIED_FILE.zip
+ARTIFACT: E:\pzmod\evidence\v09\DIFF_FILE.patch
+ARTIFACT: E:\pzmod\evidence\v09\VERIFICATION.txt
+ARTIFACT: E:\pzmod\evidence\v09\ROLLBACK.sh

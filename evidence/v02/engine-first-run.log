@@ -1,0 +1,550 @@
+LOG  : General      f:0> 12-09-2026 20:18:52
+LOG  : General      f:0> SLF4J(I): Attempting to load provider "zombie.core.logger.Slf4jBridge" specified via "slf4j.provider" system property
+LOG  : General      f:0> ===== System specs =====
+LOG  : General      f:0> CPU: AMD Ryzen 7 7800X3D 8-Core Processor           , vendor: AuthenticAMD, cores: 8, threads: 16
+LOG  : General      f:0> RAM: 31905 Mb
+LOG  : General      f:0> Base board: MAG B650 TOMAHAWK WIFI (MS-7D75), vendor: Micro-Star International Co., Ltd.
+LOG  : General      f:0> GPU: AMD Radeon(TM) Graphics, vendor: Advanced Micro Devices, Inc., video memory: 512 Mb, driver: 31.0.24002.92
+LOG  : General      f:0> GPU: NVIDIA GeForce RTX 4070, vendor: NVIDIA, video memory: 12282 Mb, driver: 32.0.15.9186
+LOG  : General      f:0> Disk info: 1863.00 Gb, free space: 240.04 Gb, usable space: 240.04 Gb
+LOG  : General      f:0> OS: Windows 11, version: 10.0, arch: amd64, build: 26200
+LOG  : General      f:0> JVM (free: 479 Mb, max: 2048 Mb, total available: 502 Mb)
+LOG  : General      f:0> ========================
+LOG  : General      f:0> java.specification.version=25
+LOG  : General      f:0> sun.cpu.isalist=amd64
+LOG  : General      f:0> sun.jnu.encoding=Cp1252
+LOG  : General      f:0> java.vm.vendor=Azul Systems, Inc.
+LOG  : General      f:0> sun.arch.data.model=64
+LOG  : General      f:0> java.vendor.url=http://www.azul.com/
+LOG  : General      f:0> zomboid.steam=0
+LOG  : General      f:0> java.vm.specification.version=25
+LOG  : General      f:0> os.name=Windows 11
+LOG  : General      f:0> sun.java.launcher=SUN_STANDARD
+LOG  : General      f:0> sun.java.command=zombie.gameStates.MainScreenState -ca...
+LOG  : General      f:0> slf4j.provider=zombie.core.logger.Slf4jBridge
+LOG  : General      f:0> jdk.debug=release
+LOG  : General      f:0> sun.cpu.endian=little
+LOG  : General      f:0> java.specification.vendor=Oracle Corporation
+LOG  : General      f:0> java.version.date=2025-10-21
+LOG  : General      f:0> java.home=E:\SteamLibrary\steamapps\common\Proj...
+LOG  : General      f:0> file.separator=\
+LOG  : General      f:0> java.vm.compressedOopsMode=32-bit
+LOG  : General      f:0> line.separator=
+
+LOG  : General      f:0> java.vm.specification.vendor=Oracle Corporation
+LOG  : General      f:0> java.specification.name=Java Platform API Specification
+LOG  : General      f:0> java.awt.headless=true
+LOG  : General      f:0> sun.management.compiler=HotSpot 64-Bit Tiered Compilers
+LOG  : General      f:0> java.runtime.version=25.0.1+8-LTS
+LOG  : General      f:0> stdout.encoding=Cp1252
+LOG  : General      f:0> os.version=10.0
+LOG  : General      f:0> jna.nosys=false
+LOG  : General      f:0> java.runtime.name=OpenJDK Runtime Environment
+LOG  : General      f:0> file.encoding=UTF-8
+LOG  : General      f:0> java.vm.name=OpenJDK 64-Bit Server VM
+LOG  : General      f:0> java.vendor.version=Zulu25.30+17-CA
+LOG  : General      f:0> jna.loaded=true
+LOG  : General      f:0> java.vendor.url.bug=http://www.azul.com/support/
+LOG  : General      f:0> java.version=25.0.1
+LOG  : General      f:0> os.arch=amd64
+LOG  : General      f:0> java.vm.specification.name=Java Virtual Machine Specification
+LOG  : General      f:0> sun.os.patch.level=
+LOG  : General      f:0> native.encoding=Cp1252
+LOG  : General      f:0> java.vm.info=mixed mode, sharing
+LOG  : General      f:0> stderr.encoding=Cp1252
+LOG  : General      f:0> java.vendor=Azul Systems, Inc.
+LOG  : General      f:0> java.vm.version=25.0.1+8-LTS
+LOG  : General      f:0> stdin.encoding=Cp1252
+LOG  : General      f:0> sun.io.unicode.encoding=UnicodeLittle
+LOG  : General      f:0> java.class.version=69.0
+LOG  : General      f:0> -----
+LOG  : General      f:0> version=42.20.4 b0bbce05d5 demo=false
+LOG  : General      f:0> revision=b0bbce05d5 pzbullet=1.0.0.28
+LOG  : General      f:0> Logs configuration:
+LOG  : General      f:0>      General: General
+LOG  : General      f:0>      Network: General
+LOG  : General      f:0>          Lua: General
+LOG  : General      f:0>          Mod: General
+LOG  : General      f:0>  Multiplayer: General
+LOG  : General      f:0>      Default: Off
+LOG  : General      f:0> LightingFPS set to 15
+LOG  : General      f:0> Display mode changed to 1280x720 freq=0 fullScreen=false
+LOG  : General      f:0> GraphicsCard: NVIDIA Corporation NVIDIA GeForce RTX 4070/PCIe/SSE2
+LOG  : General      f:0> OpenGL version: 4.6.0 NVIDIA 591.86
+LOG  : General      f:0> Desktop resolution 2560x1440
+LOG  : General      f:0> Initial resolution 1280x720 fullScreen=false
+LOG  : General      f:0> OpenGL 1.5 buffer objects supported
+LOG  : General      f:0> VSync: OFF
+LOG  : General      f:0> Loading networking libraries...
+LOG  : General      f:0> Loading RakNet64...
+LOG  : General      f:0> Loading ZNetNoSteam64...
+LOG  : General      f:0> SteamUtils started without Steam
+LOG  : General      f:0> Loading Mods
+LOG  : Mod          f:0> loading NeighborhoodLifeHUD
+LOG  : Mod          f:0> loading NeighborhoodQA
+LOG  : General      f:0> Loading Translations
+LOG  : General      f:0> texturepack: loading UI
+LOG  : General      f:0> Loading UI texture pack
+LOG  : General      f:0> texturepack: loading UI2
+LOG  : General      f:0> Loading UI2 texture pack
+LOG  : General      f:0> texturepack: loading IconsMoveables
+LOG  : General      f:0> Loading IconsMoveables texture pack
+LOG  : General      f:0> texturepack: loading RadioIcons
+LOG  : General      f:0> Loading RadioIcons texture pack
+LOG  : General      f:0> texturepack: loading ApComUI
+LOG  : General      f:0> Loading ApComUI texture pack
+LOG  : General      f:0> texturepack: loading Mechanics
+LOG  : General      f:0> Loading Mechanics texture pack
+LOG  : General      f:0> texturepack: loading WeatherFx
+LOG  : General      f:0> Loading WeatherFx texture pack
+LOG  : General      f:0> Loading Scripts
+ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+WARN : General      f:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil
+WARN : General      f:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone
+WARN : General      f:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil
+WARN : General      f:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone
+WARN : General      f:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil
+WARN : General      f:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone
+WARN : General      f:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil
+WARN : General      f:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone
+WARN : General      f:0 at TaggedObjectManager.createTagBits   > manager-> new tag discovered that was not preprocessed, tag: keyduplicator
+WARN : General      f:0 at TaggedObjectManager.createTagBits   > manager-> new tag discovered that was not preprocessed, tag: choppingblock
+LOG  : General      f:0> Loading Clothing
+LOG  : General      f:0> 
+LOG  : General      f:0> Loading Lua
+WARN : Lua          f:0 at Lua(Vanilla).corpseStorageCheck     > require("ISUI/ISInventoryPaneContextMenu") failed
+WARN : Lua          f:0 at Lua(Vanilla).corpseStorageCheck     > require("ISUI/ISVehicleMenu") failed
+WARN : Lua          f:0 at Lua(Vanilla).corpseStorageCheck     > require("ISUI/ISContextMenu") failed
+WARN : Lua          f:0 at Lua(Vanilla).ISCampingMenu          > require("Camping/CCampfireSystem") failed
+WARN : Lua          f:0 at Lua(Vanilla).ISInventoryTransferUtil> require("TimedActions/ISInventoryTransferAction") failed
+WARN : Lua          f:0 at Lua(Vanilla).ISInventoryTransferUtil> require("ISUI/PlayerData/ISPlayerData") failed
+WARN : Lua          f:0 at Lua(Vanilla).ISAnimalContextMenu    > require("BuildingObjects/ISAnimalPickMateCursor") failed
+WARN : Lua          f:0 at Lua(Vanilla).TakeSameType           > require("ISUI/InventoryWindow/ISLootWindowControlHandler") failed
+WARN : Lua          f:0 at Lua(Vanilla).FloorTakeSameType      > require("ISUI/InventoryWindow/ISLootWindowControlHandler") failed
+WARN : Lua          f:0 at Lua(Vanilla).testUI                 > require("pzapi/ui/ui") failed
+LOG  : Lua          f:0> OnLoadSoundbanks
+LOG  : General      f:0> texturepack: loading Tiles2x
+LOG  : General      f:0> Loading Tiles2x texture pack
+LOG  : General      f:0> texturepack: loading Overlays2x
+LOG  : General      f:0> Loading Overlays2x texture pack
+LOG  : General      f:0> texturepack: loading JumboTrees2x
+LOG  : General      f:0> Loading JumboTrees2x texture pack
+LOG  : General      f:0> texturepack: loading JumboTreesBigs2x
+LOG  : General      f:0> Loading JumboTreesBigs2x texture pack
+LOG  : General      f:0> texturepack: loading Tiles2x.floor
+LOG  : General      f:0> Loading Tiles2x.floor texture pack
+LOG  : General      f:0> texturepack: loading B42ChunkCaching2x
+LOG  : General      f:0> Loading B42ChunkCaching2x texture pack
+LOG  : General      f:0> texturepack: loading B42ChunkCaching2x.floor
+LOG  : General      f:0> Loading B42ChunkCaching2x.floor texture pack
+LOG  : General      f:0> texturepack: loading Clock2x
+LOG  : General      f:0> Loading Clock2x texture pack
+LOG  : General      f:0> Loading models and animations
+LOG  : General      f:0> Game booting
+LOG  : General      f:0> STATE: exit zombie.gameStates.TISLogoState
+LOG  : General      f:0> STATE: exit zombie.gameStates.TermsOfServiceState
+LOG  : General      f:0> binkId: 1
+WARN : Lua          f:0 at Lua(Vanilla).namedColorToTable      > env.lua-> namedColorToTable color not found: ProgressYellow
+LOG  : Lua          f:0> NLQA STAT HUNGER 0..1
+LOG  : Lua          f:0> NLQA STAT THIRST 0..1
+LOG  : Lua          f:0> NLQA STAT FATIGUE 0..1
+LOG  : Lua          f:0> NLQA STAT BOREDOM 0..100
+LOG  : Lua          f:0> NLQA STAT STRESS 0..1
+LOG  : Lua          f:0> NLQA STAT UNHAPPINESS 0..100
+LOG  : Lua          f:0> NLQA PASS: actual item/perk/stat APIs and real ISPanel journal construction
+LOG  : General      f:0> binkId: 2
+LOG  : General      f:0> binkId: 3
+LOG  : General      f:0> STATE: exit zombie.gameStates.MainScreenState
+LOG  : General      f:0> LOADED UP A TOTAL OF 5998 TEXTURES
+LOG  : General      f:0> STATE: exit zombie.gameStates.LoadingQueueState
+LOG  : Lua          f:0> Initializing Randomized World Tabletop Clutter Tables
+WARN : Lua          f:0 at Lua(Vanilla).Features               > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua
+WARN : Lua          f:0 at Lua(Vanilla).Biomes                 > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua
+WARN : Lua          f:0 at Lua(Vanilla).Selection              > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua
+WARN : Lua          f:0 at Lua(Vanilla).Veins                  > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua
+WARN : Lua          f:0 at Lua(Vanilla).Roads                  > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua
+WARN : Lua          f:0 at Lua(Vanilla).WorldGen               > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/attachments/Priorities.lua
+ERROR: General      f:0 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first world object face for recipe icon.
+LOG  : General      f:0> SafeMode is off
+LOG  : General      f:0> Loading worldgen params
+LOG  : General      f:0> IsoMetaGrid.Create: begin scanning directories
+LOG  : General      f:0> Looking in these map folders:
+LOG  : General      f:0> <End of map-folders list>
+LOG  : General      f:0> IsoMetaGrid.Create: X: [ -250 250 ], Y: [ -250 250 ]
+LOG  : General      f:0> World seed: vaeZfszPtLptRCtp 1004588780
+LOG  : General      f:0> IsoMetaGrid.Create: finished scanning directories in 0.033 seconds
+LOG  : General      f:0> IsoMetaGrid.Create: begin loading
+LOG  : General      f:0> VehiclesDB2.init() start
+LOG  : General      f:0> VehiclesDB2.init() end
+LOG  : General      f:0> triggerEvent OnInitWorld
+LOG  : General      f:0> SandboxOptions.load() start
+LOG  : General      f:0> SandboxOptions.load() end
+LOG  : General      f:0> ItemPickerJava.Parse() start
+LOG  : General      f:0> ItemPickerJava.Parse() end
+LOG  : General      f:0> LoadTileDefinitions start
+LOG  : General      f:0> LoadTileDefinitions end
+LOG  : General      f:0> triggerEvent OnLoadedTileDefinitions
+LOG  : General      f:0> loadAnimalDefinitions start
+LOG  : General      f:0> loadAnimalDefinitions end
+LOG  : General      f:0> GameTime.init() and load() start
+LOG  : General      f:0> GameTime.init() and load() end
+LOG  : General      f:0> ZomboidRadio.Init() start
+LOG  : Lua          f:0> scriptmanager = zombie.radio.scripting.RadioScriptManager@2cb88bb7, isNewGame = true
+LOG  : Lua          f:0> name = Automated Emergency Broadcast System, freq = 91800, cat = Emergency, uuid = EMRG-711984
+LOG  : General      f:0> ZomboidRadio.Init() end
+LOG  : General      f:0> GlobalModData.init() start
+LOG  : General      f:0> GlobalModData.init() end
+LOG  : General      f:0> InstanceTracker.load() start
+LOG  : General      f:0> InstanceTracker.load() end
+LOG  : General      f:0> ErosionGlobals.Boot() start
+LOG  : General      f:0> ErosionGlobals.Boot() end
+LOG  : General      f:0> WorldDictionary.init() start
+LOG  : General      f:0> WorldDictionary: Checking dictionary...
+LOG  : General      f:0> WorldDictionary.init() end
+LOG  : General      f:0> GameEntityManager.Init() start
+LOG  : General      f:0> GameEntityManager.Init() end
+LOG  : General      f:0> PersistentOutfits.init() start
+LOG  : General      f:0> PersistentOutfits.init() end
+LOG  : General      f:0> IsoMetaGrid.Create: finished loading in 2.201 seconds
+ERROR: Lua          f:0 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0
+WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/West Point, KY/objects.lua
+WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Valley Station, KY/objects.lua
+WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Rosewood, KY/objects.lua
+WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Riverside, KY/objects.lua
+WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/March Ridge, KY/objects.lua
+WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Irvington, KY/objects.lua
+WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Fallas Lake, KY/objects.lua
+WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Ekron, KY/objects.lua
+WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Echo Creek, KY/objects.lua
+WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Brandenburg, KY/objects.lua
+ERROR: General      f:0 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0
+LOG  : General      f:0> Max #ZONES on one chunk is 27
+LOG  : General      f:0> triggerEvent OnLoadedMapZones
+LOG  : General      f:0> ItemConfigurator.Preprocess() start
+LOG  : General      f:0> ItemConfigurator.Preprocess() end
+LOG  : General      f:0> MapCollisionData.init() start
+LOG  : General      f:0> MapCollisionData.init() end
+LOG  : General      f:0> AnimalPopulationManager.init() start
+LOG  : General      f:0> AnimalPopulationManager.init() end
+LOG  : General      f:0> ZombiePopulationManager.init() start
+LOG  : General      f:0> ZombiePopulationManager.init() end
+LOG  : General      f:0> Pathfind init() start
+LOG  : General      f:0> Pathfind init() end
+LOG  : General      f:0> WorldStreamer.create() start
+LOG  : General      f:0> WorldStreamer.create() end
+LOG  : General      f:0> CellLoader.LoadCellBinaryChunk start
+LOG  : General      f:0> CellLoader.LoadCellBinaryChunk start
+LOG  : General      f:0> MapItem.LoadWorldMap() start
+LOG  : General      f:0> MapItem.LoadWorldMap() start
+LOG  : General      f:0> WorldStreamer.isBusy() loop start
+LOG  : General      f:0> [OreVein{startPoint=Vector2 (X: -2235.000000, Y: 1351.000000) (L: 2611.594482, D:2.597890), amountArms=4, orientationArms=[89.84553, 176.47491, 260.1444, 353.15097], endPoints=[Vector2 (X: -2125.951660, Y: 1350.706055) (L: 2518.745117, D:2.575591), Vector2 (X: -2228.562012, Y: 1455.509033) (L: 2661.765381, D:2.563030), Vector2 (X: -2372.162354, Y: 1374.829102) (L: 2741.771240, D:2.616332), Vector2 (X: -2257.773682, Y: 1161.394043) (L: 2538.971924, D:2.666493)], distanceArms=[109.04875, 104.7071, 139.21698, 190.96872], singleFeatures=[TileGroup[sx=1, sy=1, tiles=[crafting_ore_0]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_1]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_2]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_3]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_4]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_5]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_6]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_7]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_8]]]}]
+LOG  : General      f:0> [OreVein{startPoint=Vector2 (X: -2054.000000, Y: 1643.000000) (L: 2630.278564, D:2.466911), amountArms=6, orientationArms=[296.0717, 356.6289, 410.7578, 475.5866, 533.6111, 592.1344], endPoints=[Vector2 (X: -2150.884766, Y: 1595.596069) (L: 2678.102295, D:2.503339), Vector2 (X: -2069.881836, Y: 1373.382690) (L: 2484.067383, D:2.555780), Vector2 (X: -1922.302124, Y: 1535.428223) (L: 2460.240723, D:2.467618), Vector2 (X: -1915.858398, Y: 1709.146729) (L: 2567.429932, D:2.413157), Vector2 (X: -2019.471313, Y: 1951.368408) (L: 2808.220703, D:2.373344), Vector2 (X: -2299.760254, Y: 1834.082275) (L: 2941.556641, D:2.468372)], distanceArms=[107.86004, 270.08466, 170.04706, 153.1617, 310.29556, 311.30466], singleFeatures=[TileGroup[sx=1, sy=1, tiles=[crafting_ore_16]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_17]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_18]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_19]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_20]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_21]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_22]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_23]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_24]]]}]
+LOG  : General      f:0> [OreVein{startPoint=Vector2 (X: -2020.000000, Y: -974.000000) (L: 2242.560059, D:-2.692304), amountArms=6, orientationArms=[33.597397, 95.78263, 155.82364, 213.60619, 275.1813, 326.88977], endPoints=[Vector2 (X: -1795.444946, Y: -1312.015869) (L: 2223.737305, D:-2.510528), Vector2 (X: -1544.376465, Y: -925.833557) (L: 1800.629517, D:-2.601551), Vector2 (X: -1870.081055, Y: -640.046936) (L: 1976.578613, D:-2.811833), Vector2 (X: -2138.451172, Y: -795.758484) (L: 2281.710938, D:-2.785350), Vector2 (X: -2167.879639, Y: -987.409485) (L: 2382.158691, D:-2.714197), Vector2 (X: -2177.066895, Y: -1214.846191) (L: 2493.084717, D:-2.632613)], distanceArms=[405.8074, 478.05627, 366.06055, 214.01102, 148.48648, 287.5359], singleFeatures=[TileGroup[sx=1, sy=1, tiles=[crafting_ore_16]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_17]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_18]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_19]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_20]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_21]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_22]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_23]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_24]]]}]
+LOG  : General      f:0> [OreVein{startPoint=Vector2 (X: -1556.000000, Y: -1332.000000) (L: 2048.257813, D:-2.433602), amountArms=6, orientationArms=[124.96234, 178.06107, 242.49048, 306.81436, 363.24982, 421.6281], endPoints=[Vector2 (X: -1422.196289, Y: -1238.440552) (L: 1885.835938, D:-2.425150), Vector2 (X: -1551.083618, Y: -1186.776367) (L: 1953.022949, D:-2.488480), Vector2 (X: -1781.208984, Y: -1214.716064) (L: 2155.977783, D:-2.543076), Vector2 (X: -1815.605713, Y: -1526.311401) (L: 2371.929688, D:-2.442545), Vector2 (X: -1531.139038, Y: -1769.840576) (L: 2340.239746, D:-2.284008), Vector2 (X: -1290.561035, Y: -1475.354004) (L: 1960.157471, D:-2.289483)], distanceArms=[163.26913, 145.30682, 253.91849, 324.27148, 438.54587, 301.67572], singleFeatures=[TileGroup[sx=1, sy=1, tiles=[crafting_ore_0]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_1]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_2]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_3]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_4]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_5]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_6]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_7]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_8]]]}]
+LOG  : General      f:0> [OreVein{startPoint=Vector2 (X: -1310.000000, Y: 1116.000000) (L: 1720.917236, D:2.435992), amountArms=6, orientationArms=[101.8057, 160.55626, 215.28667, 281.14505, 337.02026, 396.22217], endPoints=[Vector2 (X: -821.419373, Y: 1218.120605) (L: 1469.199585, D:2.164088), Vector2 (X: -1158.135986, Y: 1546.192627) (L: 1931.836060, D:2.213673), Vector2 (X: -1401.555664, Y: 1245.372559) (L: 1874.916260, D:2.415132), Vector2 (X: -1597.218750, Y: 1059.415405) (L: 1916.629517, D:2.555933), Vector2 (X: -1493.366455, Y: 683.590454) (L: 1642.388306, D:2.712312), Vector2 (X: -1036.903198, Y: 743.163330) (L: 1275.719360, D:2.519737)], distanceArms=[499.1389, 456.21082, 158.49197, 292.7395, 469.68216, 462.15692], singleFeatures=[TileGroup[sx=1, sy=1, tiles=[crafting_ore_0]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_1]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_2]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_3]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_4]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_5]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_6]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_7]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_8]]]}]
+LOG  : General      f:0> [OreVein{startPoint=Vector2 (X: -1016.000000, Y: -398.000000) (L: 1091.173706, D:-2.768234), amountArms=3, orientationArms=[315.9729, 432.62112, 551.0532], endPoints=[Vector2 (X: -1349.991333, Y: -743.530884) (L: 1541.205566, D:-2.638161), Vector2 (X: -614.767090, Y: -523.576355) (L: 807.508972, D:-2.436132), Vector2 (X: -1075.671997, Y: -92.529663) (L: 1079.644409, D:-3.055784)], distanceArms=[480.56403, 420.42514, 311.24408], singleFeatures=[TileGroup[sx=1, sy=1, tiles=[crafting_ore_16]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_17]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_18]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_19]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_20]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_21]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_22]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_23]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_24]]]}]
+LOG  : General      f:0> [OreVein{startPoint=Vector2 (X: 1743.000000, Y: -850.000000) (L: 1939.213501, D:-0.453731), amountArms=5, orientationArms=[361.49005, 429.65356, 500.8902, 569.91833, 641.9303], endPoints=[Vector2 (X: 1754.636230, Y: -1297.339600) (L: 2182.163574, D:-0.636668), Vector2 (X: 1990.410034, Y: -941.747803) (L: 2201.958496, D:-0.441932), Vector2 (X: 1920.795898, Y: -631.298706) (L: 2021.879028, D:-0.317543), Vector2 (X: 1659.649170, Y: -705.155640) (L: 1803.241455, D:-0.401771), Vector2 (X: 1604.415527, Y: -879.280884) (L: 1829.558472, D:-0.501336)], distanceArms=[447.49084, 263.8738, 281.8539, 167.11452, 141.64398], singleFeatures=[TileGroup[sx=1, sy=1, tiles=[crafting_ore_0]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_1]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_2]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_3]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_4]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_5]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_6]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_7]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_8]]]}]
+LOG  : General      f:0> [OreVein{startPoint=Vector2 (X: 1890.000000, Y: 1653.000000) (L: 2510.878174, D:0.718605), amountArms=4, orientationArms=[69.804504, 156.60971, 253.29225, 338.20102], endPoints=[Vector2 (X: 2206.698975, Y: 1536.505737) (L: 2688.934814, D:0.608233), Vector2 (X: 1988.906006, Y: 1881.664551) (L: 2737.957031, D:0.757698), Vector2 (X: 1779.280762, Y: 1686.233643) (L: 2451.371826, D:0.758555), Vector2 (X: 1792.906860, Y: 1410.237305) (L: 2281.070801, D:0.666495)], distanceArms=[337.44513, 249.1383, 115.599464, 261.45898], singleFeatures=[TileGroup[sx=1, sy=1, tiles=[crafting_ore_0]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_1]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_2]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_3]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_4]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_5]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_6]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_7]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_8]]]}]
+LOG  : General      f:0> [OreVein{startPoint=Vector2 (X: 2373.000000, Y: -1209.000000) (L: 2663.232910, D:-0.471204), amountArms=4, orientationArms=[89.84553, 176.47491, 260.1444, 353.15097], endPoints=[Vector2 (X: 2482.048340, Y: -1209.293945) (L: 2760.970215, D:-0.453368), Vector2 (X: 2379.437988, Y: -1104.490967) (L: 2623.285156, D:-0.434584), Vector2 (X: 2235.837646, Y: -1185.170898) (L: 2530.533447, D:-0.487420), Vector2 (X: 2350.226318, Y: -1398.605957) (L: 2734.896973, D:-0.536804)], distanceArms=[109.04875, 104.7071, 139.21698, 190.96872], singleFeatures=[TileGroup[sx=1, sy=1, tiles=[crafting_ore_0]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_1]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_2]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_3]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_4]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_5]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_6]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_7]], TileGroup[sx=1, sy=1, tiles=[crafting_ore_8]]]}]
+LOG  : General      f:0> WorldStreamer.isBusy() loop end
+LOG  : General      f:0> MetaTracker.load() start
+LOG  : General      f:0> MetaTracker.load() end
+LOG  : General      f:0> triggerEvent OnGameTimeLoaded
+LOG  : General      f:0> GlobalObjects.initSystems() start
+LOG  : General      f:0> GlobalObjects.initSystems() end
+LOG  : General      f:0> GameWindow.save() start
+LOG  : General      f:0> Saving worldgen params
+LOG  : General      f:0> Saving GlobalModData
+LOG  : General      f:0> GameWindow.save() end
+LOG  : General      f:0> bWaitForAssetLoadingToFinish2 start
+LOG  : General      f:0> bWaitForAssetLoadingToFinish2 end
+LOG  : General      f:0> FBORenderChunkManager.gameLoaded() start
+LOG  : General      f:0> FBORenderChunkManager.gameLoaded() end
+LOG  : General      f:0> Bullet.initPhysicsMeshes() start
+LOG  : General      f:0> Bullet.initPhysicsMeshes() end
+LOG  : General      f:0> game loading took 10 seconds
+LOG  : General      f:0> STATE: exit zombie.gameStates.GameLoadingState
+LOG  : Lua          f:0> 1 players found
+LOG  : Lua          f:0> player 0 is mouse
+LOG  : General      f:0> Game Mode: Apocalypse
+LOG  : General      f:0> Sandbox Options:
+LOG  : General      f:0> Zombies 4
+LOG  : General      f:0> Distribution 1
+LOG  : General      f:0> ZombieVoronoiNoise true
+LOG  : General      f:0> ZombieRespawn 4
+LOG  : General      f:0> ZombieMigrate true
+LOG  : General      f:0> DayLength 4
+LOG  : General      f:0> StartYear 1
+LOG  : General      f:0> StartMonth 7
+LOG  : General      f:0> StartDay 9
+LOG  : General      f:0> StartTime 2
+LOG  : General      f:0> DayNightCycle 1
+LOG  : General      f:0> ClimateCycle 1
+LOG  : General      f:0> FogCycle 1
+LOG  : General      f:0> WaterShut 2
+LOG  : General      f:0> ElecShut 2
+LOG  : General      f:0> AlarmDecay 2
+LOG  : General      f:0> WaterShutModifier 4
+LOG  : General      f:0> ElecShutModifier 21
+LOG  : General      f:0> AlarmDecayModifier 14
+LOG  : General      f:0> FoodLootNew 0.8
+LOG  : General      f:0> LiteratureLootNew 0.6
+LOG  : General      f:0> SkillBookLoot 0.6
+LOG  : General      f:0> RecipeResourceLoot 0.6
+LOG  : General      f:0> MedicalLootNew 0.6
+LOG  : General      f:0> SurvivalGearsLootNew 0.6
+LOG  : General      f:0> CannedFoodLootNew 0.6
+LOG  : General      f:0> WeaponLootNew 0.6
+LOG  : General      f:0> RangedWeaponLootNew 1.2
+LOG  : General      f:0> AmmoLootNew 0.6
+LOG  : General      f:0> MechanicsLootNew 0.6
+LOG  : General      f:0> OtherLootNew 0.8
+LOG  : General      f:0> ClothingLootNew 0.6
+LOG  : General      f:0> ContainerLootNew 0.6
+LOG  : General      f:0> KeyLootNew 0.4
+LOG  : General      f:0> MediaLootNew 0.6
+LOG  : General      f:0> MementoLootNew 0.6
+LOG  : General      f:0> CookwareLootNew 0.6
+LOG  : General      f:0> MaterialLootNew 0.6
+LOG  : General      f:0> FarmingLootNew 0.6
+LOG  : General      f:0> ToolLootNew 0.6
+LOG  : General      f:0> RollsMultiplier 1.0
+LOG  : General      f:0> LootItemRemovalList 
+LOG  : General      f:0> RemoveStoryLoot false
+LOG  : General      f:0> RemoveZombieLoot false
+LOG  : General      f:0> ZombiePopLootEffect 0
+LOG  : General      f:0> InsaneLootFactor 0.05
+LOG  : General      f:0> ExtremeLootFactor 0.2
+LOG  : General      f:0> RareLootFactor 0.6
+LOG  : General      f:0> NormalLootFactor 1.0
+LOG  : General      f:0> CommonLootFactor 2.0
+LOG  : General      f:0> AbundantLootFactor 3.0
+LOG  : General      f:0> Temperature 3
+LOG  : General      f:0> Rain 3
+LOG  : General      f:0> ErosionSpeed 4
+LOG  : General      f:0> ErosionDays 0
+LOG  : General      f:0> Farming 3
+LOG  : General      f:0> CompostTime 2
+LOG  : General      f:0> StatsDecrease 3
+LOG  : General      f:0> NatureAbundance 3
+LOG  : General      f:0> Alarm 4
+LOG  : General      f:0> LockedHouses 6
+LOG  : General      f:0> StarterKit false
+LOG  : General      f:0> Nutrition true
+LOG  : General      f:0> FoodRotSpeed 3
+LOG  : General      f:0> FridgeFactor 3
+LOG  : General      f:0> SeenHoursPreventLootRespawn 0
+LOG  : General      f:0> HoursForLootRespawn 0
+LOG  : General      f:0> MaxItemsForLootRespawn 5
+LOG  : General      f:0> ConstructionPreventsLootRespawn true
+LOG  : General      f:0> WorldItemRemovalList Base.Hat, Base.Glasses, Base.Maggots, Base.Slug, Base.Slug2, Base.Snail, Base.Worm, Base.Dung_Mouse, Base.Dung_Rat
+LOG  : General      f:0> HoursForWorldItemRemoval 24.0
+LOG  : General      f:0> ItemRemovalListBlacklistToggle false
+LOG  : General      f:0> TimeSinceApo 1
+LOG  : General      f:0> PlantResilience 3
+LOG  : General      f:0> PlantAbundance 3
+LOG  : General      f:0> EndRegen 3
+LOG  : General      f:0> Helicopter 2
+LOG  : General      f:0> MetaEvent 2
+LOG  : General      f:0> SleepingEvent 1
+LOG  : General      f:0> GeneratorFuelConsumption 0.1
+LOG  : General      f:0> GeneratorSpawning 4
+LOG  : General      f:0> AnnotatedMapChance 4
+LOG  : General      f:0> CharacterFreePoints 0
+LOG  : General      f:0> ConstructionBonusPoints 3
+LOG  : General      f:0> NightDarkness 3
+LOG  : General      f:0> NightLength 3
+LOG  : General      f:0> BoneFracture true
+LOG  : General      f:0> InjurySeverity 2
+LOG  : General      f:0> HoursForCorpseRemoval 216.0
+LOG  : General      f:0> DecayingCorpseHealthImpact 3
+LOG  : General      f:0> ZombieHealthImpact false
+LOG  : General      f:0> BloodLevel 3
+LOG  : General      f:0> ClothingDegradation 3
+LOG  : General      f:0> FireSpread true
+LOG  : General      f:0> DaysForRottenFoodRemoval -1
+LOG  : General      f:0> AllowExteriorGenerator true
+LOG  : General      f:0> MaxFogIntensity 1
+LOG  : General      f:0> MaxRainFxIntensity 1
+LOG  : General      f:0> EnableSnowOnGround true
+LOG  : General      f:0> AttackBlockMovements true
+LOG  : General      f:0> SurvivorHouseChance 3
+LOG  : General      f:0> VehicleStoryChance 3
+LOG  : General      f:0> ZoneStoryChance 3
+LOG  : General      f:0> AllClothesUnlocked false
+LOG  : General      f:0> EnableTaintedWaterText true
+LOG  : General      f:0> EnableVehicles true
+LOG  : General      f:0> CarSpawnRate 3
+LOG  : General      f:0> ZombieAttractionMultiplier 1.0
+LOG  : General      f:0> VehicleEasyUse false
+LOG  : General      f:0> InitialGas 2
+LOG  : General      f:0> FuelStationGasInfinite false
+LOG  : General      f:0> FuelStationGasMin 0.0
+LOG  : General      f:0> FuelStationGasMax 0.8
+LOG  : General      f:0> FuelStationGasEmptyChance 20
+LOG  : General      f:0> LockedCar 4
+LOG  : General      f:0> CarGasConsumption 1.0
+LOG  : General      f:0> CarGeneralCondition 3
+LOG  : General      f:0> CarDamageOnImpact 3
+LOG  : General      f:0> DamageToPlayerFromHitByACar 1
+LOG  : General      f:0> TrafficJam true
+LOG  : General      f:0> CarAlarm 3
+LOG  : General      f:0> PlayerDamageFromCrash true
+LOG  : General      f:0> SirenShutoffHours 0.0
+LOG  : General      f:0> ChanceHasGas 2
+LOG  : General      f:0> RecentlySurvivorVehicles 2
+LOG  : General      f:0> MultiHitZombies false
+LOG  : General      f:0> RearVulnerability 3
+LOG  : General      f:0> SirenEffectsZombies true
+LOG  : General      f:0> AnimalStatsModifier 4
+LOG  : General      f:0> AnimalMetaStatsModifier 4
+LOG  : General      f:0> AnimalPregnancyTime 4
+LOG  : General      f:0> AnimalAgeModifier 4
+LOG  : General      f:0> AnimalMilkIncModifier 4
+LOG  : General      f:0> AnimalWoolIncModifier 4
+LOG  : General      f:0> AnimalRanchChance 5
+LOG  : General      f:0> AnimalGrassRegrowTime 240
+LOG  : General      f:0> AnimalMetaPredator false
+LOG  : General      f:0> AnimalMatingSeason true
+LOG  : General      f:0> AnimalEggHatch 4
+LOG  : General      f:0> AnimalSoundAttractZombies true
+LOG  : General      f:0> AnimalTrackChance 4
+LOG  : General      f:0> AnimalPathChance 4
+LOG  : General      f:0> MaximumRatIndex 25
+LOG  : General      f:0> DaysUntilMaximumRatIndex 90
+LOG  : General      f:0> MetaKnowledge 3
+LOG  : General      f:0> SeeNotLearntRecipe true
+LOG  : General      f:0> MaximumLootedBuildingRooms 50
+LOG  : General      f:0> EnablePoisoning 1
+LOG  : General      f:0> MaggotSpawn 1
+LOG  : General      f:0> LightBulbLifespan 2.0
+LOG  : General      f:0> FishAbundance 2
+LOG  : General      f:0> LevelForMediaXPCutoff 3
+LOG  : General      f:0> LevelForDismantleXPCutoff 0
+LOG  : General      f:0> BloodSplatLifespanDays 0
+LOG  : General      f:0> LiteratureCooldown 45
+LOG  : General      f:0> NegativeTraitsPenalty 1
+LOG  : General      f:0> MinutesPerPage 2.0
+LOG  : General      f:0> KillInsideCrops true
+LOG  : General      f:0> PlantGrowingSeasons true
+LOG  : General      f:0> PlaceDirtAboveground false
+LOG  : General      f:0> FarmingSpeedNew 1.0
+LOG  : General      f:0> FarmingAmountNew 1.0
+LOG  : General      f:0> MaximumLooted 25
+LOG  : General      f:0> DaysUntilMaximumLooted 90
+LOG  : General      f:0> RuralLooted 0.5
+LOG  : General      f:0> MaximumDiminishedLoot 20
+LOG  : General      f:0> DaysUntilMaximumDiminishedLoot 3650
+LOG  : General      f:0> MuscleStrainFactor 0.7
+LOG  : General      f:0> DiscomfortFactor 0.8
+LOG  : General      f:0> WoundInfectionFactor 1.0
+LOG  : General      f:0> NoBlackClothes true
+LOG  : General      f:0> EasyClimbing false
+LOG  : General      f:0> MaximumFireFuelHours 8
+LOG  : General      f:0> FirearmUseDamageChance 2
+LOG  : General      f:0> FirearmNoiseMultiplier 1.0
+LOG  : General      f:0> FirearmJamMultiplier 1.0
+LOG  : General      f:0> FirearmMoodleMultiplier 1.0
+LOG  : General      f:0> FirearmWeatherMultiplier 1.0
+LOG  : General      f:0> FirearmHeadGearEffect true
+LOG  : General      f:0> ClayLakeChance 0.05
+LOG  : General      f:0> ClayRiverChance 0.05
+LOG  : General      f:0> GeneratorTileRange 20
+LOG  : General      f:0> GeneratorVerticalPowerRange 3
+LOG  : General      f:0> SpawnFrequency 4
+LOG  : General      f:0> AllowMiniMap false
+LOG  : General      f:0> AllowWorldMap true
+LOG  : General      f:0> MapAllKnown false
+LOG  : General      f:0> MapNeedsLight true
+LOG  : General      f:0> Speed 4
+LOG  : General      f:0> SprinterPercentage 0
+LOG  : General      f:0> Strength 2
+LOG  : General      f:0> Toughness 4
+LOG  : General      f:0> Transmission 1
+LOG  : General      f:0> Mortality 5
+LOG  : General      f:0> Reanimate 3
+LOG  : General      f:0> Cognition 3
+LOG  : General      f:0> DoorOpeningPercentage 0
+LOG  : General      f:0> CrawlUnderVehicle 5
+LOG  : General      f:0> Memory 2
+LOG  : General      f:0> Sight 5
+LOG  : General      f:0> Hearing 5
+LOG  : General      f:0> SpottedLogic true
+LOG  : General      f:0> ThumpNoChasing false
+LOG  : General      f:0> ThumpOnConstruction true
+LOG  : General      f:0> ActiveOnly 1
+LOG  : General      f:0> TriggerHouseAlarm true
+LOG  : General      f:0> ZombiesDragDown true
+LOG  : General      f:0> ZombiesCrawlersDragDown false
+LOG  : General      f:0> ZombiesFenceLunge true
+LOG  : General      f:0> ZombiesArmorFactor 2.0
+LOG  : General      f:0> ZombiesMaxDefense 85
+LOG  : General      f:0> ChanceOfAttachedWeapon 6
+LOG  : General      f:0> ZombiesFallDamage 1.0
+LOG  : General      f:0> DisableFakeDead 1
+LOG  : General      f:0> PlayerSpawnZombieRemoval 1
+LOG  : General      f:0> FenceThumpersRequired 25
+LOG  : General      f:0> FenceDamageMultiplier 1.0
+LOG  : General      f:0> PopulationMultiplier 0.65
+LOG  : General      f:0> PopulationStartMultiplier 1.0
+LOG  : General      f:0> PopulationPeakMultiplier 1.5
+LOG  : General      f:0> PopulationPeakDay 28
+LOG  : General      f:0> RespawnHours 0.0
+LOG  : General      f:0> RespawnUnseenHours 0.0
+LOG  : General      f:0> RespawnMultiplier 0.0
+LOG  : General      f:0> RedistributeHours 12.0
+LOG  : General      f:0> FollowSoundDistance 100
+LOG  : General      f:0> RallyGroupSize 20
+LOG  : General      f:0> RallyGroupSizeVariance 50
+LOG  : General      f:0> RallyTravelDistance 20
+LOG  : General      f:0> RallyGroupSeparation 15
+LOG  : General      f:0> RallyGroupRadius 3
+LOG  : General      f:0> ZombiesCountBeforeDelete 300
+LOG  : General      f:0> Global 1.0
+LOG  : General      f:0> GlobalToggle true
+LOG  : General      f:0> Fitness 1.0
+LOG  : General      f:0> Strength 1.0
+LOG  : General      f:0> Sprinting 1.0
+LOG  : General      f:0> Lightfoot 1.0
+LOG  : General      f:0> Nimble 1.0
+LOG  : General      f:0> Sneak 1.0
+LOG  : General      f:0> Axe 1.0
+LOG  : General      f:0> Blunt 1.0
+LOG  : General      f:0> SmallBlunt 1.0
+LOG  : General      f:0> LongBlade 1.0
+LOG  : General      f:0> SmallBlade 1.0
+LOG  : General      f:0> Spear 1.0
+LOG  : General      f:0> Maintenance 1.0
+LOG  : General      f:0> Woodwork 1.0
+LOG  : General      f:0> Cooking 1.0
+LOG  : General      f:0> Farming 1.0
+LOG  : General      f:0> Doctor 1.0
+LOG  : General      f:0> Electricity 1.0
+LOG  : General      f:0> MetalWelding 1.0
+LOG  : General      f:0> Mechanics 1.0
+LOG  : General      f:0> Tailoring 1.0
+LOG  : General      f:0> Aiming 1.0
+LOG  : General      f:0> Reloading 1.0
+LOG  : General      f:0> Fishing 1.0
+LOG  : General      f:0> Trapping 1.0
+LOG  : General      f:0> PlantScavenging 1.0
+LOG  : General      f:0> FlintKnapping 1.0
+LOG  : General      f:0> Masonry 1.0
+LOG  : General      f:0> Pottery 1.0
+LOG  : General      f:0> Carving 1.0
+LOG  : General      f:0> Husbandry 1.0
+LOG  : General      f:0> Tracking 1.0
+LOG  : General      f:0> Blacksmith 1.0
+LOG  : General      f:0> Butchering 1.0
+LOG  : General      f:0> Glassmaking 1.0
+LOG  : General      f:0> Reseeding weather period, new seed: 609573
+LOG  : General      f:0> binkId: 4
+LOG  : Lua          f:0> NLQA PASS: real player, authority, persistent world store, snapshot routing and hunger read
+LOG  : General      f:8665> Saving worldgen params
+LOG  : General      f:8665> Saving GlobalModData
+LOG  : Lua          f:8665> removing all player data
+LOG  : Lua          f:8665> - player: 0
+LOG  : Lua          f:8665> removing all player data
+LOG  : Lua          f:8665> - player: 0
+LOG  : General      f:8665> GameThread exited.

@@ -1,0 +1,11 @@
+--- E:\pzmod\evidence\NeighborhoodNeeds.baseline.lua
++++ E:\pzmod\NeighborhoodLife\42\media\lua\client\NeighborhoodNeeds.lua
+@@ -1,7 +1,7 @@
+ require "ISUI/ISPanel"
+ 
+ NeighborhoodNeeds = ISPanel:derive("NeighborhoodNeeds")
+-NeighborhoodNeeds.enabled = false
++NeighborhoodNeeds.enabled = true
+ NeighborhoodNeeds.instances = {}
+ NeighborhoodNeeds.rows = {
+     { "Hunger", "HUNGER" }, { "Thirst", "THIRST" },

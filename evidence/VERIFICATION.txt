@@ -1,0 +1,36 @@
+Changed field: NeighborhoodNeeds.enabled false -> true.
+Baseline is a synthetic disabled version of the new HUD, not an original game file.
+MODIFIED_FILE: E:\pzmod\NeighborhoodLife\42\media\lua\client\NeighborhoodNeeds.lua
+DIFF_FILE: E:\pzmod\evidence\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\ROLLBACK.sh
+BASELINE
+COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\hud.lua E:\pzmod\evidence\NeighborhoodNeeds.baseline.lua disabled
+INPUT: disabled HUD fixture
+OUTPUT: PASS: HUD disabled; 0 panels
+STDERR: 
+EXIT: 0
+MODIFIED
+COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\hud.lua E:\pzmod\NeighborhoodLife\42\media\lua\client\NeighborhoodNeeds.lua enabled
+INPUT: enabled HUD fixture
+OUTPUT: PASS: normalization, clamping, missing/NaN, isolated players, duplicate prevention, fold, render, reconnect, cleanup
+STDERR: 
+EXIT: 0
+ROLLBACK
+COMMAND: "C:/Program Files/Git/bin/bash.exe" E:\pzmod\evidence\ROLLBACK.sh E:\pzmod\evidence\rollback-test.lua
+INPUT: separate rollback copy
+OUTPUT: PASS: restored disabled baseline
+STDERR: 
+EXIT: 0
+ROLLBACK TEST
+COMMAND: "C:/Program Files (x86)/Lua/5.1/lua.exe" E:\pzmod\tests\hud.lua E:\pzmod\evidence\rollback-test.lua disabled
+INPUT: separate rollback copy
+OUTPUT: PASS: HUD disabled; 0 panels
+STDERR: 
+EXIT: 0
+Restored behavior/status: rollback copy disabled, zero panels; hash matches baseline. Working MODIFIED_FILE remains enabled.
+BASELINE SHA256: 7d47bf4fe7d496a41c4771c3adffd9bddf5bccd78f2ce10f73e7bbc39de39abb
+MODIFIED SHA256: e9848eb4ded8f5c0387969c995b2c6c6486dfeab3cfaa2b32bd3c80734614a62
+Tests use Lua 5.1 with UI/stat mocks; not a running PZ instance. Host/guest and visual QA pending.
+Unmodified API reference SHA256 E:\SteamLibrary\steamapps\common\ProjectZomboid\media\lua\client\ISUI\ISPanel.lua: 17f97444bd8910d3eb8320221bcdd95def8d32d570abbf157b55efb064e96ea3
+Unmodified API reference SHA256 E:\SteamLibrary\steamapps\common\ProjectZomboid\media\lua\client\DebugUIs\DebugMenu\General\ISStatsAndBody.lua: 6a0270319810a19f3d0abb37dac8f9974bb550891160a7927daeaa5cc289a9e6

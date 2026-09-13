@@ -1,0 +1,38 @@
+Changed fields: relationship domain, authority and UI; HUD relationship link; nearby action enablement; mod description.
+NPC body integration remains experimental; hosted multiplayer is not verified.
+BASELINE COMMAND: python E:\pzmod\tools\verify-v03.py baseline
+INPUT: baseline
+OUTPUT: PASS: baseline HUD, 24 career assertions and wardrobe
+STDERR: 
+EXIT: 0
+MODIFIED COMMAND: python E:\pzmod\tools\verify-v03.py modified
+INPUT: modified
+OUTPUT: PASS: HUD, syntax, 60 gameplay/social assertions, wardrobe; Lua 5.1 and game Kahlua
+STDERR: 
+EXIT: 0
+ROLLBACK COMMAND: "C:/Program Files/Git/bin/bash.exe" E:\pzmod\evidence\v03\ROLLBACK.sh E:\pzmod\evidence\v03\rollback-test
+INPUT: E:\pzmod\evidence\v03\rollback-test
+OUTPUT: PASS: original v0.2 hashes restored; relationship modules removed from test copy
+STDERR: 
+EXIT: 0
+RESTORED COMMAND: python E:\pzmod\tools\verify-v03.py rollback
+INPUT: rollback
+OUTPUT: PASS: rollback HUD, 24 career assertions and wardrobe
+EXIT: 0
+HASH 42/media/lua/client/NL/Client.lua BASELINE aa521b93ad2fc937032e419c330d92feaacca142ec05f202d970bec9aa47e415 MODIFIED aa521b93ad2fc937032e419c330d92feaacca142ec05f202d970bec9aa47e415
+HASH 42/media/lua/client/NL/Journal.lua BASELINE d50d5ad8ea780b2e8571b2d1d0fa935ae2687c640e0a4a6ff374b9fc89f11687 MODIFIED 880f75fa0765efb0fb4b075efcbaf7637aeac4138355689190c7178b8fdd0aa5
+HASH 42/media/lua/client/NL/Relationships.lua BASELINE ABSENT MODIFIED e39d6b0bd5d768f20b066ae4918ec37b7a531714e4345cb110ccf825b27629e4
+HASH 42/media/lua/client/NL/SocialClient.lua BASELINE ABSENT MODIFIED cd5b892fb4954722838d2db60a3d431fd82dbd0bf7065bf11655aa4a3a0ea456
+HASH 42/media/lua/client/NL/Wardrobe.lua BASELINE c8ef60370014c80de2fb33a45ad401eb23cafb7f6d958a07bb5f2351d2b49939 MODIFIED c8ef60370014c80de2fb33a45ad401eb23cafb7f6d958a07bb5f2351d2b49939
+HASH 42/media/lua/client/NeighborhoodNeeds.lua BASELINE eadca831694a1e39350cedc9989488cd0ab5ef4db99eb29c33e0a5361a9ce6d3 MODIFIED 7a0f36e01218ba697c952c7ce317529fc2450697548b7e0cec19ad5198e8b99d
+HASH 42/media/lua/server/NL/Authority.lua BASELINE b41c1aa1f673b634a4080f75adfbf73446a41d31ecb8066f90929f8d42bbc612 MODIFIED b41c1aa1f673b634a4080f75adfbf73446a41d31ecb8066f90929f8d42bbc612
+HASH 42/media/lua/server/NL/SocialAuthority.lua BASELINE ABSENT MODIFIED 5b07639547ae70abf1d07b791c8671bb152ee9d29bb672816d3b306de42292a1
+HASH 42/media/lua/shared/NL/Definitions.lua BASELINE ff34ca4838d8ce9f373ac673946ea54bf8c6348d56bb5b1ebb8cdcea64d22277 MODIFIED ff34ca4838d8ce9f373ac673946ea54bf8c6348d56bb5b1ebb8cdcea64d22277
+HASH 42/media/lua/shared/NL/Domain.lua BASELINE ce52dd8211674133c2f4b1fc94ead008860ae5ba423372ff6353da5e131e8e1b MODIFIED ce52dd8211674133c2f4b1fc94ead008860ae5ba423372ff6353da5e131e8e1b
+HASH 42/media/lua/shared/NL/Social.lua BASELINE ABSENT MODIFIED 5cdb93c53741dd33de4cb891d6ada0a022280fab254f962fe603859ec5385c47
+HASH 42/mod.info BASELINE ab5f740c51c86a9ef1d643e9f0f97ca045d6e24735308dde3609f9c829f262c8 MODIFIED a2b1cc900ec81894f07785a8a165e04443de8bcd90c89af0b44a395bf408acc1
+ARTIFACT: E:\pzmod\evidence\v03\MODIFIED_FILE.zip
+ARTIFACT: E:\pzmod\evidence\v03\DIFF_FILE.patch
+ARTIFACT: E:\pzmod\evidence\v03\ROLLBACK.sh
+ARTIFACT: E:\pzmod\evidence\v03\VERIFICATION.txt
+Restored behavior: v0.2 HUD, careers and wardrobe pass; exact original file hashes restored on separate copy. Working source retains social changes.

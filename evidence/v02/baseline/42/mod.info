@@ -1,0 +1,4 @@
+name=Neighborhood Life - Needs HUD
+id=NeighborhoodLifeHUD
+description=Multiplayer-first life sim prototype. Read-only, collapsible personal needs HUD. No NPCs yet.
+versionMin=42.0

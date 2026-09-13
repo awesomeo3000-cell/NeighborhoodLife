@@ -1,0 +1,2192 @@
+Compiled from "GameLoadingState.java"
+public final class zombie.gameStates.GameLoadingState extends zombie.gameStates.GameState {
+  public static final int QUICK_TIP_MAX_TIMER;
+
+  public static java.lang.Thread loader;
+
+  private static boolean newGame;
+
+  private static long startTime;
+
+  public static boolean worldVersionError;
+
+  private static boolean unexpectedError;
+
+  public static java.lang.String gameLoadingString;
+
+  public static boolean playerWrongIP;
+
+  private static boolean showedUI;
+
+  private static boolean showedClickToSkip;
+
+  public static boolean mapDownloadFailed;
+
+  private static boolean playerCreated;
+
+  private static boolean done;
+
+  public static boolean convertingWorld;
+
+  public static int convertingFileCount;
+
+  public static int convertingFileMax;
+
+  private volatile boolean waitForAssetLoadingToFinish1;
+
+  private volatile boolean waitForAssetLoadingToFinish2;
+
+  private final java.lang.Object assetLock1;
+
+  private final java.lang.Object assetLock2;
+
+  private float time;
+
+  private boolean forceDone;
+
+  private java.lang.String text;
+
+  private float width;
+
+  private static final zombie.ui.ScreenFader screenFader;
+
+  private zombie.core.textures.AnimatedTexture animatedTexture;
+
+  private long progressFadeStartMs;
+
+  private int stage;
+
+  private final float totalTime;
+
+  private float loadingDotTick;
+
+  private java.lang.String loadingDot;
+
+  private float clickToSkipAlpha;
+
+  private boolean clickToSkipFadeIn;
+
+  private float quickTipsTimer;
+
+  private java.lang.String quickTipsText;
+
+  private java.util.List<java.lang.String> quickTipsList;
+
+  private java.util.List<java.lang.String> quickTipsListJoke;
+
+  private static final int BOTTOM_SCREEN;
+
+  public zombie.gameStates.GameLoadingState();
+    Code:
+         0: aload_0
+         1: invokespecial #1                  // Method zombie/gameStates/GameState."<init>":()V
+         4: aload_0
+         5: ldc           #7                  // String Asset Lock 1
+         7: putfield      #9                  // Field assetLock1:Ljava/lang/Object;
+        10: aload_0
+        11: ldc           #15                 // String Asset Lock 2
+        13: putfield      #17                 // Field assetLock2:Ljava/lang/Object;
+        16: aload_0
+        17: ldc           #20                 // float 33.0f
+        19: putfield      #21                 // Field totalTime:F
+        22: aload_0
+        23: ldc           #25                 // String
+        25: putfield      #27                 // Field loadingDot:Ljava/lang/String;
+        28: aload_0
+        29: fconst_1
+        30: putfield      #31                 // Field clickToSkipAlpha:F
+        33: aload_0
+        34: ldc           #34                 // float 720.0f
+        36: putfield      #35                 // Field quickTipsTimer:F
+        39: return
+
+  public void enter();
+    Code:
+         0: aload_0
+         1: invokevirtual #38                 // Method loadQuickTipList:()V
+         4: invokestatic  #41                 // Method zombie/worldMap/WorldMapImages.Reset:()V
+         7: invokestatic  #46                 // Method zombie/worldMap/WorldMapVisited.Reset:()V
+        10: invokestatic  #49                 // Method zombie/Lua/LuaManager.releaseAllVideoTextures:()V
+        13: goto          21
+        16: astore_1
+        17: aload_1
+        18: invokestatic  #56                 // Method zombie/core/logger/ExceptionLogger.logException:(Ljava/lang/Throwable;)V
+        21: getstatic     #62                 // Field zombie/network/GameClient.client:Z
+        24: ifeq          76
+        27: aload_0
+        28: ldc           #68                 // String UI_DirectConnectionPortWarning
+        30: iconst_1
+        31: anewarray     #70                 // class java/lang/Object
+        34: dup
+        35: iconst_0
+        36: invokestatic  #72                 // Method zombie/network/ServerOptions.getInstance:()Lzombie/network/ServerOptions;
+        39: getfield      #78                 // Field zombie/network/ServerOptions.udpPort:Lzombie/network/ServerOptions$IntegerServerOption;
+        42: invokevirtual #82                 // Method zombie/network/ServerOptions$IntegerServerOption.getValue:()I
+        45: invokestatic  #88                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+        48: aastore
+        49: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+        52: putfield      #100                // Field text:Ljava/lang/String;
+        55: aload_0
+        56: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+        59: getstatic     #109                // Field zombie/ui/UIFont.NewMedium:Lzombie/ui/UIFont;
+        62: aload_0
+        63: getfield      #100                // Field text:Ljava/lang/String;
+        66: invokevirtual #115                // Method zombie/ui/TextManager.MeasureStringX:(Lzombie/ui/UIFont;Ljava/lang/String;)I
+        69: bipush        8
+        71: iadd
+        72: i2f
+        73: putfield      #119                // Field width:F
+        76: getstatic     #62                 // Field zombie/network/GameClient.client:Z
+        79: putstatic     #122                // Field zombie/GameWindow.loadedAsClient:Z
+        82: iconst_0
+        83: putstatic     #127                // Field zombie/GameWindow.okToSaveOnExit:Z
+        86: iconst_0
+        87: putstatic     #130                // Field showedUI:Z
+        90: getstatic     #133                // Field zombie/ChunkMapFilenames.instance:Lzombie/ChunkMapFilenames;
+        93: invokevirtual #138                // Method zombie/ChunkMapFilenames.clear:()V
+        96: getstatic     #141                // Field zombie/debug/DebugType.DetailedInfo:Lzombie/debug/DebugType;
+        99: getstatic     #147                // Field zombie/core/Core.gameSaveWorld:Ljava/lang/String;
+       102: invokedynamic #152,  0            // InvokeDynamic #0:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+       107: invokevirtual #156                // Method zombie/debug/DebugType.trace:(Ljava/lang/Object;)V
+       110: ldc           #25                 // String
+       112: putstatic     #160                // Field gameLoadingString:Ljava/lang/String;
+       115: ldc           #163                // String server
+       117: invokestatic  #165                // Method zombie/Lua/LuaManager.LoadDirBase:(Ljava/lang/String;)V
+       120: invokestatic  #169                // Method zombie/Lua/LuaManager.finishChecksum:()V
+       123: goto          131
+       126: astore_1
+       127: aload_1
+       128: invokestatic  #56                 // Method zombie/core/logger/ExceptionLogger.logException:(Ljava/lang/Throwable;)V
+       131: getstatic     #172                // Field zombie/scripting/ScriptManager.instance:Lzombie/scripting/ScriptManager;
+       134: invokevirtual #177                // Method zombie/scripting/ScriptManager.LoadedAfterLua:()V
+       137: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       140: invokevirtual #183                // Method zombie/core/Core.initFBOs:()V
+       143: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       146: invokevirtual #186                // Method zombie/core/Core.initShaders:()V
+       149: invokestatic  #189                // Method zombie/iso/sprite/SkyBox.getInstance:()Lzombie/iso/sprite/SkyBox;
+       152: pop
+       153: invokestatic  #194                // Method zombie/iso/IsoPuddles.getInstance:()Lzombie/iso/IsoPuddles;
+       156: pop
+       157: invokestatic  #199                // Method zombie/iso/IsoWater.getInstance:()Lzombie/iso/IsoWater;
+       160: pop
+       161: iconst_0
+       162: putstatic     #204                // Field zombie/GameWindow.serverDisconnected:Z
+       165: getstatic     #62                 // Field zombie/network/GameClient.client:Z
+       168: ifeq          274
+       171: getstatic     #207                // Field zombie/network/GameClient.instance:Lzombie/network/GameClient;
+       174: getfield      #210                // Field zombie/network/GameClient.connected:Z
+       177: ifne          274
+       180: getstatic     #207                // Field zombie/network/GameClient.instance:Lzombie/network/GameClient;
+       183: invokevirtual #213                // Method zombie/network/GameClient.init:()V
+       186: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       189: ldc           #216                // String Multiplayer
+       191: invokevirtual #218                // Method zombie/core/Core.setGameMode:(Ljava/lang/String;)V
+       194: getstatic     #207                // Field zombie/network/GameClient.instance:Lzombie/network/GameClient;
+       197: getfield      #221                // Field zombie/network/GameClient.id:B
+       200: iconst_m1
+       201: if_icmpne     236
+       204: invokestatic  #225                // Method zombie/Lua/LuaEventManager.RunQueuedEvents:()V
+       207: ldc2_w        #230                // long 10l
+       210: invokestatic  #232                // Method java/lang/Thread.sleep:(J)V
+       213: goto          227
+       216: astore_1
+       217: getstatic     #240                // Field zombie/debug/DebugType.General:Lzombie/debug/DebugType;
+       220: aload_1
+       221: getstatic     #243                // Field zombie/debug/LogSeverity.Error:Lzombie/debug/LogSeverity;
+       224: invokevirtual #249                // Method zombie/debug/DebugType.printException:(Ljava/lang/Throwable;Lzombie/debug/LogSeverity;)V
+       227: getstatic     #207                // Field zombie/network/GameClient.instance:Lzombie/network/GameClient;
+       230: invokevirtual #253                // Method zombie/network/GameClient.update:()V
+       233: goto          194
+       236: getstatic     #207                // Field zombie/network/GameClient.instance:Lzombie/network/GameClient;
+       239: getfield      #221                // Field zombie/network/GameClient.id:B
+       242: sipush        255
+       245: iand
+       246: istore_1
+       247: iload_1
+       248: invokedynamic #256,  0            // InvokeDynamic #1:makeConcatWithConstants:(I)Ljava/lang/String;
+       253: putstatic     #147                // Field zombie/core/Core.gameSaveWorld:Ljava/lang/String;
+       256: iload_1
+       257: invokedynamic #256,  0            // InvokeDynamic #1:makeConcatWithConstants:(I)Ljava/lang/String;
+       262: invokestatic  #259                // Method zombie/Lua/LuaManager$GlobalObject.deleteSave:(Ljava/lang/String;)V
+       265: iload_1
+       266: invokedynamic #256,  0            // InvokeDynamic #1:makeConcatWithConstants:(I)Ljava/lang/String;
+       271: invokestatic  #264                // Method zombie/Lua/LuaManager$GlobalObject.createWorld:(Ljava/lang/String;)V
+       274: getstatic     #147                // Field zombie/core/Core.gameSaveWorld:Ljava/lang/String;
+       277: invokevirtual #267                // Method java/lang/String.isEmpty:()Z
+       280: ifeq          309
+       283: ldc_w         #273                // String No savefile directory was specified.  It\'s a bug.
+       286: invokestatic  #275                // Method zombie/debug/DebugLog.log:(Ljava/lang/String;)V
+       289: ldc_w         #280                // String No savefile directory was specified.  The game will now close.  Sorry!
+       292: invokestatic  #282                // Method zombie/GameWindow.DoLoadingText:(Ljava/lang/String;)V
+       295: ldc2_w        #285                // long 4000l
+       298: invokestatic  #232                // Method java/lang/Thread.sleep:(J)V
+       301: goto          305
+       304: astore_1
+       305: iconst_m1
+       306: invokestatic  #287                // Method java/lang/System.exit:(I)V
+       309: new           #293                // class java/io/File
+       312: dup
+       313: getstatic     #295                // Field zombie/ZomboidFileSystem.instance:Lzombie/ZomboidFileSystem;
+       316: invokevirtual #300                // Method zombie/ZomboidFileSystem.getCurrentSaveDir:()Ljava/lang/String;
+       319: invokespecial #304                // Method java/io/File."<init>":(Ljava/lang/String;)V
+       322: astore_1
+       323: aload_1
+       324: invokevirtual #306                // Method java/io/File.exists:()Z
+       327: ifne          365
+       330: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       333: invokevirtual #309                // Method zombie/core/Core.isNoSave:()Z
+       336: ifne          365
+       339: ldc_w         #312                // String The savefile directory doesn\'t exist.  It\'s a bug.
+       342: invokestatic  #275                // Method zombie/debug/DebugLog.log:(Ljava/lang/String;)V
+       345: ldc_w         #314                // String The savefile directory doesn\'t exist.  The game will now close.  Sorry!
+       348: invokestatic  #282                // Method zombie/GameWindow.DoLoadingText:(Ljava/lang/String;)V
+       351: ldc2_w        #285                // long 4000l
+       354: invokestatic  #232                // Method java/lang/Thread.sleep:(J)V
+       357: goto          361
+       360: astore_2
+       361: iconst_m1
+       362: invokestatic  #287                // Method java/lang/System.exit:(I)V
+       365: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       368: invokevirtual #309                // Method zombie/core/Core.isNoSave:()Z
+       371: ifne          383
+       374: getstatic     #295                // Field zombie/ZomboidFileSystem.instance:Lzombie/ZomboidFileSystem;
+       377: invokevirtual #300                // Method zombie/ZomboidFileSystem.getCurrentSaveDir:()Ljava/lang/String;
+       380: invokestatic  #316                // Method zombie/savefile/SavefileNaming.ensureSubdirectoriesExist:(Ljava/lang/String;)V
+       383: getstatic     #62                 // Field zombie/network/GameClient.client:Z
+       386: ifne          485
+       389: getstatic     #321                // Field zombie/network/GameServer.server:Z
+       392: ifne          485
+       395: getstatic     #325                // Field zombie/core/Core.tutorial:Z
+       398: ifne          485
+       401: invokestatic  #328                // Method zombie/core/Core.isLastStand:()Z
+       404: ifne          485
+       407: ldc           #216                // String Multiplayer
+       409: getstatic     #331                // Field zombie/core/Core.gameMode:Ljava/lang/String;
+       412: invokevirtual #334                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+       415: ifne          485
+       418: new           #338                // class java/io/FileWriter
+       421: dup
+       422: new           #293                // class java/io/File
+       425: dup
+       426: getstatic     #295                // Field zombie/ZomboidFileSystem.instance:Lzombie/ZomboidFileSystem;
+       429: invokevirtual #340                // Method zombie/ZomboidFileSystem.getCacheDir:()Ljava/lang/String;
+       432: getstatic     #343                // Field java/io/File.separator:Ljava/lang/String;
+       435: invokedynamic #346,  0            // InvokeDynamic #2:makeConcatWithConstants:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       440: invokespecial #304                // Method java/io/File."<init>":(Ljava/lang/String;)V
+       443: invokespecial #349                // Method java/io/FileWriter."<init>":(Ljava/io/File;)V
+       446: astore_2
+       447: aload_2
+       448: getstatic     #352                // Field zombie/iso/IsoWorld.instance:Lzombie/iso/IsoWorld;
+       451: invokevirtual #357                // Method zombie/iso/IsoWorld.getWorld:()Ljava/lang/String;
+       454: invokedynamic #360,  0            // InvokeDynamic #3:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+       459: invokevirtual #361                // Method java/io/FileWriter.write:(Ljava/lang/String;)V
+       462: aload_2
+       463: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       466: invokevirtual #364                // Method zombie/core/Core.getGameMode:()Ljava/lang/String;
+       469: invokedynamic #360,  0            // InvokeDynamic #3:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+       474: invokevirtual #361                // Method java/io/FileWriter.write:(Ljava/lang/String;)V
+       477: aload_2
+       478: invokevirtual #367                // Method java/io/FileWriter.flush:()V
+       481: aload_2
+       482: invokevirtual #370                // Method java/io/FileWriter.close:()V
+       485: goto          493
+       488: astore_2
+       489: aload_2
+       490: invokestatic  #56                 // Method zombie/core/logger/ExceptionLogger.logException:(Ljava/lang/Throwable;)V
+       493: iconst_0
+       494: putstatic     #375                // Field done:Z
+       497: aload_0
+       498: iconst_0
+       499: putfield      #378                // Field forceDone:Z
+       502: invokestatic  #381                // Method zombie/iso/IsoChunkMap.CalcChunkWidth:()V
+       505: invokestatic  #386                // Method zombie/core/Core.setInitialSize:()V
+       508: getstatic     #389                // Field zombie/iso/IsoChunkMap.chunkGridWidth:I
+       511: bipush        8
+       513: imul
+       514: getstatic     #389                // Field zombie/iso/IsoChunkMap.chunkGridWidth:I
+       517: bipush        8
+       519: imul
+       520: invokestatic  #393                // Method zombie/iso/LosUtil.init:(II)V
+       523: aload_0
+       524: fconst_0
+       525: putfield      #398                // Field time:F
+       528: aload_0
+       529: iconst_0
+       530: putfield      #401                // Field stage:I
+       533: aload_0
+       534: fconst_1
+       535: putfield      #31                 // Field clickToSkipAlpha:F
+       538: aload_0
+       539: iconst_0
+       540: putfield      #404                // Field clickToSkipFadeIn:Z
+       543: invokestatic  #407                // Method java/lang/System.currentTimeMillis:()J
+       546: putstatic     #411                // Field startTime:J
+       549: getstatic     #415                // Field zombie/SoundManager.instance:Lzombie/BaseSoundManager;
+       552: invokevirtual #420                // Method zombie/BaseSoundManager.Purge:()V
+       555: getstatic     #415                // Field zombie/SoundManager.instance:Lzombie/BaseSoundManager;
+       558: ldc_w         #425                // String Loading
+       561: invokevirtual #427                // Method zombie/BaseSoundManager.setMusicState:(Ljava/lang/String;)V
+       564: ldc_w         #430                // String OnPreMapLoad
+       567: invokestatic  #432                // Method zombie/Lua/LuaEventManager.triggerEvent:(Ljava/lang/String;)V
+       570: iconst_1
+       571: putstatic     #435                // Field newGame:Z
+       574: iconst_0
+       575: putstatic     #438                // Field worldVersionError:Z
+       578: iconst_0
+       579: putstatic     #441                // Field unexpectedError:Z
+       582: iconst_0
+       583: putstatic     #444                // Field mapDownloadFailed:Z
+       586: iconst_0
+       587: putstatic     #447                // Field playerCreated:Z
+       590: iconst_0
+       591: putstatic     #450                // Field convertingWorld:Z
+       594: iconst_0
+       595: putstatic     #453                // Field convertingFileCount:I
+       598: iconst_m1
+       599: putstatic     #456                // Field convertingFileMax:I
+       602: getstatic     #295                // Field zombie/ZomboidFileSystem.instance:Lzombie/ZomboidFileSystem;
+       605: ldc_w         #459                // String map_ver.bin
+       608: invokevirtual #461                // Method zombie/ZomboidFileSystem.getFileInCurrentSave:(Ljava/lang/String;)Ljava/io/File;
+       611: astore_2
+       612: aload_2
+       613: invokevirtual #306                // Method java/io/File.exists:()Z
+       616: ifeq          623
+       619: iconst_0
+       620: putstatic     #435                // Field newGame:Z
+       623: getstatic     #62                 // Field zombie/network/GameClient.client:Z
+       626: ifeq          633
+       629: iconst_0
+       630: putstatic     #435                // Field newGame:Z
+       633: getstatic     #435                // Field newGame:Z
+       636: ifne          655
+       639: aload_0
+       640: iconst_m1
+       641: putfield      #401                // Field stage:I
+       644: getstatic     #465                // Field screenFader:Lzombie/ui/ScreenFader;
+       647: invokevirtual #469                // Method zombie/ui/ScreenFader.startFadeFromBlack:()V
+       650: aload_0
+       651: lconst_0
+       652: putfield      #474                // Field progressFadeStartMs:J
+       655: getstatic     #435                // Field newGame:Z
+       658: invokestatic  #477                // Method zombie/world/WorldDictionary.setIsNewGame:(Z)V
+       661: iconst_1
+       662: putstatic     #483                // Field zombie/input/GameKeyboard.noEventsWhileLoading:Z
+       665: iconst_1
+       666: invokestatic  #488                // Method zombie/core/znet/ServerBrowser.setSuppressLuaCallbacks:(Z)V
+       669: new           #233                // class java/lang/Thread
+       672: dup
+       673: getstatic     #493                // Field zombie/core/ThreadGroups.Workers:Ljava/lang/ThreadGroup;
+       676: new           #499                // class zombie/gameStates/GameLoadingState$1
+       679: dup
+       680: aload_0
+       681: invokespecial #501                // Method zombie/gameStates/GameLoadingState$1."<init>":(Lzombie/gameStates/GameLoadingState;)V
+       684: invokespecial #504                // Method java/lang/Thread."<init>":(Ljava/lang/ThreadGroup;Ljava/lang/Runnable;)V
+       687: putstatic     #507                // Field loader:Ljava/lang/Thread;
+       690: iconst_1
+       691: putstatic     #511                // Field zombie/ui/UIManager.suspend:Z
+       694: getstatic     #507                // Field loader:Ljava/lang/Thread;
+       697: ldc_w         #516                // String GameLoadingThread
+       700: invokevirtual #518                // Method java/lang/Thread.setName:(Ljava/lang/String;)V
+       703: getstatic     #507                // Field loader:Ljava/lang/Thread;
+       706: invokedynamic #521,  0            // InvokeDynamic #4:uncaughtException:()Ljava/lang/Thread$UncaughtExceptionHandler;
+       711: invokevirtual #525                // Method java/lang/Thread.setUncaughtExceptionHandler:(Ljava/lang/Thread$UncaughtExceptionHandler;)V
+       714: getstatic     #507                // Field loader:Ljava/lang/Thread;
+       717: invokevirtual #529                // Method java/lang/Thread.start:()V
+       720: return
+      Exception table:
+         from    to  target type
+             4    13    16   Class java/lang/Exception
+           115   123   126   Class java/lang/Exception
+           204   213   216   Class java/lang/InterruptedException
+           295   301   304   Class java/lang/Exception
+           351   357   360   Class java/lang/Exception
+           383   485   488   Class java/io/IOException
+
+  public static void SendDone();
+    Code:
+         0: invokestatic  #407                // Method java/lang/System.currentTimeMillis:()J
+         3: getstatic     #411                // Field startTime:J
+         6: lsub
+         7: ldc2_w        #532                // long 999l
+        10: ladd
+        11: ldc2_w        #534                // long 1000l
+        14: ldiv
+        15: invokedynamic #536,  0            // InvokeDynamic #5:makeConcatWithConstants:(J)Ljava/lang/String;
+        20: invokestatic  #275                // Method zombie/debug/DebugLog.log:(Ljava/lang/String;)V
+        23: getstatic     #62                 // Field zombie/network/GameClient.client:Z
+        26: ifne          38
+        29: iconst_1
+        30: putstatic     #375                // Field done:Z
+        33: iconst_0
+        34: putstatic     #483                // Field zombie/input/GameKeyboard.noEventsWhileLoading:Z
+        37: return
+        38: getstatic     #207                // Field zombie/network/GameClient.instance:Lzombie/network/GameClient;
+        41: invokestatic  #407                // Method java/lang/System.currentTimeMillis:()J
+        44: getstatic     #411                // Field startTime:J
+        47: lsub
+        48: invokevirtual #539                // Method zombie/network/GameClient.sendLoginQueueDone:(J)V
+        51: return
+
+  public static void Done();
+    Code:
+         0: iconst_1
+         1: putstatic     #375                // Field done:Z
+         4: iconst_0
+         5: putstatic     #483                // Field zombie/input/GameKeyboard.noEventsWhileLoading:Z
+         8: return
+
+  public zombie.gameStates.GameState redirectState();
+    Code:
+         0: new           #542                // class zombie/gameStates/IngameState
+         3: dup
+         4: invokespecial #544                // Method zombie/gameStates/IngameState."<init>":()V
+         7: areturn
+
+  public void exit();
+    Code:
+         0: getstatic     #545                // Field zombie/ui/UIManager.useUiFbo:Z
+         3: istore_1
+         4: iconst_0
+         5: putstatic     #545                // Field zombie/ui/UIManager.useUiFbo:Z
+         8: getstatic     #465                // Field screenFader:Lzombie/ui/ScreenFader;
+        11: invokevirtual #548                // Method zombie/ui/ScreenFader.startFadeToBlack:()V
+        14: getstatic     #465                // Field screenFader:Lzombie/ui/ScreenFader;
+        17: invokevirtual #551                // Method zombie/ui/ScreenFader.isFading:()Z
+        20: ifeq          57
+        23: getstatic     #465                // Field screenFader:Lzombie/ui/ScreenFader;
+        26: invokevirtual #554                // Method zombie/ui/ScreenFader.preRender:()V
+        29: getstatic     #465                // Field screenFader:Lzombie/ui/ScreenFader;
+        32: invokevirtual #557                // Method zombie/ui/ScreenFader.postRender:()V
+        35: getstatic     #465                // Field screenFader:Lzombie/ui/ScreenFader;
+        38: invokevirtual #551                // Method zombie/ui/ScreenFader.isFading:()Z
+        41: ifeq          14
+        44: ldc2_w        #560                // long 33l
+        47: invokestatic  #232                // Method java/lang/Thread.sleep:(J)V
+        50: goto          14
+        53: astore_2
+        54: goto          14
+        57: iload_1
+        58: putstatic     #545                // Field zombie/ui/UIManager.useUiFbo:Z
+        61: iconst_0
+        62: invokestatic  #488                // Method zombie/core/znet/ServerBrowser.setSuppressLuaCallbacks:(Z)V
+        65: getstatic     #62                 // Field zombie/network/GameClient.client:Z
+        68: ifeq          74
+        71: invokestatic  #562                // Method zombie/network/NetworkAIParams.Init:()V
+        74: invokestatic  #567                // Method zombie/ui/UIManager.init:()V
+        77: ldc_w         #568                // String OnCreatePlayer
+        80: iconst_0
+        81: invokestatic  #88                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+        84: getstatic     #570                // Field zombie/characters/IsoPlayer.players:[Lzombie/characters/IsoPlayer;
+        87: iconst_0
+        88: aaload
+        89: invokestatic  #576                // Method zombie/Lua/LuaEventManager.triggerEvent:(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V
+        92: aconst_null
+        93: putstatic     #507                // Field loader:Ljava/lang/Thread;
+        96: iconst_0
+        97: putstatic     #375                // Field done:Z
+       100: aload_0
+       101: iconst_0
+       102: putfield      #401                // Field stage:I
+       105: invokestatic  #579                // Method zombie/characters/IsoPlayer.getInstance:()Lzombie/characters/IsoPlayer;
+       108: invokestatic  #582                // Method zombie/iso/IsoCamera.SetCharacterToFollow:(Lzombie/characters/IsoGameCharacter;)V
+       111: getstatic     #62                 // Field zombie/network/GameClient.client:Z
+       114: ifeq          175
+       117: getstatic     #588                // Field zombie/network/ServerOptions.instance:Lzombie/network/ServerOptions;
+       120: getfield      #591                // Field zombie/network/ServerOptions.safehouseAllowTrepass:Lzombie/network/ServerOptions$BooleanServerOption;
+       123: invokevirtual #595                // Method zombie/network/ServerOptions$BooleanServerOption.getValue:()Z
+       126: ifne          175
+       129: invokestatic  #579                // Method zombie/characters/IsoPlayer.getInstance:()Lzombie/characters/IsoPlayer;
+       132: invokevirtual #599                // Method zombie/characters/IsoPlayer.getCurrentSquare:()Lzombie/iso/IsoGridSquare;
+       135: getstatic     #603                // Field zombie/network/GameClient.username:Ljava/lang/String;
+       138: iconst_1
+       139: invokestatic  #606                // Method zombie/iso/areas/SafeHouse.isSafeHouse:(Lzombie/iso/IsoGridSquare;Ljava/lang/String;Z)Lzombie/iso/areas/SafeHouse;
+       142: astore_2
+       143: aload_2
+       144: ifnull        175
+       147: invokestatic  #579                // Method zombie/characters/IsoPlayer.getInstance:()Lzombie/characters/IsoPlayer;
+       150: aload_2
+       151: invokevirtual #612                // Method zombie/iso/areas/SafeHouse.getX:()I
+       154: i2f
+       155: fconst_1
+       156: fsub
+       157: invokevirtual #615                // Method zombie/characters/IsoPlayer.setX:(F)F
+       160: pop
+       161: invokestatic  #579                // Method zombie/characters/IsoPlayer.getInstance:()Lzombie/characters/IsoPlayer;
+       164: aload_2
+       165: invokevirtual #619                // Method zombie/iso/areas/SafeHouse.getY:()I
+       168: i2f
+       169: fconst_1
+       170: fsub
+       171: invokevirtual #622                // Method zombie/characters/IsoPlayer.setY:(F)F
+       174: pop
+       175: getstatic     #415                // Field zombie/SoundManager.instance:Lzombie/BaseSoundManager;
+       178: ldc           #25                 // String
+       180: invokevirtual #625                // Method zombie/BaseSoundManager.stopMusic:(Ljava/lang/String;)V
+       183: getstatic     #628                // Field zombie/AmbientStreamManager.instance:Lzombie/BaseAmbientStreamManager;
+       186: invokevirtual #633                // Method zombie/BaseAmbientStreamManager.init:()V
+       189: invokestatic  #579                // Method zombie/characters/IsoPlayer.getInstance:()Lzombie/characters/IsoPlayer;
+       192: ifnull        245
+       195: invokestatic  #579                // Method zombie/characters/IsoPlayer.getInstance:()Lzombie/characters/IsoPlayer;
+       198: invokevirtual #636                // Method zombie/characters/IsoPlayer.isAsleep:()Z
+       201: ifeq          245
+       204: invokestatic  #579                // Method zombie/characters/IsoPlayer.getInstance:()Lzombie/characters/IsoPlayer;
+       207: invokevirtual #639                // Method zombie/characters/IsoPlayer.getIndex:()I
+       210: iconst_1
+       211: invokestatic  #642                // Method zombie/ui/UIManager.setFadeBeforeUI:(IZ)V
+       214: invokestatic  #579                // Method zombie/characters/IsoPlayer.getInstance:()Lzombie/characters/IsoPlayer;
+       217: invokevirtual #639                // Method zombie/characters/IsoPlayer.getIndex:()I
+       220: i2d
+       221: ldc2_w        #646                // double 2.0d
+       224: invokestatic  #648                // Method zombie/ui/UIManager.FadeOut:(DD)V
+       227: invokestatic  #579                // Method zombie/characters/IsoPlayer.getInstance:()Lzombie/characters/IsoPlayer;
+       230: invokevirtual #639                // Method zombie/characters/IsoPlayer.getIndex:()I
+       233: i2d
+       234: dconst_0
+       235: invokestatic  #652                // Method zombie/ui/UIManager.setFadeTime:(DD)V
+       238: invokestatic  #655                // Method zombie/ui/UIManager.getSpeedControls:()Lzombie/ui/SpeedControls;
+       241: iconst_3
+       242: invokevirtual #661                // Method zombie/ui/SpeedControls.SetCurrentGameSpeed:(I)V
+       245: getstatic     #62                 // Field zombie/network/GameClient.client:Z
+       248: ifne          297
+       251: ldc_w         #664                // String currentGame
+       254: invokestatic  #666                // Method zombie/modding/ActiveMods.getById:(Ljava/lang/String;)Lzombie/modding/ActiveMods;
+       257: astore_2
+       258: aload_2
+       259: invokevirtual #672                // Method zombie/modding/ActiveMods.checkMissingMods:()V
+       262: aload_2
+       263: invokevirtual #675                // Method zombie/modding/ActiveMods.checkMissingMaps:()V
+       266: aload_2
+       267: invokestatic  #678                // Method zombie/modding/ActiveMods.setLoadedMods:(Lzombie/modding/ActiveMods;)V
+       270: getstatic     #295                // Field zombie/ZomboidFileSystem.instance:Lzombie/ZomboidFileSystem;
+       273: ldc_w         #682                // String mods.txt
+       276: invokevirtual #684                // Method zombie/ZomboidFileSystem.getFileNameInCurrentSave:(Ljava/lang/String;)Ljava/lang/String;
+       279: astore_3
+       280: new           #687                // class zombie/modding/ActiveModsFile
+       283: dup
+       284: invokespecial #689                // Method zombie/modding/ActiveModsFile."<init>":()V
+       287: astore        4
+       289: aload         4
+       291: aload_3
+       292: aload_2
+       293: invokevirtual #690                // Method zombie/modding/ActiveModsFile.write:(Ljava/lang/String;Lzombie/modding/ActiveMods;)Z
+       296: pop
+       297: getstatic     #331                // Field zombie/core/Core.gameMode:Ljava/lang/String;
+       300: invokedynamic #693,  0            // InvokeDynamic #6:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+       305: invokestatic  #275                // Method zombie/debug/DebugLog.log:(Ljava/lang/String;)V
+       308: ldc_w         #694                // String Sandbox Options:
+       311: invokestatic  #275                // Method zombie/debug/DebugLog.log:(Ljava/lang/String;)V
+       314: invokestatic  #696                // Method zombie/Lua/LuaManager$GlobalObject.getSandboxOptions:()Lzombie/SandboxOptions;
+       317: astore_2
+       318: iconst_0
+       319: istore_3
+       320: iload_3
+       321: aload_2
+       322: invokevirtual #700                // Method zombie/SandboxOptions.getNumOptions:()I
+       325: if_icmpge     366
+       328: aload_2
+       329: iload_3
+       330: invokevirtual #705                // Method zombie/SandboxOptions.getOptionByIndex:(I)Lzombie/SandboxOptions$SandboxOption;
+       333: astore        4
+       335: aload         4
+       337: invokeinterface #709,  1          // InterfaceMethod zombie/SandboxOptions$SandboxOption.getShortName:()Ljava/lang/String;
+       342: aload         4
+       344: invokeinterface #714,  1          // InterfaceMethod zombie/SandboxOptions$SandboxOption.asConfigOption:()Lzombie/config/ConfigOption;
+       349: invokevirtual #718                // Method zombie/config/ConfigOption.getValueAsString:()Ljava/lang/String;
+       352: invokedynamic #723,  0            // InvokeDynamic #7:makeConcatWithConstants:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       357: invokestatic  #275                // Method zombie/debug/DebugLog.log:(Ljava/lang/String;)V
+       360: iinc          3, 1
+       363: goto          320
+       366: iconst_1
+       367: putstatic     #127                // Field zombie/GameWindow.okToSaveOnExit:Z
+       370: return
+      Exception table:
+         from    to  target type
+            44    50    53   Class java/lang/Exception
+
+  public void render();
+    Code:
+         0: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+         3: getstatic     #724                // Field zombie/ui/UIFont.NewSmall:Lzombie/ui/UIFont;
+         6: invokevirtual #727                // Method zombie/ui/TextManager.getFontHeight:(Lzombie/ui/UIFont;)I
+         9: i2f
+        10: fstore_1
+        11: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+        14: getstatic     #109                // Field zombie/ui/UIFont.NewMedium:Lzombie/ui/UIFont;
+        17: invokevirtual #727                // Method zombie/ui/TextManager.getFontHeight:(Lzombie/ui/UIFont;)I
+        20: i2f
+        21: fstore_2
+        22: aload_0
+        23: dup
+        24: getfield      #731                // Field loadingDotTick:F
+        27: invokestatic  #734                // Method zombie/GameTime.getInstance:()Lzombie/GameTime;
+        30: invokevirtual #739                // Method zombie/GameTime.getMultiplierInMenu:()F
+        33: fadd
+        34: putfield      #731                // Field loadingDotTick:F
+        37: aload_0
+        38: getfield      #731                // Field loadingDotTick:F
+        41: ldc_w         #743                // float 20.0f
+        44: fcmpl
+        45: ifle          55
+        48: aload_0
+        49: ldc_w         #744                // String .
+        52: putfield      #27                 // Field loadingDot:Ljava/lang/String;
+        55: aload_0
+        56: getfield      #731                // Field loadingDotTick:F
+        59: ldc_w         #746                // float 40.0f
+        62: fcmpl
+        63: ifle          73
+        66: aload_0
+        67: ldc_w         #747                // String ..
+        70: putfield      #27                 // Field loadingDot:Ljava/lang/String;
+        73: aload_0
+        74: getfield      #731                // Field loadingDotTick:F
+        77: ldc_w         #749                // float 60.0f
+        80: fcmpl
+        81: ifle          91
+        84: aload_0
+        85: ldc_w         #750                // String ...
+        88: putfield      #27                 // Field loadingDot:Ljava/lang/String;
+        91: aload_0
+        92: getfield      #731                // Field loadingDotTick:F
+        95: ldc_w         #752                // float 80.0f
+        98: fcmpl
+        99: ifle          113
+       102: aload_0
+       103: ldc           #25                 // String
+       105: putfield      #27                 // Field loadingDot:Ljava/lang/String;
+       108: aload_0
+       109: fconst_0
+       110: putfield      #731                // Field loadingDotTick:F
+       113: aload_0
+       114: dup
+       115: getfield      #398                // Field time:F
+       118: getstatic     #753                // Field zombie/GameTime.instance:Lzombie/GameTime;
+       121: invokevirtual #756                // Method zombie/GameTime.getTimeDeltaInMenu:()F
+       124: fadd
+       125: putfield      #398                // Field time:F
+       128: fconst_0
+       129: fstore_3
+       130: fconst_0
+       131: fstore        4
+       133: fconst_0
+       134: fstore        5
+       136: aload_0
+       137: getfield      #401                // Field stage:I
+       140: ifne          261
+       143: aload_0
+       144: getfield      #398                // Field time:F
+       147: fstore        6
+       149: fconst_0
+       150: fstore        7
+       152: fconst_1
+       153: fstore        8
+       155: ldc_w         #759                // float 5.0f
+       158: fstore        9
+       160: ldc_w         #760                // float 7.0f
+       163: fstore        10
+       165: fconst_0
+       166: fstore        11
+       168: fload         6
+       170: fconst_0
+       171: fcmpl
+       172: ifle          190
+       175: fload         6
+       177: fconst_1
+       178: fcmpg
+       179: ifge          190
+       182: fload         6
+       184: fconst_0
+       185: fsub
+       186: fconst_1
+       187: fdiv
+       188: fstore        11
+       190: fload         6
+       192: fconst_1
+       193: fcmpl
+       194: iflt          209
+       197: fload         6
+       199: ldc_w         #759                // float 5.0f
+       202: fcmpg
+       203: ifgt          209
+       206: fconst_1
+       207: fstore        11
+       209: fload         6
+       211: ldc_w         #759                // float 5.0f
+       214: fcmpl
+       215: ifle          239
+       218: fload         6
+       220: ldc_w         #760                // float 7.0f
+       223: fcmpg
+       224: ifge          239
+       227: fconst_1
+       228: fload         6
+       230: ldc_w         #759                // float 5.0f
+       233: fsub
+       234: fconst_2
+       235: fdiv
+       236: fsub
+       237: fstore        11
+       239: fload         6
+       241: ldc_w         #760                // float 7.0f
+       244: fcmpl
+       245: iflt          258
+       248: aload_0
+       249: dup
+       250: getfield      #401                // Field stage:I
+       253: iconst_1
+       254: iadd
+       255: putfield      #401                // Field stage:I
+       258: fload         11
+       260: fstore_3
+       261: aload_0
+       262: getfield      #401                // Field stage:I
+       265: iconst_1
+       266: if_icmpne     400
+       269: aload_0
+       270: getfield      #398                // Field time:F
+       273: fstore        6
+       275: ldc_w         #760                // float 7.0f
+       278: fstore        7
+       280: ldc_w         #761                // float 8.0f
+       283: fstore        8
+       285: ldc_w         #762                // float 13.0f
+       288: fstore        9
+       290: ldc_w         #763                // float 15.0f
+       293: fstore        10
+       295: fconst_0
+       296: fstore        11
+       298: fload         6
+       300: ldc_w         #760                // float 7.0f
+       303: fcmpl
+       304: ifle          326
+       307: fload         6
+       309: ldc_w         #761                // float 8.0f
+       312: fcmpg
+       313: ifge          326
+       316: fload         6
+       318: ldc_w         #760                // float 7.0f
+       321: fsub
+       322: fconst_1
+       323: fdiv
+       324: fstore        11
+       326: fload         6
+       328: ldc_w         #761                // float 8.0f
+       331: fcmpl
+       332: iflt          347
+       335: fload         6
+       337: ldc_w         #762                // float 13.0f
+       340: fcmpg
+       341: ifgt          347
+       344: fconst_1
+       345: fstore        11
+       347: fload         6
+       349: ldc_w         #762                // float 13.0f
+       352: fcmpl
+       353: ifle          377
+       356: fload         6
+       358: ldc_w         #763                // float 15.0f
+       361: fcmpg
+       362: ifge          377
+       365: fconst_1
+       366: fload         6
+       368: ldc_w         #762                // float 13.0f
+       371: fsub
+       372: fconst_2
+       373: fdiv
+       374: fsub
+       375: fstore        11
+       377: fload         6
+       379: ldc_w         #763                // float 15.0f
+       382: fcmpl
+       383: iflt          396
+       386: aload_0
+       387: dup
+       388: getfield      #401                // Field stage:I
+       391: iconst_1
+       392: iadd
+       393: putfield      #401                // Field stage:I
+       396: fload         11
+       398: fstore        4
+       400: aload_0
+       401: getfield      #401                // Field stage:I
+       404: iconst_2
+       405: if_icmpne     536
+       408: aload_0
+       409: getfield      #398                // Field time:F
+       412: fstore        6
+       414: ldc_w         #763                // float 15.0f
+       417: fstore        7
+       419: ldc_w         #764                // float 16.0f
+       422: fstore        8
+       424: ldc_w         #765                // float 31.0f
+       427: fstore        9
+       429: ldc           #20                 // float 33.0f
+       431: fstore        10
+       433: fconst_0
+       434: fstore        11
+       436: fload         6
+       438: ldc_w         #763                // float 15.0f
+       441: fcmpl
+       442: ifle          464
+       445: fload         6
+       447: ldc_w         #764                // float 16.0f
+       450: fcmpg
+       451: ifge          464
+       454: fload         6
+       456: ldc_w         #763                // float 15.0f
+       459: fsub
+       460: fconst_1
+       461: fdiv
+       462: fstore        11
+       464: fload         6
+       466: ldc_w         #764                // float 16.0f
+       469: fcmpl
+       470: iflt          485
+       473: fload         6
+       475: ldc_w         #765                // float 31.0f
+       478: fcmpg
+       479: ifgt          485
+       482: fconst_1
+       483: fstore        11
+       485: fload         6
+       487: ldc_w         #765                // float 31.0f
+       490: fcmpl
+       491: ifle          514
+       494: fload         6
+       496: ldc           #20                 // float 33.0f
+       498: fcmpg
+       499: ifge          514
+       502: fconst_1
+       503: fload         6
+       505: ldc_w         #765                // float 31.0f
+       508: fsub
+       509: fconst_2
+       510: fdiv
+       511: fsub
+       512: fstore        11
+       514: fload         6
+       516: ldc           #20                 // float 33.0f
+       518: fcmpl
+       519: iflt          532
+       522: aload_0
+       523: dup
+       524: getfield      #401                // Field stage:I
+       527: iconst_1
+       528: iadd
+       529: putfield      #401                // Field stage:I
+       532: fload         11
+       534: fstore        5
+       536: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       539: invokevirtual #766                // Method zombie/core/Core.StartFrame:()V
+       542: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       545: invokevirtual #769                // Method zombie/core/Core.EndFrame:()V
+       548: getstatic     #545                // Field zombie/ui/UIManager.useUiFbo:Z
+       551: istore        6
+       553: iconst_0
+       554: putstatic     #545                // Field zombie/ui/UIManager.useUiFbo:Z
+       557: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       560: invokevirtual #772                // Method zombie/core/Core.StartFrameUI:()Z
+       563: pop
+       564: getstatic     #775                // Field zombie/core/SpriteRenderer.instance:Lzombie/core/SpriteRenderer;
+       567: aconst_null
+       568: iconst_0
+       569: iconst_0
+       570: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       573: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+       576: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       579: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+       582: fconst_0
+       583: fconst_0
+       584: fconst_0
+       585: fconst_1
+       586: aconst_null
+       587: invokevirtual #786                // Method zombie/core/SpriteRenderer.renderi:(Lzombie/core/textures/Texture;IIIIFFFFLjava/util/function/Consumer;)V
+       590: aload_0
+       591: getfield      #401                // Field stage:I
+       594: iconst_m1
+       595: if_icmpne     614
+       598: aload_0
+       599: invokevirtual #790                // Method renderProgressIndicator:()V
+       602: getstatic     #465                // Field screenFader:Lzombie/ui/ScreenFader;
+       605: invokevirtual #793                // Method zombie/ui/ScreenFader.update:()V
+       608: getstatic     #465                // Field screenFader:Lzombie/ui/ScreenFader;
+       611: invokevirtual #794                // Method zombie/ui/ScreenFader.render:()V
+       614: getstatic     #444                // Field mapDownloadFailed:Z
+       617: ifeq          712
+       620: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       623: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+       626: iconst_2
+       627: idiv
+       628: istore        7
+       630: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       633: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+       636: iconst_2
+       637: idiv
+       638: istore        8
+       640: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+       643: getstatic     #797                // Field zombie/ui/UIFont.Medium:Lzombie/ui/UIFont;
+       646: invokevirtual #800                // Method zombie/ui/TextManager.getFontFromEnum:(Lzombie/ui/UIFont;)Lzombie/core/fonts/AngelCodeFont;
+       649: invokevirtual #804                // Method zombie/core/fonts/AngelCodeFont.getLineHeight:()I
+       652: istore        9
+       654: iload         8
+       656: iload         9
+       658: iconst_2
+       659: idiv
+       660: isub
+       661: istore        10
+       663: ldc_w         #809                // String UI_GameLoad_MapDownloadFailed
+       666: iconst_0
+       667: anewarray     #70                 // class java/lang/Object
+       670: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+       673: astore        11
+       675: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+       678: getstatic     #797                // Field zombie/ui/UIFont.Medium:Lzombie/ui/UIFont;
+       681: iload         7
+       683: i2d
+       684: iload         10
+       686: i2d
+       687: aload         11
+       689: ldc2_w        #811                // double 0.8d
+       692: ldc2_w        #813                // double 0.1d
+       695: ldc2_w        #813                // double 0.1d
+       698: dconst_1
+       699: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+       702: invokestatic  #819                // Method zombie/ui/UIManager.render:()V
+       705: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       708: invokevirtual #820                // Method zombie/core/Core.EndFrameUI:()V
+       711: return
+       712: getstatic     #441                // Field unexpectedError:Z
+       715: ifeq          925
+       718: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+       721: getstatic     #797                // Field zombie/ui/UIFont.Medium:Lzombie/ui/UIFont;
+       724: invokevirtual #800                // Method zombie/ui/TextManager.getFontFromEnum:(Lzombie/ui/UIFont;)Lzombie/core/fonts/AngelCodeFont;
+       727: invokevirtual #804                // Method zombie/core/fonts/AngelCodeFont.getLineHeight:()I
+       730: istore        7
+       732: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+       735: getstatic     #823                // Field zombie/ui/UIFont.Small:Lzombie/ui/UIFont;
+       738: invokevirtual #800                // Method zombie/ui/TextManager.getFontFromEnum:(Lzombie/ui/UIFont;)Lzombie/core/fonts/AngelCodeFont;
+       741: invokevirtual #804                // Method zombie/core/fonts/AngelCodeFont.getLineHeight:()I
+       744: istore        8
+       746: bipush        8
+       748: istore        9
+       750: iconst_2
+       751: istore        10
+       753: iload         7
+       755: bipush        8
+       757: iadd
+       758: iload         8
+       760: iadd
+       761: iconst_2
+       762: iadd
+       763: iload         8
+       765: iadd
+       766: istore        11
+       768: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       771: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+       774: iconst_2
+       775: idiv
+       776: istore        12
+       778: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       781: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+       784: iconst_2
+       785: idiv
+       786: istore        13
+       788: iload         13
+       790: iload         11
+       792: iconst_2
+       793: idiv
+       794: isub
+       795: istore        14
+       797: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+       800: getstatic     #797                // Field zombie/ui/UIFont.Medium:Lzombie/ui/UIFont;
+       803: iload         12
+       805: i2d
+       806: iload         14
+       808: i2d
+       809: ldc_w         #826                // String UI_GameLoad_UnexpectedError1
+       812: iconst_0
+       813: anewarray     #70                 // class java/lang/Object
+       816: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+       819: ldc2_w        #811                // double 0.8d
+       822: ldc2_w        #813                // double 0.1d
+       825: ldc2_w        #813                // double 0.1d
+       828: dconst_1
+       829: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+       832: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+       835: getstatic     #823                // Field zombie/ui/UIFont.Small:Lzombie/ui/UIFont;
+       838: iload         12
+       840: i2d
+       841: iload         14
+       843: iload         7
+       845: iadd
+       846: bipush        8
+       848: iadd
+       849: i2d
+       850: ldc_w         #828                // String UI_GameLoad_UnexpectedError2
+       853: iconst_0
+       854: anewarray     #70                 // class java/lang/Object
+       857: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+       860: dconst_1
+       861: dconst_1
+       862: dconst_1
+       863: dconst_1
+       864: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+       867: getstatic     #295                // Field zombie/ZomboidFileSystem.instance:Lzombie/ZomboidFileSystem;
+       870: invokevirtual #340                // Method zombie/ZomboidFileSystem.getCacheDir:()Ljava/lang/String;
+       873: getstatic     #343                // Field java/io/File.separator:Ljava/lang/String;
+       876: invokedynamic #830,  0            // InvokeDynamic #8:makeConcatWithConstants:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+       881: astore        15
+       883: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+       886: getstatic     #823                // Field zombie/ui/UIFont.Small:Lzombie/ui/UIFont;
+       889: iload         12
+       891: i2d
+       892: iload         14
+       894: iload         7
+       896: iadd
+       897: bipush        8
+       899: iadd
+       900: iload         8
+       902: iadd
+       903: iconst_2
+       904: iadd
+       905: i2d
+       906: aload         15
+       908: dconst_1
+       909: dconst_1
+       910: dconst_1
+       911: dconst_1
+       912: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+       915: invokestatic  #819                // Method zombie/ui/UIManager.render:()V
+       918: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       921: invokevirtual #820                // Method zombie/core/Core.EndFrameUI:()V
+       924: return
+       925: getstatic     #204                // Field zombie/GameWindow.serverDisconnected:Z
+       928: ifeq          1041
+       931: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       934: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+       937: iconst_2
+       938: idiv
+       939: istore        7
+       941: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       944: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+       947: iconst_2
+       948: idiv
+       949: istore        8
+       951: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+       954: getstatic     #797                // Field zombie/ui/UIFont.Medium:Lzombie/ui/UIFont;
+       957: invokevirtual #800                // Method zombie/ui/TextManager.getFontFromEnum:(Lzombie/ui/UIFont;)Lzombie/core/fonts/AngelCodeFont;
+       960: invokevirtual #804                // Method zombie/core/fonts/AngelCodeFont.getLineHeight:()I
+       963: istore        9
+       965: iconst_2
+       966: istore        10
+       968: iload         8
+       970: iload         9
+       972: iconst_2
+       973: iadd
+       974: iload         9
+       976: iadd
+       977: iconst_2
+       978: idiv
+       979: isub
+       980: istore        11
+       982: getstatic     #831                // Field zombie/GameWindow.kickReason:Ljava/lang/String;
+       985: astore        12
+       987: aload         12
+       989: ifnonnull     1004
+       992: ldc_w         #834                // String UI_OnConnectFailed_ConnectionLost
+       995: iconst_0
+       996: anewarray     #70                 // class java/lang/Object
+       999: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      1002: astore        12
+      1004: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1007: getstatic     #797                // Field zombie/ui/UIFont.Medium:Lzombie/ui/UIFont;
+      1010: iload         7
+      1012: i2d
+      1013: iload         11
+      1015: i2d
+      1016: aload         12
+      1018: ldc2_w        #811                // double 0.8d
+      1021: ldc2_w        #813                // double 0.1d
+      1024: ldc2_w        #813                // double 0.1d
+      1027: dconst_1
+      1028: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      1031: invokestatic  #819                // Method zombie/ui/UIManager.render:()V
+      1034: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1037: invokevirtual #820                // Method zombie/core/Core.EndFrameUI:()V
+      1040: return
+      1041: getstatic     #438                // Field worldVersionError:Z
+      1044: ifeq          1162
+      1047: getstatic     #836                // Field zombie/iso/WorldConverter.convertingVersion:I
+      1050: ifne          1104
+      1053: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1056: getstatic     #823                // Field zombie/ui/UIFont.Small:Lzombie/ui/UIFont;
+      1059: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1062: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      1065: iconst_2
+      1066: idiv
+      1067: i2d
+      1068: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1071: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      1074: bipush        100
+      1076: isub
+      1077: i2d
+      1078: ldc_w         #841                // String UI_CorruptedWorldVersion
+      1081: iconst_0
+      1082: anewarray     #70                 // class java/lang/Object
+      1085: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      1088: ldc2_w        #811                // double 0.8d
+      1091: ldc2_w        #813                // double 0.1d
+      1094: ldc2_w        #813                // double 0.1d
+      1097: dconst_1
+      1098: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      1101: goto          1288
+      1104: getstatic     #836                // Field zombie/iso/WorldConverter.convertingVersion:I
+      1107: iconst_1
+      1108: if_icmpge     1288
+      1111: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1114: getstatic     #823                // Field zombie/ui/UIFont.Small:Lzombie/ui/UIFont;
+      1117: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1120: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      1123: iconst_2
+      1124: idiv
+      1125: i2d
+      1126: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1129: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      1132: bipush        100
+      1134: isub
+      1135: i2d
+      1136: ldc_w         #843                // String UI_ConvertWorldFailure
+      1139: iconst_0
+      1140: anewarray     #70                 // class java/lang/Object
+      1143: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      1146: ldc2_w        #811                // double 0.8d
+      1149: ldc2_w        #813                // double 0.1d
+      1152: ldc2_w        #813                // double 0.1d
+      1155: dconst_1
+      1156: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      1159: goto          1288
+      1162: getstatic     #450                // Field convertingWorld:Z
+      1165: ifeq          1288
+      1168: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1171: getstatic     #823                // Field zombie/ui/UIFont.Small:Lzombie/ui/UIFont;
+      1174: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1177: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      1180: iconst_2
+      1181: idiv
+      1182: i2d
+      1183: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1186: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      1189: bipush        100
+      1191: isub
+      1192: i2d
+      1193: ldc_w         #845                // String UI_ConvertWorld
+      1196: iconst_0
+      1197: anewarray     #70                 // class java/lang/Object
+      1200: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      1203: ldc2_w        #847                // double 0.5d
+      1206: ldc2_w        #847                // double 0.5d
+      1209: ldc2_w        #847                // double 0.5d
+      1212: dconst_1
+      1213: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      1216: getstatic     #456                // Field convertingFileMax:I
+      1219: iconst_m1
+      1220: if_icmpeq     1288
+      1223: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1226: getstatic     #823                // Field zombie/ui/UIFont.Small:Lzombie/ui/UIFont;
+      1229: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1232: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      1235: iconst_2
+      1236: idiv
+      1237: i2d
+      1238: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1241: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      1244: bipush        100
+      1246: isub
+      1247: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1250: getstatic     #823                // Field zombie/ui/UIFont.Small:Lzombie/ui/UIFont;
+      1253: invokevirtual #800                // Method zombie/ui/TextManager.getFontFromEnum:(Lzombie/ui/UIFont;)Lzombie/core/fonts/AngelCodeFont;
+      1256: invokevirtual #804                // Method zombie/core/fonts/AngelCodeFont.getLineHeight:()I
+      1259: iadd
+      1260: bipush        8
+      1262: iadd
+      1263: i2d
+      1264: getstatic     #453                // Field convertingFileCount:I
+      1267: getstatic     #456                // Field convertingFileMax:I
+      1270: invokedynamic #849,  0            // InvokeDynamic #9:makeConcatWithConstants:(II)Ljava/lang/String;
+      1275: ldc2_w        #847                // double 0.5d
+      1278: ldc2_w        #847                // double 0.5d
+      1281: ldc2_w        #847                // double 0.5d
+      1284: dconst_1
+      1285: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      1288: getstatic     #852                // Field playerWrongIP:Z
+      1291: ifeq          1397
+      1294: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1297: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      1300: iconst_2
+      1301: idiv
+      1302: istore        7
+      1304: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1307: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      1310: iconst_2
+      1311: idiv
+      1312: istore        8
+      1314: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1317: getstatic     #797                // Field zombie/ui/UIFont.Medium:Lzombie/ui/UIFont;
+      1320: invokevirtual #800                // Method zombie/ui/TextManager.getFontFromEnum:(Lzombie/ui/UIFont;)Lzombie/core/fonts/AngelCodeFont;
+      1323: invokevirtual #804                // Method zombie/core/fonts/AngelCodeFont.getLineHeight:()I
+      1326: istore        9
+      1328: iconst_2
+      1329: istore        10
+      1331: iload         8
+      1333: iload         9
+      1335: iconst_2
+      1336: iadd
+      1337: iload         9
+      1339: iadd
+      1340: iconst_2
+      1341: idiv
+      1342: isub
+      1343: istore        11
+      1345: getstatic     #160                // Field gameLoadingString:Ljava/lang/String;
+      1348: astore        12
+      1350: getstatic     #160                // Field gameLoadingString:Ljava/lang/String;
+      1353: ifnonnull     1360
+      1356: ldc           #25                 // String
+      1358: astore        12
+      1360: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1363: getstatic     #797                // Field zombie/ui/UIFont.Medium:Lzombie/ui/UIFont;
+      1366: iload         7
+      1368: i2d
+      1369: iload         11
+      1371: i2d
+      1372: aload         12
+      1374: ldc2_w        #811                // double 0.8d
+      1377: ldc2_w        #813                // double 0.1d
+      1380: ldc2_w        #813                // double 0.1d
+      1383: dconst_1
+      1384: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      1387: invokestatic  #819                // Method zombie/ui/UIManager.render:()V
+      1390: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1393: invokevirtual #820                // Method zombie/core/Core.EndFrameUI:()V
+      1396: return
+      1397: getstatic     #62                 // Field zombie/network/GameClient.client:Z
+      1400: ifeq          1588
+      1403: getstatic     #160                // Field gameLoadingString:Ljava/lang/String;
+      1406: astore        7
+      1408: getstatic     #160                // Field gameLoadingString:Ljava/lang/String;
+      1411: ifnonnull     1418
+      1414: ldc           #25                 // String
+      1416: astore        7
+      1418: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1421: getstatic     #823                // Field zombie/ui/UIFont.Small:Lzombie/ui/UIFont;
+      1424: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1427: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      1430: iconst_2
+      1431: idiv
+      1432: i2d
+      1433: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1436: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      1439: bipush        40
+      1441: isub
+      1442: i2f
+      1443: fload_1
+      1444: fsub
+      1445: ldc_w         #759                // float 5.0f
+      1448: fsub
+      1449: f2d
+      1450: aload         7
+      1452: ldc2_w        #847                // double 0.5d
+      1455: ldc2_w        #847                // double 0.5d
+      1458: ldc2_w        #847                // double 0.5d
+      1461: dconst_1
+      1462: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      1465: getstatic     #855                // Field zombie/network/GameClient.connection:Lzombie/core/raknet/UdpConnection;
+      1468: invokevirtual #859                // Method zombie/core/raknet/UdpConnection.getConnectionType:()Lzombie/core/raknet/UdpConnection$ConnectionType;
+      1471: getstatic     #865                // Field zombie/core/raknet/UdpConnection$ConnectionType.Steam:Lzombie/core/raknet/UdpConnection$ConnectionType;
+      1474: if_acmpne     1585
+      1477: getstatic     #775                // Field zombie/core/SpriteRenderer.instance:Lzombie/core/SpriteRenderer;
+      1480: aconst_null
+      1481: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1484: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      1487: i2f
+      1488: aload_0
+      1489: getfield      #119                // Field width:F
+      1492: fsub
+      1493: fconst_2
+      1494: fdiv
+      1495: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1498: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      1501: bipush        40
+      1503: isub
+      1504: i2f
+      1505: fload_1
+      1506: fconst_2
+      1507: fmul
+      1508: fsub
+      1509: ldc_w         #759                // float 5.0f
+      1512: fsub
+      1513: aload_0
+      1514: getfield      #119                // Field width:F
+      1517: ldc_w         #871                // float 18.0f
+      1520: fconst_1
+      1521: ldc_w         #872                // float 0.4f
+      1524: ldc_w         #873                // float 0.35f
+      1527: ldc_w         #874                // float 0.8f
+      1530: aconst_null
+      1531: invokevirtual #875                // Method zombie/core/SpriteRenderer.render:(Lzombie/core/textures/Texture;FFFFFFFFLjava/util/function/Consumer;)V
+      1534: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1537: getstatic     #797                // Field zombie/ui/UIFont.Medium:Lzombie/ui/UIFont;
+      1540: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1543: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      1546: iconst_2
+      1547: idiv
+      1548: i2d
+      1549: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1552: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      1555: bipush        40
+      1557: isub
+      1558: i2f
+      1559: fload_1
+      1560: fconst_2
+      1561: fmul
+      1562: fsub
+      1563: ldc_w         #759                // float 5.0f
+      1566: fsub
+      1567: f2d
+      1568: aload_0
+      1569: getfield      #100                // Field text:Ljava/lang/String;
+      1572: ldc2_w        #813                // double 0.1d
+      1575: ldc2_w        #813                // double 0.1d
+      1578: ldc2_w        #813                // double 0.1d
+      1581: dconst_1
+      1582: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      1585: goto          1750
+      1588: getstatic     #447                // Field playerCreated:Z
+      1591: ifne          1750
+      1594: getstatic     #435                // Field newGame:Z
+      1597: ifeq          1750
+      1600: invokestatic  #328                // Method zombie/core/Core.isLastStand:()Z
+      1603: ifne          1750
+      1606: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1609: getstatic     #724                // Field zombie/ui/UIFont.NewSmall:Lzombie/ui/UIFont;
+      1612: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1615: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      1618: iconst_2
+      1619: idiv
+      1620: i2d
+      1621: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1624: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      1627: bipush        40
+      1629: isub
+      1630: i2f
+      1631: fload_1
+      1632: fsub
+      1633: ldc_w         #759                // float 5.0f
+      1636: fsub
+      1637: f2d
+      1638: ldc_w         #878                // String UI_Loading
+      1641: iconst_0
+      1642: anewarray     #70                 // class java/lang/Object
+      1645: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      1648: ldc_w         #744                // String .
+      1651: ldc           #25                 // String
+      1653: invokevirtual #880                // Method java/lang/String.replace:(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+      1656: ldc2_w        #847                // double 0.5d
+      1659: ldc2_w        #847                // double 0.5d
+      1662: ldc2_w        #847                // double 0.5d
+      1665: dconst_1
+      1666: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      1669: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1672: getstatic     #724                // Field zombie/ui/UIFont.NewSmall:Lzombie/ui/UIFont;
+      1675: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1678: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      1681: iconst_2
+      1682: idiv
+      1683: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1686: getstatic     #823                // Field zombie/ui/UIFont.Small:Lzombie/ui/UIFont;
+      1689: ldc_w         #878                // String UI_Loading
+      1692: iconst_0
+      1693: anewarray     #70                 // class java/lang/Object
+      1696: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      1699: ldc_w         #744                // String .
+      1702: ldc           #25                 // String
+      1704: invokevirtual #880                // Method java/lang/String.replace:(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+      1707: invokevirtual #115                // Method zombie/ui/TextManager.MeasureStringX:(Lzombie/ui/UIFont;Ljava/lang/String;)I
+      1710: iconst_2
+      1711: idiv
+      1712: iadd
+      1713: iconst_1
+      1714: iadd
+      1715: i2d
+      1716: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1719: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      1722: bipush        40
+      1724: isub
+      1725: i2f
+      1726: fload_1
+      1727: fsub
+      1728: ldc_w         #759                // float 5.0f
+      1731: fsub
+      1732: f2d
+      1733: aload_0
+      1734: getfield      #27                 // Field loadingDot:Ljava/lang/String;
+      1737: ldc2_w        #847                // double 0.5d
+      1740: ldc2_w        #847                // double 0.5d
+      1743: ldc2_w        #847                // double 0.5d
+      1746: dconst_1
+      1747: invokevirtual #884                // Method zombie/ui/TextManager.DrawString:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      1750: aload_0
+      1751: invokevirtual #887                // Method doQuickTips:()V
+      1754: aload_0
+      1755: getfield      #401                // Field stage:I
+      1758: ifne          1826
+      1761: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1764: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      1767: iconst_2
+      1768: idiv
+      1769: istore        7
+      1771: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1774: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      1777: iconst_2
+      1778: idiv
+      1779: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1782: getstatic     #890                // Field zombie/ui/UIFont.Intro:Lzombie/ui/UIFont;
+      1785: invokevirtual #800                // Method zombie/ui/TextManager.getFontFromEnum:(Lzombie/ui/UIFont;)Lzombie/core/fonts/AngelCodeFont;
+      1788: invokevirtual #804                // Method zombie/core/fonts/AngelCodeFont.getLineHeight:()I
+      1791: iconst_2
+      1792: idiv
+      1793: isub
+      1794: istore        8
+      1796: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1799: getstatic     #890                // Field zombie/ui/UIFont.Intro:Lzombie/ui/UIFont;
+      1802: iload         7
+      1804: i2d
+      1805: iload         8
+      1807: i2d
+      1808: ldc_w         #893                // String UI_Intro1
+      1811: iconst_0
+      1812: anewarray     #70                 // class java/lang/Object
+      1815: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      1818: dconst_1
+      1819: dconst_1
+      1820: dconst_1
+      1821: fload_3
+      1822: f2d
+      1823: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      1826: aload_0
+      1827: getfield      #401                // Field stage:I
+      1830: iconst_1
+      1831: if_icmpne     1900
+      1834: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1837: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      1840: iconst_2
+      1841: idiv
+      1842: istore        7
+      1844: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1847: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      1850: iconst_2
+      1851: idiv
+      1852: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1855: getstatic     #890                // Field zombie/ui/UIFont.Intro:Lzombie/ui/UIFont;
+      1858: invokevirtual #800                // Method zombie/ui/TextManager.getFontFromEnum:(Lzombie/ui/UIFont;)Lzombie/core/fonts/AngelCodeFont;
+      1861: invokevirtual #804                // Method zombie/core/fonts/AngelCodeFont.getLineHeight:()I
+      1864: iconst_2
+      1865: idiv
+      1866: isub
+      1867: istore        8
+      1869: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1872: getstatic     #890                // Field zombie/ui/UIFont.Intro:Lzombie/ui/UIFont;
+      1875: iload         7
+      1877: i2d
+      1878: iload         8
+      1880: i2d
+      1881: ldc_w         #895                // String UI_Intro2
+      1884: iconst_0
+      1885: anewarray     #70                 // class java/lang/Object
+      1888: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      1891: dconst_1
+      1892: dconst_1
+      1893: dconst_1
+      1894: fload         4
+      1896: f2d
+      1897: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      1900: aload_0
+      1901: getfield      #401                // Field stage:I
+      1904: iconst_2
+      1905: if_icmpne     1974
+      1908: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1911: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      1914: iconst_2
+      1915: idiv
+      1916: istore        7
+      1918: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1921: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      1924: iconst_2
+      1925: idiv
+      1926: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1929: getstatic     #890                // Field zombie/ui/UIFont.Intro:Lzombie/ui/UIFont;
+      1932: invokevirtual #800                // Method zombie/ui/TextManager.getFontFromEnum:(Lzombie/ui/UIFont;)Lzombie/core/fonts/AngelCodeFont;
+      1935: invokevirtual #804                // Method zombie/core/fonts/AngelCodeFont.getLineHeight:()I
+      1938: iconst_2
+      1939: idiv
+      1940: isub
+      1941: istore        8
+      1943: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      1946: getstatic     #890                // Field zombie/ui/UIFont.Intro:Lzombie/ui/UIFont;
+      1949: iload         7
+      1951: i2d
+      1952: iload         8
+      1954: i2d
+      1955: ldc_w         #897                // String UI_Intro3
+      1958: iconst_0
+      1959: anewarray     #70                 // class java/lang/Object
+      1962: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      1965: dconst_1
+      1966: dconst_1
+      1967: dconst_1
+      1968: fload         5
+      1970: f2d
+      1971: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      1974: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      1977: invokevirtual #899                // Method zombie/core/Core.getDebug:()Z
+      1980: ifeq          1987
+      1983: iconst_1
+      1984: putstatic     #902                // Field showedClickToSkip:Z
+      1987: getstatic     #375                // Field done:Z
+      1990: ifeq          2384
+      1993: getstatic     #447                // Field playerCreated:Z
+      1996: ifeq          2384
+      1999: getstatic     #435                // Field newGame:Z
+      2002: ifeq          2033
+      2005: aload_0
+      2006: getfield      #398                // Field time:F
+      2009: ldc           #20                 // float 33.0f
+      2011: fcmpl
+      2012: ifge          2033
+      2015: invokestatic  #328                // Method zombie/core/Core.isLastStand:()Z
+      2018: ifne          2033
+      2021: ldc_w         #905                // String Tutorial
+      2024: getstatic     #331                // Field zombie/core/Core.gameMode:Ljava/lang/String;
+      2027: invokevirtual #334                // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+      2030: ifeq          2384
+      2033: aload_0
+      2034: getfield      #404                // Field clickToSkipFadeIn:Z
+      2037: ifeq          2081
+      2040: aload_0
+      2041: dup
+      2042: getfield      #31                 // Field clickToSkipAlpha:F
+      2045: invokestatic  #734                // Method zombie/GameTime.getInstance:()Lzombie/GameTime;
+      2048: invokevirtual #907                // Method zombie/GameTime.getThirtyFPSMultiplierInMenu:()F
+      2051: ldc_w         #910                // float 30.0f
+      2054: fdiv
+      2055: fadd
+      2056: putfield      #31                 // Field clickToSkipAlpha:F
+      2059: aload_0
+      2060: getfield      #31                 // Field clickToSkipAlpha:F
+      2063: fconst_1
+      2064: fcmpl
+      2065: ifle          2120
+      2068: aload_0
+      2069: fconst_1
+      2070: putfield      #31                 // Field clickToSkipAlpha:F
+      2073: aload_0
+      2074: iconst_0
+      2075: putfield      #404                // Field clickToSkipFadeIn:Z
+      2078: goto          2120
+      2081: iconst_1
+      2082: putstatic     #902                // Field showedClickToSkip:Z
+      2085: aload_0
+      2086: dup
+      2087: getfield      #31                 // Field clickToSkipAlpha:F
+      2090: invokestatic  #734                // Method zombie/GameTime.getInstance:()Lzombie/GameTime;
+      2093: invokevirtual #907                // Method zombie/GameTime.getThirtyFPSMultiplierInMenu:()F
+      2096: ldc_w         #910                // float 30.0f
+      2099: fdiv
+      2100: fsub
+      2101: putfield      #31                 // Field clickToSkipAlpha:F
+      2104: aload_0
+      2105: getfield      #31                 // Field clickToSkipAlpha:F
+      2108: ldc_w         #911                // float 0.25f
+      2111: fcmpg
+      2112: ifge          2120
+      2115: aload_0
+      2116: iconst_1
+      2117: putfield      #404                // Field clickToSkipFadeIn:Z
+      2120: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      2123: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+      2126: istore        7
+      2128: getstatic     #912                // Field zombie/GameWindow.activatedJoyPad:Lzombie/input/JoypadManager$Joypad;
+      2131: ifnull        2146
+      2134: getstatic     #916                // Field zombie/input/JoypadManager.instance:Lzombie/input/JoypadManager;
+      2137: getfield      #921                // Field zombie/input/JoypadManager.joypadList:Ljava/util/ArrayList;
+      2140: invokevirtual #925                // Method java/util/ArrayList.isEmpty:()Z
+      2143: ifeq          2198
+      2146: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      2149: getstatic     #928                // Field zombie/ui/UIFont.NewLarge:Lzombie/ui/UIFont;
+      2152: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      2155: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      2158: iconst_2
+      2159: idiv
+      2160: i2d
+      2161: iload         7
+      2163: bipush        40
+      2165: isub
+      2166: i2f
+      2167: fload_1
+      2168: fsub
+      2169: ldc_w         #759                // float 5.0f
+      2172: fsub
+      2173: f2d
+      2174: ldc_w         #931                // String UI_ClickToSkip
+      2177: iconst_0
+      2178: anewarray     #70                 // class java/lang/Object
+      2181: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      2184: dconst_1
+      2185: dconst_1
+      2186: dconst_1
+      2187: aload_0
+      2188: getfield      #31                 // Field clickToSkipAlpha:F
+      2191: f2d
+      2192: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      2195: goto          2384
+      2198: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      2201: invokevirtual #933                // Method zombie/core/Core.getOptionControllerButtonStyle:()I
+      2204: iconst_1
+      2205: if_icmpne     2216
+      2208: ldc_w         #936                // String XBOX
+      2211: astore        8
+      2213: goto          2221
+      2216: ldc_w         #938                // String PS4
+      2219: astore        8
+      2221: aload         8
+      2223: invokedynamic #940,  0            // InvokeDynamic #10:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+      2228: invokestatic  #941                // Method zombie/core/textures/Texture.getSharedTexture:(Ljava/lang/String;)Lzombie/core/textures/Texture;
+      2231: astore        9
+      2233: aload         9
+      2235: ifnull        2335
+      2238: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      2241: getstatic     #823                // Field zombie/ui/UIFont.Small:Lzombie/ui/UIFont;
+      2244: invokevirtual #800                // Method zombie/ui/TextManager.getFontFromEnum:(Lzombie/ui/UIFont;)Lzombie/core/fonts/AngelCodeFont;
+      2247: invokevirtual #804                // Method zombie/core/fonts/AngelCodeFont.getLineHeight:()I
+      2250: istore        10
+      2252: getstatic     #775                // Field zombie/core/SpriteRenderer.instance:Lzombie/core/SpriteRenderer;
+      2255: aload         9
+      2257: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      2260: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      2263: iconst_2
+      2264: idiv
+      2265: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      2268: getstatic     #823                // Field zombie/ui/UIFont.Small:Lzombie/ui/UIFont;
+      2271: ldc_w         #947                // String UI_PressAToStart
+      2274: iconst_0
+      2275: anewarray     #70                 // class java/lang/Object
+      2278: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      2281: invokevirtual #115                // Method zombie/ui/TextManager.MeasureStringX:(Lzombie/ui/UIFont;Ljava/lang/String;)I
+      2284: iconst_2
+      2285: idiv
+      2286: isub
+      2287: bipush        8
+      2289: isub
+      2290: aload         9
+      2292: invokevirtual #949                // Method zombie/core/textures/Texture.getWidth:()I
+      2295: isub
+      2296: iload         7
+      2298: bipush        60
+      2300: isub
+      2301: iload         10
+      2303: iconst_2
+      2304: idiv
+      2305: iadd
+      2306: aload         9
+      2308: invokevirtual #952                // Method zombie/core/textures/Texture.getHeight:()I
+      2311: iconst_2
+      2312: idiv
+      2313: isub
+      2314: aload         9
+      2316: invokevirtual #949                // Method zombie/core/textures/Texture.getWidth:()I
+      2319: aload         9
+      2321: invokevirtual #952                // Method zombie/core/textures/Texture.getHeight:()I
+      2324: fconst_1
+      2325: fconst_1
+      2326: fconst_1
+      2327: aload_0
+      2328: getfield      #31                 // Field clickToSkipAlpha:F
+      2331: aconst_null
+      2332: invokevirtual #786                // Method zombie/core/SpriteRenderer.renderi:(Lzombie/core/textures/Texture;IIIIFFFFLjava/util/function/Consumer;)V
+      2335: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+      2338: getstatic     #823                // Field zombie/ui/UIFont.Small:Lzombie/ui/UIFont;
+      2341: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      2344: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+      2347: iconst_2
+      2348: idiv
+      2349: i2d
+      2350: iload         7
+      2352: bipush        40
+      2354: isub
+      2355: i2f
+      2356: fload_1
+      2357: fsub
+      2358: ldc_w         #759                // float 5.0f
+      2361: fsub
+      2362: f2d
+      2363: ldc_w         #947                // String UI_PressAToStart
+      2366: iconst_0
+      2367: anewarray     #70                 // class java/lang/Object
+      2370: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      2373: dconst_1
+      2374: dconst_1
+      2375: dconst_1
+      2376: aload_0
+      2377: getfield      #31                 // Field clickToSkipAlpha:F
+      2380: f2d
+      2381: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+      2384: invokestatic  #955                // Method zombie/modding/ActiveMods.renderUI:()V
+      2387: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+      2390: invokevirtual #820                // Method zombie/core/Core.EndFrameUI:()V
+      2393: iload         6
+      2395: putstatic     #545                // Field zombie/ui/UIManager.useUiFbo:Z
+      2398: return
+
+  private void doQuickTips();
+    Code:
+         0: getstatic     #435                // Field newGame:Z
+         3: ifeq          7
+         6: return
+         7: aload_0
+         8: getfield      #35                 // Field quickTipsTimer:F
+        11: ldc           #34                 // float 720.0f
+        13: fcmpl
+        14: ifle          30
+        17: aload_0
+        18: aload_0
+        19: invokevirtual #958                // Method getNewQuickTip:()Ljava/lang/String;
+        22: putfield      #961                // Field quickTipsText:Ljava/lang/String;
+        25: aload_0
+        26: fconst_0
+        27: putfield      #35                 // Field quickTipsTimer:F
+        30: aload_0
+        31: dup
+        32: getfield      #35                 // Field quickTipsTimer:F
+        35: invokestatic  #734                // Method zombie/GameTime.getInstance:()Lzombie/GameTime;
+        38: invokevirtual #739                // Method zombie/GameTime.getMultiplierInMenu:()F
+        41: fadd
+        42: putfield      #35                 // Field quickTipsTimer:F
+        45: aload_0
+        46: getfield      #961                // Field quickTipsText:Ljava/lang/String;
+        49: invokestatic  #964                // Method zombie/util/StringUtils.isNullOrEmpty:(Ljava/lang/String;)Z
+        52: ifne          99
+        55: getstatic     #103                // Field zombie/ui/TextManager.instance:Lzombie/ui/TextManager;
+        58: getstatic     #109                // Field zombie/ui/UIFont.NewMedium:Lzombie/ui/UIFont;
+        61: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+        64: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+        67: i2d
+        68: ldc2_w        #646                // double 2.0d
+        71: ddiv
+        72: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+        75: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+        78: bipush        40
+        80: isub
+        81: i2d
+        82: aload_0
+        83: getfield      #961                // Field quickTipsText:Ljava/lang/String;
+        86: ldc2_w        #847                // double 0.5d
+        89: ldc2_w        #847                // double 0.5d
+        92: ldc2_w        #847                // double 0.5d
+        95: dconst_1
+        96: invokevirtual #815                // Method zombie/ui/TextManager.DrawStringCentre:(Lzombie/ui/UIFont;DDLjava/lang/String;DDDD)V
+        99: return
+
+  private java.lang.String getNewQuickTip();
+    Code:
+         0: aload_0
+         1: getfield      #970                // Field quickTipsList:Ljava/util/List;
+         4: invokeinterface #974,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+         9: ifne          24
+        12: aload_0
+        13: getfield      #977                // Field quickTipsListJoke:Ljava/util/List;
+        16: invokeinterface #974,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+        21: ifeq          26
+        24: aconst_null
+        25: areturn
+        26: aload_0
+        27: getfield      #970                // Field quickTipsList:Ljava/util/List;
+        30: aload_0
+        31: getfield      #970                // Field quickTipsList:Ljava/util/List;
+        34: invokeinterface #980,  1          // InterfaceMethod java/util/List.size:()I
+        39: invokestatic  #983                // Method zombie/core/random/Rand.Next:(I)I
+        42: invokeinterface #989,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+        47: checkcast     #268                // class java/lang/String
+        50: astore_1
+        51: bipush        13
+        53: invokestatic  #993                // Method zombie/core/random/Rand.NextBool:(I)Z
+        56: ifeq          84
+        59: aload_0
+        60: getfield      #977                // Field quickTipsListJoke:Ljava/util/List;
+        63: aload_0
+        64: getfield      #977                // Field quickTipsListJoke:Ljava/util/List;
+        67: invokeinterface #980,  1          // InterfaceMethod java/util/List.size:()I
+        72: invokestatic  #983                // Method zombie/core/random/Rand.Next:(I)I
+        75: invokeinterface #989,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+        80: checkcast     #268                // class java/lang/String
+        83: astore_1
+        84: aload_1
+        85: iconst_0
+        86: anewarray     #70                 // class java/lang/Object
+        89: invokestatic  #94                 // Method zombie/core/Translator.getText:(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+        92: areturn
+
+  private void loadQuickTipList();
+    Code:
+         0: aload_0
+         1: new           #926                // class java/util/ArrayList
+         4: dup
+         5: invokespecial #997                // Method java/util/ArrayList."<init>":()V
+         8: putfield      #970                // Field quickTipsList:Ljava/util/List;
+        11: aload_0
+        12: new           #926                // class java/util/ArrayList
+        15: dup
+        16: invokespecial #997                // Method java/util/ArrayList."<init>":()V
+        19: putfield      #977                // Field quickTipsListJoke:Ljava/util/List;
+        22: invokestatic  #998                // Method zombie/core/Translator.getUI:()Ljava/util/Map;
+        25: invokeinterface #1002,  1         // InterfaceMethod java/util/Map.keySet:()Ljava/util/Set;
+        30: invokeinterface #1008,  1         // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+        35: astore_1
+        36: aload_1
+        37: invokeinterface #1014,  1         // InterfaceMethod java/util/Iterator.hasNext:()Z
+        42: ifeq          103
+        45: aload_1
+        46: invokeinterface #1019,  1         // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+        51: checkcast     #268                // class java/lang/String
+        54: astore_2
+        55: aload_2
+        56: ldc_w         #1023               // String UI_quick_tip_joke
+        59: invokevirtual #1025               // Method java/lang/String.startsWith:(Ljava/lang/String;)Z
+        62: ifeq          79
+        65: aload_0
+        66: getfield      #977                // Field quickTipsListJoke:Ljava/util/List;
+        69: aload_2
+        70: invokeinterface #1028,  2         // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+        75: pop
+        76: goto          100
+        79: aload_2
+        80: ldc_w         #1031               // String UI_quick_tip
+        83: invokevirtual #1025               // Method java/lang/String.startsWith:(Ljava/lang/String;)Z
+        86: ifeq          100
+        89: aload_0
+        90: getfield      #970                // Field quickTipsList:Ljava/util/List;
+        93: aload_2
+        94: invokeinterface #1028,  2         // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+        99: pop
+       100: goto          36
+       103: return
+
+  private void renderProgressIndicator();
+    Code:
+         0: getstatic     #441                // Field unexpectedError:Z
+         3: ifeq          7
+         6: return
+         7: getstatic     #450                // Field convertingWorld:Z
+        10: ifeq          26
+        13: aload_0
+        14: ldc_w         #1033               // String media/ui/Progress/MaleDoor.png
+        17: invokestatic  #1035               // Method zombie/core/textures/AnimatedTextures.getTexture:(Ljava/lang/String;)Lzombie/core/textures/AnimatedTexture;
+        20: putfield      #1041               // Field animatedTexture:Lzombie/core/textures/AnimatedTexture;
+        23: goto          65
+        26: getstatic     #1045               // Field zombie/SandboxOptions.instance:Lzombie/SandboxOptions;
+        29: getfield      #1048               // Field zombie/SandboxOptions.lore:Lzombie/SandboxOptions$ZombieLore;
+        32: getfield      #1052               // Field zombie/SandboxOptions$ZombieLore.speed:Lzombie/SandboxOptions$EnumSandboxOption;
+        35: invokevirtual #1058               // Method zombie/SandboxOptions$EnumSandboxOption.getValue:()I
+        38: iconst_1
+        39: if_icmpne     55
+        42: aload_0
+        43: ldc_w         #1063               // String media/ui/Progress/MaleSprint06.png
+        46: invokestatic  #1035               // Method zombie/core/textures/AnimatedTextures.getTexture:(Ljava/lang/String;)Lzombie/core/textures/AnimatedTexture;
+        49: putfield      #1041               // Field animatedTexture:Lzombie/core/textures/AnimatedTexture;
+        52: goto          65
+        55: aload_0
+        56: ldc_w         #1065               // String media/ui/Progress/MaleWalk2.png
+        59: invokestatic  #1035               // Method zombie/core/textures/AnimatedTextures.getTexture:(Ljava/lang/String;)Lzombie/core/textures/AnimatedTexture;
+        62: putfield      #1041               // Field animatedTexture:Lzombie/core/textures/AnimatedTexture;
+        65: aload_0
+        66: getfield      #1041               // Field animatedTexture:Lzombie/core/textures/AnimatedTexture;
+        69: invokevirtual #1067               // Method zombie/core/textures/AnimatedTexture.isReady:()Z
+        72: ifeq          258
+        75: sipush        196
+        78: istore_1
+        79: ldc_w         #1072               // float 196.0f
+        82: aload_0
+        83: getfield      #1041               // Field animatedTexture:Lzombie/core/textures/AnimatedTexture;
+        86: invokevirtual #1073               // Method zombie/core/textures/AnimatedTexture.getWidth:()I
+        89: i2f
+        90: fdiv
+        91: fstore_2
+        92: aload_0
+        93: getfield      #1041               // Field animatedTexture:Lzombie/core/textures/AnimatedTexture;
+        96: invokevirtual #1074               // Method zombie/core/textures/AnimatedTexture.getHeight:()I
+        99: i2f
+       100: fload_2
+       101: fmul
+       102: f2i
+       103: istore_3
+       104: ldc_w         #1075               // float 0.66f
+       107: fstore        4
+       109: getstatic     #375                // Field done:Z
+       112: ifeq          181
+       115: getstatic     #902                // Field showedClickToSkip:Z
+       118: ifeq          181
+       121: aload_0
+       122: getfield      #474                // Field progressFadeStartMs:J
+       125: lconst_0
+       126: lcmp
+       127: ifne          137
+       130: aload_0
+       131: invokestatic  #407                // Method java/lang/System.currentTimeMillis:()J
+       134: putfield      #474                // Field progressFadeStartMs:J
+       137: ldc2_w        #1076               // long 200l
+       140: lstore        5
+       142: invokestatic  #407                // Method java/lang/System.currentTimeMillis:()J
+       145: aload_0
+       146: getfield      #474                // Field progressFadeStartMs:J
+       149: lsub
+       150: lconst_0
+       151: ldc2_w        #1076               // long 200l
+       154: invokestatic  #1078               // Method zombie/core/math/PZMath.clamp:(JJJ)J
+       157: lstore        7
+       159: fload         4
+       161: fconst_1
+       162: lload         7
+       164: l2f
+       165: ldc_w         #1084               // float 200.0f
+       168: fdiv
+       169: fsub
+       170: fmul
+       171: fstore        4
+       173: fload         4
+       175: fconst_0
+       176: fcmpl
+       177: ifne          181
+       180: return
+       181: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       184: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+       187: getstatic     #450                // Field convertingWorld:Z
+       190: ifeq          198
+       193: bipush        100
+       195: goto          199
+       198: iconst_0
+       199: isub
+       200: istore        5
+       202: aload_0
+       203: getfield      #1041               // Field animatedTexture:Lzombie/core/textures/AnimatedTexture;
+       206: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       209: invokevirtual #780                // Method zombie/core/Core.getScreenWidth:()I
+       212: iconst_2
+       213: idiv
+       214: bipush        98
+       216: isub
+       217: invokestatic  #180                // Method zombie/core/Core.getInstance:()Lzombie/core/Core;
+       220: invokevirtual #783                // Method zombie/core/Core.getScreenHeight:()I
+       223: iload         5
+       225: invokestatic  #1085               // Method zombie/core/math/PZMath.min:(II)I
+       228: iload_3
+       229: isub
+       230: bipush        30
+       232: isub
+       233: getstatic     #450                // Field convertingWorld:Z
+       236: ifeq          244
+       239: bipush        32
+       241: goto          245
+       244: iconst_0
+       245: iadd
+       246: sipush        196
+       249: iload_3
+       250: fconst_1
+       251: fconst_1
+       252: fconst_1
+       253: fload         4
+       255: invokevirtual #1089               // Method zombie/core/textures/AnimatedTexture.render:(IIIIFFFF)V
+       258: return
+
+  public zombie.gameStates.GameStateMachine$StateAction update();
+    Code:
+         0: aload_0
+         1: getfield      #1092               // Field waitForAssetLoadingToFinish1:Z
+         4: ifeq          57
+         7: getstatic     #1095               // Field zombie/core/skinnedmodel/population/OutfitManager.instance:Lzombie/core/skinnedmodel/population/OutfitManager;
+        10: invokevirtual #1100               // Method zombie/core/skinnedmodel/population/OutfitManager.isLoadingClothingItems:()Z
+        13: ifne          57
+        16: getstatic     #1103               // Field zombie/core/Core.debug:Z
+        19: ifeq          28
+        22: getstatic     #1095               // Field zombie/core/skinnedmodel/population/OutfitManager.instance:Lzombie/core/skinnedmodel/population/OutfitManager;
+        25: invokevirtual #1106               // Method zombie/core/skinnedmodel/population/OutfitManager.debugOutfits:()V
+        28: aload_0
+        29: getfield      #9                  // Field assetLock1:Ljava/lang/Object;
+        32: dup
+        33: astore_1
+        34: monitorenter
+        35: aload_0
+        36: iconst_0
+        37: putfield      #1092               // Field waitForAssetLoadingToFinish1:Z
+        40: aload_0
+        41: getfield      #9                  // Field assetLock1:Ljava/lang/Object;
+        44: invokevirtual #1109               // Method java/lang/Object.notifyAll:()V
+        47: aload_1
+        48: monitorexit
+        49: goto          57
+        52: astore_2
+        53: aload_1
+        54: monitorexit
+        55: aload_2
+        56: athrow
+        57: aload_0
+        58: getfield      #1112               // Field waitForAssetLoadingToFinish2:Z
+        61: ifeq          153
+        64: getstatic     #1115               // Field zombie/core/skinnedmodel/ModelManager.instance:Lzombie/core/skinnedmodel/ModelManager;
+        67: invokevirtual #1120               // Method zombie/core/skinnedmodel/ModelManager.isLoadingAnimations:()Z
+        70: ifne          153
+        73: getstatic     #1123               // Field zombie/GameWindow.fileSystem:Lzombie/fileSystem/FileSystem;
+        76: invokevirtual #1127               // Method zombie/fileSystem/FileSystem.hasWork:()Z
+        79: ifne          153
+        82: aload_0
+        83: getfield      #17                 // Field assetLock2:Ljava/lang/Object;
+        86: dup
+        87: astore_1
+        88: monitorenter
+        89: aload_0
+        90: iconst_0
+        91: putfield      #1112               // Field waitForAssetLoadingToFinish2:Z
+        94: aload_0
+        95: getfield      #17                 // Field assetLock2:Ljava/lang/Object;
+        98: invokevirtual #1109               // Method java/lang/Object.notifyAll:()V
+       101: getstatic     #172                // Field zombie/scripting/ScriptManager.instance:Lzombie/scripting/ScriptManager;
+       104: invokevirtual #1132               // Method zombie/scripting/ScriptManager.getAllRuntimeAnimationScripts:()Ljava/util/ArrayList;
+       107: astore_2
+       108: aload_2
+       109: invokevirtual #1136               // Method java/util/ArrayList.iterator:()Ljava/util/Iterator;
+       112: astore_3
+       113: aload_3
+       114: invokeinterface #1014,  1         // InterfaceMethod java/util/Iterator.hasNext:()Z
+       119: ifeq          141
+       122: aload_3
+       123: invokeinterface #1019,  1         // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+       128: checkcast     #1137               // class zombie/core/skinnedmodel/runtime/RuntimeAnimationScript
+       131: astore        4
+       133: aload         4
+       135: invokevirtual #1139               // Method zombie/core/skinnedmodel/runtime/RuntimeAnimationScript.exec:()V
+       138: goto          113
+       141: aload_1
+       142: monitorexit
+       143: goto          153
+       146: astore        5
+       148: aload_1
+       149: monitorexit
+       150: aload         5
+       152: athrow
+       153: getstatic     #441                // Field unexpectedError:Z
+       156: ifne          171
+       159: getstatic     #204                // Field zombie/GameWindow.serverDisconnected:Z
+       162: ifne          171
+       165: getstatic     #852                // Field playerWrongIP:Z
+       168: ifeq          254
+       171: getstatic     #130                // Field showedUI:Z
+       174: ifne          230
+       177: iconst_1
+       178: putstatic     #130                // Field showedUI:Z
+       181: aconst_null
+       182: invokestatic  #1142               // Method zombie/characters/IsoPlayer.setInstance:(Lzombie/characters/IsoPlayer;)V
+       185: getstatic     #570                // Field zombie/characters/IsoPlayer.players:[Lzombie/characters/IsoPlayer;
+       188: iconst_0
+       189: aconst_null
+       190: aastore
+       191: getstatic     #1146               // Field zombie/ui/UIManager.UI:Ljava/util/ArrayList;
+       194: invokevirtual #1149               // Method java/util/ArrayList.clear:()V
+       197: getstatic     #1150               // Field zombie/Lua/LuaManager.thread:Lse/krka/kahlua/vm/KahluaThread;
+       200: getstatic     #1154               // Field zombie/GameWindow.gameThread:Ljava/lang/Thread;
+       203: putfield      #1157               // Field se/krka/kahlua/vm/KahluaThread.debugOwnerThread:Ljava/lang/Thread;
+       206: getstatic     #1162               // Field zombie/Lua/LuaManager.debugthread:Lse/krka/kahlua/vm/KahluaThread;
+       209: getstatic     #1154               // Field zombie/GameWindow.gameThread:Ljava/lang/Thread;
+       212: putfield      #1157               // Field se/krka/kahlua/vm/KahluaThread.debugOwnerThread:Ljava/lang/Thread;
+       215: invokestatic  #1165               // Method zombie/Lua/LuaEventManager.Reset:()V
+       218: ldc_w         #1166               // String ISGameLoadingUI_OnGameLoadingUI
+       221: ldc           #25                 // String
+       223: invokestatic  #1168               // Method zombie/Lua/LuaManager.call:(Ljava/lang/String;Ljava/lang/Object;)V
+       226: iconst_0
+       227: putstatic     #511                // Field zombie/ui/UIManager.suspend:Z
+       230: iconst_1
+       231: invokestatic  #1174               // Method zombie/input/GameKeyboard.isKeyDownRaw:(I)Z
+       234: ifeq          250
+       237: getstatic     #207                // Field zombie/network/GameClient.instance:Lzombie/network/GameClient;
+       240: invokevirtual #1177               // Method zombie/network/GameClient.Shutdown:()V
+       243: invokestatic  #1180               // Method zombie/core/znet/SteamUtils.shutdown:()V
+       246: iconst_1
+       247: invokestatic  #287                // Method java/lang/System.exit:(I)V
+       250: getstatic     #1185               // Field zombie/gameStates/GameStateMachine$StateAction.Remain:Lzombie/gameStates/GameStateMachine$StateAction;
+       253: areturn
+       254: getstatic     #375                // Field done:Z
+       257: ifne          264
+       260: getstatic     #1185               // Field zombie/gameStates/GameStateMachine$StateAction.Remain:Lzombie/gameStates/GameStateMachine$StateAction;
+       263: areturn
+       264: getstatic     #1191               // Field zombie/iso/WorldStreamer.instance:Lzombie/iso/WorldStreamer;
+       267: invokevirtual #1196               // Method zombie/iso/WorldStreamer.isBusy:()Z
+       270: ifeq          277
+       273: getstatic     #1185               // Field zombie/gameStates/GameStateMachine$StateAction.Remain:Lzombie/gameStates/GameStateMachine$StateAction;
+       276: areturn
+       277: getstatic     #1115               // Field zombie/core/skinnedmodel/ModelManager.instance:Lzombie/core/skinnedmodel/ModelManager;
+       280: invokevirtual #1120               // Method zombie/core/skinnedmodel/ModelManager.isLoadingAnimations:()Z
+       283: ifeq          290
+       286: getstatic     #1185               // Field zombie/gameStates/GameStateMachine$StateAction.Remain:Lzombie/gameStates/GameStateMachine$StateAction;
+       289: areturn
+       290: getstatic     #902                // Field showedClickToSkip:Z
+       293: ifne          300
+       296: getstatic     #1185               // Field zombie/gameStates/GameStateMachine$StateAction.Remain:Lzombie/gameStates/GameStateMachine$StateAction;
+       299: areturn
+       300: iconst_0
+       301: invokestatic  #1199               // Method zombie/input/Mouse.isButtonDown:(I)Z
+       304: ifeq          312
+       307: aload_0
+       308: iconst_1
+       309: putfield      #378                // Field forceDone:Z
+       312: getstatic     #912                // Field zombie/GameWindow.activatedJoyPad:Lzombie/input/JoypadManager$Joypad;
+       315: ifnull        332
+       318: getstatic     #912                // Field zombie/GameWindow.activatedJoyPad:Lzombie/input/JoypadManager$Joypad;
+       321: invokevirtual #1204               // Method zombie/input/JoypadManager$Joypad.isAPressed:()Z
+       324: ifeq          332
+       327: aload_0
+       328: iconst_1
+       329: putfield      #378                // Field forceDone:Z
+       332: aload_0
+       333: getfield      #378                // Field forceDone:Z
+       336: ifeq          358
+       339: getstatic     #415                // Field zombie/SoundManager.instance:Lzombie/BaseSoundManager;
+       342: ldc_w         #1209               // String UIClickToStart
+       345: invokevirtual #1211               // Method zombie/BaseSoundManager.playUISound:(Ljava/lang/String;)J
+       348: pop2
+       349: aload_0
+       350: iconst_0
+       351: putfield      #378                // Field forceDone:Z
+       354: getstatic     #1215               // Field zombie/gameStates/GameStateMachine$StateAction.Continue:Lzombie/gameStates/GameStateMachine$StateAction;
+       357: areturn
+       358: getstatic     #1185               // Field zombie/gameStates/GameStateMachine$StateAction.Remain:Lzombie/gameStates/GameStateMachine$StateAction;
+       361: areturn
+      Exception table:
+         from    to  target type
+            35    49    52   any
+            52    55    52   any
+            89   143   146   any
+           146   150   146   any
+
+  static {};
+    Code:
+         0: iconst_1
+         1: putstatic     #435                // Field newGame:Z
+         4: ldc           #25                 // String
+         6: putstatic     #160                // Field gameLoadingString:Ljava/lang/String;
+         9: iconst_m1
+        10: putstatic     #453                // Field convertingFileCount:I
+        13: iconst_m1
+        14: putstatic     #456                // Field convertingFileMax:I
+        17: new           #470                // class zombie/ui/ScreenFader
+        20: dup
+        21: invokespecial #1218               // Method zombie/ui/ScreenFader."<init>":()V
+        24: putstatic     #465                // Field screenFader:Lzombie/ui/ScreenFader;
+        27: return
+}

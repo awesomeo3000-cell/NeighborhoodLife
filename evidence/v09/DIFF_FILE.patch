@@ -1,0 +1,23 @@
+--- baseline.lua
++++ E:\pzmod\qa\NeighborhoodQA\42\media\lua\client\NLQANpc.lua
+@@ -39,7 +39,7 @@
+             NLSocialAuthority.register("marisol",npc,{x=square:getX(),y=square:getY(),z=pz})
+         end
+         print("NLQA NPC SPAWN: "..npc:getX()..","..npc:getY()..","..npc:getZ().."; local player unchanged")
+-        npc:pathToLocation(px,py,pz)
++        npc:getPathFindBehavior2():pathToLocation(px,py,pz)
+         getGameTime():setMultiplier(1)
+         if UIManager.getSpeedControls() then UIManager.getSpeedControls():SetCurrentGameSpeed(1) end
+     end)
+@@ -61,7 +61,10 @@
+     end
+     if NLQANpc.tick==60 then
+         if UIManager.getSpeedControls() then UIManager.getSpeedControls():SetCurrentGameSpeed(1) end
+-        npc:pathToLocation(NLQANpc.target.x,NLQANpc.target.y,NLQANpc.target.z)
++        local path=npc:getPathFindBehavior2()
++        path:pathToLocation(NLQANpc.target.x,NLQANpc.target.y,NLQANpc.target.z)
++        npc:setVariable("bPathfind",true)
++        print("NLQA NPC TARGET: "..path:getTargetX()..","..path:getTargetY()..","..path:getTargetZ())
+         if NLRelationships then NLRelationships.open(0) end
+     end
+     if NLQANpc.tick==300 or NLQANpc.tick==900 or NLQANpc.tick==1800 then

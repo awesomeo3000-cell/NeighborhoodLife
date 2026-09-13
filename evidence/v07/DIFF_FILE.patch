@@ -1,0 +1,10 @@
+--- E:\pzmod\evidence\v07\launch-baseline.ps1
++++ E:\pzmod\tools\launch-qa.ps1
+@@ -30,6 +30,7 @@
+ '@ | Set-Content "$profile\options.ini"
+ }
+ $arguments = @('-Djava.awt.headless=true','--enable-native-access=ALL-UNNAMED',
++    '-javaagent:E:/pzmod/tests/hands-free-qa.jar=E:/pzmod/test-profile',
+     '--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED','-Xmx2048m',
+     '-Dzomboid.steam=0','-Djava.library.path=.', '-cp','projectzomboid.jar',
+     'zombie.gameStates.MainScreenState',"-cachedir=$profile",'-nosteam','-nosound')
