@@ -48,18 +48,22 @@ def suites(target: Path, engine: bool, record: list[str]) -> None:
     run("TEST", [LUA, ROOT / "tests/hud.lua", target / "42/media/lua/client/NeighborhoodNeeds.lua", "enabled"], record=record)
     for path in target.rglob("*.lua"):
         run("SYNTAX", [LUAC, "-p", path], record=record)
-    for suite in ("gameplay", "wardrobe", "social", "social-authority", "interfaces", "wardrobe-panel", "aspirations"):
+    suite_names = ["gameplay", "wardrobe", "social", "social-authority"]
+    if (target / "42/media/lua/shared/NL/Neighbors.lua").exists():
+        suite_names.append("neighbors")
+    suite_names += ["interfaces", "wardrobe-panel", "aspirations"]
+    for suite in suite_names:
         run("LUA", [LUA, ROOT / f"tests/{suite}.lua", target], record=record)
     if engine:
         run("JAVAC", ["javac", "-cp", GAME / "projectzomboid.jar", "-d", ROOT / "tests/classes", ROOT / "tests/EngineLua.java"], record=record)
-        for suite in ("gameplay", "wardrobe", "social", "social-authority", "interfaces", "wardrobe-panel", "aspirations"):
+        for suite in suite_names:
             run("KAHLUA", ["java", "-cp", str(ROOT / "tests/classes") + ";projectzomboid.jar;.",
                              "EngineLua", target, ROOT / f"tests/{suite}.lua"], cwd=GAME, record=record)
 
 
-def test() -> None:
+def test(target: Path) -> None:
     record: list[str] = ["Neighborhood Life consolidated verification"]
-    suites(ROOT / "NeighborhoodLife", True, record)
+    suites(target, True, record)
     (ROOT / "evidence" / "latest-tests.log").write_text("\n".join(record) + "\n", encoding="utf-8")
     print("PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites")
 
@@ -104,12 +108,13 @@ def package(version: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="command", required=True)
-    sub.add_parser("test")
+    test_parser = sub.add_parser("test")
+    test_parser.add_argument("--target", type=Path, default=ROOT / "NeighborhoodLife")
     package_parser = sub.add_parser("package")
     package_parser.add_argument("--version", default="v10")
     args = parser.parse_args()
     if args.command == "test":
-        test()
+        test(args.target.resolve())
     else:
         package(args.version)
 

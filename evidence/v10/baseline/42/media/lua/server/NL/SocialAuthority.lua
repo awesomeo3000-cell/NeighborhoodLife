@@ -1,32 +1,30 @@
 if isClient() then return end
 require "NL/Social"
 require "NL/Authority"
-require "NL/Neighbors"
 NLSocialAuthority={bodies={},lastRequest={}}
 
 function NLSocialAuthority.register(id,body,home)
-    if not NLSocial.people[id] or not body or not NLNeighbors.definitions[id] then return false end
+    if not NLSocial.people[id] or not body then return false end
     local world=NLAuthority.world()
-    NLNeighbors.register(world,id,home)
+    world.neighbors=world.neighbors or {}
+    world.neighbors[id]=world.neighbors[id] or {id=id,home=home,dead=false}
     NLSocialAuthority.bodies[id]=body
     return true
 end
 
 function NLSocialAuthority.snapshot(player,message)
     local world=NLAuthority.world()
-    NLNeighbors.ensure(world)
     local profile=NLDomain.profile(world,NLAuthority.key(player))
     local result={username=NLAuthority.key(player),neighbors={},message=message or "Updated",revision=profile.revision}
     for _,id in ipairs(NLSocial.order) do
-        local npc=NLNeighbors.get(world,id)
+        local npc=(world.neighbors or {})[id]
         if npc then
             local body=NLSocialAuthority.bodies[id]
             local row={id=id,name=NLSocial.people[id].name,personality=NLSocial.people[id].personality,
-                age=NLSocial.people[id].age,dead=npc.dead or npc.alive==false,available=body~=nil,canInteract=false,
+                age=NLSocial.people[id].age,dead=npc.dead,available=body~=nil,canInteract=false,
                 relation=NLDomain.copy(NLSocial.relation(profile,id))}
             if body then
-                if body:isDead() then NLNeighbors.dead(world,id) end
-                row.dead=npc.dead or npc.alive==false
+                npc.dead=body:isDead(); row.dead=npc.dead
                 row.distance=math.sqrt((body:getX()-player:getX())^2+(body:getY()-player:getY())^2)
                 row.sameFloor=math.floor(body:getZ())==math.floor(player:getZ())
                 row.canInteract=not row.dead and not player:isDead() and row.sameFloor
@@ -50,7 +48,7 @@ function NLSocialAuthority.command(module,command,player,args)
         local npc=(NLAuthority.world().neighbors or {})[args.id]
         local body=NLSocialAuthority.bodies[args.id]
         if not npc or not body then message="This neighbor is not nearby."
-                elseif body:isDead() then NLNeighbors.dead(NLAuthority.world(),args.id); message="This neighbor has died."
+        elseif body:isDead() then npc.dead=true; message="This neighbor has died."
         elseif math.floor(body:getZ())~=math.floor(player:getZ())
             or (body:getX()-player:getX())^2+(body:getY()-player:getY())^2>16 then
             message="Move within four tiles on the same floor."

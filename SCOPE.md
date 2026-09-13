@@ -69,3 +69,20 @@ The original broad goal remains active. This ledger is not a reduced definition 
   mod never auto-loads a save or spawns the experimental NPC.
 - Social domain tests and authority tests execute in both Lua 5.1 and the installed Kahlua VM.
 - An interrupted auto-load is logged separately and not counted as a passed test.
+
+## v0.4 milestone evidence
+
+- Git history now starts at commit 0efe222 and tools/pipeline.py consolidates
+  Lua 5.1, syntax, installed Kahlua VM, production packaging and diff generation.
+- NLNeighbors persists named neighbor identity, home, route position, waypoint,
+  alive/dead state and revision in world ModData without creating pretend bodies.
+  SocialAuthority now consumes that registry while engine bodies remain transient.
+- tests/neighbors.lua passes in Lua 5.1 and the installed Kahlua VM. This is
+  domain/engine-VM evidence, not native NPC movement or multiplayer evidence.
+- tools/launch-multiplayer-qa.ps1 started a real B42.20.4 dedicated no-Steam
+  server and two real client JVMs in isolated profiles. Both clients loaded the
+  production and QA mods and the hands-free agent invoked OnSteamGameJoin,
+  but the server recorded no player connections and neither client produced
+  NLQA MP CLIENT START or NLQA MP SNAPSHOT. Host+guest gameplay remains open.
+- Native NPC movement remains open: the latest real engine probe reports
+  PATH RESULT: Working followed by PATH RESULT: Failed and distance=0.

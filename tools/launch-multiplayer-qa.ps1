@@ -39,29 +39,33 @@ SleepAllowed=false
 PlayerSafehouse=false
 SaveWorldEveryMinutes=5
 '@ | Set-Content "$serverConfig\servertest.ini"
-@'
-admin
-'@ | Set-Content "$serverConfig\servertest_SandboxVars.lua"
-
 $java = "$game\jre64\bin\java.exe"
 $common = @('-Djava.awt.headless=true','--enable-native-access=ALL-UNNAMED',
     '--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED','-Xmx2048m',
     '-Dzomboid.steam=0','-Djava.library.path=./win64/;./','-cp','projectzomboid.jar')
 $serverArgs = @('--enable-native-access=ALL-UNNAMED','--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED',
     '-Xmx2048m','-Dzomboid.steam=0','-Djava.library.path=./win64/;./','-cp','projectzomboid.jar',
-    'zombie.network.GameServer','-servername','servertest','-cachedir=$serverProfile','-nosteam')
+    'zombie.network.GameServer','-servername','servertest',"-cachedir=$serverProfile",
+    '-adminusername','admin','-adminpassword','qa-admin-password','-nosteam')
+Set-Content "$serverProfile\server.stdout.log" ''
+Set-Content "$serverProfile\server.stderr.log" ''
 $server = Start-Process $java -ArgumentList $serverArgs -WorkingDirectory $game -RedirectStandardOutput "$serverProfile\server.stdout.log" -RedirectStandardError "$serverProfile\server.stderr.log" -PassThru
 $server.Id | Set-Content "$root\evidence\v10\mp-server.pid"
-Start-Sleep -Seconds 15
+$deadline = (Get-Date).AddSeconds(120)
+do {
+    Start-Sleep -Seconds 2
+    $started = Select-String -Path "$serverProfile\server.stdout.log" -Pattern '\*\*\* SERVER STARTED' -Quiet -ErrorAction SilentlyContinue
+} while (-not $started -and (Get-Date) -lt $deadline)
+if (-not $started) { throw "Dedicated server did not reach SERVER STARTED; inspect $serverProfile\server.stdout.log" }
 
 function Start-QAClient($profile, $username) {
     $args = $common + @('-javaagent:E:/pzmod/tests/hands-free-qa.jar=' + $profile,
-        'zombie.gameStates.MainScreenState',"-cachedir=$profile",'-connect=127.0.0.1','-port=16261',
-        "-username=$username",'-password=qa-password','-nosteam','-nosound')
+        'zombie.gameStates.MainScreenState',"-cachedir=$profile",'+connect','127.0.0.1:16261',
+        '+password','qa-password','-nosteam','-nosound')
     return Start-Process "$game\jre64\bin\javaw.exe" -ArgumentList $args -WorkingDirectory $game -PassThru
 }
 
-$host = Start-QAClient $hostProfile 'nl-host'
-$guest = Start-QAClient $guestProfile 'nl-guest'
-@("server=$($server.Id)","host=$($host.Id)","guest=$($guest.Id)") | Set-Content "$root\evidence\v10\mp-processes.txt"
-Write-Output "QA multiplayer processes started: server=$($server.Id) host=$($host.Id) guest=$($guest.Id)"
+$hostProcess = Start-QAClient $hostProfile 'nl-host'
+$guestProcess = Start-QAClient $guestProfile 'nl-guest'
+@("server=$($server.Id)","host=$($hostProcess.Id)","guest=$($guestProcess.Id)") | Set-Content "$root\evidence\v10\mp-processes.txt"
+Write-Output "QA multiplayer processes started: server=$($server.Id) host=$($hostProcess.Id) guest=$($guestProcess.Id)"

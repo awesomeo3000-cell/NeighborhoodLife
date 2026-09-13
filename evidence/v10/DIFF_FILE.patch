@@ -1,0 +1,944 @@
+--- baseline/42/media/lua/client/NL/Client.lua
++++ modified/42/media/lua/client/NL/Client.lua
+@@ -0,0 +1,29 @@
++require "NL/Domain"
++NLClient = { profiles = {} }
++
++function NLClient.receive(module, command, args)
++    if module ~= "NeighborhoodLife" or command ~= "snapshot" or type(args) ~= "table" then return end
++    -- Route only to local characters matching the server snapshot. No global getPlayer().
++    for i = 0, getNumActivePlayers() - 1 do
++        local player = getSpecificPlayer(i)
++        if player then
++            local key = player:getUsername()
++            if not key or key == "" then key = "local:" .. i end
++            if key == args.username then
++                local old = NLClient.profiles[i]
++                if not old or args.revision >= old.revision then NLClient.profiles[i] = args end
++            end
++        end
++    end
++end
++
++function NLClient.request(index, command, args)
++    local player = getSpecificPlayer(index)
++    if not player or player:isDead() then return end
++    if isClient() then sendClientCommand(player, "NeighborhoodLife", command, args or {})
++    elseif NLAuthority then NLAuthority.command("NeighborhoodLife", command, player, args or {}) end
++end
++
++Events.OnServerCommand.Add(NLClient.receive)
++Events.OnMainMenuEnter.Add(function() NLClient.profiles = {} end)
++return NLClient
+--- baseline/42/media/lua/client/NL/Journal.lua
++++ modified/42/media/lua/client/NL/Journal.lua
+@@ -0,0 +1,109 @@
++require "ISUI/ISPanel"
++require "ISUI/ISButton"
++require "NL/Client"
++NLJournal = ISPanel:derive("NLJournal")
++NLJournal.instances = {}
++
++function NLJournal:new(index)
++    local o = ISPanel.new(self, 330, 130, 590, 450)
++    o.playerIndex = index
++    o.backgroundColor = { r=0.96, g=0.98, b=1, a=0.98 }
++    o.borderColor = { r=0.62, g=0.76, b=0.88, a=1 }
++    o.moveWithMouse = true
++    return o
++end
++
++function NLJournal:button(x,y,w,text,action,value)
++    local button = ISButton:new(x,y,w,28,text,self,self.onButton)
++    button.action, button.value = action, value
++    button.backgroundColor = {r=0.86,g=0.92,b=0.97,a=1}
++    button.backgroundColorMouseOver = {r=0.69,g=0.87,b=0.98,a=1}
++    button.borderColor = {r=0.53,g=0.69,b=0.82,a=1}
++    button.textColor = {r=0.12,g=0.30,b=0.47,a=1}
++    button:initialise()
++    self:addChild(button)
++    return button
++end
++
++function NLJournal:initialise()
++    ISPanel.initialise(self)
++    self:button(self.width-75,10,60,"Close","close")
++    self.careerButtons = {}
++    for i,id in ipairs(NLDefinitions.careerOrder) do
++        self.careerButtons[id] = self:button(16+(i-1)*150,48,140,NLDefinitions.careers[id].name,"select",id)
++    end
++    self.deliverButtons = {}
++    for i=1,3 do self.deliverButtons[i] = self:button(455,162+(i-1)*48,115,"Deliver","deliver",i) end
++    self:button(16,325,180,"Check promotion","promote")
++    self:button(210,325,100,"Refresh","refresh")
++end
++
++function NLJournal:onButton(button)
++    if button.action=="close" then self:setVisible(false); return end
++    local args = {}
++    if button.action=="select" then args.career = button.value end
++    if button.action=="deliver" then
++        local p = NLClient.profiles[self.playerIndex]
++        if not p then return end
++        args.id = NLDomain.contracts(p)[button.value].id
++    end
++    NLClient.request(self.playerIndex,button.action,args)
++end
++
++function NLJournal:prerender()
++    ISPanel.prerender(self)
++    self:drawText("NEIGHBORHOOD / CAREER JOURNAL",16,14,0.12,0.38,0.63,1,UIFont.Small)
++    local p = NLClient.profiles[self.playerIndex]
++    if not p then
++        self:drawText("Waiting for world data. Try Refresh.",16,95,0.18,0.24,0.32,1,UIFont.Small)
++        for _,b in ipairs(self.deliverButtons) do b:setEnable(false) end
++        return
++    end
++    for id,button in pairs(self.careerButtons) do
++        button.backgroundColor = id==p.career and {r=0.65,g=0.88,b=0.36,a=1}
++            or {r=0.86,g=0.92,b=0.97,a=1}
++    end
++    local def,progress = NLDefinitions.careers[p.career],p.careers[p.career]
++    self:drawText(def.ranks[progress.rank] .. " | Skill " .. p.skill .. " | Career XP " .. progress.xp,
++        16,90,0.18,0.24,0.32,1,UIFont.Small)
++    self:drawText("Community credits: " .. p.credits .. " | Deliveries: " .. progress.delivered,
++        16,115,0.30,0.38,0.47,1,UIFont.Small)
++    self:drawText("SUPPLY REQUESTS / refresh each world day",16,142,0.12,0.38,0.63,1,UIFont.Small)
++    for i,c in ipairs(NLDomain.contracts(p)) do
++        local y = 170+(i-1)*48
++        local done = p.claimed[c.id]
++        self:drawText(c.amount .. " x " .. c.item .. (done and " / DONE" or ""),16,y,0.18,0.24,0.32,1,UIFont.Small)
++        self.deliverButtons[i]:setEnable(not done)
++    end
++    self:drawText(NLAspirations.label(p),16,284,0.12,0.38,0.63,1,UIFont.Small)
++    self:drawText("Delivery consumes items in your main inventory.",16,303,0.46,0.32,0.12,1,UIFont.Small)
++    local nextRank = NLDefinitions.promotions[progress.rank+1]
++    local text = nextRank and ("Next: skill "..nextRank.skill..", "..nextRank.xp.." XP, "..nextRank.variety.." delivery types") or "Top career rank reached"
++    self:drawText(text,16,366,0.30,0.38,0.47,1,UIFont.Small)
++    -- Wrap status rather than drawing arbitrarily long server feedback off-panel.
++    local message = p.message or ""
++    self:drawText(string.sub(message,1,72),16,392,0.12,0.38,0.63,1,UIFont.Small)
++    if #message>72 then self:drawText(string.sub(message,73,144),16,411,0.12,0.38,0.63,1,UIFont.Small) end
++end
++
++function NLJournal.open(index)
++    local panel = NLJournal.instances[index]
++    if not panel then
++        panel = NLJournal:new(index); panel:initialise()
++        NLJournal.instances[index] = panel
++    end
++    -- The engine can clear UIManager at a world transition without clearing Lua.
++    -- Reattach on every open, removing first so repeated opens never duplicate it.
++    panel:removeFromUIManager(); panel:addToUIManager()
++    local left,top = getPlayerScreenLeft(index),getPlayerScreenTop(index)
++    panel:setX(left + math.max(12, math.min(330,getPlayerScreenWidth(index)-panel.width-12)))
++    panel:setY(top + math.max(12, math.min(130,getPlayerScreenHeight(index)-panel.height-12)))
++    panel:setVisible(true); panel:bringToTop()
++    NLClient.request(index,"refresh")
++end
++
++Events.OnMainMenuEnter.Add(function()
++    for _,panel in pairs(NLJournal.instances) do panel:removeFromUIManager() end
++    NLJournal.instances = {}
++end)
++return NLJournal
+--- baseline/42/media/lua/client/NL/Relationships.lua
++++ modified/42/media/lua/client/NL/Relationships.lua
+@@ -0,0 +1,78 @@
++require "NL/Journal"
++require "NL/SocialClient"
++NLRelationships=NLJournal:derive("NLRelationships")
++NLRelationships.instances={}
++
++function NLRelationships:new(index)
++    local o=NLJournal.new(self,index)
++    o.selected=1
++    return o
++end
++function NLRelationships:initialise()
++    ISPanel.initialise(self)
++    self:button(self.width-75,10,60,"Close","close")
++    self:button(16,48,85,"Previous","previous")
++    self:button(112,48,85,"Next","next")
++    self:button(209,48,95,"Refresh","refresh")
++    self.actions={}
++    local labels={{"Introduce","introduce"},{"Chat","chat"},{"Joke","joke"},
++        {"Flirt","flirt"},{"Ask on a date","date"},{"Become partners","partner"},{"Break up","breakup"}}
++    for i,v in ipairs(labels) do
++        local col=(i-1)%3; local row=math.floor((i-1)/3)
++        self.actions[i]=self:button(16+col*186,250+row*35,176,v[1],v[2])
++    end
++end
++function NLRelationships:onButton(button)
++    if button.action=="close" then self:setVisible(false); return end
++    local data=NLSocialClient.snapshots[self.playerIndex]
++    local count=data and #data.neighbors or 0
++    if button.action=="next" then self.selected=math.min(count,self.selected+1); return end
++    if button.action=="previous" then self.selected=math.max(1,self.selected-1); return end
++    if button.action=="refresh" then NLSocialClient.request(self.playerIndex,"refresh"); return end
++    local npc=data and data.neighbors[self.selected]
++    if npc then NLSocialClient.request(self.playerIndex,"interact",{id=npc.id,action=button.action}) end
++end
++function NLRelationships:prerender()
++    ISPanel.prerender(self)
++    self:drawText("NEIGHBORHOOD / RELATIONSHIPS",16,14,0.12,0.38,0.63,1,UIFont.Small)
++    local data=NLSocialClient.snapshots[self.playerIndex]
++    local npc=data and data.neighbors[self.selected]
++    local nearby=npc and npc.available and not npc.dead and npc.canInteract==true
++    for _,b in ipairs(self.actions) do b:setEnable(nearby==true) end
++    if not npc then
++        self.selected=1
++        self:drawText("No neighbors registered in this world yet.",16,98,0.18,0.24,0.32,1,UIFont.Small)
++        self:drawText("NPC world integration is still in development.",16,124,0.30,0.38,0.47,1,UIFont.Small)
++        return
++    end
++    self:drawText(npc.name.." / "..npc.age.." / "..npc.relation.status,16,92,0.12,0.38,0.63,1,UIFont.Small)
++    self:drawText(npc.personality,16,117,0.30,0.38,0.47,1,UIFont.Small)
++    local rows={{"Friendship",(npc.relation.friendship+100)/200,npc.relation.friendship},
++        {"Trust",npc.relation.trust/100,npc.relation.trust},
++        {"Attraction",npc.relation.attraction/100,npc.relation.attraction}}
++    for i,v in ipairs(rows) do
++        local y=145+(i-1)*29
++        self:drawText(v[1],16,y,0.18,0.24,0.32,1,UIFont.Small)
++        self:drawRect(115,y+4,380,10,1,0.82,0.87,0.90)
++        local pink=i==3
++        self:drawRect(115,y+4,380*v[2],10,1,pink and 0.91 or 0.42,pink and 0.38 or 0.78,pink and 0.65 or 0.19)
++        self:drawText(tostring(v[3]),512,y,0.18,0.24,0.32,1,UIFont.Small)
++    end
++    local location=npc.dead and "Deceased" or npc.available and ("Distance: "..math.floor(npc.distance or 0).." tiles") or "Away"
++    self:drawText(location.." | Conversations require proximity and line of sight.",16,231,0.30,0.38,0.47,1,UIFont.Small)
++    self:drawText(string.sub(data.message or "",1,78),16,367,0.12,0.38,0.63,1,UIFont.Small)
++    local memories=npc.relation.memories
++    local latest=memories[#memories]
++    if latest then self:drawText("Memory: "..string.sub(latest.text,1,70),16,396,0.30,0.38,0.47,1,UIFont.Small) end
++end
++function NLRelationships.open(index)
++    local panel=NLRelationships.instances[index]
++    if not panel then panel=NLRelationships:new(index); panel:initialise(); NLRelationships.instances[index]=panel end
++    panel:removeFromUIManager(); panel:addToUIManager(); panel:setVisible(true); panel:bringToTop()
++    NLSocialClient.request(index,"refresh")
++end
++Events.OnMainMenuEnter.Add(function()
++    for _,p in pairs(NLRelationships.instances) do p:removeFromUIManager() end
++    NLRelationships.instances={}
++end)
++return NLRelationships
+--- baseline/42/media/lua/client/NL/SocialClient.lua
++++ modified/42/media/lua/client/NL/SocialClient.lua
+@@ -0,0 +1,24 @@
++NLSocialClient={snapshots={}}
++function NLSocialClient.receive(module,command,args)
++    if module~="NeighborhoodSocial" or command~="snapshot" or type(args)~="table" then return end
++    for i=0,getNumActivePlayers()-1 do
++        local p=getSpecificPlayer(i)
++        if p then
++            local key=p:getUsername()
++            if not key or key=="" then key="local:"..i end
++            if key==args.username then
++                local previous=NLSocialClient.snapshots[i]
++                if not previous or args.revision>=previous.revision then NLSocialClient.snapshots[i]=args end
++            end
++        end
++    end
++end
++function NLSocialClient.request(index,command,args)
++    local p=getSpecificPlayer(index)
++    if not p or p:isDead() then return end
++    if isClient() then sendClientCommand(p,"NeighborhoodSocial",command,args or {})
++    elseif NLSocialAuthority then NLSocialAuthority.command("NeighborhoodSocial",command,p,args or {}) end
++end
++Events.OnServerCommand.Add(NLSocialClient.receive)
++Events.OnMainMenuEnter.Add(function() NLSocialClient.snapshots={} end)
++return NLSocialClient
+--- baseline/42/media/lua/client/NL/Wardrobe.lua
++++ modified/42/media/lua/client/NL/Wardrobe.lua
+@@ -0,0 +1,57 @@
++require "TimedActions/ISWearClothing"
++require "TimedActions/ISTimedActionQueue"
++NLWardrobe = {}
++
++function NLWardrobe.save(player, slot)
++    local outfits = player:getModData().NeighborhoodOutfits or {}
++    local items, saved = player:getWornItems(), {}
++    for i=0,items:size()-1 do
++        local item=items:get(i):getItem()
++        saved[#saved+1] = {fullType=item:getFullType(),itemId=item:getID()}
++    end
++    outfits[slot] = saved
++    player:getModData().NeighborhoodOutfits = outfits
++    player:Say("Outfit "..slot.." saved ("..#saved.." pieces).")
++end
++
++function NLWardrobe.wear(player, slot)
++    local outfits = player:getModData().NeighborhoodOutfits or {}
++    local saved = outfits[slot]
++    if not saved then player:Say("Save this outfit slot first."); return end
++    local missing,used = 0,{}
++    local inventory = player:getInventory():getItems()
++    for _,entry in ipairs(saved) do
++        -- Old presets stored strings. New presets keep the garment identity,
++        -- preserving the chosen color/pattern when several pieces share a type.
++        local fullType=type(entry)=="table" and entry.fullType or entry
++        local itemId=type(entry)=="table" and entry.itemId or nil
++        local match,fallback = nil,nil
++        for i=0,inventory:size()-1 do
++            local item=inventory:get(i)
++            if not used[item] and item:getFullType()==fullType then
++                fallback=fallback or item
++                if itemId~=nil and item:getID()==itemId then match=item; break end
++            end
++        end
++        match=match or fallback
++        if match then
++            used[match]=true
++            ISTimedActionQueue.add(ISWearClothing:new(player,match))
++        else missing=missing+1 end
++    end
++    if missing>0 then player:Say(missing.." outfit pieces missing from main inventory.") end
++end
++
++function NLWardrobe.menu(index, context)
++    local player=getSpecificPlayer(index)
++    if not player or player:isDead() then return end
++    local option=context:addOption("Neighborhood wardrobe")
++    local sub=ISContextMenu:getNew(context)
++    context:addSubMenu(option,sub)
++    for slot=1,3 do
++        sub:addOption("Save current outfit "..slot,player,NLWardrobe.save,slot)
++        sub:addOption("Wear saved outfit "..slot,player,NLWardrobe.wear,slot)
++    end
++end
++Events.OnFillWorldObjectContextMenu.Add(NLWardrobe.menu)
++return NLWardrobe
+--- baseline/42/media/lua/client/NL/WardrobePanel.lua
++++ modified/42/media/lua/client/NL/WardrobePanel.lua
+@@ -0,0 +1,53 @@
++require "NL/Journal"
++require "NL/Wardrobe"
++NLWardrobePanel=NLJournal:derive("NLWardrobePanel")
++NLWardrobePanel.instances={}
++
++function NLWardrobePanel:initialise()
++    ISPanel.initialise(self)
++    self:button(self.width-75,10,60,"Close","close")
++    self.slots={}
++    for i=1,3 do
++        local y=110+(i-1)*90
++        self.slots[i]={save=self:button(320,y,115,"Save current","save",i),
++            wear=self:button(445,y,125,"Wear outfit","wear",i)}
++    end
++end
++function NLWardrobePanel:onButton(button)
++    if button.action=="close" then self:setVisible(false); return end
++    local player=getSpecificPlayer(self.playerIndex)
++    if not player or player:isDead() then return end
++    if button.action=="save" then NLWardrobe.save(player,button.value)
++    elseif button.action=="wear" then NLWardrobe.wear(player,button.value) end
++end
++function NLWardrobePanel:prerender()
++    ISPanel.prerender(self)
++    self:drawText("NEIGHBORHOOD / WARDROBE",16,14,0.12,0.38,0.63,1,UIFont.Small)
++    self:drawText("Your looks / save three outfits from clothes you own",16,60,0.18,0.24,0.32,1,UIFont.Small)
++    local player=getSpecificPlayer(self.playerIndex)
++    local alive=player~=nil and not player:isDead()
++    local outfits=alive and player:getModData().NeighborhoodOutfits or {}
++    for i=1,3 do
++        local y=95+(i-1)*90
++        local saved=outfits[i]
++        self:drawRect(16,y,285,72,1,0.88,0.94,0.98)
++        self:drawText("LOOK "..i,28,y+10,0.12,0.38,0.63,1,UIFont.Small)
++        self:drawText(saved and (#saved.." saved pieces") or "Empty / save your current clothes",28,y+36,0.18,0.24,0.32,1,UIFont.Small)
++        self.slots[i].save:setEnable(alive)
++        self.slots[i].wear:setEnable(alive and saved~=nil and #saved>0)
++    end
++    self:drawText("Wear uses clothing in your main inventory and normal equip actions.",16,382,0.30,0.38,0.47,1,UIFont.Small)
++    self:drawText("Missing pieces are skipped. Other worn layers stay on.",16,405,0.30,0.38,0.47,1,UIFont.Small)
++end
++function NLWardrobePanel.open(index)
++    local panel=NLWardrobePanel.instances[index]
++    if not panel then panel=NLWardrobePanel:new(index); panel:initialise(); NLWardrobePanel.instances[index]=panel end
++    panel:setX(getPlayerScreenLeft(index)+math.max(0,(getPlayerScreenWidth(index)-panel.width)/2))
++    panel:setY(getPlayerScreenTop(index)+math.max(0,(getPlayerScreenHeight(index)-panel.height)/2))
++    panel:removeFromUIManager(); panel:addToUIManager(); panel:setVisible(true); panel:bringToTop()
++end
++Events.OnMainMenuEnter.Add(function()
++    for _,panel in pairs(NLWardrobePanel.instances) do panel:removeFromUIManager() end
++    NLWardrobePanel.instances={}
++end)
++return NLWardrobePanel
+--- baseline/42/media/lua/client/NeighborhoodNeeds.lua
++++ modified/42/media/lua/client/NeighborhoodNeeds.lua
+@@ -0,0 +1,99 @@
++require "ISUI/ISPanel"
++require "NL/Journal"
++require "NL/Relationships"
++require "NL/WardrobePanel"
++
++NeighborhoodNeeds = ISPanel:derive("NeighborhoodNeeds")
++NeighborhoodNeeds.enabled = true
++NeighborhoodNeeds.instances = {}
++NeighborhoodNeeds.rows = {
++    { "Hunger", "HUNGER" }, { "Thirst", "THIRST" },
++    { "Fatigue", "FATIGUE" }, { "Boredom", "BOREDOM" },
++    { "Stress", "STRESS" }, { "Unhappiness", "UNHAPPINESS" }
++}
++
++-- Numbers show adverse intensity; bar fill shows remaining wellbeing. No gameplay writes.
++function NeighborhoodNeeds.read(player, key)
++    local stat = CharacterStat[key]
++    if not player or not stat then return nil end
++    local value = player:getStats():get(stat)
++    local lo, hi = stat:getMinimumValue(), stat:getMaximumValue()
++    if type(value) ~= "number" or value ~= value or hi <= lo then return nil end
++    return math.max(0, math.min(1, (value - lo) / (hi - lo)))
++end
++
++function NeighborhoodNeeds:new(index, player)
++    local font = getTextManager():getFontHeight(UIFont.Small)
++    local o = ISPanel.new(self, 0, 0, 300, 50 + 6 * (font + 17))
++    o.playerIndex, o.player = index, player
++    o.rowHeight, o.headerHeight = font + 17, font + 16
++    o.expandedHeight = o.headerHeight + 6 * o.rowHeight + font + 20
++    o.collapsed = false
++    o.backgroundColor = { r = 0.96, g = 0.98, b = 1, a = 0.97 }
++    o.borderColor = { r = 0.62, g = 0.76, b = 0.88, a = 1 }
++    o:setHeight(o.expandedHeight)
++    return o
++end
++
++function NeighborhoodNeeds:onMouseDown(x, y)
++    if y <= self.headerHeight then
++        self.collapsed = not self.collapsed
++        self:setHeight(self.collapsed and self.headerHeight or self.expandedHeight)
++    elseif not self.collapsed and y >= self.headerHeight + 6 * self.rowHeight then
++        if x>self.width*2/3 then NLWardrobePanel.open(self.playerIndex)
++        elseif x>self.width/3 then NLRelationships.open(self.playerIndex)
++        else NLJournal.open(self.playerIndex) end
++    end
++    return true
++end
++
++function NeighborhoodNeeds:prerender()
++    local player = getSpecificPlayer(self.playerIndex)
++    if not player or player:isDead() then return end
++    self.player = player
++    local left, top = getPlayerScreenLeft(self.playerIndex), getPlayerScreenTop(self.playerIndex)
++    local width, height = getPlayerScreenWidth(self.playerIndex), getPlayerScreenHeight(self.playerIndex)
++    self:setWidth(math.min(300, math.max(180, width - 24)))
++    self:setX(left + 12)
++    self:setY(top + math.max(12, height - self.height - 84))
++    ISPanel.prerender(self)
++    self:drawText("NEEDS / LOWER % IS BETTER", 12, 7, 0.12, 0.38, 0.63, 1, UIFont.Small)
++    self:drawTextRight(self.collapsed and "+" or "-", self.width - 12, 7, 0.12, 0.38, 0.63, 1, UIFont.Small)
++    if self.collapsed then return end
++    for i, row in ipairs(self.rows) do
++        local y = self.headerHeight + (i - 1) * self.rowHeight
++        local value = self.read(player, row[2])
++        local label = value and (tostring(math.floor(value * 100 + 0.5)) .. "%") or "N/A"
++        self:drawText(row[1], 12, y, 0.18, 0.24, 0.32, 1, UIFont.Small)
++        self:drawTextRight(label, self.width - 12, y, 0.18, 0.24, 0.32, 1, UIFont.Small)
++        local by = y + self.rowHeight - 10
++        self:drawRect(12, by, self.width - 24, 5, 1, 0.82, 0.87, 0.90)
++        if value then
++            local r, g = 0.3, 0.85
++            if value >= 0.7 then r, g = 0.96, 0.35
++            elseif value >= 0.35 then r, g = 0.95, 0.73 end
++            self:drawRect(12, by, (self.width - 24) * (1 - value), 5, 1, r, g, 0.18)
++        end
++    end
++    self:drawText("Careers       Social       Wardrobe", 12,
++        self.headerHeight + 6 * self.rowHeight + 3, 0.12, 0.38, 0.63, 1, UIFont.Small)
++end
++
++function NeighborhoodNeeds.create(index, player)
++    local old = NeighborhoodNeeds.instances[index]
++    if old then old:removeFromUIManager() end
++    NeighborhoodNeeds.instances[index] = nil
++    if not NeighborhoodNeeds.enabled or not player then return end
++    local panel = NeighborhoodNeeds:new(index, player)
++    panel:initialise()
++    panel:addToUIManager()
++    NeighborhoodNeeds.instances[index] = panel
++end
++
++function NeighborhoodNeeds.cleanup()
++    for _, panel in pairs(NeighborhoodNeeds.instances) do panel:removeFromUIManager() end
++    NeighborhoodNeeds.instances = {}
++end
++
++Events.OnCreatePlayer.Add(NeighborhoodNeeds.create)
++Events.OnMainMenuEnter.Add(NeighborhoodNeeds.cleanup)
+--- baseline/42/media/lua/server/NL/Authority.lua
++++ modified/42/media/lua/server/NL/Authority.lua
+@@ -0,0 +1,80 @@
++if isClient() then return end
++require "NL/Domain"
++
++NLAuthority = { module = "NeighborhoodLife", lastRequest = {} }
++
++function NLAuthority.world()
++    local world = ModData.getOrCreate("NeighborhoodLife_v2")
++    world.version = world.version or NLDefinitions.version
++    world.players = world.players or {}
++    return world
++end
++
++function NLAuthority.key(player)
++    -- Server-supplied player, never a username from packet args. Accounts retain
++    -- careers across character deaths; each world owns a separate profile store.
++    local name = player:getUsername()
++    if not name or name == "" then name = "local:" .. player:getPlayerNum() end
++    return name
++end
++
++function NLAuthority.snapshot(player, profile, message)
++    local result = NLDomain.copy(profile)
++    result.playerNum = player:getPlayerNum()
++    result.username = NLAuthority.key(player)
++    result.message = message or "Updated"
++    result.skill = player:getPerkLevel(Perks[NLDefinitions.careers[profile.career].perk])
++    if isServer() then sendServerCommand(player, NLAuthority.module, "snapshot", result)
++    elseif NLClient then NLClient.receive(NLAuthority.module, "snapshot", result) end
++    return result
++end
++
++function NLAuthority.delivery(player, profile, id)
++    if type(id) ~= "string" or #id > 100 then return false, "Invalid delivery" end
++    local contract = NLDomain.findContract(profile, id)
++    if not contract then return false, "Delivery expired; refresh the board" end
++    if profile.claimed[id] then return false, "Already delivered" end
++    -- Main inventory only. Bags/worn/held items are never silently consumed.
++    local inv = player:getInventory()
++    local all = inv:getItems()
++    local chosen = {}
++    for i = 0, all:size() - 1 do
++        local item = all:get(i)
++        if item:getFullType() == contract.item and not player:isEquipped(item) then
++            chosen[#chosen + 1] = item
++            if #chosen == contract.amount then break end
++        end
++    end
++    if #chosen < contract.amount then
++        return false, "Need " .. contract.amount .. " " .. contract.item .. " in main inventory"
++    end
++    for _, item in ipairs(chosen) do
++        inv:Remove(item)
++        if isServer() then sendRemoveItemFromContainer(inv, item) end
++    end
++    return NLDomain.complete(profile, contract)
++end
++
++function NLAuthority.command(module, command, player, args)
++    if module ~= NLAuthority.module or not player or player:isDead() then return end
++    if command ~= "refresh" and command ~= "select" and command ~= "deliver" and command ~= "promote" then return end
++    if type(args) ~= "table" then return end
++    local key = NLAuthority.key(player)
++    local now = getTimestampMs()
++    if NLAuthority.lastRequest[key] and now - NLAuthority.lastRequest[key] < 200 then return end
++    NLAuthority.lastRequest[key] = now
++    local profile = NLDomain.profile(NLAuthority.world(), key)
++    NLDomain.day(profile, math.floor(getGameTime():getWorldAgeHours() / 24))
++    local ok, message = true, "Updated"
++    if command == "select" then ok, message = NLDomain.select(profile, args.career)
++    elseif command == "deliver" then ok, message = NLAuthority.delivery(player, profile, args.id)
++    elseif command == "promote" then
++        ok, message = NLDomain.promote(profile, player:getPerkLevel(Perks[NLDefinitions.careers[profile.career].perk]))
++    end
++    if not ok then message = "Not completed: " .. message end
++    NLAuthority.snapshot(player, profile, message)
++end
++
++Events.OnClientCommand.Add(NLAuthority.command)
++Events.OnMainMenuEnter.Add(function() NLAuthority.lastRequest = {} end)
++return NLAuthority
+--- baseline/42/media/lua/server/NL/SocialAuthority.lua
++++ modified/42/media/lua/server/NL/SocialAuthority.lua
+@@ -0,0 +1,69 @@
++if isClient() then return end
++require "NL/Social"
++require "NL/Authority"
++require "NL/Neighbors"
++NLSocialAuthority={bodies={},lastRequest={}}
++
++function NLSocialAuthority.register(id,body,home)
++    if not NLSocial.people[id] or not body or not NLNeighbors.definitions[id] then return false end
++    local world=NLAuthority.world()
++    NLNeighbors.register(world,id,home)
++    NLSocialAuthority.bodies[id]=body
++    return true
++end
++
++function NLSocialAuthority.snapshot(player,message)
++    local world=NLAuthority.world()
++    NLNeighbors.ensure(world)
++    local profile=NLDomain.profile(world,NLAuthority.key(player))
++    local result={username=NLAuthority.key(player),neighbors={},message=message or "Updated",revision=profile.revision}
++    for _,id in ipairs(NLSocial.order) do
++        local npc=NLNeighbors.get(world,id)
++        if npc then
++            local body=NLSocialAuthority.bodies[id]
++            local row={id=id,name=NLSocial.people[id].name,personality=NLSocial.people[id].personality,
++                age=NLSocial.people[id].age,dead=npc.dead or npc.alive==false,available=body~=nil,canInteract=false,
++                relation=NLDomain.copy(NLSocial.relation(profile,id))}
++            if body then
++                if body:isDead() then NLNeighbors.dead(world,id) end
++                row.dead=npc.dead or npc.alive==false
++                row.distance=math.sqrt((body:getX()-player:getX())^2+(body:getY()-player:getY())^2)
++                row.sameFloor=math.floor(body:getZ())==math.floor(player:getZ())
++                row.canInteract=not row.dead and not player:isDead() and row.sameFloor
++                    and row.distance<=4 and player:CanSee(body)
++            end
++            result.neighbors[#result.neighbors+1]=row
++        end
++    end
++    if isServer() then sendServerCommand(player,"NeighborhoodSocial","snapshot",result)
++    elseif NLSocialClient then NLSocialClient.receive("NeighborhoodSocial","snapshot",result) end
++end
++
++function NLSocialAuthority.command(module,command,player,args)
++    if module~="NeighborhoodSocial" or not player or player:isDead() or type(args)~="table" then return end
++    if command~="refresh" and command~="interact" then return end
++    local key=NLAuthority.key(player); local now=getTimestampMs()
++    if NLSocialAuthority.lastRequest[key] and now-NLSocialAuthority.lastRequest[key]<200 then return end
++    NLSocialAuthority.lastRequest[key]=now
++    local message="Updated"
++    if command=="interact" then
++        local npc=(NLAuthority.world().neighbors or {})[args.id]
++        local body=NLSocialAuthority.bodies[args.id]
++        if not npc or not body then message="This neighbor is not nearby."
++                elseif body:isDead() then NLNeighbors.dead(NLAuthority.world(),args.id); message="This neighbor has died."
++        elseif math.floor(body:getZ())~=math.floor(player:getZ())
++            or (body:getX()-player:getX())^2+(body:getY()-player:getY())^2>16 then
++            message="Move within four tiles on the same floor."
++        elseif not player:CanSee(body) then message="You need a clear line of sight."
++        else
++            local profile=NLDomain.profile(NLAuthority.world(),key)
++            local ok
++            ok,message=NLSocial.interact(profile,npc,args.action,getGameTime():getWorldAgeHours(),key)
++            if not ok then message="Not completed: "..message end
++        end
++    end
++    NLSocialAuthority.snapshot(player,message)
++end
++Events.OnClientCommand.Add(NLSocialAuthority.command)
++Events.OnMainMenuEnter.Add(function() NLSocialAuthority.bodies={}; NLSocialAuthority.lastRequest={} end)
++return NLSocialAuthority
+--- baseline/42/media/lua/shared/NL/Aspirations.lua
++++ modified/42/media/lua/shared/NL/Aspirations.lua
+@@ -0,0 +1,39 @@
++NLAspirations={milestones={
++    {name="Helping Hands",deliveries=3,ranks=0,reward=15},
++    {name="Community Regular",deliveries=9,ranks=1,reward=30},
++    {name="Neighborhood Pillar",deliveries=24,ranks=3,reward=60}
++}}
++function NLAspirations.progress(profile)
++    local deliveries,ranks=0,0
++    for _,career in pairs(profile.careers) do
++        deliveries=deliveries+career.delivered
++        ranks=ranks+career.rank-1
++    end
++    return deliveries,ranks
++end
++function NLAspirations.advance(profile)
++    profile.aspiration=profile.aspiration or {stage=1}
++    local state=profile.aspiration
++    local deliveries,ranks=NLAspirations.progress(profile)
++    local reward=0
++    while NLAspirations.milestones[state.stage] do
++        local milestone=NLAspirations.milestones[state.stage]
++        if deliveries<milestone.deliveries or ranks<milestone.ranks then break end
++        reward=reward+milestone.reward
++        state.stage=state.stage+1
++    end
++    if reward>0 then
++        profile.credits=profile.credits+reward
++        profile.revision=profile.revision+1
++    end
++    return reward
++end
++function NLAspirations.label(profile)
++    local stage=profile.aspiration and profile.aspiration.stage or 1
++    local m=NLAspirations.milestones[stage]
++    if not m then return "Aspiration complete: Neighborhood Pillar" end
++    local deliveries,ranks=NLAspirations.progress(profile)
++    return m.name..": "..math.min(deliveries,m.deliveries).."/"..m.deliveries
++        .." deliveries, "..math.min(ranks,m.ranks).."/"..m.ranks.." promotions (+"..m.reward.." credits)"
++end
++return NLAspirations
+--- baseline/42/media/lua/shared/NL/Definitions.lua
++++ modified/42/media/lua/shared/NL/Definitions.lua
+@@ -0,0 +1,20 @@
++NLDefinitions = {}
++NLDefinitions.version = 2
++NLDefinitions.careerOrder = { "tailor", "carpenter", "medic" }
++NLDefinitions.careers = {
++    tailor = { name = "Tailor", perk = "Tailoring", ranks = {
++        "Mending Apprentice", "Neighborhood Tailor", "Pattern Maker", "Master Clothier"
++    }, materials = { { "Base.RippedSheets", 6 }, { "Base.Sheet", 2 }, { "Base.Bandage", 3 } } },
++    carpenter = { name = "Carpenter", perk = "Woodwork", ranks = {
++        "Workshop Helper", "Repair Carpenter", "House Builder", "Master Carpenter"
++    }, materials = { { "Base.Plank", 2 }, { "Base.Nails", 12 }, { "Base.Plank", 4 } } },
++    medic = { name = "Medic", perk = "Doctor", ranks = {
++        "First Aid Volunteer", "Neighborhood Medic", "Clinic Lead", "Community Physician"
++    }, materials = { { "Base.RippedSheets", 8 }, { "Base.Bandage", 3 }, { "Base.Bandage", 5 } } }
++}
++-- Promotion requires deliveries AND the actual game skill; career XP is not skill XP.
++NLDefinitions.promotions = {
++    { xp = 0, skill = 0, variety = 0 }, { xp = 60, skill = 1, variety = 2 },
++    { xp = 180, skill = 3, variety = 3 }, { xp = 360, skill = 5, variety = 3 }
++}
++return NLDefinitions
+--- baseline/42/media/lua/shared/NL/Domain.lua
++++ modified/42/media/lua/shared/NL/Domain.lua
+@@ -0,0 +1,91 @@
++require "NL/Definitions"
++require "NL/Aspirations"
++NLDomain = {}
++
++function NLDomain.newWorld()
++    return { version = NLDefinitions.version, players = {} }
++end
++
++function NLDomain.profile(world, key)
++    world.players = world.players or {}
++    if not world.players[key] then
++        world.players[key] = { career = "tailor", careers = {}, credits = 0,
++            revision = 0, day = -1, claimed = {}, outfits = {} }
++    end
++    local p = world.players[key]
++    for _, id in ipairs(NLDefinitions.careerOrder) do
++        p.careers[id] = p.careers[id] or { rank = 1, xp = 0, delivered = 0, variety = {} }
++    end
++    return p
++end
++
++function NLDomain.day(profile, day)
++    if day > profile.day then
++        profile.day, profile.claimed = day, {}
++        profile.revision = profile.revision + 1
++    end
++end
++
++function NLDomain.contracts(profile)
++    local result = {}
++    local career = NLDefinitions.careers[profile.career]
++    for i, material in ipairs(career.materials) do
++        result[i] = { id = profile.career .. ":" .. profile.day .. ":" .. i,
++            item = material[1], amount = material[2], xp = 20, credits = 10, slot = i }
++    end
++    return result
++end
++
++function NLDomain.findContract(profile, id)
++    for _, contract in ipairs(NLDomain.contracts(profile)) do
++        if contract.id == id then return contract end
++    end
++end
++
++function NLDomain.select(profile, id)
++    if type(id) ~= "string" or not NLDefinitions.careers[id] then return false, "Unknown career" end
++    if profile.career ~= id then
++        profile.career = id
++        profile.revision = profile.revision + 1
++    end
++    return true, "Career selected"
++end
++
++-- Call only after the authoritative adapter has removed the complete delivery.
++function NLDomain.complete(profile, contract)
++    if profile.claimed[contract.id] then return false, "Already delivered" end
++    profile.claimed[contract.id] = true
++    local progress = profile.careers[profile.career]
++    progress.xp = progress.xp + contract.xp
++    progress.delivered = progress.delivered + 1
++    progress.variety[contract.slot] = true
++    profile.credits = profile.credits + contract.credits
++    profile.revision = profile.revision + 1
++    NLAspirations.advance(profile)
++    return true, "Delivery complete: +20 career XP, +10 community credits"
++end
++
++function NLDomain.promote(profile, skill)
++    local progress = profile.careers[profile.career]
++    local nextRank = NLDefinitions.promotions[progress.rank + 1]
++    if not nextRank then return false, "Highest rank reached" end
++    local variety = 0
++    for _, done in pairs(progress.variety) do if done then variety = variety + 1 end end
++    if skill < nextRank.skill or progress.xp < nextRank.xp or variety < nextRank.variety then
++        return false, "Promotion needs skill " .. nextRank.skill .. ", XP " .. nextRank.xp
++            .. " and " .. nextRank.variety .. " different delivery types"
++    end
++    progress.rank = progress.rank + 1
++    profile.revision = profile.revision + 1
++    NLAspirations.advance(profile)
++    return true, "Promoted to " .. NLDefinitions.careers[profile.career].ranks[progress.rank]
++end
++
++function NLDomain.copy(value)
++    if type(value) ~= "table" then return value end
++    local result = {}
++    for k, v in pairs(value) do result[k] = NLDomain.copy(v) end
++    return result
++end
++
++return NLDomain
+--- baseline/42/media/lua/shared/NL/Neighbors.lua
++++ modified/42/media/lua/shared/NL/Neighbors.lua
+@@ -0,0 +1,67 @@
++require "NL/Domain"
++
++-- Persistent neighborhood identity is separate from the transient engine body.
++-- A missing body is therefore an unavailable neighbor, never a fake character.
++NLNeighbors = {
++    definitions = {
++        marisol = { home={x=10780,y=10268,z=0}, waypoints={{x=10780,y=10268,z=0},{x=10784,y=10268,z=0}}, schedule="tailor" },
++        kenji = { home={x=10786,y=10270,z=0}, waypoints={{x=10786,y=10270,z=0},{x=10790,y=10270,z=0}}, schedule="carpenter" },
++        amara = { home={x=10782,y=10274,z=0}, waypoints={{x=10782,y=10274,z=0},{x=10786,y=10274,z=0}}, schedule="medic" }
++    }
++}
++
++local function copy(value)
++    return NLDomain.copy(value)
++end
++
++function NLNeighbors.ensure(world)
++    world.neighbors = world.neighbors or {}
++    for id, def in pairs(NLNeighbors.definitions) do
++        local row = world.neighbors[id]
++        if not row then
++            row = { id=id, home=copy(def.home), position=copy(def.home), waypoint=1,
++                alive=true, revision=0 }
++            world.neighbors[id] = row
++        else
++            row.id = id
++            row.home = row.home or copy(def.home)
++            row.position = row.position or copy(row.home)
++            row.waypoint = row.waypoint or 1
++            if row.alive == nil then row.alive = not row.dead end
++            row.revision = row.revision or 0
++        end
++    end
++    return world.neighbors
++end
++
++function NLNeighbors.get(world, id)
++    NLNeighbors.ensure(world)
++    return world.neighbors[id]
++end
++
++function NLNeighbors.register(world, id, home)
++    if not NLNeighbors.definitions[id] then return false end
++    local row = NLNeighbors.get(world, id)
++    if home and not row.home then row.home = copy(home) end
++    return true
++end
++
++function NLNeighbors.position(world, id, x, y, z, waypoint)
++    local row = NLNeighbors.get(world, id)
++    if not row or row.alive == false then return false end
++    row.position = {x=x, y=y, z=z}
++    if waypoint then row.waypoint = waypoint end
++    row.revision = row.revision + 1
++    return true
++end
++
++function NLNeighbors.dead(world, id)
++    local row = NLNeighbors.get(world, id)
++    if not row then return false end
++    row.alive = false
++    row.dead = true
++    row.revision = row.revision + 1
++    return true
++end
++
++return NLNeighbors
+--- baseline/42/media/lua/shared/NL/Social.lua
++++ modified/42/media/lua/shared/NL/Social.lua
+@@ -0,0 +1,80 @@
++require "NL/Domain"
++NLSocial = {}
++NLSocial.people = {
++    marisol = { name="Marisol Vega", age=31, personality="Creative, warm, protective",
++        career="tailor", female=true, friendly=6, humor=4, flirt=4 },
++    kenji = { name="Kenji Arakawa", age=36, personality="Reserved, practical, loyal",
++        career="carpenter", female=false, friendly=3, humor=2, flirt=3 },
++    amara = { name="Amara Okonkwo", age=29, personality="Outgoing, determined, candid",
++        career="medic", female=true, friendly=5, humor=6, flirt=5 }
++}
++NLSocial.order={"marisol","kenji","amara"}
++NLSocial.actions={introduce=true,chat=true,joke=true,flirt=true,date=true,partner=true,breakup=true,apologize=true}
++
++local function clamp(v,lo,hi) return math.max(lo,math.min(hi,v)) end
++
++function NLSocial.relation(profile,id)
++    profile.relationships=profile.relationships or {}
++    if not profile.relationships[id] then
++        profile.relationships[id]={met=false,friendship=0,trust=0,attraction=0,
++            status="Stranger",lastAction=-100,lastFlirt=-100,dates=0,memories={}}
++    end
++    return profile.relationships[id]
++end
++
++function NLSocial.interact(profile,npc,action,hours,key)
++    local def=NLSocial.people[npc.id]
++    if not def or not NLSocial.actions[action] then return false,"Unknown interaction" end
++    if npc.dead then return false,"They have died." end
++    local r=NLSocial.relation(profile,npc.id)
++    if hours-r.lastAction<0.25 then return false,"Give the conversation a little time." end
++    if action~="introduce" and not r.met then return false,"Introduce yourself first." end
++    local message
++    if action=="introduce" then
++        if r.met then return false,"You already know each other." end
++        r.met=true; r.friendship=def.friendly; r.trust=2; r.status="Acquaintance"
++        message="I'm "..def.name..". It's good to meet another survivor."
++    elseif action=="chat" then
++        r.friendship=r.friendship+def.friendly; r.trust=r.trust+3
++        message="I'd like to hear how you've been getting on."
++    elseif action=="joke" then
++        r.friendship=r.friendship+def.humor
++        message=def.humor>=4 and "I needed that laugh today." or "That's terrible. ...All right, a little funny."
++    elseif action=="apologize" then
++        if r.friendship>=0 then return false,"There is nothing to apologize for." end
++        r.friendship=r.friendship+3; message="Thank you for saying that."
++    elseif action=="flirt" then
++        if def.age<18 or npc.partner and npc.partner~=key then return false,"I'm not available for that." end
++        if hours-r.lastFlirt<4 then return false,"Let's not rush this." end
++        r.lastFlirt=hours
++        if r.friendship<20 or r.trust<10 then
++            r.friendship=r.friendship-3; message="I'd rather get to know you first."
++        else
++            r.attraction=r.attraction+def.flirt; message="I was hoping we'd get to spend more time together."
++        end
++    elseif action=="date" then
++        if npc.partner and npc.partner~=key then return false,"I'm seeing someone." end
++        if r.friendship<35 or r.attraction<15 then return false,"I'm not ready for a date." end
++        if r.lastDate and hours-r.lastDate<24 then return false,"Let's plan another day." end
++        r.lastDate=hours; r.dates=r.dates+1; r.attraction=r.attraction+5; r.trust=r.trust+5
++        message="I'd like that. Let's spend a quiet moment together."
++    elseif action=="partner" then
++        if npc.partner then return false,"Already in a partnership." end
++        if r.dates<2 or r.trust<30 or r.attraction<30 then return false,"I'm not ready to make that commitment." end
++        npc.partner=key; r.status="Partner"; message="Yes. I want to build a life with you."
++    elseif action=="breakup" then
++        if npc.partner~=key then return false,"You are not partners." end
++        npc.partner=nil; r.status="Former partner"; r.friendship=r.friendship-15; r.attraction=0
++        message="I understand. I need some space."
++    end
++    r.friendship=clamp(r.friendship,-100,100); r.trust=clamp(r.trust,0,100); r.attraction=clamp(r.attraction,0,100)
++    if r.status~="Partner" and r.status~="Former partner" then
++        r.status=r.friendship>=40 and "Friend" or "Acquaintance"
++    end
++    r.lastAction=hours
++    r.memories[#r.memories+1]={action=action,hour=hours,text=message}
++    if #r.memories>12 then table.remove(r.memories,1) end
++    profile.revision=profile.revision+1
++    return true,message
++end
++return NLSocial
+--- baseline/42/mod.info
++++ modified/42/mod.info
+@@ -0,0 +1,4 @@
++name=Neighborhood Life - Needs HUD
++id=NeighborhoodLifeHUD
++description=Life sim prototype: needs HUD, careers, outfit presets and relationship framework. NPC world integration and hosted multiplayer verification are in development.
++versionMin=42.0

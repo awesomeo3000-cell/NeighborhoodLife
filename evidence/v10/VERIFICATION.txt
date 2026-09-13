@@ -1,0 +1,52 @@
+Neighborhood Life v0.4 milestone verification
+
+Changed branch/field:
+- production world registry: NeighborhoodLife/42/media/lua/shared/NL/Neighbors.lua (new)
+- authoritative social integration: NeighborhoodLife/42/media/lua/server/NL/SocialAuthority.lua now calls NLNeighbors.ensure/get/register/position/dead-compatible state
+- tooling: tools/pipeline.py, tools/launch-multiplayer-qa.ps1, tests/HandsFreeQA.java
+- Git baseline commit: 0efe2225e5e03d18f92ef6e97b4f1a19de11b741
+
+BASELINE COMMAND: python tools/pipeline.py test --target E:/pzmod/evidence/v10/baseline
+BASELINE INPUT: E:/pzmod/evidence/v10/baseline (HEAD production snapshot before NLNeighbors)
+BASELINE OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools/pipeline.py test
+MODIFIED INPUT: E:/pzmod/NeighborhoodLife
+MODIFIED OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED EXIT: 0
+MODIFIED TEST CLASSIFICATION: Lua 5.1 and installed-game Kahlua VM tests; no multiplayer or native NPC movement claim.
+
+PACKAGE COMMAND: python tools/pipeline.py package --version v10
+PACKAGE INPUT: E:/pzmod/NeighborhoodLife
+PACKAGE OUTPUT: PASS: release package E:/pzmod/evidence/v10/MODIFIED_FILE.zip; PACKAGE_ENTRIES=16; QA_INCLUDED=False
+PACKAGE EXIT: 0
+
+ROLLBACK COMMAND: "C:/Program Files/Git/bin/bash.exe" E:/pzmod/evidence/v10/ROLLBACK.sh E:/pzmod/evidence/v10/rollback-test
+ROLLBACK INPUT: separate copy E:/pzmod/evidence/v10/rollback-test
+ROLLBACK OUTPUT: PASS: restored NeighborhoodLife from baseline commit 0efe222
+ROLLBACK EXIT: 0
+RESTORED COMMAND: python tools/verify.py modified
+RESTORED INPUT: E:/pzmod/evidence/v10/rollback-test via the verification target used by the rollback check
+RESTORED OUTPUT: PASS: HUD, syntax, 60 gameplay/social assertions, wardrobe; Lua 5.1 and game Kahlua
+RESTORED EXIT: 0
+RESTORED STATUS: NLNeighbors.lua absent; baseline SocialAuthority.lua syntax and behavior restored; working NeighborhoodLife remains modified.
+
+REAL ENGINE MULTIPLAYER COMMAND: powershell -NoProfile -ExecutionPolicy Bypass -File tools/launch-multiplayer-qa.ps1
+REAL ENGINE MULTIPLAYER INPUT: E:/pzmod/test-profile/mp-server, E:/pzmod/test-profile/mp-host, E:/pzmod/test-profile/mp-guest
+REAL ENGINE MULTIPLAYER OUTPUT: QA multiplayer processes started: server=29224 host=19328 guest=29924
+REAL ENGINE MULTIPLAYER EXIT: 0
+REAL ENGINE MULTIPLAYER RESULT: dedicated server reached *** SERVER STARTED ****; both client JVMs loaded NeighborhoodLifeHUD and NeighborhoodQA; hands-free agent output was PASS: OnSteamGameJoin invoked with engine client identity nl-host (twice in the reused isolated log) and PASS: OnSteamGameJoin invoked with engine client identity nl-guest (twice in the reused isolated log); server recorded no player connections; clients produced no NLQA MP CLIENT START or NLQA MP SNAPSHOT. Host+guest gameplay is not verified.
+
+NATIVE NPC ENGINE RESULT: evidence/v09/modified-engine.log records PATH RESULT: Working then PATH RESULT: Failed and movement distance=0. Native NPC movement remains open.
+
+HASHES:
+- MODIFIED_FILE.zip: C3510D90C30C31896C8F9635CF22F8C818E15FF9720FBD39B9774CD7C90106D2
+- DIFF_FILE.patch: 81795A1D9541B9CA9CE65448133D16F65D7750FF8FD1194E36B547C24CA97680
+- Neighbors.lua: D4367C579CB8ACF1F6B662290C9C53E53552EB0B783D02F5F1E2FF4C0500F363
+- SocialAuthority.lua: 6C58954DF4218DCCA9ACDA34783BEBF83666A962E9EA74ACA7C20EF2236F586E
+
+ARTIFACT: E:/pzmod/evidence/v10/MODIFIED_FILE.zip
+ARTIFACT: E:/pzmod/evidence/v10/DIFF_FILE.patch
+ARTIFACT: E:/pzmod/evidence/v10/VERIFICATION.txt
+ARTIFACT: E:/pzmod/evidence/v10/ROLLBACK.sh

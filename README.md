@@ -58,3 +58,10 @@ checks, then verifies persisted career credits on the next save reload.
 Never distribute qa/NeighborhoodQA as part of the normal mod.
 tests/EngineLua.java also runs production Lua tests inside the game's Kahlua VM;
 those tests still mock world/network objects and do not prove real multiplayer.
+tools/pipeline.py is the consolidated test/package entry point:
+"python tools/pipeline.py test" runs Lua 5.1 plus installed-game Kahlua suites,
+and "python tools/pipeline.py package --version vN" writes a production-only
+package and diff under evidence/vN. tools/launch-multiplayer-qa.ps1 starts a
+dedicated no-Steam server and two isolated clients without OS input; its current
+engine evidence reaches server startup but the B42.20.4 no-Steam client join
+event does not transition the clients out of the main menu yet.
