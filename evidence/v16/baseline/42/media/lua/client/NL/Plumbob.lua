@@ -1,0 +1,148 @@
+require "ISUI/ISPanel"
+
+-- Screen-space marker for the active character and future authoritative NPC bodies.
+-- The adapter is deliberately separate from NPC spawning: a marker never creates a body.
+NLPlumbob = ISPanel:derive("NLPlumbob")
+NLPlumbob.enabled = true
+NLPlumbob.instances = {}
+NLPlumbob.texturePath = "media/textures/NL_Plumbob.png"
+NLPlumbob.defaultColor = { r = 0.22, g = 0.88, b = 0.58 }
+NLPlumbob.remoteColor = { r = 0.28, g = 0.86, b = 0.95 }
+
+function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, lift)
+    return math.floor(screenX - left - width / 2), math.floor(screenY - top - height - lift)
+end
+
+function NLPlumbob:new(id, character, observerIndex, color)
+    local o = ISPanel.new(self, 0, 0, 32, 48)
+    o.markerId = id
+    o.character = character
+    o.observerIndex = observerIndex or 0
+    o.color = color or self.defaultColor
+    o.texture = getTexture(self.texturePath)
+    o.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
+    o.borderColor = { r = 0, g = 0, b = 0, a = 0 }
+    -- UIManager skips invisible panels, so the first frame must be eligible to
+    -- render; positionOverCharacter hides it when the character is unavailable.
+    o:setVisible(true)
+    return o
+end
+
+function NLPlumbob:positionOverCharacter()
+    local character = self.character
+    local index = self.observerIndex
+    local observer = getSpecificPlayer(index)
+    if not NLPlumbob.enabled or not character or not observer or character:isDead() then
+        self:setVisible(false)
+        return false
+    end
+
+    local zoom = 1
+    if getCore and getCore().getZoom then zoom = math.max(0.5, getCore():getZoom(index)) end
+    local scale = math.max(0.75, math.min(1.35, 1 / zoom))
+    local width, height = math.floor(40 * scale), math.floor(56 * scale)
+    self:setWidth(width)
+    self:setHeight(height)
+    local sx = isoToScreenX(index, character:getX(), character:getY(), character:getZ())
+    local sy = isoToScreenY(index, character:getX(), character:getY(), character:getZ())
+    local left, top = getPlayerScreenLeft(index), getPlayerScreenTop(index)
+    -- Lift the bottom tip past the full player model, leaving the gem above the head.
+    local x, y = NLPlumbob.screenPosition(sx, sy, left, top, width, height, math.floor(128 * scale))
+    self:setX(x)
+    self:setY(y)
+    self:setVisible(true)
+    return true
+end
+
+function NLPlumbob:prerender()
+    if not self:positionOverCharacter() then return end
+    ISPanel.prerender(self)
+    if self.texture then
+        self:drawTextureScaled(self.texture, 0, 0, self.width, self.height, 0.96, 1, 1, 1)
+    else
+        -- Keep a visible fallback if the texture cache is unavailable during load.
+        local cx = math.floor(self.width / 2)
+        self:drawRect(cx - 2, 0, 4, 8, 0.96, self.color.r, self.color.g, self.color.b)
+        self:drawRect(cx - 10, 8, 20, 10, 0.96, self.color.r, self.color.g, self.color.b)
+        self:drawRect(cx - 16, 18, 32, 12, 0.96, self.color.r, self.color.g, self.color.b)
+        self:drawRect(cx - 10, 30, 20, 14, 0.96, self.color.r, self.color.g, self.color.b)
+        self:drawRect(cx - 2, 44, 4, 12, 0.96, self.color.r, self.color.g, self.color.b)
+    end
+end
+
+function NLPlumbob.register(id, character, observerIndex, color)
+    if not id or not character then return nil end
+    local old = NLPlumbob.instances[id]
+    if old and old.character == character then
+        old.observerIndex = observerIndex or old.observerIndex
+        return old
+    end
+    if old then old:removeFromUIManager() end
+    local panel = NLPlumbob:new(id, character, observerIndex, color)
+    panel:initialise()
+    panel:addToUIManager()
+    panel:bringToTop()
+    NLPlumbob.instances[id] = panel
+    return panel
+end
+
+local function isLocalCharacter(character)
+    if not character then return true end
+    for i = 0, getNumActivePlayers() - 1 do
+        if getSpecificPlayer(i) == character then return true end
+    end
+    return false
+end
+
+-- Build 42 exposes the native remote-player bodies through getOnlinePlayers()
+-- on clients. Attach the same world-to-screen marker to those bodies without
+-- constructing a substitute character or trusting client-supplied positions.
+function NLPlumbob.syncRemotePlayers()
+    if not getOnlinePlayers then return 0 end
+    local ok, players = pcall(getOnlinePlayers)
+    if not ok or not players then return 0 end
+    local seen = {}
+    local count = players:size()
+    for i = 0, count - 1 do
+        local character = players:get(i)
+        local username
+        if character and not isLocalCharacter(character) and character.getUsername then
+            local usernameOk
+            usernameOk, username = pcall(character.getUsername, character)
+            if not usernameOk then username = nil end
+        end
+        if character and username and username ~= "" then
+            local id = "remote:" .. tostring(username)
+            seen[id] = true
+            NLPlumbob.register(id, character, 0, NLPlumbob.remoteColor)
+        end
+    end
+    for id, panel in pairs(NLPlumbob.instances) do
+        if string.sub(id, 1, 7) == "remote:" and not seen[id] then
+            NLPlumbob.unregister(id)
+        end
+    end
+    return count
+end
+
+function NLPlumbob.unregister(id)
+    local panel = NLPlumbob.instances[id]
+    if panel then panel:removeFromUIManager() end
+    NLPlumbob.instances[id] = nil
+end
+
+function NLPlumbob.createPlayer(index, player)
+    NLPlumbob.register("player:" .. tostring(index), player, index, NLPlumbob.defaultColor)
+end
+
+function NLPlumbob.cleanup()
+    for _, panel in pairs(NLPlumbob.instances) do panel:removeFromUIManager() end
+    NLPlumbob.instances = {}
+end
+
+Events.OnCreatePlayer.Add(NLPlumbob.createPlayer)
+Events.OnRenderTick.Add(function()
+    if not isClient() then return end
+    NLPlumbob.syncRemotePlayers()
+end)
+Events.OnMainMenuEnter.Add(NLPlumbob.cleanup)

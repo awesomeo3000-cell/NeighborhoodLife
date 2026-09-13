@@ -1,5 +1,6 @@
 -- Multiplayer evidence logger. Loaded only by NeighborhoodQA in isolated profiles.
 NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
+    presenceCount = 0, presenceRequestFrame = 0, presenceRequests = 0,
     remoteScanFrame = 0, remoteScanCount = 0, remoteScanLogged = false }
 
 local function emit(label, value)
@@ -138,6 +139,15 @@ Events.OnServerCommand.Add(function(module, command, args)
         emit("SNAPSHOT", "username=" .. tostring(args.username) .. " revision=" .. tostring(args.revision)
             .. " snapshotCount=" .. tostring(NLQAMultiplayer.snapshots))
     end
+    if module == "NeighborhoodLife" and command == "presence" and type(args) == "table"
+            and type(args.players) == "table" then
+        NLQAMultiplayer.presenceCount = #args.players
+        local names = {}
+        for i, entry in ipairs(args.players) do names[#names + 1] = tostring(entry.username) end
+        emit("PRESENCE", "revision=" .. tostring(args.revision)
+            .. " players=" .. tostring(NLQAMultiplayer.presenceCount)
+            .. " names=" .. table.concat(names, ","))
+    end
 end)
 
 -- Keep the discovery probe beside the already-loaded multiplayer logger. Some
@@ -225,6 +235,13 @@ end
 
 Events.OnRenderTick.Add(function()
     if not isClient() or NLQAMultiplayer.remoteScanLogged then return end
+    NLQAMultiplayer.presenceRequestFrame = NLQAMultiplayer.presenceRequestFrame + 1
+    if NLQAMultiplayer.presenceRequestFrame >= 180 then
+        NLQAMultiplayer.presenceRequestFrame = 0
+        NLQAMultiplayer.presenceRequests = NLQAMultiplayer.presenceRequests + 1
+        if NLClient then NLClient.request(0, "presence") end
+        emit("PRESENCE SENT", "attempt=" .. tostring(NLQAMultiplayer.presenceRequests))
+    end
     NLQAMultiplayer.remoteScanFrame = NLQAMultiplayer.remoteScanFrame + 1
     if NLQAMultiplayer.remoteScanFrame >= 300 then
         NLQAMultiplayer.remoteScanFrame = 0

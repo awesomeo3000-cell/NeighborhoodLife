@@ -94,3 +94,14 @@ real run in `evidence/v15/`, the host observed `nl-guest` and logged
 host's remote entry later disappeared. Remote marker replication is therefore
 started and engine-proven in one direction, but not yet a stable two-way
 multiplayer result.
+
+## v0.9 authoritative presence channel
+
+The server now broadcasts a private authoritative roster containing usernames,
+positions, floors, and online IDs to every connected client. Real QA logs show
+both `nl-host` and `nl-guest` received the same two-player roster. This supplies
+a reliable mod-level state channel while native remote-body replication remains
+unstable; it does not fabricate bodies or claim synchronized movement yet.
+The QA repair probe also found Build 42's native `GameServer` class is not
+exposed as a Lua table on this dedicated server, so native re-announcement
+remains an engine/API investigation gate.

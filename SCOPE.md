@@ -17,7 +17,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
 | Aspirations and home activities | Not implemented | Goals, progress/rewards, hobbies and functional furnishings |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter and private snapshots implemented; v0.7 real host plus guest refresh loop; v0.8 host observed a native guest body and production plumbob | Reconnect, simultaneous gameplay/inventory delivery, restart, mod distribution, stable two-way remote movement and replicated-character UI |
+| Host multiplayer | Server command adapter, private snapshots, and authoritative two-player presence broadcast; v0.7/v0.9 real host plus guest evidence | Reconnect, simultaneous gameplay/inventory delivery, restart, mod distribution, stable two-way native remote movement and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -147,3 +147,20 @@ The original broad goal remains active. This ledger is not a reduced definition 
   This is evidence of a one-way/unstable native remote-body replication gap,
   not completion. The next gate is server-side repair or a reliable native
   join/update path, followed by stable remote movement and persistence.
+
+## v0.9 authoritative presence channel
+
+- Production `NLAuthority.broadcastPresence()` now reads server-side
+  `getOnlinePlayers()`, packages each authoritative username, position, floor
+  and online ID, and sends the roster privately to every connected player.
+- A real two-client run logged both `nl-host` and `nl-guest` on both clients,
+  twice, while the native body scan still showed the guest-only-on-host
+  asymmetry. This proves a real mod-level replication channel, not native body
+  replication.
+- The presence channel is groundwork for movement and NPC state replication;
+  it does not create bodies, replace native movement, or complete reconnect,
+  inventory synchronization, NPC persistence, or two-way remote markers.
+- A QA attempt to call Build 42's native `GameServer.sendPlayerConnected`
+  repair path recorded that `GameServer` is not exposed as a Lua table on this
+  dedicated server. Native re-announcement therefore remains an engine/API
+  investigation gate rather than claimed functionality.

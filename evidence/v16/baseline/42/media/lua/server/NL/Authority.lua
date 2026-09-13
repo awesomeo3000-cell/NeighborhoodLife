@@ -18,29 +18,6 @@ function NLAuthority.key(player)
     return name
 end
 
-function NLAuthority.broadcastPresence()
-    if not isServer() or type(getOnlinePlayers) ~= "function" then return 0 end
-    local ok, players = pcall(getOnlinePlayers)
-    if not ok or not players then return 0 end
-    local entries = {}
-    for i = 0, players:size() - 1 do
-        local player = players:get(i)
-        local username = player and player:getUsername()
-        if player and username and username ~= "" then
-            entries[#entries + 1] = {
-                username = username,
-                x = player:getX(), y = player:getY(), z = player:getZ(),
-                onlineId = player:getOnlineID(),
-            }
-        end
-    end
-    local packet = { revision = getTimestampMs(), players = entries }
-    for i = 0, players:size() - 1 do
-        sendServerCommand(players:get(i), NLAuthority.module, "presence", packet)
-    end
-    return #entries
-end
-
 function NLAuthority.snapshot(player, profile, message)
     local result = NLDomain.copy(profile)
     result.playerNum = player:getPlayerNum()
@@ -49,7 +26,6 @@ function NLAuthority.snapshot(player, profile, message)
     result.skill = player:getPerkLevel(Perks[NLDefinitions.careers[profile.career].perk])
     if isServer() then sendServerCommand(player, NLAuthority.module, "snapshot", result)
     elseif NLClient then NLClient.receive(NLAuthority.module, "snapshot", result) end
-    NLAuthority.broadcastPresence()
     if NLQAMultiplayerServer then
         print("NLQA PRODUCTION AUTHORITY SNAPSHOT: username=" .. tostring(result.username)
             .. " revision=" .. tostring(result.revision))
@@ -85,8 +61,7 @@ end
 
 function NLAuthority.command(module, command, player, args)
     if module ~= NLAuthority.module or not player or player:isDead() then return end
-    if command ~= "refresh" and command ~= "presence" and command ~= "select"
-            and command ~= "deliver" and command ~= "promote" then return end
+    if command ~= "refresh" and command ~= "select" and command ~= "deliver" and command ~= "promote" then return end
     -- Build 42's dedicated-server callback can omit the empty packet table for
     -- no-argument commands. Treat that as an empty request instead of dropping
     -- an otherwise valid refresh from a real client.
@@ -99,10 +74,6 @@ function NLAuthority.command(module, command, player, args)
     local now = getTimestampMs()
     if NLAuthority.lastRequest[key] and now - NLAuthority.lastRequest[key] < 200 then return end
     NLAuthority.lastRequest[key] = now
-    if command == "presence" then
-        NLAuthority.broadcastPresence()
-        return
-    end
     local profile = NLDomain.profile(NLAuthority.world(), key)
     NLDomain.day(profile, math.floor(getGameTime():getWorldAgeHours() / 24))
     local ok, message = true, "Updated"

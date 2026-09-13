@@ -1,0 +1,8 @@
+COMMAND: & .\tools\launch-multiplayer-qa.ps1
+OUTPUT: QA multiplayer processes started: server=27696 host=23040 guest=27156
+RESULT: server and both clients stopped after evidence capture; no process remained.
+HOST LOG: 
+E:\pzmod\test-profile\mp-host\Logs\2026-09-13_18-54_DebugLog.txt
+GUEST LOG: 
+E:\pzmod\test-profile\mp-guest\Logs\2026-09-13_18-55_DebugLog.txt
+SERVER LOG: E:\pzmod\test-profile\mp-server\server.stdout.log

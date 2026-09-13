@@ -53,7 +53,7 @@ def suites(target: Path, engine: bool, record: list[str]) -> None:
         suite_names.append("neighbors")
     if (target / "42/media/lua/client/NL/Plumbob.lua").exists():
         suite_names.append("plumbob")
-    suite_names += ["interfaces", "wardrobe-panel", "aspirations"]
+    suite_names += ["interfaces", "wardrobe-panel", "aspirations", "replication"]
     for suite in suite_names:
         run("LUA", [LUA, ROOT / f"tests/{suite}.lua", target], record=record)
     if engine:

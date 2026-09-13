@@ -1,0 +1,14 @@
+LOG  : Lua          f:0 st:192,005,380> NLQA MP SERVER BOOT: authority=true requireOk=true error=nil
+LOG  : Network      f:0 st:192,010,403> *** SERVER STARTED ****
+LOG  : Network      f:262 st:192,038,569> Connected new client 797137326061749203 ID # 0
+LOG  : Network      f:304 st:192,042,780> Connected new client 369295361466687488 ID # 4
+LOG  : Lua          f:730 st:192,085,831> NLQA PRODUCTION AUTHORITY COMMAND: refresh username=nl-host
+LOG  : Lua          f:730 st:192,085,844> NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-host revision=1
+LOG  : Lua          f:730 st:192,085,844> NLQA MP SERVER COMMAND: refresh username=nl-host
+LOG  : Lua          f:730 st:192,085,845> NLQA MP SERVER PLAYER: dead=false authorityKey=nl-host argsType=nil
+LOG  : Lua          f:730 st:192,085,849> NLQA MP SERVER GAME-SERVER API: unavailable=attempted index: getPlayers of non-table: null java.lang.RuntimeException
+LOG  : Lua          f:759 st:192,088,689> NLQA PRODUCTION AUTHORITY COMMAND: refresh username=nl-guest
+LOG  : Lua          f:759 st:192,088,691> NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-guest revision=1
+LOG  : Lua          f:759 st:192,088,691> NLQA MP SERVER COMMAND: refresh username=nl-guest
+LOG  : Lua          f:759 st:192,088,692> NLQA MP SERVER PLAYER: dead=false authorityKey=nl-guest argsType=nil
+LOG  : Lua          f:759 st:192,088,694> NLQA MP SERVER GAME-SERVER API: unavailable=attempted index: getPlayers of non-table: null java.lang.RuntimeException

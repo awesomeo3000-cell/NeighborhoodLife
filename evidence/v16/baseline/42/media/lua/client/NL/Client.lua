@@ -1,14 +1,8 @@
 require "NL/Domain"
-NLClient = { profiles = {}, presence = nil }
+NLClient = { profiles = {} }
 
 function NLClient.receive(module, command, args)
-    if module ~= "NeighborhoodLife" or type(args) ~= "table" then return end
-    if command == "presence" then
-        local old = NLClient.presence
-        if not old or (args.revision or 0) >= (old.revision or 0) then NLClient.presence = args end
-        return
-    end
-    if command ~= "snapshot" then return end
+    if module ~= "NeighborhoodLife" or command ~= "snapshot" or type(args) ~= "table" then return end
     -- Route only to local characters matching the server snapshot. No global getPlayer().
     for i = 0, getNumActivePlayers() - 1 do
         local player = getSpecificPlayer(i)
@@ -31,5 +25,5 @@ function NLClient.request(index, command, args)
 end
 
 Events.OnServerCommand.Add(NLClient.receive)
-Events.OnMainMenuEnter.Add(function() NLClient.profiles = {}; NLClient.presence = nil end)
+Events.OnMainMenuEnter.Add(function() NLClient.profiles = {} end)
 return NLClient
