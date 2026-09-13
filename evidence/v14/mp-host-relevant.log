@@ -1,0 +1,7 @@
+[13-09-26 18:14:33.676] LOG  : Lua          f:0> NLQA MP CONNECT ARMED: 127.0.0.1:16261.
+[13-09-26 18:14:35.677] LOG  : Lua          f:0> NLQA MP CONNECT REQUEST: nl-host -> 127.0.0.1:16261 accountPassword=true.
+[13-09-26 18:14:36.255] LOG  : Lua          f:0 st:0> NLQA MP CONNECTION STATE: Connected message=nil arg=nil.
+[13-09-26 18:14:48.198] LOG  : Lua          f:0 st:0> NLQA MP CONNECTED: nl-host.
+[13-09-26 18:15:24.622] LOG  : Lua          f:0 st:0> NLQA MP CLIENT START: username=nl-host isClient=true isServer=false.
+[13-09-26 18:15:28.816] LOG  : Lua          f:119 st:189,644,868> NLQA MP REFRESH SENT: attempt=1 player=nl-host.
+[13-09-26 18:15:28.871] LOG  : Lua          f:122 st:189,644,924> NLQA MP SNAPSHOT: username=nl-host revision=1 snapshotCount=1.

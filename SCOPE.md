@@ -11,13 +11,13 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence | Actual multiplayer inventory sync, rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
-| Persistent neighborhood NPCs | Engine investigation only | Actual humanoid body, movement, obstacle handling, replication, persistence, damage/death and offscreen behavior |
+| Persistent neighborhood NPCs | QA-only humanoid body renders and path-follows a three-waypoint route in isolated single-player when the probe emulates the engine frame; no production spawner | Obstacle handling, two-client replication, persistence, damage/death and offscreen behavior; production server-side ticking |
 | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented; bodies supplied by adapter | Actual world-body integration and two-client conversations |
 | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel | In-world UI/interaction checks, richer date activities and two-client synchronization |
 | Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
 | Aspirations and home activities | Not implemented | Goals, progress/rewards, hobbies and functional furnishings |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter and private snapshots implemented | Two real clients connected to a test host; reconnect, simultaneous delivery, restart, mod distribution |
+| Host multiplayer | Server command adapter and private snapshots implemented; v0.7 real host plus guest refresh loop recorded | Reconnect, simultaneous gameplay/inventory delivery, restart, mod distribution, remote movement and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -99,3 +99,37 @@ The original broad goal remains active. This ledger is not a reduced definition 
   anchored at 1248,672`.
 - This is actual single-player UI evidence. It does not prove remote-player
   replication, host/invite multiplayer, or native NPC movement.
+
+## v0.6 NPC movement spike
+
+- A QA-only IsoPlayer with `setNpc(true)` on an isolated single-player save
+  completed three consecutive native pathfinding legs of roughly 2.0 tiles each
+  with exact arrival (`targetError=0.000`) and 6.0 tiles total displacement.
+- Engine finding: B42.20.4 does not tick an IsoPlayer that is not in the local
+  player list. Without `preupdate`/`postupdate` the character's
+  `isAnimationUpdatingThisFrame` stays false, deferred movement stays zero and
+  `PathFindBehavior2:update()` fails after the walking-on-the-spot timeout with
+  no displacement (the v0.3/v0.8 stationary result).
+- The QA probe now emulates the engine frame per tick in the engine's order:
+  `preupdate`, `update`, `PathFindBehavior2:update` (as vanilla
+  `WalkToTimedAction` does), `postupdate`. Evidence: `evidence/v13/`.
+- Boundaries: this proves native path-following movement for a QA body in
+  single player only. It does not prove production NPC spawning, server-side
+  ticking, two-client replication, persistence or danger reactions.
+
+## v0.7 host/guest multiplayer evidence
+
+- `tools/launch-multiplayer-qa.ps1` launched one isolated B42.20.4 dedicated
+  no-Steam server and two isolated clients without mouse or keyboard control.
+- The real server logged two `Connected new client` events. Host `nl-host` and
+  guest `nl-guest` each reached `Connected`, `OnGameStart`, sent one real
+  `NeighborhoodLife.refresh` command, and received their own revision-1
+  production snapshot. Evidence is in `evidence/v14/`.
+- The QA server uses `DoLuaChecksum=false` only because the isolated host and
+  guest QA identity fixtures intentionally differ. The production package
+  excludes QA helpers, identity fixtures, isolated profiles and the launcher.
+- This is real engine multiplayer command/snapshot evidence, not a mock or
+  engine-VM claim. The remaining multiplayer gates are synchronized movement,
+  inventory/actions, reconnect/restart, remote-character markers, and NPC
+  replication/persistence. The native NPC movement result remains QA-only
+  single-player frame-emulated evidence from v0.6.

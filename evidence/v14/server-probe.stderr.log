@@ -1,0 +1,272 @@
+LOG  : General      f:0 st:187,462,114> SLF4J(W): No SLF4J providers were found.
+LOG  : General      f:0 st:187,462,116> SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+LOG  : General      f:0 st:187,462,117> SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+ERROR: General      f:0 st:187,472,676 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+ERROR: General      f:0 st:187,473,059 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+ERROR: General      f:0 st:187,487,413> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-server\mods\NeighborhoodLife\common\media\AnimSets at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:868)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:888)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.network.GameServer.doMinimumInit(GameServer.java:1486)
+		zombie.network.GameServer.main(GameServer.java:791)
+ERROR: General      f:0 st:187,487,413> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-server\mods\NeighborhoodLife\common\media\actiongroups at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:869)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:888)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.network.GameServer.doMinimumInit(GameServer.java:1486)
+		zombie.network.GameServer.main(GameServer.java:791)
+ERROR: General      f:0 st:187,487,414> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-server\mods\NeighborhoodLife\42\media\AnimSets at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:868)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:889)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.network.GameServer.doMinimumInit(GameServer.java:1486)
+		zombie.network.GameServer.main(GameServer.java:791)
+ERROR: General      f:0 st:187,487,415> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-server\mods\NeighborhoodLife\42\media\actiongroups at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:869)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:889)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.network.GameServer.doMinimumInit(GameServer.java:1486)
+		zombie.network.GameServer.main(GameServer.java:791)
+ERROR: General      f:0 st:187,487,416> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-server\mods\NeighborhoodQA\common\media\AnimSets at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:868)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:888)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.network.GameServer.doMinimumInit(GameServer.java:1486)
+		zombie.network.GameServer.main(GameServer.java:791)
+ERROR: General      f:0 st:187,487,416> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-server\mods\NeighborhoodQA\common\media\actiongroups at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:869)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:888)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.network.GameServer.doMinimumInit(GameServer.java:1486)
+		zombie.network.GameServer.main(GameServer.java:791)
+ERROR: General      f:0 st:187,487,418> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-server\mods\NeighborhoodQA\42\media\AnimSets at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:868)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:889)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.network.GameServer.doMinimumInit(GameServer.java:1486)
+		zombie.network.GameServer.main(GameServer.java:791)
+ERROR: General      f:0 st:187,487,418> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-server\mods\NeighborhoodQA\42\media\actiongroups at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:869)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:889)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.network.GameServer.doMinimumInit(GameServer.java:1486)
+		zombie.network.GameServer.main(GameServer.java:791)
+ERROR: Sound        f:0 st:187,500,764 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_1
+ERROR: Sound        f:0 st:187,500,765 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_2
+ERROR: Sound        f:0 st:187,500,765 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_3
+ERROR: Sound        f:0 st:187,500,765 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_5
+ERROR: Sound        f:0 st:187,500,766 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_4
+ERROR: Sound        f:0 st:187,500,766 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_6
+ERROR: Sound        f:0 st:187,500,766 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_24
+ERROR: Sound        f:0 st:187,500,766 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_25
+ERROR: Sound        f:0 st:187,500,767 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_26
+ERROR: Sound        f:0 st:187,500,767 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_27
+ERROR: Sound        f:0 st:187,500,767 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_28
+ERROR: Sound        f:0 st:187,500,768 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object carpentry_02_41
+ERROR: Sound        f:0 st:187,500,768 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object carpentry_02_40
+ERROR: Sound        f:0 st:187,500,768 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object carpentry_02_45
+ERROR: Sound        f:0 st:187,500,768 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object carpentry_02_44
+ERROR: Sound        f:0 st:187,500,769 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object carpentry_02_49
+ERROR: Sound        f:0 st:187,500,769 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object carpentry_02_48
+ERROR: Sound        f:0 st:187,500,769 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_32
+ERROR: Sound        f:0 st:187,500,770 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_33
+ERROR: Sound        f:0 st:187,500,770 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_34
+ERROR: Sound        f:0 st:187,500,770 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_35
+ERROR: Sound        f:0 st:187,500,770 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_36
+ERROR: Sound        f:0 st:187,500,771 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_41
+ERROR: Sound        f:0 st:187,500,771 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_40
+ERROR: Sound        f:0 st:187,500,771 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_42
+ERROR: Sound        f:0 st:187,500,771 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_56
+ERROR: Sound        f:0 st:187,500,772 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_57
+ERROR: Sound        f:0 st:187,500,772 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_58
+ERROR: Sound        f:0 st:187,500,772 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_59
+ERROR: Sound        f:0 st:187,500,772 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_60
+ERROR: Sound        f:0 st:187,500,773 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_64
+ERROR: Sound        f:0 st:187,500,773 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_65
+ERROR: Sound        f:0 st:187,500,773 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_66
+ERROR: Sound        f:0 st:187,500,774 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_67
+ERROR: Sound        f:0 st:187,500,774 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_68
+ERROR: Sound        f:0 st:187,500,774 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_73
+ERROR: Sound        f:0 st:187,500,775 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_72
+ERROR: Sound        f:0 st:187,500,775 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_75
+ERROR: Sound        f:0 st:187,500,775 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_8
+ERROR: Sound        f:0 st:187,500,775 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_9
+ERROR: Sound        f:0 st:187,500,776 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_10
+ERROR: Sound        f:0 st:187,500,776 at BrokenFences.addBrokenTiles         > Missing ThumpSound for breakable object fencing_01_11
+ERROR: General      f:0 st:187,501,115 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first world object face for recipe icon.
+ERROR: WorldGen     f:0 st:187,501,963> IsoPropertyType.lookupOrDefaultStr> Exception thrown
+	zombie.core.properties.IsoPropertyType$IsoPropertyTypeNotFoundException: Property Name not found: ladderW at IsoPropertyType.lookup(IsoPropertyType.java:272). Message: Property Name not found: ladderW
+	Stack trace:
+		zombie.core.properties.IsoPropertyType.lookup(IsoPropertyType.java:272)
+		zombie.core.properties.IsoPropertyType.lookupOrDefaultStr(IsoPropertyType.java:280)
+		zombie.core.TilePropertyAliasMap.register(TilePropertyAliasMap.java:54)
+		zombie.core.TilePropertyAliasMap.Generate(TilePropertyAliasMap.java:27)
+		zombie.iso.IsoWorld.GenerateTilePropertyLookupTables(IsoWorld.java:1324)
+		zombie.iso.IsoWorld.init(IsoWorld.java:2244)
+		zombie.network.GameServer.main(GameServer.java:804)
+ERROR: WorldGen     f:0 st:187,501,964> IsoPropertyType.lookupOrDefaultStr> Exception thrown
+	zombie.core.properties.IsoPropertyType$IsoPropertyTypeNotFoundException: Property Name not found: ladderS at IsoPropertyType.lookup(IsoPropertyType.java:272). Message: Property Name not found: ladderS
+	Stack trace:
+		zombie.core.properties.IsoPropertyType.lookup(IsoPropertyType.java:272)
+		zombie.core.properties.IsoPropertyType.lookupOrDefaultStr(IsoPropertyType.java:280)
+		zombie.core.TilePropertyAliasMap.register(TilePropertyAliasMap.java:54)
+		zombie.core.TilePropertyAliasMap.Generate(TilePropertyAliasMap.java:27)
+		zombie.iso.IsoWorld.GenerateTilePropertyLookupTables(IsoWorld.java:1324)
+		zombie.iso.IsoWorld.init(IsoWorld.java:2244)
+		zombie.network.GameServer.main(GameServer.java:804)
+ERROR: WorldGen     f:0 st:187,501,965> IsoPropertyType.lookupOrDefaultStr> Exception thrown
+	zombie.core.properties.IsoPropertyType$IsoPropertyTypeNotFoundException: Property Name not found: ladderE at IsoPropertyType.lookup(IsoPropertyType.java:272). Message: Property Name not found: ladderE
+	Stack trace:
+		zombie.core.properties.IsoPropertyType.lookup(IsoPropertyType.java:272)
+		zombie.core.properties.IsoPropertyType.lookupOrDefaultStr(IsoPropertyType.java:280)
+		zombie.core.TilePropertyAliasMap.register(TilePropertyAliasMap.java:54)
+		zombie.core.TilePropertyAliasMap.Generate(TilePropertyAliasMap.java:27)
+		zombie.iso.IsoWorld.GenerateTilePropertyLookupTables(IsoWorld.java:1324)
+		zombie.iso.IsoWorld.init(IsoWorld.java:2244)
+		zombie.network.GameServer.main(GameServer.java:804)
+ERROR: WorldGen     f:0 st:187,501,966> IsoPropertyType.lookupOrDefaultStr> Exception thrown
+	zombie.core.properties.IsoPropertyType$IsoPropertyTypeNotFoundException: Property Name not found: ladderN at IsoPropertyType.lookup(IsoPropertyType.java:272). Message: Property Name not found: ladderN
+	Stack trace:
+		zombie.core.properties.IsoPropertyType.lookup(IsoPropertyType.java:272)
+		zombie.core.properties.IsoPropertyType.lookupOrDefaultStr(IsoPropertyType.java:280)
+		zombie.core.TilePropertyAliasMap.register(TilePropertyAliasMap.java:54)
+		zombie.core.TilePropertyAliasMap.Generate(TilePropertyAliasMap.java:27)
+		zombie.iso.IsoWorld.GenerateTilePropertyLookupTables(IsoWorld.java:1324)
+		zombie.iso.IsoWorld.init(IsoWorld.java:2244)
+		zombie.network.GameServer.main(GameServer.java:804)
+ERROR: WorldGen     f:0 st:187,501,967> IsoPropertyType.lookupOrDefaultStr> Exception thrown
+	zombie.core.properties.IsoPropertyType$IsoPropertyTypeNotFoundException: Property Name not found: WindowShape at IsoPropertyType.lookup(IsoPropertyType.java:272). Message: Property Name not found: WindowShape
+	Stack trace:
+		zombie.core.properties.IsoPropertyType.lookup(IsoPropertyType.java:272)
+		zombie.core.properties.IsoPropertyType.lookupOrDefaultStr(IsoPropertyType.java:280)
+		zombie.core.TilePropertyAliasMap.register(TilePropertyAliasMap.java:54)
+		zombie.core.TilePropertyAliasMap.Generate(TilePropertyAliasMap.java:27)
+		zombie.iso.IsoWorld.GenerateTilePropertyLookupTables(IsoWorld.java:1324)
+		zombie.iso.IsoWorld.init(IsoWorld.java:2244)
+		zombie.network.GameServer.main(GameServer.java:804)
+ERROR: Lua          f:0 st:187,504,654 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0
+ERROR: General      f:0 st:187,505,440 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0
+ERROR: General      f:0 st:187,505,573 at IsoMetaGrid.load                    > invalid room metaID #231 in cell 25,33 while reading map_meta.bin
+ERROR: General      f:0 st:187,505,573 at IsoMetaGrid.load                    > invalid room metaID #327914 in cell 25,33 while reading map_meta.bin
+ERROR: General      f:0 st:187,505,573 at IsoMetaGrid.load                    > invalid room metaID #327911 in cell 25,33 while reading map_meta.bin
+ERROR: General      f:0 st:187,505,573 at IsoMetaGrid.load                    > invalid room metaID #655594 in cell 25,33 while reading map_meta.bin

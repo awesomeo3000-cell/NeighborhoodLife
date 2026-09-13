@@ -1,0 +1,23 @@
+﻿[13-09-26 12:38:41.567] LOG  : Lua          f:0> NLQA STAT HUNGER 0..1.
+[13-09-26 12:38:41.567] LOG  : Lua          f:0> NLQA STAT THIRST 0..1.
+[13-09-26 12:38:41.568] LOG  : Lua          f:0> NLQA STAT FATIGUE 0..1.
+[13-09-26 12:38:41.568] LOG  : Lua          f:0> NLQA STAT BOREDOM 0..100.
+[13-09-26 12:38:41.568] LOG  : Lua          f:0> NLQA STAT STRESS 0..1.
+[13-09-26 12:38:41.568] LOG  : Lua          f:0> NLQA STAT UNHAPPINESS 0..100.
+[13-09-26 12:38:41.569] LOG  : Lua          f:0> NLQA PASS: actual item/perk/stat APIs and real ISPanel journal construction.
+[13-09-26 12:39:05.645] LOG  : Lua          f:0> NLQA MP CLIENT START: username=BruceGarvin isClient=false isServer=false.
+[13-09-26 12:39:05.650] LOG  : Lua          f:0> NLQA NPC SPAWN: 10776.5,10256.5,0; local player unchanged.
+[13-09-26 12:39:05.651] LOG  : Lua          f:0> NLQA PASS: real engine plumbob panel registered and anchored at 1240,664.
+[13-09-26 12:39:05.651] LOG  : Lua          f:0> NLQA PASS: QA NPC plumbob adapter registered and anchored.
+[13-09-26 12:39:05.651] LOG  : Lua          f:0> NLQA PASS: real player, authority, persistent world store, snapshot routing and hunger read.
+[13-09-26 12:39:05.651] LOG  : Lua          f:0> NLQA PASS: career credits survived actual save/reload.
+[13-09-26 12:39:05.652] LOG  : Lua          f:0> NLQA PASS: IsoSurvivor and SurvivorFactory exposed; replication NOT tested.
+[13-09-26 12:39:17.008] LOG  : Lua          f:60> NLQA NPC LEG 1 START: from=10776.50,10256.50 to=10774,10256.
+[13-09-26 12:39:18.257] LOG  : Lua          f:134> NLQA NPC LEG 1 COMPLETE: tick=134 at=10774.50,10256.50 targetError=0.000.
+[13-09-26 12:39:18.758] LOG  : Lua          f:164> NLQA NPC LEG 2 START: from=10774.50,10256.50 to=10772,10256.
+[13-09-26 12:39:20.006] LOG  : Lua          f:239> NLQA NPC LEG 2 COMPLETE: tick=239 at=10772.50,10256.50 targetError=0.000.
+[13-09-26 12:39:20.508] LOG  : Lua          f:269> NLQA NPC LEG 3 START: from=10772.50,10256.50 to=10770,10256.
+[13-09-26 12:39:21.024] LOG  : Lua          f:300> NLQA NPC MOVEMENT: distance=4.819 max=4.819 legs=2 x=10771.65 y=10256.50 result=Working pathLength=1.15 hasPath=true moving=true animUpdating=true.
+[13-09-26 12:39:21.756] LOG  : Lua          f:344> NLQA NPC LEG 3 COMPLETE: tick=344 at=10770.50,10256.50 targetError=0.000.
+[13-09-26 12:39:22.257] LOG  : Lua          f:374> NLQA NPC ROUTE RESULT: 3/3 legs reached; maxDistance=6.000.
+[13-09-26 12:39:22.257] LOG  : Lua          f:374> NLQA NPC MOVEMENT RESULT: maxDistance=6.000 legs=3/3 routeDone=true.

@@ -34,6 +34,7 @@ Events.OnMainMenuEnter.Add(function()
 end)
 
 Events.OnGameStart.Add(function()
+    if isClient() then return end
     local ok,err=pcall(function()
         assert(not isClient(),"Run initial gameplay smoke in an isolated single-player save")
         local p=getSpecificPlayer(0)

@@ -7,20 +7,6 @@ public final class HandsFreeQA {
     static Object read(Class<?> c, Object instance, String name) throws Exception {
         Field f=c.getDeclaredField(name); f.setAccessible(true); return f.get(instance);
     }
-    static void join(ClassLoader cl, String profile) throws Exception {
-        Class<?> gameClient=Class.forName("zombie.network.GameClient",false,cl);
-        String username=profile.contains("mp-guest") ? "nl-guest" : "nl-host";
-        gameClient.getField("username").set(null,username);
-        gameClient.getField("password").set(null,"qa-password");
-        gameClient.getField("serverPassword").set(null,"qa-password");
-        System.setProperty("args.server.connect","127.0.0.1:16261");
-        System.setProperty("args.server.password","qa-password");
-        Class<?> luaEvents=Class.forName("zombie.Lua.LuaEventManager",false,cl);
-        luaEvents.getMethod("triggerEvent",String.class).invoke(null,"OnSteamGameJoin");
-        Files.writeString(Path.of(profile,"hands-free-qa.log"),
-            "PASS: OnSteamGameJoin invoked with engine client identity "+username+"\n",
-            StandardOpenOption.CREATE,StandardOpenOption.APPEND);
-    }
     public static void premain(String profile, Instrumentation ignored) {
         profile = profile.replace('\\', '/');
         if (!profile.startsWith("E:/pzmod/test-profile")) throw new IllegalArgumentException("isolated QA profile required");
@@ -33,16 +19,40 @@ public final class HandsFreeQA {
                 Class<?> window=Class.forName("zombie.GameWindow",false,cl);
                 Class<?> loading=Class.forName("zombie.gameStates.GameLoadingState",false,cl);
                 Object completed=null;
-                boolean joinTriggered=false;
+                boolean menuSeen=false;
+                String lastState="";
+                String lastConnectState="";
                 for (int i=0;i<1200;i++) {
                     Thread.sleep(500);
                     Object machine=window.getField("states").get(null);
                     if(machine==null) continue;
                     Object current=machine.getClass().getField("current").get(machine);
-                    if(!joinTriggered && current != null
+                    String state=current==null ? "null" : current.getClass().getName();
+                    if(!state.equals(lastState)) {
+                        lastState=state;
+                        Files.writeString(Path.of(qaProfile,"hands-free-qa.log"),"STATE: "+state+"\n",
+                            StandardOpenOption.CREATE,StandardOpenOption.APPEND);
+                    }
+                    if(current != null && current.getClass().getName().equals("zombie.gameStates.MainScreenState")) {
+                        try {
+                            Field link=current.getClass().getDeclaredField("connectToServerState"); link.setAccessible(true);
+                            Object cts=link.get(current);
+                            String cs=cts==null ? "none" : String.valueOf(read(cts.getClass(),cts,"state"));
+                            if(!cs.equals(lastConnectState)) {
+                                lastConnectState=cs;
+                                Files.writeString(Path.of(qaProfile,"hands-free-qa.log"),"CONNECT STATE: "+cs+"\n",
+                                    StandardOpenOption.CREATE,StandardOpenOption.APPEND);
+                            }
+                        } catch(Exception ignoredConnect) { }
+                    }
+                    if(!menuSeen && current != null
                         && current.getClass().getName().equals("zombie.gameStates.MainScreenState")) {
-                        join(cl,qaProfile);
-                        joinTriggered=true;
+                        menuSeen=true;
+                        // The QA mod owns the server connect through the game's own
+                        // Lua serverConnect API; this agent only assists load screens.
+                        Files.writeString(Path.of(qaProfile,"hands-free-qa.log"),
+                            "PASS: main menu reached; QA Lua owns the no-Steam server connect\n",
+                            StandardOpenOption.CREATE,StandardOpenOption.APPEND);
                     }
                     if(current==null || !loading.isInstance(current) || current==completed) continue;
                     if(!(Boolean)read(loading,null,"done") || !(Boolean)read(loading,null,"showedClickToSkip")) continue;

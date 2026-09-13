@@ -26,10 +26,6 @@ function NLAuthority.snapshot(player, profile, message)
     result.skill = player:getPerkLevel(Perks[NLDefinitions.careers[profile.career].perk])
     if isServer() then sendServerCommand(player, NLAuthority.module, "snapshot", result)
     elseif NLClient then NLClient.receive(NLAuthority.module, "snapshot", result) end
-    if NLQAMultiplayerServer then
-        print("NLQA PRODUCTION AUTHORITY SNAPSHOT: username=" .. tostring(result.username)
-            .. " revision=" .. tostring(result.revision))
-    end
     return result
 end
 
@@ -62,15 +58,8 @@ end
 function NLAuthority.command(module, command, player, args)
     if module ~= NLAuthority.module or not player or player:isDead() then return end
     if command ~= "refresh" and command ~= "select" and command ~= "deliver" and command ~= "promote" then return end
-    -- Build 42's dedicated-server callback can omit the empty packet table for
-    -- no-argument commands. Treat that as an empty request instead of dropping
-    -- an otherwise valid refresh from a real client.
-    if type(args) ~= "table" then args = {} end
+    if type(args) ~= "table" then return end
     local key = NLAuthority.key(player)
-    if NLQAMultiplayerServer then
-        print("NLQA PRODUCTION AUTHORITY COMMAND: " .. tostring(command)
-            .. " username=" .. tostring(key))
-    end
     local now = getTimestampMs()
     if NLAuthority.lastRequest[key] and now - NLAuthority.lastRequest[key] < 200 then return end
     NLAuthority.lastRequest[key] = now

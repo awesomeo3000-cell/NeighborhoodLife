@@ -40,8 +40,7 @@ function NLSocialAuthority.snapshot(player,message)
 end
 
 function NLSocialAuthority.command(module,command,player,args)
-    if module~="NeighborhoodSocial" or not player or player:isDead() then return end
-    if type(args)~="table" then args={} end
+    if module~="NeighborhoodSocial" or not player or player:isDead() or type(args)~="table" then return end
     if command~="refresh" and command~="interact" then return end
     local key=NLAuthority.key(player); local now=getTimestampMs()
     if NLSocialAuthority.lastRequest[key] and now-NLSocialAuthority.lastRequest[key]<200 then return end

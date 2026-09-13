@@ -5,7 +5,9 @@ $base = Join-Path $root 'test-profile'
 $serverProfile = Join-Path $base 'mp-server'
 $hostProfile = Join-Path $base 'mp-host'
 $guestProfile = Join-Path $base 'mp-guest'
+$evidence = Join-Path $root 'evidence\v14'
 $profiles = @($serverProfile, $hostProfile, $guestProfile)
+New-Item -ItemType Directory -Force $evidence | Out-Null
 
 foreach ($profile in $profiles) {
     New-Item -ItemType Directory -Force "$profile\mods" | Out-Null
@@ -24,15 +26,40 @@ maps
 '@ | Set-Content "$profile\mods\default.txt"
 }
 
+# Per-client identity: the engine has no no-Steam username source at the main menu,
+# so the isolated launcher writes one small identity file into each QA client copy.
+'NLQAIdentity = { username = "nl-host", address = "127.0.0.1:16261", password = "qa-account-password" }' | Set-Content "$hostProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+'NLQAIdentity = { username = "nl-guest", address = "127.0.0.1:16261", password = "qa-account-password" }' | Set-Content "$guestProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+
+# Keep both QA client windows windowed and silent; never leave a fullscreen QA window.
+function Set-WindowedOptions($path) {
+    $defaults = [ordered]@{ width='1280'; height='720'; fullScreen='false'; borderless='false'; soundVolume='0'; musicVolume='0'; ambientVolume='0' }
+    $lines = @(Get-Content $path -ErrorAction SilentlyContinue)
+    foreach ($key in $defaults.Keys) {
+        $pattern = '^' + [regex]::Escape($key) + '='
+        $found = $false
+        for ($i = 0; $i -lt $lines.Count; $i++) {
+            if ($lines[$i] -match $pattern) { $lines[$i] = "$key=$($defaults[$key])"; $found = $true }
+        }
+        if (-not $found) { $lines += "$key=$($defaults[$key])" }
+    }
+    $lines | Set-Content $path
+}
+Set-WindowedOptions "$hostProfile\options.ini"
+Set-WindowedOptions "$guestProfile\options.ini"
+
 $serverConfig = Join-Path $serverProfile 'Server'
 New-Item -ItemType Directory -Force $serverConfig | Out-Null
 @'
+AntiCheatChecksum=4
+DoLuaChecksum=false
 Public=false
 Open=true
 PauseEmpty=false
+UPnP=false
 DefaultPort=16261
 ResetID=0
-Mods=NeighborhoodLifeHUD
+Mods=NeighborhoodLifeHUD;NeighborhoodQA
 Map=Muldraugh, KY
 PVP=false
 SleepAllowed=false
@@ -46,11 +73,11 @@ $common = @('-Djava.awt.headless=true','--enable-native-access=ALL-UNNAMED',
 $serverArgs = @('--enable-native-access=ALL-UNNAMED','--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED',
     '-Xmx2048m','-Dzomboid.steam=0','-Djava.library.path=./win64/;./','-cp','projectzomboid.jar',
     'zombie.network.GameServer','-servername','servertest',"-cachedir=$serverProfile",
-    '-adminusername','admin','-adminpassword','qa-admin-password','-nosteam')
+    '-adminusername','admin','-adminpassword','qa-admin-password','-nosteam','-debug')
 Set-Content "$serverProfile\server.stdout.log" ''
 Set-Content "$serverProfile\server.stderr.log" ''
 $server = Start-Process $java -ArgumentList $serverArgs -WorkingDirectory $game -RedirectStandardOutput "$serverProfile\server.stdout.log" -RedirectStandardError "$serverProfile\server.stderr.log" -PassThru
-$server.Id | Set-Content "$root\evidence\v10\mp-server.pid"
+$server.Id | Set-Content "$evidence\mp-server.pid"
 $deadline = (Get-Date).AddSeconds(120)
 do {
     Start-Sleep -Seconds 2
@@ -61,11 +88,12 @@ if (-not $started) { throw "Dedicated server did not reach SERVER STARTED; inspe
 function Start-QAClient($profile, $username) {
     $args = $common + @('-javaagent:E:/pzmod/tests/hands-free-qa.jar=' + $profile,
         'zombie.gameStates.MainScreenState',"-cachedir=$profile",'+connect','127.0.0.1:16261',
-        '+password','qa-password','-nosteam','-nosound')
+        '+password','qa-account-password','-nosteam','-nosound')
     return Start-Process "$game\jre64\bin\javaw.exe" -ArgumentList $args -WorkingDirectory $game -PassThru
 }
 
 $hostProcess = Start-QAClient $hostProfile 'nl-host'
+Start-Sleep -Seconds 5
 $guestProcess = Start-QAClient $guestProfile 'nl-guest'
-@("server=$($server.Id)","host=$($hostProcess.Id)","guest=$($guestProcess.Id)") | Set-Content "$root\evidence\v10\mp-processes.txt"
+@("server=$($server.Id)","host=$($hostProcess.Id)","guest=$($guestProcess.Id)") | Set-Content "$evidence\mp-processes.txt"
 Write-Output "QA multiplayer processes started: server=$($server.Id) host=$($hostProcess.Id) guest=$($guestProcess.Id)"

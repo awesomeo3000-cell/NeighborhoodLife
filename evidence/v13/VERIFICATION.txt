@@ -1,0 +1,64 @@
+Changed: QA-only NPC movement probe. The probe now emulates the engine's player frame for
+the QA NPC body (preupdate, update, native PathFindBehavior2:update, postupdate) and walks a
+three-waypoint route with per-leg arrival evidence.
+QA classification: this is single-player QA-mod evidence from the isolated profile. It is NOT
+multiplayer replication, NOT production NPC spawning, and NOT NPC AI/decision behavior.
+
+FINDING: an IsoPlayer outside the local player list is not ticked by the engine. Without the
+preupdate/postupdate pair, isAnimationUpdatingThisFrame stays false, getDeferredMovement returns
+zero, PathFindBehavior2.update returns Failed after the walking-on-the-spot timeout and the body
+does not move (prior v08 result). Calling preupdate -> update -> PathFindBehavior2:update ->
+postupdate per frame, in the same order the engine uses for real players, produced real
+path-following movement in this run.
+
+BASELINE COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\evidence\v13\baseline.lua
+BASELINE INPUT: git HEAD qa/NeighborhoodQA/42/media/lua/client/NLQANpc.lua
+BASELINE OUTPUT: (empty)
+BASELINE STDERR: (empty)
+BASELINE EXIT: 0
+MODIFIED COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\qa\NeighborhoodQA\42\media\lua\client\NLQANpc.lua
+MODIFIED INPUT: E:\pzmod
+MODIFIED OUTPUT: (empty)
+MODIFIED STDERR: (empty)
+MODIFIED EXIT: 0
+
+TEST COMMAND: python tools\pipeline.py test
+TEST INPUT: E:\pzmod
+TEST OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+TEST RESULT: exit 0; the production mod is unchanged by this QA-only probe and all production suites pass.
+
+REAL ENGINE COMMAND: powershell -ExecutionPolicy Bypass -File E:\pzmod\tools\launch-qa.ps1
+REAL ENGINE INPUT: isolated E:\pzmod\test-profile, B42.20.4 no-Steam, hands-free launcher, QA mod only
+REAL ENGINE OUTPUT: evidence/v13/engine-movement.log
+  NLQA NPC SPAWN: 10776.5,10256.5,0; local player unchanged
+  NLQA NPC LEG 1 START: from=10776.50,10256.50 to=10774,10256
+  NLQA NPC LEG 1 COMPLETE: tick=134 at=10774.50,10256.50 targetError=0.000
+  NLQA NPC LEG 2 COMPLETE: tick=239 at=10772.50,10256.50 targetError=0.000
+  NLQA NPC LEG 3 COMPLETE: tick=344 at=10770.50,10256.50 targetError=0.000
+  NLQA NPC ROUTE RESULT: 3/3 legs reached; maxDistance=6.000
+  NLQA NPC MOVEMENT RESULT: maxDistance=6.000 legs=3/3 routeDone=true
+REAL ENGINE RESULT: launcher exit 0; three native waypoint legs of ~2.0 tiles each were completed
+with exact arrival, at roughly 75 frames per leg. The engine process was stopped after capture;
+no natural game-process exit status is claimed. No production code was changed by this probe.
+
+ROLLBACK COMMAND: "C:\Program Files\Git\bin\bash.exe" E:/pzmod/evidence/v13/ROLLBACK.sh E:/pzmod/evidence/v13/rollback-test.lua
+ROLLBACK INPUT: copy of the modified QA probe
+ROLLBACK OUTPUT: PASS: original stationary QA probe restored
+ROLLBACK RESULT: exit 0; the restored copy compiles with luac and matches the baseline probe.
+RESTORED STATUS: restored probe is stationary (no manual frame emulation), as previously observed.
+
+SOURCE HASH: E:\pzmod\qa\NeighborhoodQA\42\media\lua\client\NLQANpc.lua SHA256 D3BB7CAC5E062262B07B97D2E025B879E073BE134335E19B52B6C817B3A18539
+BASELINE HASH: E:\pzmod\evidence\v13\baseline.lua SHA256 7DF302D508FEBAABFF9FAE5F2BEEEBCB76E27963E1F8D2CE37E22DCF5EBADF2F
+MODIFIED ZIP SHA256: 98CDE8D65809D2F699F06987B62BFAEC88A9A28378879AFA3A542D1EE745ABCB
+DIFF PATCH SHA256: 414B879099D1070683FF8D4B8B4F923A8A1A01865BF3ADE2EEA7EB998EEDF3FA
+ENGINE LOG SHA256: 080C3108A08B6FF4F0CDE8CE20A4C7D3C0450EE818788D99F4F945D990BE1C11
+
+ARTIFACTS:
+MODIFIED_FILE: E:\pzmod\evidence\v13\MODIFIED_FILE.zip (contains NLQANpc.lua only)
+DIFF_FILE: E:\pzmod\evidence\v13\DIFF_FILE.patch
+VERIFICATION.txt: E:\pzmod\evidence\v13\VERIFICATION.txt
+ROLLBACK.sh: E:\pzmod\evidence\v13\ROLLBACK.sh
+ENGINE LOG: E:\pzmod\evidence\v13\engine-movement.log
+
+OPEN: two-client replication, persistence across save/restart, danger reactions, obstacle
+avoidance stress, and production server-side NPC ticking are not covered by this evidence.

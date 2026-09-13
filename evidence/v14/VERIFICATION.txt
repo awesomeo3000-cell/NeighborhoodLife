@@ -1,4 +1,5 @@
-Neighborhood Life consolidated verification
+Changed: consolidated build/test/release entry point; production package excludes QA helpers and test profiles.
+QA classification: Lua tests and Kahlua engine-VM tests are not multiplayer or native NPC gameplay evidence.
 TEST COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\hud.lua E:\pzmod\NeighborhoodLife\42\media\lua\client\NeighborhoodNeeds.lua enabled
 TEST INPUT: E:\pzmod
 TEST OUTPUT: PASS: normalization, clamping, missing/NaN, isolated players, duplicate prevention, fold, render, reconnect, cleanup
@@ -192,3 +193,69 @@ KAHLUA OUTPUT: PASS: aspiration milestones, delivery hook, promotion gate, one-t
 PASS: installed Project Zomboid Kahlua VM execution
 KAHLUA STDERR: 
 KAHLUA EXIT: 0
+HASH 42/media/lua/client/NL/Client.lua BASELINE 9144d421b2ff6fd4e0f7b811fd9842e43386713397771fe28efefe7fcfc3f663 MODIFIED aa521b93ad2fc937032e419c330d92feaacca142ec05f202d970bec9aa47e415
+HASH 42/media/lua/client/NL/Journal.lua BASELINE ce12615a0edb3363a0610f908833886282245d7fd4429128049f52d783f4c9cd MODIFIED b8b8da9ca9eeb88cc50dd6bee77d005135f961373925331f68152daefb11999e
+HASH 42/media/lua/client/NL/Plumbob.lua BASELINE cc73a09ae0e3cd304cad4777585cb900e77034b83c752efd276612112096da53 MODIFIED 705428283a9bb3b5e36a3e8b16d1457839c9bba9989b3ca55b52062164fdb4b1
+HASH 42/media/lua/client/NL/Relationships.lua BASELINE 72b1a78991b8a30e16e9622f26650d72e58f4194c4827d61ae5be44314de7b49 MODIFIED e39d6b0bd5d768f20b066ae4918ec37b7a531714e4345cb110ccf825b27629e4
+HASH 42/media/lua/client/NL/SocialClient.lua BASELINE eb8470a0709f11a83f6bd23cc68805ad2caf6d9c00873fdf01f3d32fa4534475 MODIFIED cd5b892fb4954722838d2db60a3d431fd82dbd0bf7065bf11655aa4a3a0ea456
+HASH 42/media/lua/client/NL/Wardrobe.lua BASELINE d05a3b975facfcc37bf831cd4e13ce79a31edd2c4e594c08b7658ab37be9bbb9 MODIFIED c3d4da2978622a73f54f98fbc1912170d9fc4c8df8c0da4770ab0133d062f510
+HASH 42/media/lua/client/NL/WardrobePanel.lua BASELINE d66ad731bd89de2069b31505b2616bd336e92597270a8b4daaa0616a31d34947 MODIFIED 0248c786e32117f0460eebedd91fc9c35be6d9a977601f9346e00043f1c81d6d
+HASH 42/media/lua/client/NeighborhoodNeeds.lua BASELINE 9ffd6a73b30461b4506361a33d6c9725ceeaf17e7ff19b88058136dc53268ad5 MODIFIED 6f5d0fc0d522cf1d2a9be9f525158a3dfb01ffaa68aa7ca4338b871be8773b7e
+HASH 42/media/lua/server/NL/Authority.lua BASELINE 0715b331748d0992b18bc5cae5cfe1c4eda48efd2905e0b00c7df4abd3d13ba0 MODIFIED 405699c72d39d0e70c66d9b5f7e233cdedfa26ccf1c5ecd05ecbcbaa444e66ee
+HASH 42/media/lua/server/NL/SocialAuthority.lua BASELINE f3309d812338ea190d9e23ec4b5e6248fda572f51efaeacb15208c4f8dd4e805 MODIFIED d32116e51a3933c1da562930b51d70143c78a5a56c3838e17a9ef35981980a45
+HASH 42/media/lua/server/NeighborhoodLifeServer.lua BASELINE ABSENT MODIFIED 6f8ffb80198da1597d1dd95f311d508f49a7ef4b679f57d8028408aa7eb22010
+HASH 42/media/lua/shared/NL/Aspirations.lua BASELINE 69650b1bdd2955dfd30169908527096f27c539d7fdc471d1858a73440bc36063 MODIFIED 69e0173d6a44aabc22dea26d317cf71625c53be6b117ca3a49a97699161cfdc8
+HASH 42/media/lua/shared/NL/Definitions.lua BASELINE ac41f22a5f6b70a04f77f6e4e9aad19db8d7b2d53aef8269dddfc879649873bd MODIFIED ff34ca4838d8ce9f373ac673946ea54bf8c6348d56bb5b1ebb8cdcea64d22277
+HASH 42/media/lua/shared/NL/Domain.lua BASELINE faecd9f2d433ac371b7c88692607a789799b69695dfb8b6c0006f31c444a8bf8 MODIFIED 424ebfde542def44f722d946e5c5f6508bed9a1ef093cec81168fa671e789f1c
+HASH 42/media/lua/shared/NL/Neighbors.lua BASELINE 2c548d744931d232c9d2c61e758779ab618da8bdc00e86636617032a7c84f6c3 MODIFIED d4367c579cb8acf1f6b662290c9c53e53552eb0b783d02f5f1e2ff4c0500f363
+HASH 42/media/lua/shared/NL/Social.lua BASELINE 24f3a5bf837f866a0a49eeb0d4e6fab9efe3af42ef109d0a96b719c10d4467db MODIFIED 5cdb93c53741dd33de4cb891d6ada0a022280fab254f962fe603859ec5385c47
+HASH 42/media/textures/NL_Plumbob.png BASELINE 47a9ab7dd21982ed44f766a2cacfdf3fa6a7bfbd76076247334603f520be2771 MODIFIED 47a9ab7dd21982ed44f766a2cacfdf3fa6a7bfbd76076247334603f520be2771
+HASH 42/mod.info BASELINE 1eb466cee160a1d80750888e5f14b2dc901c2238cde20e95fe6c349bc17d2b5c MODIFIED a2b1cc900ec81894f07785a8a165e04443de8bcd90c89af0b44a395bf408acc1
+ARTIFACT: E:\pzmod\evidence\v14\MODIFIED_FILE.zip
+ARTIFACT: E:\pzmod\evidence\v14\DIFF_FILE.patch
+ARTIFACT: E:\pzmod\evidence\v14\VERIFICATION.txt
+ARTIFACT: E:\pzmod\evidence\v14\ROLLBACK.sh
+
+v0.7 FINAL EVIDENCE UPDATE: the root server bootstrap now only requires the domain modules; nested handlers remain the single registration path, eliminating duplicate authority callbacks. The fresh real run below used this final source state.
+CHANGED BRANCH/FIELD: NeighborhoodLifeServer.lua root server discovery; Authority.lua and SocialAuthority.lua accept Build 42's omitted empty argument table for no-argument commands.
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v14\baseline
+BASELINE INPUT: E:\pzmod\evidence\v14\baseline
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod\NeighborhoodLife
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v14 --baseline evidence\v14\baseline
+PACKAGE INPUT: E:\pzmod\NeighborhoodLife compared with E:\pzmod\evidence\v14\baseline
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v14\MODIFIED_FILE.zip
+PACKAGE EXIT: 0
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; p='evidence/v14/MODIFIED_FILE.zip'; z=zipfile.ZipFile(p); print('ZIP_TEST', z.testzip()); print('QA_ENTRIES', [n for n in z.namelist() if 'NeighborhoodQA' in n]); print('HAS_BOOTSTRAP', 'NeighborhoodLife/42/media/lua/server/NeighborhoodLifeServer.lua' in z.namelist())"
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; HAS_BOOTSTRAP True
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v14/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' evidence/v14/ROLLBACK.sh
+ROLLBACK INPUT: copied final modified NeighborhoodLife into E:\pzmod\evidence\v14\rollback-target\NeighborhoodLife
+ROLLBACK LITERAL OUTPUT: ROLLBACK RESTORED: /e/pzmod/evidence/v14/rollback-target/NeighborhoodLife from /e/pzmod/evidence/v14/baseline
+ROLLBACK EXIT: 0
+ROLLBACK RESULT: rollback-target restored the baseline; root bootstrap absent there; final modified source root bootstrap remained present.
+
+REAL ENGINE COMMAND: & .\tools\launch-multiplayer-qa.ps1
+REAL ENGINE INPUT: isolated test-profile/mp-server, test-profile/mp-host, test-profile/mp-guest; hands-free Java agent; no mouse or keyboard control.
+REAL ENGINE LITERAL OUTPUT: QA multiplayer processes started: server=19840 host=13104 guest=28084
+REAL ENGINE EXIT: 0
+REAL ENGINE RESULT: final source run logged two Connected new client events. Host nl-host and guest nl-guest each logged Connected, CLIENT START, REFRESH SENT, and SNAPSHOT. The server logged one production authority command and one revision-1 production snapshot per account, plus QA observer confirmation. Processes were stopped after capture and no process remained.
+REAL ENGINE EVIDENCE: E:\pzmod\evidence\v14\mp-run-command.txt, E:\pzmod\evidence\v14\mp-server-relevant.log, E:\pzmod\evidence\v14\mp-host-relevant.log, E:\pzmod\evidence\v14\mp-guest-relevant.log.
+CLASSIFICATION: Lua mock tests and installed-game Kahlua VM tests are not multiplayer evidence. The v0.7 logs are real engine host/guest command/snapshot evidence. They do not prove synchronized movement, inventory/actions, reconnect/restart, remote-character marker replication, or NPC replication/persistence.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v14\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v14\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v14\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v14\ROLLBACK.sh
+SHA256 MODIFIED_FILE: 6FB87DDB8717EBD8BCC2B6C26BCDA9BA447C0DEF105222B2D3831833CC248BBF
+SHA256 DIFF_FILE: 18D9F24EDD81BE6A02C00E2596B3534C78489A234C7E1BE75968C99207F1F578
+SHA256 ROOT BOOTSTRAP: 6F8FFB80198DA1597D1DD95F311D508F49A7EF4B679F57D8028408AA7EB22010

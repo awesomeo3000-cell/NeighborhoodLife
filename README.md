@@ -47,7 +47,9 @@ so existing worlds currently show an empty-neighborhood message rather than fake
 
 NPC world spawning, portraits and households remain unfinished. Relationship/romance
 logic is implemented and unit-tested, but its full world/multiplayer integration is pending.
-No new clothing meshes/textures are included yet.
+The isolated QA probe now proves single-player native NPC path-following movement
+(three waypoint legs, evidence/v13); replication, persistence and production spawning
+are still open. No new clothing meshes/textures are included yet.
 
 ## Developer verification
 tools/launch-qa.ps1 starts a separate no-Steam game process with its own profile
@@ -62,6 +64,23 @@ tools/pipeline.py is the consolidated test/package entry point:
 "python tools/pipeline.py test" runs Lua 5.1 plus installed-game Kahlua suites,
 and "python tools/pipeline.py package --version vN" writes a production-only
 package and diff under evidence/vN. tools/launch-multiplayer-qa.ps1 starts a
-dedicated no-Steam server and two isolated clients without OS input; its current
-engine evidence reaches server startup but the B42.20.4 no-Steam client join
-event does not transition the clients out of the main menu yet.
+dedicated no-Steam server and two isolated clients without OS input. The v0.7
+run reached server startup, connected both clients, entered each client into a
+world, and completed a real production `NeighborhoodLife` refresh/snapshot
+round trip for `nl-host` and `nl-guest`. The launcher uses
+`DoLuaChecksum=false` only in the isolated QA server because the two QA
+identity fixtures intentionally differ; the release package contains neither
+those fixtures nor the launcher. This proves the host/guest command loop, not
+synchronized movement, inventory, reconnect, or full remote-character gameplay.
+
+## v0.7 host/guest evidence
+
+- `evidence/v14/` records a real B42.20.4 dedicated server and two isolated
+  no-Steam clients. The server logged `Connected new client` twice and each
+  client logged `Connected`, `CLIENT START`, `REFRESH SENT`, and `SNAPSHOT`.
+- Production `NLAuthority` processed both real refresh commands and emitted a
+  revision-1 snapshot to each client. The server callback normalizes Build 42's
+  omitted empty argument table for no-argument commands.
+- This is actual engine multiplayer evidence, distinct from Lua mock tests and
+  installed-game Kahlua VM tests. It does not yet prove synchronized movement,
+  inventory delivery, reconnect/restart behavior, or remote NPC replication.
