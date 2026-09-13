@@ -9,7 +9,7 @@ function getTimestampMs() time=time+250; return time end
 function getGameTime() return {getWorldAgeHours=function() return day*24 end} end
 local persisted={}
 ModData={getOrCreate=function(key) persisted[key]=persisted[key] or {}; return persisted[key] end}
-Events={OnClientCommand={Add=function() end},OnMainMenuEnter={Add=function() end}}
+Events={OnClientCommand={Add=function() end},OnRenderTick={Add=function() end},OnMainMenuEnter={Add=function() end}}
 Perks={Tailoring='Tailoring',Woodwork='Woodwork',Doctor='Doctor'}
 local packets,removed={},0
 function sendServerCommand(player,module,command,args) packets[#packets+1]={player=player,args=args} end

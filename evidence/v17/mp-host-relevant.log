@@ -1,0 +1,18 @@
+[13-09-26 19:07:06.674] LOG  : Lua          f:0> NLQA MP CONNECT ARMED: 127.0.0.1:16261.
+[13-09-26 19:07:08.712] LOG  : Lua          f:0> NLQA MP CONNECT REQUEST: nl-host -> 127.0.0.1:16261 accountPassword=true.
+[13-09-26 19:07:09.226] LOG  : Lua          f:0 st:0> NLQA MP CONNECTION STATE: Connected message=nil arg=nil.
+[13-09-26 19:07:21.108] LOG  : Lua          f:0 st:0> NLQA MP CONNECTED: nl-host.
+[13-09-26 19:07:52.230] LOG  : Lua          f:0 st:0> NLQA MP CLIENT START: username=nl-host isClient=true isServer=false.
+[13-09-26 19:07:56.166] LOG  : Lua          f:119 st:192,792,208> NLQA MP REFRESH SENT: attempt=1 player=nl-host.
+[13-09-26 19:07:56.191] LOG  : Lua          f:120 st:192,792,234> NLQA MP SNAPSHOT: username=nl-host revision=1 snapshotCount=1.
+[13-09-26 19:07:56.191] LOG  : Lua          f:120 st:192,792,234> NLQA MP PRESENCE: revision=1789340876172 players=1 names=nl-host@6817.50,5259.50,0.
+[13-09-26 19:07:57.196] LOG  : Lua          f:179 st:192,793,239> NLQA MP MOVE QUEUED: from=6817.50,5259.50 to=6819,5259.
+[13-09-26 19:07:59.533] LOG  : Lua          f:299 st:192,795,576> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=31 [username=nl-guest x=10754.00 y=10214.00 z=0 | local=nl-host] OnlinePlayersCount=2 [local=nl-host | username=nl-guest x=10754.00 y=10214.00 z=0] productionRemoteMarkers=1.
+[13-09-26 19:07:59.558] LOG  : Lua          f:300 st:192,795,601> NLQA MP PRESENCE: revision=1789340879537 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:08:00.642] LOG  : Lua          f:365 st:192,796,684> NLQA MP PRESENCE: revision=1789340880630 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:08:03.641] LOG  : Lua          f:545 st:192,799,684> NLQA MP PRESENCE: revision=1789340883624 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:08:04.532] LOG  : Lua          f:599 st:192,800,575> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=30 [local=nl-host] OnlinePlayersCount=1 [local=nl-host] productionRemoteMarkers=0.
+[13-09-26 19:08:04.558] LOG  : Lua          f:600 st:192,800,601> NLQA MP PRESENCE: revision=1789340884547 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:08:08.641] LOG  : Lua          f:845 st:192,804,684> NLQA MP PRESENCE: revision=1789340888626 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:08:09.531] LOG  : Lua          f:899 st:192,805,574> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=30 [local=nl-host] OnlinePlayersCount=1 [local=nl-host] productionRemoteMarkers=0.
+[13-09-26 19:08:09.558] LOG  : Lua          f:900 st:192,805,601> NLQA MP PRESENCE: revision=1789340889544 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.

@@ -1,5 +1,5 @@
 require "NL/Domain"
-NLClient = { profiles = {}, presence = nil, presenceFrame = 0 }
+NLClient = { profiles = {}, presence = nil }
 
 function NLClient.receive(module, command, args)
     if module ~= "NeighborhoodLife" or type(args) ~= "table" then return end
@@ -31,16 +31,5 @@ function NLClient.request(index, command, args)
 end
 
 Events.OnServerCommand.Add(NLClient.receive)
-Events.OnRenderTick.Add(function()
-    if not isClient() then return end
-    NLClient.presenceFrame = NLClient.presenceFrame + 1
-    if NLClient.presenceFrame < 300 then return end
-    NLClient.presenceFrame = 0
-    for i = 0, getNumActivePlayers() - 1 do
-        NLClient.request(i, "presence")
-    end
-end)
-Events.OnMainMenuEnter.Add(function()
-    NLClient.profiles = {}; NLClient.presence = nil; NLClient.presenceFrame = 0
-end)
+Events.OnMainMenuEnter.Add(function() NLClient.profiles = {}; NLClient.presence = nil end)
 return NLClient

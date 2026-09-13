@@ -8,7 +8,7 @@ function isServer() return true end
 function getTimestampMs() now = now + 250; return now end
 function getGameTime() return {getWorldAgeHours=function() return 0 end} end
 ModData = {getOrCreate=function() return world end}
-Events = {OnClientCommand={Add=function() end},OnMainMenuEnter={Add=function() end},OnServerCommand={Add=function() end}}
+Events = {OnClientCommand={Add=function() end},OnRenderTick={Add=function() end},OnMainMenuEnter={Add=function() end},OnServerCommand={Add=function() end}}
 Perks = {Tailoring='Tailoring',Woodwork='Woodwork',Doctor='Doctor'}
 function sendServerCommand(player,module,command,args)
     packets[#packets+1] = {player=player,module=module,command=command,args=args}

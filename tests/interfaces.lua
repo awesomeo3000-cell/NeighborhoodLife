@@ -19,7 +19,7 @@ ISButton={}
 function ISButton:new(x,y,w,h,label,target,callback)
     return {target=target,callback=callback,initialise=function() end,setEnable=function(self,v) self.enabled=v end}
 end
-Events={OnServerCommand={Add=function() end},OnMainMenuEnter={Add=function() end}}
+Events={OnServerCommand={Add=function() end},OnRenderTick={Add=function() end},OnMainMenuEnter={Add=function() end}}
 UIFont={Small=1}
 function getNumActivePlayers() return 0 end
 function getSpecificPlayer() return nil end

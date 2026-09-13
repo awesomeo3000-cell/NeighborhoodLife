@@ -1,6 +1,6 @@
 -- Multiplayer evidence logger. Loaded only by NeighborhoodQA in isolated profiles.
 NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
-    presenceCount = 0, presenceRequestFrame = 0, presenceRequests = 0,
+    presenceCount = 0, movementFrame = 0, movementSent = false,
     remoteScanFrame = 0, remoteScanCount = 0, remoteScanLogged = false }
 
 local function emit(label, value)
@@ -66,6 +66,34 @@ local function createDefaultCharacter()
     if not ok then emit("CHARACTER FAILED", tostring(err)) end
 end
 
+-- QA-only hands-free movement stimulus. The production mod only observes the
+-- server-authoritative position; this fixture supplies a real timed walk so
+-- the presence heartbeat can be checked against changed coordinates.
+local function queueHostWalk()
+    if qaIdentity().username ~= "nl-host" then return end
+    local player = getSpecificPlayer(0)
+    local cell = getCell()
+    if not player or not cell then return end
+    local x, y, z = math.floor(player:getX()), math.floor(player:getY()), math.floor(player:getZ())
+    local target = cell:getGridSquare(x + 2, y, z)
+    if not target or not target:isFree(false) then target = cell:getGridSquare(x + 1, y, z) end
+    if not target then
+        emit("MOVE FAILED", "no free target")
+        return
+    end
+    local ok, err = pcall(function()
+        require "TimedActions/WalkToTimedAction"
+        assert(ISTimedActionQueue, "ISTimedActionQueue unavailable")
+        ISTimedActionQueue.add(ISWalkToTimedAction:new(player, target))
+    end)
+    if ok then
+        emit("MOVE QUEUED", string.format("from=%.2f,%.2f to=%d,%d",
+            player:getX(), player:getY(), target:getX(), target:getY()))
+    else
+        emit("MOVE FAILED", tostring(err))
+    end
+end
+
 Events.OnMainMenuEnter.Add(armConnect)
 
 -- Wait a moment after the menu so the engine finishes tearing down any previous
@@ -92,6 +120,16 @@ Events.OnGameStart.Add(function()
     emit("CLIENT START", "username=" .. tostring(player and player:getUsername())
         .. " isClient=" .. tostring(isClient()) .. " isServer=" .. tostring(isServer()))
     NLQAMultiplayer.refreshFrame = 0
+    NLQAMultiplayer.movementFrame = 0
+end)
+
+Events.OnRenderTick.Add(function()
+    if not isClient() or NLQAMultiplayer.movementSent then return end
+    NLQAMultiplayer.movementFrame = NLQAMultiplayer.movementFrame + 1
+    if NLQAMultiplayer.movementFrame >= 180 then
+        NLQAMultiplayer.movementSent = true
+        queueHostWalk()
+    end
 end)
 
 -- OnGameStart can fire while the client world is still attaching its first
@@ -143,7 +181,10 @@ Events.OnServerCommand.Add(function(module, command, args)
             and type(args.players) == "table" then
         NLQAMultiplayer.presenceCount = #args.players
         local names = {}
-        for i, entry in ipairs(args.players) do names[#names + 1] = tostring(entry.username) end
+        for i, entry in ipairs(args.players) do
+            names[#names + 1] = string.format("%s@%.2f,%.2f,%.0f", tostring(entry.username),
+                tonumber(entry.x or 0), tonumber(entry.y or 0), tonumber(entry.z or 0))
+        end
         emit("PRESENCE", "revision=" .. tostring(args.revision)
             .. " players=" .. tostring(NLQAMultiplayer.presenceCount)
             .. " names=" .. table.concat(names, ","))
@@ -235,13 +276,6 @@ end
 
 Events.OnRenderTick.Add(function()
     if not isClient() or NLQAMultiplayer.remoteScanLogged then return end
-    NLQAMultiplayer.presenceRequestFrame = NLQAMultiplayer.presenceRequestFrame + 1
-    if NLQAMultiplayer.presenceRequestFrame >= 180 then
-        NLQAMultiplayer.presenceRequestFrame = 0
-        NLQAMultiplayer.presenceRequests = NLQAMultiplayer.presenceRequests + 1
-        if NLClient then NLClient.request(0, "presence") end
-        emit("PRESENCE SENT", "attempt=" .. tostring(NLQAMultiplayer.presenceRequests))
-    end
     NLQAMultiplayer.remoteScanFrame = NLQAMultiplayer.remoteScanFrame + 1
     if NLQAMultiplayer.remoteScanFrame >= 300 then
         NLQAMultiplayer.remoteScanFrame = 0

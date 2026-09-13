@@ -17,7 +17,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
 | Aspirations and home activities | Not implemented | Goals, progress/rewards, hobbies and functional furnishings |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter, private snapshots, and authoritative two-player presence broadcast; v0.7/v0.9 real host plus guest evidence | Reconnect, simultaneous gameplay/inventory delivery, restart, mod distribution, stable two-way native remote movement and replicated-character UI |
+| Host multiplayer | Server command adapter, private snapshots, authoritative presence broadcast, and production client heartbeat; v0.7/v0.9/v1.0 real host plus guest evidence | Reconnect, simultaneous gameplay/inventory delivery, restart, mod distribution, stable two-way native remote movement and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -164,3 +164,16 @@ The original broad goal remains active. This ledger is not a reduced definition 
   repair path recorded that `GameServer` is not exposed as a Lua table on this
   dedicated server. Native re-announcement therefore remains an engine/API
   investigation gate rather than claimed functionality.
+
+## v1.0 movement-state heartbeat evidence
+
+- Production clients now send a server command heartbeat every 300 render
+  frames. The server derives positions from its authoritative `getOnlinePlayers()`
+  objects and rebroadcasts revisioned presence to every client.
+- The hands-free real-engine run queued a native walk for `nl-host` from
+  `6817.50,5259.50` to `6819.50,5259.50`. Subsequent guest logs received both
+  players with the changed host position repeatedly. Evidence is in
+  `evidence/v17/`.
+- This proves mod-level position replication for a real movement change. It
+  does not yet prove stable native remote-body visibility, inventory/action
+  replication, reconnect/restart, or production NPC movement/persistence.

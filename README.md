@@ -105,3 +105,11 @@ unstable; it does not fabricate bodies or claim synchronized movement yet.
 The QA repair probe also found Build 42's native `GameServer` class is not
 exposed as a Lua table on this dedicated server, so native re-announcement
 remains an engine/API investigation gate.
+
+## v1.0 movement-state heartbeat evidence
+
+Production clients now send a periodic presence heartbeat. The server derives
+positions from authoritative player objects and rebroadcasts them to every
+client. In `evidence/v17/`, hands-free QA moved `nl-host` from
+`6817.50,5259.50` to `6819.50,5259.50`; the guest received the changed
+position repeatedly. Native remote-body rendering remains a separate open gate.
