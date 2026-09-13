@@ -248,3 +248,7 @@ SOURCE HASH: E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Plumbob.lua SHA256
 MODIFIED ZIP SHA256: E0C91FE81B02FE6B0081C4B56955699044AEB12823A2BC88FEECBEC3952E84CB
 DIFF PATCH SHA256: 97DC5928D4CA12490FC15E13D99711256012D54D8B5C59DCED05EE8805C73E53
 RESTORED STATUS: rollback copy has no NL/Plumbob.lua; source E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Plumbob.lua remains present.
+
+REAL ENGINE RECHECK COMMAND: & .\tools\launch-qa.ps1
+REAL ENGINE RECHECK OUTPUT: QA process: 27784; isolated profile: E:\pzmod\test-profile; console.txt recorded `NLQA PASS: real engine plumbob panel registered and anchored at 1248,672` and `NLQA PASS: QA NPC plumbob adapter registered and anchored`.
+REAL ENGINE RECHECK RESULT: player and QA NPC adapters both anchored in the actual B42.20.4 engine. The launcher returned exit 0; the disposable engine process was stopped after evidence capture, so no natural game-process exit status is claimed.
