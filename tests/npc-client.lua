@@ -73,6 +73,15 @@ NLNpcClient.update(); assert(body:getX()>10 and body:getX()<11,'replica interpol
 if NLNpcClient.modes then
     assert(NLNpcClient.modes.marisol=='native','replica uses native path frame when available')
 end
+if NLNpcClient.bodyPresent then
+    local oldKenji=NLNpcClient.bodies.kenji
+    objects:remove(oldKenji)
+    NLNpcClient.apply({revision=3,npcs={{id='marisol',x=11,y=11,z=0,alive=true},{id='kenji',x=14,y=11,z=0,alive=true}}})
+    assert(NLNpcClient.bodies.kenji and NLNpcClient.bodies.kenji~=oldKenji,
+        'stale native handle is replaced after client cell streaming removes it')
+    assert(plumbobs['npc:kenji']==NLNpcClient.bodies.kenji,
+        'recreated streamed replica receives a fresh plumbob')
+end
 local xAfterNewer=body:getX()
 local targetAfterNewer=NLNpcClient.targets.marisol
 if NLNpcClient.revision then

@@ -1,8 +1,12 @@
-param([switch]$InventoryCrashProbe)
+param(
+    [switch]$InventoryCrashProbe,
+    [string]$ProfileRoot = 'E:\pzmod\test-profile'
+)
 $ErrorActionPreference = 'Stop'
 $root = 'E:\pzmod'
 $game = 'E:\SteamLibrary\steamapps\common\ProjectZomboid'
-$base = Join-Path $root 'test-profile'
+$base = [System.IO.Path]::GetFullPath($ProfileRoot)
+New-Item -ItemType Directory -Force $base | Out-Null
 $serverProfile = Join-Path $base 'mp-server'
 $hostProfile = Join-Path $base 'mp-host'
 $guestProfile = Join-Path $base 'mp-guest'

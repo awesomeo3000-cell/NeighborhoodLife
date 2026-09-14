@@ -3,6 +3,8 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     presenceCount = 0, movementFrame = 0, movementSent = false,
     remoteScanFrame = 0, remoteScanCount = 0, remoteScanLogged = false,
     plumbobSizeLogged = false, hudProbeLogged = false,
+    streamProbeSent = false, streamProbeObserved = false, streamProbeFrame = 0,
+    streamProbeOld = nil,
     socialFrame = 0, socialRefreshSent = false, socialActionSent = false,
     socialActionScheduled = false, socialActionName = nil, socialTarget = nil,
     socialActionDue = 0, socialActionCount = 0, socialActionPrepared = false,
@@ -25,6 +27,7 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     householdTransferDue = 0, householdTaskDue = 0, householdResetSent = false,
     householdDirectCreateDue = 180,
     householdFurnishingPrepared = false, householdFurnishingActionDue = 0,
+    dangerProbeSent = false,
     wardrobeSeedSent = false, wardrobeSeeded = false, wardrobePickupAttempted = false,
     wardrobePickupObserved = false, wardrobePickupNextAttempt = 0,
     wardrobeItemTypes = {}, wardrobeWearSent = false, wardrobeWearObserved = false,
@@ -1346,6 +1349,53 @@ Events.OnRenderTick.Add(function()
         if NLQAMultiplayer.remoteScanCount >= 8 then
             NLQAMultiplayer.remoteScanLogged = true
         end
+    end
+end)
+
+-- QA-only zombie stimulus. The server creates one real zombie beside Marisol
+-- after the production native NPCs exist; the production authority must detect
+-- it and retreat without relying on a client-side mock or teleport.
+Events.OnRenderTick.Add(function()
+    if not isClient() or NLQAMultiplayer.dangerProbeSent
+            or qaIdentity().username ~= "nl-host" then return end
+    if not NLNpcClient or not NLNpcClient.bodies or not NLNpcClient.bodies.marisol then return end
+    local player = getSpecificPlayer(0)
+    if not player then return end
+    sendClientCommand(player, "NeighborhoodQA", "danger_probe", {})
+    NLQAMultiplayer.dangerProbeSent = true
+    emit("DANGER PROBE SENT", "target=marisol source=server-zombie")
+end)
+
+-- QA-only client streaming stimulus. Remove one real native NPC body from the
+-- local cell while retaining its stale NLNpcClient handle, then apply the last
+-- authoritative presence packet. Production NpcClient must discard the stale
+-- handle and recreate the local native replica; the QA helper does not own the
+-- identity or coordinates.
+Events.OnRenderTick.Add(function()
+    if not isClient() or qaIdentity().username ~= "nl-host" then return end
+    if NLQAMultiplayer.streamProbeObserved then return end
+    local body = NLNpcClient and NLNpcClient.bodies and NLNpcClient.bodies.kenji
+    if not NLQAMultiplayer.streamProbeSent then
+        if not body or not NLClient or not NLClient.npcPresence then return end
+        NLQAMultiplayer.streamProbeFrame = NLQAMultiplayer.streamProbeFrame + 1
+        if NLQAMultiplayer.streamProbeFrame < 900 then return end
+        local old = body
+        local removed = false
+        if old.removeFromWorld then removed = pcall(old.removeFromWorld, old) end
+        if old.removeFromSquare then removed = pcall(old.removeFromSquare, old) or removed end
+        local cell = getCell and getCell()
+        local list = cell and cell:getObjectList()
+        if list and list.remove then removed = pcall(list.remove, list, old) or removed end
+        NLQAMultiplayer.streamProbeOld = old
+        NLQAMultiplayer.streamProbeSent = true
+        emit("STREAM PROBE SENT", "target=kenji removed=" .. tostring(removed))
+        NLNpcClient.apply(NLClient.npcPresence)
+        body = NLNpcClient.bodies.kenji
+    end
+    if body and body ~= NLQAMultiplayer.streamProbeOld then
+        NLQAMultiplayer.streamProbeObserved = true
+        emit("STREAM PROBE RECOVERED", "target=kenji mode=" .. tostring(NLNpcClient.modes.kenji)
+            .. " fresh=" .. tostring(body ~= NLQAMultiplayer.streamProbeOld))
     end
 end)
 

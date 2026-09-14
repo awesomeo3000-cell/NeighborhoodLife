@@ -722,3 +722,20 @@ logged zero production danger events while both clients already had three
 native NPC replicas and native paths. That establishes the no-nearby-zombie
 behavior in the same two-client run; a separate sandbox population-setting
 toggle remains untested.
+
+## v1.48 streamed NPC replica handle recovery
+
+The production client now verifies that each cached NPC body still exists in
+Build 42's client object list before applying a newer authoritative presence
+packet. If streaming removed the native body, the client drops the stale handle
+and recreates a local native replica from the server row, preserving its
+plumbob, target and revision state. The contract and installed-game Kahlua
+suites cover this path.
+
+The QA multiplayer launcher now accepts `-ProfileRoot`, allowing a disposable
+isolated profile without overwriting the persistent test profile. The v1.48
+fresh-profile probe exposed a separate startup issue before NPC gameplay: the
+clean clients did not complete the hands-free connection path, while the
+archived profile relocated NPCs and produced no replicas. This run is retained
+as a genuine failed gameplay probe; streamed-cell gameplay evidence remains
+open.

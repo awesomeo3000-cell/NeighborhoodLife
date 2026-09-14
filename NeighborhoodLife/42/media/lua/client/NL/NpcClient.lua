@@ -10,6 +10,28 @@ if not isClient or not isClient() then return end
 require "NL/Plumbob"
 NLNpcClient = { bodies={}, targets={}, states={}, paths={}, modes={}, revision=0 }
 
+-- A presence packet can outlive a native body when the client streams its
+-- square out. Keep the authoritative row, but discard the stale Lua handle so
+-- the next packet can create a local native replica instead of updating an
+-- object that is no longer in the client cell.
+local function bodyPresent(body)
+    if not body or type(getCell) ~= "function" then return nil end
+    local cellOk, cell = pcall(getCell)
+    if not cellOk or not cell or not cell.getObjectListForLua then return nil end
+    local listOk, list = pcall(cell.getObjectListForLua, cell)
+    if not listOk or not list or not list.size or not list.get then return nil end
+    local countOk, count = pcall(list.size, list)
+    if not countOk then return nil end
+    for i=0,count-1 do
+        local objectOk, object = pcall(list.get, list, i)
+        if objectOk and object == body then return true end
+    end
+    return false
+end
+
+local cancelNativePath
+NLNpcClient.bodyPresent = bodyPresent
+
 local function nativeBody(id)
     local cellOk, cell = pcall(getCell)
     if not cellOk or not cell then return nil end
@@ -63,6 +85,20 @@ local function createReplica(entry)
     return body
 end
 
+local function forgetReplica(id, body)
+    if cancelNativePath then cancelNativePath(id, body) end
+    NLPlumbob.unregister("npc:" .. id)
+    if getCell then
+        local cell = getCell()
+        local list = cell and cell:getObjectList()
+        if list and list.remove then pcall(list.remove, list, body) end
+    end
+    NLNpcClient.bodies[id] = nil
+    NLNpcClient.targets[id] = nil
+    NLNpcClient.paths[id] = nil
+    NLNpcClient.modes[id] = nil
+end
+
 function NLNpcClient.apply(packet)
     if type(packet) ~= "table" or type(packet.npcs) ~= "table" then return 0 end
     local revision = tonumber(packet.revision or 0) or 0
@@ -74,7 +110,12 @@ function NLNpcClient.apply(packet)
             local id = tostring(entry.id)
             seen[id] = true
             NLNpcClient.states[id] = entry
-            local body = NLNpcClient.bodies[id] or createReplica(entry)
+            local body = NLNpcClient.bodies[id]
+            if body and bodyPresent(body) == false then
+                forgetReplica(id, body)
+                body = nil
+            end
+            body = body or createReplica(entry)
             if body then
                 local old = NLNpcClient.targets[id]
                 NLNpcClient.targets[id] = entry
@@ -92,23 +133,14 @@ function NLNpcClient.apply(packet)
     end
     for id, body in pairs(NLNpcClient.bodies) do
         if not seen[id] then
-            NLPlumbob.unregister("npc:" .. id)
-            if getCell then
-                local cell = getCell()
-                local list = cell and cell:getObjectList()
-                if list and list.remove then list:remove(body) end
-            end
-            NLNpcClient.bodies[id] = nil
-            NLNpcClient.targets[id] = nil
-            NLNpcClient.paths[id] = nil
-            NLNpcClient.modes[id] = nil
+            forgetReplica(id, body)
             NLNpcClient.states[id] = nil
         end
     end
     return #packet.npcs
 end
 
-local function cancelNativePath(id, body)
+cancelNativePath = function(id, body)
     local path = NLNpcClient.paths[id]
     if path and path.behavior and path.behavior.cancel then
         pcall(path.behavior.cancel, path.behavior)

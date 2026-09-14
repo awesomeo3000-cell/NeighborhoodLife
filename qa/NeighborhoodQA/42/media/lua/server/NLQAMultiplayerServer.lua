@@ -5,7 +5,8 @@ if isClient() then return end
 local ok,err=pcall(function() require "NL/Authority" end)
 print("NLQA MP SERVER BOOT: authority=" .. tostring(NLAuthority ~= nil) .. " requireOk=" .. tostring(ok)
     .. " error=" .. tostring(err))
-for _, name in ipairs({"getClass", "importClass", "Java", "luautils", "GameServer", "GameClient"}) do
+for _, name in ipairs({"getClass", "importClass", "Java", "luautils", "GameServer", "GameClient",
+    "addZombiesInOutfit", "createZombie", "IsoZombie", "IsoDirections"}) do
     print("NLQA MP SERVER BRIDGE: " .. name .. "=" .. tostring(type(_G[name])))
 end
 if type(luautils) == "table" then
@@ -22,6 +23,7 @@ end
 local reannounced = false
 local careerSeeded = {}
 local wardrobeSeeded = {}
+local dangerProbeSeeded = false
 local householdViewpointMoved = false
 local inventoryFaultArmed = false
 
@@ -162,6 +164,35 @@ Events.OnTick.Add(function()
             return
         end
     end
+end)
+
+-- QA-only server danger stimulus. It uses the installed engine's real zombie
+-- spawn entry point, so production danger handling is observed through the
+-- dedicated server's loaded IsoCell rather than a Lua-only stand-in.
+Events.OnClientCommand.Add(function(module, command, player)
+    if module ~= "NeighborhoodQA" or command ~= "danger_probe" or not player
+            or player:getUsername() ~= "nl-host" or dangerProbeSeeded then return end
+    local npc = NLNpcAuthority and NLNpcAuthority.bodies and NLNpcAuthority.bodies.marisol
+    if not npc then
+        print("NLQA DANGER PROBE FAILED: reason=no-marisol-body")
+        return
+    end
+    local x, y, z = math.floor(npc:getX()) + 1, math.floor(npc:getY()), math.floor(npc:getZ())
+    local ok, result, err = false, nil, nil
+    if type(addZombiesInOutfit) == "function" then
+        ok, result = pcall(addZombiesInOutfit, x, y, z, 1, nil, 50)
+    elseif type(createZombie) == "function" then
+        ok, result = pcall(createZombie, x, y, z, nil, 0, IsoDirections and IsoDirections.S)
+    else
+        err = "server zombie spawn API unavailable"
+    end
+    if not ok then err = result; result = nil end
+    dangerProbeSeeded = true
+    local count = 0
+    if result and result.size then count = result:size() end
+    print("NLQA DANGER PROBE: ok=" .. tostring(ok) .. " count=" .. tostring(count)
+        .. " x=" .. tostring(x) .. " y=" .. tostring(y) .. " z=" .. tostring(z)
+        .. " error=" .. tostring(err))
 end)
 
 Events.OnClientCommand.Add(function(module, command, player)
