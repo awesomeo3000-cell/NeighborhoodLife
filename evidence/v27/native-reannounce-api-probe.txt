@@ -1,0 +1,6 @@
+NATIVE REANNOUNCE API PROBE
+COMMAND: javap -classpath E:\SteamLibrary\steamapps\common\ProjectZomboid\projectzomboid.jar zombie.network.GameServer
+JAVAP FINDING: GameServer has public static Players, getConnectionFromPlayer(IsoPlayer), sendPlayerConnected(IsoPlayer,IConnection), and getPlayers(ArrayList<IsoPlayer>); it has no zero-argument getPlayers().
+ACTUAL QA COMMAND: & .\tools\launch-multiplayer-qa.ps1
+ACTUAL SERVER OUTPUT: NLQA MP SERVER GAME-SERVER API: api=nil apiOk=true playersOk=false players=nil
+ACTUAL SERVER RESULT: Build 42.20.4 exposes no GameServer global to the dedicated-server Lua environment, so the native sendPlayerConnected path cannot be invoked from production Lua. The v1.9 authoritative marker fallback remains the working multiplayer path; native body reannouncement remains an engine/API blocker, not a unit-test failure.

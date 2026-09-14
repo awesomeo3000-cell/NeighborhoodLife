@@ -26,9 +26,15 @@ end)
 
 local function tryReannounce()
     if reannounced then return end
-    local playersOk, players = pcall(function() return GameServer.getPlayers() end)
+    local apiOk, api = pcall(function() return GameServer end)
+    local playersOk, players = false, nil
+    if apiOk and api then
+        playersOk, players = pcall(function() return api.Players end)
+    end
+    print("NLQA MP SERVER GAME-SERVER API: api=" .. tostring(api)
+        .. " apiOk=" .. tostring(apiOk) .. " playersOk=" .. tostring(playersOk)
+        .. " players=" .. tostring(players))
     if not playersOk or not players then
-        print("NLQA MP SERVER GAME-SERVER API: unavailable=" .. tostring(players))
         return
     end
     print("NLQA MP SERVER GAME-SERVER API: players=" .. tostring(players:size()))

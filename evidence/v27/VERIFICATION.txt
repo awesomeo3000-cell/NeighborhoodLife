@@ -63,3 +63,5 @@ ROLLBACK: E:\pzmod\evidence\v27\ROLLBACK.sh
 SHA256 MODIFIED_FILE: 06D73426DF16D29683EF5ACEDC6AB73DB4EB33C0632F74CDAFC0F505B907B56F
 SHA256 DIFF_FILE: B242782361A77EEFD02892A8011905B879B270D93AC9C35440D4B8435C9844A8
 SHA256 ROLLBACK: D56282AD68F99265FCE0C5A89BCB50A2E42BE8AF63B5DCEF0A6E03457659D686
+NATIVE REANNOUNCE PROBE: javap showed the Java methods, but the real dedicated-server Lua run logged `api=nil apiOk=true playersOk=false players=nil`. Build 42.20.4 does not expose GameServer to production Lua, so native sendPlayerConnected reannouncement remains open and is not claimed complete.
+NATIVE PROBE EVIDENCE: E:\pzmod\evidence\v27\native-reannounce-api-probe.txt
