@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.67)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.69)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -1008,3 +1008,20 @@ active: native NPC server-body reannouncement is still blocked by the real
 dedicated-server bridge (`GameServer=nil`, `Java=nil`, `onlineHints=0`), and
 broader global-data atomicity, the wider neighborhood vertical slice, and
 additional gameplay breadth remain open.
+
+## v1.69 actual medic promotion vertical-slice gate
+
+The focused QA launcher now supports `-PromotionProbe` and the reproducible
+`tools/run-career-promotion-qa.ps1` helper. In `evidence/v99/actual/promotion/`,
+an isolated Build 42.20.4 host-plus-guest run completed all three production
+medic delivery commands and received `CAREER PROMOTION RESULT: career=medic
+rank=2 skill=1 xp=75 variety=3`. The server and client logs separately prove
+the networked session, the production delivery path, and the resulting rank.
+The bandage count is a QA-only networked inventory seed; it is not presented as
+vanilla world-pickup evidence. Lua 5.1 mock tests, installed-game Kahlua VM
+tests, and actual gameplay evidence remain separately classified.
+
+This closes one career vertical-slice gate, not the full overhaul: native NPC
+server-body reannouncement remains blocked by `GameServer=nil`, `Java=nil`, and
+`onlineHints=0`, while richer neighborhood breadth and global-data crash
+atomicity remain open. QA helpers stay outside the production package.

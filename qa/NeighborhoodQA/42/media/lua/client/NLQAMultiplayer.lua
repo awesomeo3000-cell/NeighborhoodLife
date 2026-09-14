@@ -41,6 +41,14 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     householdMetadataRetrieveObserved = false,
     householdRestartRefreshDue = 0, householdRestartRefreshSent = false,
     householdRestartObserved = false,
+    careerPromotionProbe = false, careerPromotionStage = 0,
+    careerPromotionPickupAttempted = false, careerPromotionPickupNextAttempt = 0,
+    careerPromotionPickupExpected = 0, careerPromotionItem = nil,
+    careerPromotionPickupMode = nil,
+    careerPromotionPickupX = nil, careerPromotionPickupY = nil,
+    careerPromotionPickupZ = nil,
+    careerPromotionDeliveryCount = 0, careerPromotionDue = 0,
+    careerPromotionObserved = false,
     dangerProbeSent = false,
     wardrobeSeedSent = false, wardrobeSeeded = false, wardrobePickupAttempted = false,
     wardrobePickupObserved = false, wardrobePickupNextAttempt = 0,
@@ -464,6 +472,23 @@ local function positionHostForHousehold()
     return true
 end
 
+local function positionForCareerPickup()
+    local player = getSpecificPlayer(0)
+    local x, y, z = NLQAMultiplayer.careerPromotionPickupX,
+        NLQAMultiplayer.careerPromotionPickupY, NLQAMultiplayer.careerPromotionPickupZ
+    if not player or x == nil or y == nil or z == nil then return false end
+    if player.teleportTo then
+        player:teleportTo(tonumber(x) + 0.5, tonumber(y) + 0.5, tonumber(z))
+    else
+        player:setX(tonumber(x) + 0.5); player:setY(tonumber(y) + 0.5)
+        if player.setZ then player:setZ(tonumber(z)) end
+        local cell = getCell and getCell()
+        local square = cell and cell:getGridSquare(tonumber(x), tonumber(y), tonumber(z))
+        if square and player.setCurrent then player:setCurrent(square) end
+    end
+    return true
+end
+
 local function positionGuestForSocial(targetId)
     return positionClientForSocial("nl-guest", targetId or "kenji")
 end
@@ -723,6 +748,39 @@ Events.OnServerCommand.Add(function(module, command, args)
             emit("CAREER RESULT", "delivery complete message="..tostring(args.message))
         end
         if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                and NLQAMultiplayer.careerPromotionProbe
+                and args.message and string.find(args.message,"Delivery complete",1,true) then
+            local progress = args.careers and args.careers.medic
+            local delivered = progress and tonumber(progress.delivered or 0) or 0
+            if delivered > NLQAMultiplayer.careerPromotionDeliveryCount then
+                NLQAMultiplayer.careerPromotionDeliveryCount = delivered
+                emit("CAREER PROMOTION DELIVERY", "delivered="..tostring(delivered)
+                    .." xp="..tostring(progress.xp))
+                if delivered == 1 then
+                    NLQAMultiplayer.careerPromotionStage = 1
+                    NLQAMultiplayer.careerPromotionDue = NLQAMultiplayer.socialFrame + 180
+                elseif delivered == 2 then
+                    NLQAMultiplayer.careerPromotionStage = 5
+                    NLQAMultiplayer.careerPromotionDue = NLQAMultiplayer.socialFrame + 180
+                elseif delivered >= 3 then
+                    NLQAMultiplayer.careerPromotionStage = 7
+                    NLQAMultiplayer.careerPromotionDue = NLQAMultiplayer.socialFrame + 180
+                end
+            end
+        end
+        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                and NLQAMultiplayer.careerPromotionProbe
+                and not NLQAMultiplayer.careerPromotionObserved
+                and args.careers and args.careers.medic
+                and tonumber(args.careers.medic.rank or 1) >= 2
+                and args.message and string.find(args.message,"Promoted to",1,true) then
+            local progress = args.careers.medic
+            NLQAMultiplayer.careerPromotionObserved = true
+            emit("CAREER PROMOTION RESULT", "career=medic rank="..tostring(progress.rank)
+                .." skill="..tostring(args.skill).." xp="..tostring(progress.xp)
+                .." variety=3")
+        end
+        if qaIdentity().username == "nl-host" and args.username == "nl-host"
                 and qaIdentity().deliveryCrashProbe == true
                 and (args.message == "Career delivery recovery repaired"
                     or args.recoveryState == "repaired") then
@@ -925,6 +983,16 @@ Events.OnServerCommand.Add(function(module, command, args)
         NLQAMultiplayer.careerPickupNextAttempt=NLQAMultiplayer.socialFrame
         NLQAMultiplayer.careerPickupExpected=tonumber(args.amount or 0) or 0
         NLQAMultiplayer.careerPickupItem=args.item
+        NLQAMultiplayer.careerPromotionProbe=args.promotionProbe == true
+        NLQAMultiplayer.careerPromotionItem=args.promotionItem
+        NLQAMultiplayer.careerPromotionPickupExpected=tonumber(args.promotionAmount or 0) or 0
+        NLQAMultiplayer.careerPromotionPickupMode=args.promotionPickupMode
+        NLQAMultiplayer.careerPromotionPickupX=args.seedX
+        NLQAMultiplayer.careerPromotionPickupY=args.seedY
+        NLQAMultiplayer.careerPromotionPickupZ=args.seedZ
+        NLQAMultiplayer.careerPromotionStage=0
+        NLQAMultiplayer.careerPromotionDeliveryCount=0
+        NLQAMultiplayer.careerPromotionObserved=false
         NLQAMultiplayer.householdMetadataProbe=args.metadataProbe == true
         queueCareerWorldPickup(NLQAMultiplayer.careerPickupItem,
             NLQAMultiplayer.careerPickupExpected)
@@ -1139,7 +1207,8 @@ Events.OnRenderTick.Add(function()
         NLQAMultiplayer.inventoryRestartProbeSent=true
         emit("NPC INVENTORY RESTART REFRESH", "connection="..tostring(NLQAMultiplayer.connectionCount))
     end
-    if NLQAMultiplayer.socialFrame>=840 and not NLQAMultiplayer.socialPositioned then
+    if NLQAMultiplayer.socialFrame>=840 and not NLQAMultiplayer.socialPositioned
+            and qaIdentity().promotionProbe ~= true then
         if qaIdentity().username=="nl-host" then
             positionHostForSocial()
         else
@@ -1172,6 +1241,7 @@ Events.OnRenderTick.Add(function()
         emit("HOUSEHOLD CREATE", "Neighborhood Home source=direct-vertical-slice")
     end
     if NLQAMultiplayer.socialFrame>=900 and NLQAMultiplayer.socialPositioned
+            and qaIdentity().promotionProbe ~= true
             and not NLQAMultiplayer.socialConversationComplete
             and not NLQAMultiplayer.socialActionScheduled
             and not NLQAMultiplayer.socialActionSent
@@ -1461,6 +1531,7 @@ Events.OnRenderTick.Add(function()
             sendClientCommand(player,"NeighborhoodQA","seed_inventory",{
                 career="medic", preserveHousehold=qaIdentity().preserveHousehold == true,
                 metadataProbe=qaIdentity().metadataProbe == true,
+                promotionProbe=qaIdentity().promotionProbe == true,
             })
             NLQAMultiplayer.careerSeedSent=true
             emit("CAREER SEED REQUEST", "medic after-social-intro")
@@ -1487,7 +1558,8 @@ Events.OnRenderTick.Add(function()
                 .. " source=world-transfer-action")
         end
     end
-    if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerPickupObserved
+    if qaIdentity().username=="nl-host" and qaIdentity().promotionProbe ~= true
+            and NLQAMultiplayer.careerPickupObserved
             and not NLQAMultiplayer.inventoryGiveSent then
         if not NLQAMultiplayer.inventoryPositioned then
             NLQAMultiplayer.inventoryPositioned=positionHostForSocial("marisol")
@@ -1536,6 +1608,64 @@ Events.OnRenderTick.Add(function()
         NLClient.request(0,"work",{})
         NLQAMultiplayer.careerWorkSent=true
         emit("CAREER WORK", "shift")
+    end
+    -- Promotion probe: use the same production pickup and delivery paths for
+    -- all three medic contracts, then ask the authoritative server to promote
+    -- the account. This block is QA-only and never enters the production mod.
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerPromotionProbe
+            and NLQAMultiplayer.careerPromotionStage==1 then
+        if NLQAMultiplayer.careerPromotionPickupMode == "world" and
+                (not NLQAMultiplayer.careerPromotionPickupAttempted
+                or NLQAMultiplayer.socialFrame >= NLQAMultiplayer.careerPromotionPickupNextAttempt) then
+            positionForCareerPickup()
+            queueCareerWorldPickup(NLQAMultiplayer.careerPromotionItem,
+                NLQAMultiplayer.careerPromotionPickupExpected)
+            NLQAMultiplayer.careerPromotionPickupAttempted=true
+            NLQAMultiplayer.careerPromotionPickupNextAttempt=NLQAMultiplayer.socialFrame+60
+        else
+            NLQAMultiplayer.careerPromotionPickupAttempted=true
+        end
+        local player=getSpecificPlayer(0)
+        local count=qaInventoryCount(player, NLQAMultiplayer.careerPromotionItem)
+        if count>=NLQAMultiplayer.careerPromotionPickupExpected
+                and NLQAMultiplayer.careerPromotionPickupExpected>0 then
+            NLQAMultiplayer.careerPromotionStage=3
+            NLQAMultiplayer.careerPromotionDue=NLQAMultiplayer.socialFrame+180
+            local source = NLQAMultiplayer.careerPromotionPickupMode == "world"
+                and "world-transfer-action" or "networked-main-inventory-seed"
+            emit("CAREER PROMOTION PICKUP COMPLETE", "item="
+                ..tostring(NLQAMultiplayer.careerPromotionItem)
+                .." count="..tostring(count).." source="..source)
+        end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerPromotionProbe
+            and NLQAMultiplayer.careerPromotionStage==3
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.careerPromotionDue then
+        local profile=NLClient.profiles[0]
+        local contract=profile and NLDomain.contracts(profile)[2]
+        if contract then
+            NLClient.request(0,"deliver",{id=contract.id})
+            NLQAMultiplayer.careerPromotionStage=4
+            emit("CAREER PROMOTION DELIVERY", "slot=2 id="..tostring(contract.id))
+        end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerPromotionProbe
+            and NLQAMultiplayer.careerPromotionStage==5
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.careerPromotionDue then
+        local profile=NLClient.profiles[0]
+        local contract=profile and NLDomain.contracts(profile)[3]
+        if contract then
+            NLClient.request(0,"deliver",{id=contract.id})
+            NLQAMultiplayer.careerPromotionStage=6
+            emit("CAREER PROMOTION DELIVERY", "slot=3 id="..tostring(contract.id))
+        end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerPromotionProbe
+            and NLQAMultiplayer.careerPromotionStage==7
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.careerPromotionDue then
+        NLClient.request(0,"promote",{})
+        NLQAMultiplayer.careerPromotionStage=8
+        emit("CAREER PROMOTION REQUEST", "career=medic")
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerWorkResultLogged
             and not NLQAMultiplayer.householdCreateSent then
@@ -1848,6 +1978,7 @@ end)
 Events.OnRenderTick.Add(function()
     if not isClient() or qaIdentity().username ~= "nl-host" or NLQAMultiplayer.streamWalkObserved
             or NLQAMultiplayer.streamProbeObserved
+            or qaIdentity().promotionProbe == true
             or (NLQAMultiplayer.careerSeeded and not NLQAMultiplayer.careerPickupObserved) then return end
     if not NLQAMultiplayer.streamWalkSent then
         NLQAMultiplayer.streamWalkFrame = NLQAMultiplayer.streamWalkFrame + 1
@@ -1884,6 +2015,7 @@ end)
 -- identity or coordinates.
 Events.OnRenderTick.Add(function()
     if not isClient() or qaIdentity().username ~= "nl-host" then return end
+    if qaIdentity().promotionProbe == true then return end
     if NLQAMultiplayer.streamProbeObserved then return end
     if not NLQAMultiplayer.streamWalkSent
             or (not NLQAMultiplayer.streamWalkObserved and NLQAMultiplayer.streamWalkFrame < 1800) then return end

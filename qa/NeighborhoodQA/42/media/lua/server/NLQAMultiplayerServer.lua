@@ -354,6 +354,8 @@ Events.OnClientCommand.Add(function(module, command, player, args)
         print("NLQA HOUSEHOLD PRESERVED: career fixture retained persisted household")
     end
     local item = "Base.RippedSheets"
+    local promotionProbe = args and args.promotionProbe == true
+    local promotionItem = "Base.Bandage"
     -- Ten sheets leave one real client-acquired item for household storage
     -- after the production NPC give probe consumes one and medic delivery
     -- consumes eight.
@@ -379,13 +381,35 @@ Events.OnClientCommand.Add(function(module, command, player, args)
         for index=worldObjects:size()-1,0,-1 do
             local worldObject = worldObjects:get(index)
             local oldItem = worldObject and worldObject:getItem()
-            if oldItem and oldItem:getFullType() == item then
+            if oldItem and (oldItem:getFullType() == item
+                    or (promotionProbe and oldItem:getFullType() == promotionItem)) then
                 square:transmitRemoveItemFromSquare(worldObject)
             end
         end
     end
     for index=1,amount do
         square:AddWorldInventoryItem(item, 0.25 + (index * 0.07), 0.50, 0.0)
+    end
+    local promotionAmount = 0
+    local promotionPickupMode = nil
+    local promotionSkill = nil
+    if promotionProbe then
+        -- The probe uses the engine's real XP object to satisfy the first
+        -- promotion's vanilla skill gate; it never changes production state.
+        promotionAmount = 8
+        promotionPickupMode = "networked-main-inventory-seed"
+        for index=1,promotionAmount do
+            qaSeedInventoryItem(inventory, promotionItem)
+        end
+        local debugOk = false
+        if Perks and Perks.Doctor and player.setPerkLevelDebug then
+            debugOk = pcall(player.setPerkLevelDebug, player, Perks.Doctor, 1)
+        end
+        local skillOk, skill = pcall(player.getPerkLevel, player, Perks and Perks.Doctor)
+        promotionSkill = skillOk and skill or nil
+        print("NLQA CAREER PROMOTION SEED: item="..promotionItem
+            .." amount="..tostring(promotionAmount).." debugLevelOk="..tostring(debugOk)
+            .." skill="..tostring(promotionSkill))
     end
     local metadataProbe = args and args.metadataProbe == true
     if metadataProbe then
@@ -408,6 +432,10 @@ Events.OnClientCommand.Add(function(module, command, player, args)
         ..","..tostring(square:getZ()))
     sendServerCommand(player,"NeighborhoodQA","career_seeded",{
         item=item, amount=amount, mode="world", metadataProbe=metadataProbe,
+        promotionProbe=promotionProbe, promotionItem=promotionItem,
+        promotionAmount=promotionAmount, promotionSkill=promotionSkill,
+        promotionPickupMode=promotionPickupMode,
+        seedX=square:getX(), seedY=square:getY(), seedZ=square:getZ(),
     })
 end)
 
