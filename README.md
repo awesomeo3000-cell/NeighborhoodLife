@@ -431,3 +431,20 @@ receiving `friendship=3` and `trust=2`, and the host receiving the guest's
 replicated social event without receiving the guest's private relationship
 values. This is actual Build 42 host-plus-guest evidence, not a mock or VM
 claim. Richer world actions and romance synchronization remain open.
+
+## v1.27 native NPC reannouncement adapter probe
+
+Production `NLNpcAuthority` now makes a best-effort call through Build 42's
+public `GameServer.getConnectionFromPlayer` and
+`GameServer.sendPlayerConnected` methods after sending the existing
+authoritative `npc_presence` packet. The compatibility packet remains the
+authoritative route when the Java table is not exposed to Lua.
+
+The Lua/Kahlua contract suite verifies that all three authored native bodies
+are sent to a connected player using a deterministic `GameServer` fixture.
+This is mock/engine-VM evidence, not gameplay evidence. In the fresh
+hands-free run recorded under `evidence/v46/`, the dedicated Build 42.20.4
+server spawned and moved all three neighbors, both clients received three
+moving native replicas, and the guest completed its Kenji social probe. The
+same server logged `GameServer=nil` during both refresh probes, so native
+reannouncement remains an open engine-exposure gate.

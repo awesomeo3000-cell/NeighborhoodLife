@@ -44,7 +44,41 @@ function NLNpcAuthority.sendPresence(player)
     if not isServer() or not player then return 0 end
     local packet, count = presencePacket()
     sendServerCommand(player, "NeighborhoodLife", "npc_presence", packet)
+    NLNpcAuthority.reannounceTo(player)
     return count
+end
+
+-- Build 42 exposes the native server reannouncement entry point only on
+-- installations that publish GameServer to Lua. Use it when available, but
+-- keep the authoritative npc_presence path as the compatibility route.
+function NLNpcAuthority.reannounceTo(player)
+    if not player then return 0 end
+    local apiOk, api = pcall(function() return GameServer end)
+    if not apiOk or not api or not api.getConnectionFromPlayer
+            or not api.sendPlayerConnected then
+        return 0
+    end
+    local connectionOk, connection = pcall(api.getConnectionFromPlayer, player)
+    if not connectionOk or not connection then return 0 end
+    local sent = 0
+    for _, body in pairs(NLNpcAuthority.bodies) do
+        if body then
+            local ok = pcall(api.sendPlayerConnected, body, connection)
+            if ok then sent = sent + 1 end
+        end
+    end
+    return sent
+end
+
+function NLNpcAuthority.reannounce()
+    if not isServer() or type(getOnlinePlayers) ~= "function" then return 0 end
+    local ok, players = pcall(getOnlinePlayers)
+    if not ok or not players then return 0 end
+    local sent = 0
+    for i = 0, players:size() - 1 do
+        sent = sent + NLNpcAuthority.reannounceTo(players:get(i))
+    end
+    return sent
 end
 
 function NLNpcAuthority.broadcastPresence()
@@ -238,6 +272,8 @@ function NLNpcAuthority.start()
     if complete then
         NLNpcAuthority.started = true
         NLNpcAuthority.startAttempts = 0
+        local sent = NLNpcAuthority.reannounce()
+        if sent > 0 then emit("REANNOUNCE sent=" .. tostring(sent)) end
     end
 end
 

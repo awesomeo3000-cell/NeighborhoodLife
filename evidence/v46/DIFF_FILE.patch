@@ -1,0 +1,161 @@
+diff --git a/NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua b/NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua
+index 1edcd6d..2be7378 100644
+--- a/NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua
++++ b/NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua
+@@ -44,9 +44,43 @@ function NLNpcAuthority.sendPresence(player)
+     if not isServer() or not player then return 0 end
+     local packet, count = presencePacket()
+     sendServerCommand(player, "NeighborhoodLife", "npc_presence", packet)
++    NLNpcAuthority.reannounceTo(player)
+     return count
+ end
+ 
++-- Build 42 exposes the native server reannouncement entry point only on
++-- installations that publish GameServer to Lua. Use it when available, but
++-- keep the authoritative npc_presence path as the compatibility route.
++function NLNpcAuthority.reannounceTo(player)
++    if not player then return 0 end
++    local apiOk, api = pcall(function() return GameServer end)
++    if not apiOk or not api or not api.getConnectionFromPlayer
++            or not api.sendPlayerConnected then
++        return 0
++    end
++    local connectionOk, connection = pcall(api.getConnectionFromPlayer, player)
++    if not connectionOk or not connection then return 0 end
++    local sent = 0
++    for _, body in pairs(NLNpcAuthority.bodies) do
++        if body then
++            local ok = pcall(api.sendPlayerConnected, body, connection)
++            if ok then sent = sent + 1 end
++        end
++    end
++    return sent
++end
++
++function NLNpcAuthority.reannounce()
++    if not isServer() or type(getOnlinePlayers) ~= "function" then return 0 end
++    local ok, players = pcall(getOnlinePlayers)
++    if not ok or not players then return 0 end
++    local sent = 0
++    for i = 0, players:size() - 1 do
++        sent = sent + NLNpcAuthority.reannounceTo(players:get(i))
++    end
++    return sent
++end
++
+ function NLNpcAuthority.broadcastPresence()
+     if not isServer() or type(getOnlinePlayers) ~= "function" then return 0 end
+     local ok, players = pcall(getOnlinePlayers)
+@@ -238,6 +272,8 @@ function NLNpcAuthority.start()
+     if complete then
+         NLNpcAuthority.started = true
+         NLNpcAuthority.startAttempts = 0
++        local sent = NLNpcAuthority.reannounce()
++        if sent > 0 then emit("REANNOUNCE sent=" .. tostring(sent)) end
+     end
+ end
+ 
+diff --git a/README.md b/README.md
+index 057ed35..d611f84 100644
+--- a/README.md
++++ b/README.md
+@@ -431,3 +431,20 @@ receiving `friendship=3` and `trust=2`, and the host receiving the guest's
+ replicated social event without receiving the guest's private relationship
+ values. This is actual Build 42 host-plus-guest evidence, not a mock or VM
+ claim. Richer world actions and romance synchronization remain open.
++
++## v1.27 native NPC reannouncement adapter probe
++
++Production `NLNpcAuthority` now makes a best-effort call through Build 42's
++public `GameServer.getConnectionFromPlayer` and
++`GameServer.sendPlayerConnected` methods after sending the existing
++authoritative `npc_presence` packet. The compatibility packet remains the
++authoritative route when the Java table is not exposed to Lua.
++
++The Lua/Kahlua contract suite verifies that all three authored native bodies
++are sent to a connected player using a deterministic `GameServer` fixture.
++This is mock/engine-VM evidence, not gameplay evidence. In the fresh
++hands-free run recorded under `evidence/v46/`, the dedicated Build 42.20.4
++server spawned and moved all three neighbors, both clients received three
++moving native replicas, and the guest completed its Kenji social probe. The
++same server logged `GameServer=nil` during both refresh probes, so native
++reannouncement remains an open engine-exposure gate.
+diff --git a/SCOPE.md b/SCOPE.md
+index 4e63937..da710d6 100644
+--- a/SCOPE.md
++++ b/SCOPE.md
+@@ -11,13 +11,13 @@ The original broad goal remains active. This ledger is not a reduced definition
+ | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits | Rank/restart tests, richer work beyond deliveries, rewards and balance |
+ | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
+ | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
+-| Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, and v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback | Native Build 42 body reannouncement to the engine's native player list, obstacle/danger handling, damage/death and offscreen behavior |
++| Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback, and v1.27 adds a best-effort `GameServer` reannouncement adapter plus mock contract coverage | Build 42 native server-body reannouncement remains unproven because the real dedicated server exposes `GameServer=nil` to Lua; obstacle/danger handling, damage/death and offscreen behavior remain open |
+ | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot; v1.23 completes a real host `chat` -> `joke` sequence against Marisol during a connected host+guest run with cooldown and line-of-sight gates; v1.24 broadcasts successful social events to every connected client without sharing private relationship values; v1.26 drives a guest `introduce` against Kenji while the host remains connected and receives the guest event | Richer world actions and inventory exchange |
+ | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence; v1.24 adds a bounded replicated social-event feed and Relationships-panel shared-event line; v1.26 proves the guest independently mutates Kenji to friendship 3/trust 2 while the host receives only the event | In-world UI/interaction checks, richer date activities and direct two-client romance synchronization |
+ | Household life | v1.16 extends the v1.15 server-authoritative Neighborhood Home with persistent shared storage, exact item-type deposits from unequipped main inventory, member withdrawals, capacity and malformed-item guards, shared-storage UI actions, and real host-to-guest inventory transfer evidence | Home ownership transfer UX, functional furnishings, offline/co-op routines beyond the tested activity, richer item metadata/container transfer |
+ | Aspirations and home activities | Delivery milestones already persist and render in the career journal; v1.15 adds three authoritative home routines (tidy, meal, social) with daily replay guards and rewards | Household-linked aspiration goals, hobbies, functional furnishings and broader home progression |
+ | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
+-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host and guest social mutations with private relationship state, replicated social events, server-authoritative career delivery, vanilla client-acquisition inventory transfer, server-authoritative household invite/accept/activity loop, shared-storage host deposit plus guest withdrawal, disconnect-clean local native NPC replicas, authoritative remote marker fallback and v1.21 local native remote-player fallback | Simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way remote movement under a naturally missing native peer, and replicated-character UI |
++| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host and guest social mutations with private relationship state, replicated social events, server-authoritative career delivery, vanilla client-acquisition inventory transfer, server-authoritative household invite/accept/activity loop, shared-storage host deposit plus guest withdrawal, disconnect-clean local native NPC replicas, authoritative remote marker fallback and v1.21 local native remote-player fallback, and v1.27 native reannouncement adapter probing | Simultaneous gameplay beyond the tested delivery, mod distribution, successful native body reannouncement, stable two-way remote movement under a naturally missing native peer, and replicated-character UI |
+ | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile; v1.14 vanilla world-item pickup plus fresh production delivery | Broader world/inventory/NPC/host integration tests and regression suite |
+ 
+ ## Current test environments
+@@ -70,6 +70,25 @@ separate. The server log records the authoritative guest command and result.
+ This is actual two-client action and event evidence; richer world actions and
+ romance synchronization remain open.
+ 
++## v1.27 native NPC reannouncement adapter probe
++
++- Production `NLNpcAuthority` now includes a best-effort adapter for Build 42's
++  public `GameServer.getConnectionFromPlayer` and
++  `GameServer.sendPlayerConnected` methods. It is invoked after the existing
++  authoritative `npc_presence` packet and retains that packet as the
++  compatibility path when the Java table is unavailable.
++- `tests/npc-authority.lua` uses a deterministic `GameServer` fixture to verify
++  that all three authored native bodies are sent to a connected player. This
++  is mock/unit evidence; the consolidated pipeline and installed-game Kahlua
++  suites remain separate from gameplay evidence.
++- `evidence/v46/` records a fresh hands-free Build 42.20.4 server with both
++  isolated clients connected. The server spawned and moved all three native
++  neighbors, both clients received three moving native replicas, and the guest
++  completed its Kenji social probe. The same server logged
++  `GameServer=nil` during both refresh probes, so the adapter did not execute
++  through the native engine API. Successful native reannouncement remains an
++  open engine-exposure gate.
++
+ ## v1.25 compact plumbob asset and placement
+ 
+ The production plumbob source texture is now 16x22 pixels, the runtime panel is
+diff --git a/tests/npc-authority.lua b/tests/npc-authority.lua
+index 2a6e259..f6836eb 100644
+--- a/tests/npc-authority.lua
++++ b/tests/npc-authority.lua
+@@ -47,6 +47,16 @@ local function bodyAt(cell,desc,x,y,z)
+     return b
+ end
+ IsoPlayer={new=bodyAt}
++local reannounced={}
++GameServer={
++    getConnectionFromPlayer=function(target) return {target=target} end,
++    sendPlayerConnected=function(source, connection)
++        reannounced[#reannounced+1]={source=source,connection=connection}
++    end,
++}
++function getOnlinePlayers()
++    return {size=function() return 1 end,get=function() return player end}
++end
+ NLAuthority={module='NeighborhoodLife',world=function() local w=ModData.getOrCreate('NeighborhoodLife_v2'); w.version=w.version or 2; return w end}
+ package.preload['NL/Authority']=function() return NLAuthority end
+ package.preload['NL/SocialAuthority']=function() NLSocialAuthority={bodies={},register=function(id,b,h) NLSocialAuthority.bodies[id]=b; return true end}; return NLSocialAuthority end
+@@ -57,6 +67,11 @@ NLNpcAuthority.start()
+ local body=NLNpcAuthority.bodies.marisol
+ assert(body and body:isNpc() and body:getModData().NeighborhoodNpcId=='marisol','production body created')
+ local expectedBodies=#NLNpcAuthority.definitions
++if NLNpcAuthority.reannounceTo then
++    assert(NLNpcAuthority.reannounceTo(player)==expectedBodies
++        and #reannounced==expectedBodies,
++        'native reannounce adapter sends authored bodies to a connected player')
++end
+ if expectedBodies>=3 then
+     for _, id in ipairs({'kenji','amara'}) do
+         local extra=NLNpcAuthority.bodies[id]

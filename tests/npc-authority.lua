@@ -47,6 +47,16 @@ local function bodyAt(cell,desc,x,y,z)
     return b
 end
 IsoPlayer={new=bodyAt}
+local reannounced={}
+GameServer={
+    getConnectionFromPlayer=function(target) return {target=target} end,
+    sendPlayerConnected=function(source, connection)
+        reannounced[#reannounced+1]={source=source,connection=connection}
+    end,
+}
+function getOnlinePlayers()
+    return {size=function() return 1 end,get=function() return player end}
+end
 NLAuthority={module='NeighborhoodLife',world=function() local w=ModData.getOrCreate('NeighborhoodLife_v2'); w.version=w.version or 2; return w end}
 package.preload['NL/Authority']=function() return NLAuthority end
 package.preload['NL/SocialAuthority']=function() NLSocialAuthority={bodies={},register=function(id,b,h) NLSocialAuthority.bodies[id]=b; return true end}; return NLSocialAuthority end
@@ -57,6 +67,11 @@ NLNpcAuthority.start()
 local body=NLNpcAuthority.bodies.marisol
 assert(body and body:isNpc() and body:getModData().NeighborhoodNpcId=='marisol','production body created')
 local expectedBodies=#NLNpcAuthority.definitions
+if NLNpcAuthority.reannounceTo then
+    assert(NLNpcAuthority.reannounceTo(player)==expectedBodies
+        and #reannounced==expectedBodies,
+        'native reannounce adapter sends authored bodies to a connected player')
+end
 if expectedBodies>=3 then
     for _, id in ipairs({'kenji','amara'}) do
         local extra=NLNpcAuthority.bodies[id]

@@ -1,0 +1,3 @@
+.\tools\launch-multiplayer-qa.ps1
+isolated test-profile; hands-free-qa.jar; Build 42.20.4
+production NeighborhoodLife + QA-only NeighborhoodQA
