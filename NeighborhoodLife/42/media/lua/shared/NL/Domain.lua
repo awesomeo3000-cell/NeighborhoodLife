@@ -1,18 +1,22 @@
 require "NL/Definitions"
 require "NL/Aspirations"
+require "NL/Households"
 NLDomain = {}
 
 function NLDomain.newWorld()
-    return { version = NLDefinitions.version, players = {} }
+    return { version = NLDefinitions.version, players = {}, households = {} }
 end
 
 function NLDomain.profile(world, key)
     world.players = world.players or {}
     if not world.players[key] then
         world.players[key] = { career = "tailor", careers = {}, credits = 0,
-            revision = 0, day = -1, claimed = {}, outfits = {} }
+            revision = 0, day = -1, claimed = {}, outfits = {},
+            householdId = nil, householdInvite = nil }
     end
     local p = world.players[key]
+    p.householdId = p.householdId or nil
+    p.householdInvite = p.householdInvite or nil
     for _, id in ipairs(NLDefinitions.careerOrder) do
         p.careers[id] = p.careers[id] or { rank = 1, xp = 0, delivered = 0, variety = {} }
     end

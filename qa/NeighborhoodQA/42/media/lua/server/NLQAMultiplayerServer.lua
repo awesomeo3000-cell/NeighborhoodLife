@@ -22,6 +22,19 @@ end
 local reannounced = false
 local careerSeeded = {}
 
+Events.OnClientCommand.Add(function(module, command, player)
+    if module ~= "NeighborhoodQA" or command ~= "reset_household" or not player
+            or player:getUsername() ~= "nl-host" then return end
+    local world = NLAuthority.world()
+    for _, username in ipairs({"nl-host", "nl-guest"}) do
+        local profile = NLDomain.profile(world, username)
+        profile.householdId, profile.householdInvite = nil, nil
+        profile.claimed = {}
+    end
+    world.households = {}
+    print("NLQA HOUSEHOLD RESET: isolated host and guest household state cleared")
+end)
+
 -- QA-only server fixture: seed real world inventory on the host, then let the
 -- client acquire it through vanilla's networked transfer action before the
 -- production career command consumes it. This does not modify the production
@@ -30,6 +43,14 @@ Events.OnClientCommand.Add(function(module, command, player, args)
     if module ~= "NeighborhoodQA" or command ~= "seed_inventory" or not player then return end
     local username = player:getUsername()
     if username ~= "nl-host" or careerSeeded[username] then return end
+    local world = NLAuthority.world()
+    for _, qaUsername in ipairs({"nl-host", "nl-guest"}) do
+        local profile = NLDomain.profile(world, qaUsername)
+        profile.householdId, profile.householdInvite = nil, nil
+        profile.claimed = {}
+    end
+    world.households = {}
+    print("NLQA HOUSEHOLD RESET: career fixture cleared persisted household and claims")
     local item = "Base.RippedSheets"
     local amount = 8
     local square = player:getCurrentSquare()

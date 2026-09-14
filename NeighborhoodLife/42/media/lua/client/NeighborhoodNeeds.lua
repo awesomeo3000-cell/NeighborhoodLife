@@ -2,6 +2,7 @@ require "ISUI/ISPanel"
 require "NL/Journal"
 require "NL/Relationships"
 require "NL/WardrobePanel"
+require "NL/HouseholdPanel"
 require "NL/Plumbob"
 if Events.OnTick then
     Events.OnTick.Add(function()
@@ -46,8 +47,9 @@ function NeighborhoodNeeds:onMouseDown(x, y)
         self.collapsed = not self.collapsed
         self:setHeight(self.collapsed and self.headerHeight or self.expandedHeight)
     elseif not self.collapsed and y >= self.headerHeight + 6 * self.rowHeight then
-        if x>self.width*2/3 then NLWardrobePanel.open(self.playerIndex)
-        elseif x>self.width/3 then NLRelationships.open(self.playerIndex)
+        if x>self.width*0.75 then NLHouseholdPanel.open(self.playerIndex)
+        elseif x>self.width*0.50 then NLWardrobePanel.open(self.playerIndex)
+        elseif x>self.width*0.25 then NLRelationships.open(self.playerIndex)
         else NLJournal.open(self.playerIndex) end
     end
     return true
@@ -81,7 +83,7 @@ function NeighborhoodNeeds:prerender()
             self:drawRect(12, by, (self.width - 24) * (1 - value), 5, 1, r, g, 0.18)
         end
     end
-    self:drawText("Careers       Social       Wardrobe", 12,
+    self:drawText("Careers   Social   Wardrobe   Home", 12,
         self.headerHeight + 6 * self.rowHeight + 3, 0.12, 0.38, 0.63, 1, UIFont.Small)
 end
 

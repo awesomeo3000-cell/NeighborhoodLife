@@ -14,10 +14,10 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, and v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback | Native Build 42 body reannouncement to the engine's native player list, obstacle/danger handling, damage/death and offscreen behavior |
 | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot | Multi-step two-client conversations, richer world actions and inventory exchange |
 | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence | In-world UI/interaction checks, richer date activities and two-client synchronization |
-| Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
-| Aspirations and home activities | Not implemented | Goals, progress/rewards, hobbies and functional furnishings |
+| Household life | v1.15 adds a server-authoritative Neighborhood Home at the creating player's tile, persistent membership, invite/accept/leave flow, online member summaries, daily household activity claims, shared contributions and credits, plus a client Home panel | Inventory-sharing rules, home ownership transfer UX, functional furnishings, offline/co-op routines beyond the tested activity |
+| Aspirations and home activities | Delivery milestones already persist and render in the career journal; v1.15 adds three authoritative home routines (tidy, meal, social) with daily replay guards and rewards | Household-linked aspiration goals, hobbies, functional furnishings and broader home progression |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host social mutation, guest isolation, server-authoritative career delivery, vanilla client-acquisition inventory transfer, disconnect-clean local native NPC replicas and authoritative remote marker fallback; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6/v1.7/v1.8/v1.9/v1.10/v1.11/v1.13/v1.14 real host plus guest evidence | Simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
+| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host social mutation, guest isolation, server-authoritative career delivery, vanilla client-acquisition inventory transfer, server-authoritative household invite/accept/activity loop, disconnect-clean local native NPC replicas and authoritative remote marker fallback; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6/v1.7/v1.8/v1.9/v1.10/v1.11/v1.13/v1.14/v1.15 real host plus guest evidence | Simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile; v1.14 vanilla world-item pickup plus fresh production delivery | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -77,6 +77,24 @@ The original broad goal remains active. This ledger is not a reduced definition 
   and do not substitute for the gameplay result.
 - Native server-body reannouncement, obstacle/danger handling, damage/death,
   offscreen behavior, households and aspirations remain open gates.
+
+## v1.15 household vertical slice
+
+- `evidence/v34/` records the real hands-free host plus guest loop. The host
+  created a Neighborhood Home at its current tile, invited `nl-guest`, and the
+  guest accepted through the production household command adapter.
+- Both clients received a two-member household snapshot. The host completed
+  the authoritative `tidy` home activity at the saved home tile; the server
+  applied the daily replay guard, awarded five credits, and sent the result to
+  both clients. This is actual Build 42 multiplayer evidence, not a unit-test
+  or engine-VM claim.
+- The household implementation is intentionally server-authoritative: member
+  identity comes from the server callback, invitations are checked against the
+  online roster, activity location is checked against the saved home tile, and
+  daily activity claims persist in world data.
+- Inventory-sharing rules, furnishings, household-linked aspiration goals,
+  native server-body reannouncement, obstacle/danger handling, damage/death
+  and offscreen behavior remain open gates.
 
 ## v1.2 two-client NPC state and replica evidence
 

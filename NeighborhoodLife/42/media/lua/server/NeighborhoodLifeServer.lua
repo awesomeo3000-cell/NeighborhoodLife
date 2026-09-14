@@ -5,6 +5,7 @@ if isClient() then return end
 require "NL/Authority"
 require "NL/SocialAuthority"
 require "NL/NpcAuthority"
+require "NL/HouseholdAuthority"
 
 -- The required domain modules register their own command handlers. Keeping
 -- registration in one place avoids duplicate authority calls when Build 42

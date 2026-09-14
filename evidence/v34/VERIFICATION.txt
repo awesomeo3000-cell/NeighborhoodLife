@@ -1,0 +1,73 @@
+Neighborhood Life v1.15 verification record
+
+CHANGED BRANCH/FIELD
+- Server-authoritative household vertical slice: world.households plus per-profile householdId/householdInvite state; Neighborhood Home create/invite/accept/leave; daily tidy/meal/social claims; shared contribution/credit rewards; client Home panel and private snapshots.
+- Production source: NeighborhoodLife/42/media/lua/{shared/NL/Households.lua,server/NL/HouseholdAuthority.lua,client/NL/HouseholdClient.lua,client/NL/HouseholdPanel.lua} and the integration files recorded by DIFF_FILE.patch.
+- QA-only source remains under qa/NeighborhoodQA and is excluded from MODIFIED_FILE.zip.
+
+CLASSIFICATION
+- Mock/unit tests: tests/*.lua Lua 5.1 suites; these prove domain and adapter behavior only.
+- Engine-VM tests: installed Project Zomboid Kahlua suites run through tests/EngineLua.java; these prove loading/execution against the installed VM, not multiplayer.
+- Actual gameplay: Build 42.20.4 dedicated server plus host and guest, isolated E:\pzmod\test-profile, hands-free QA launcher, no mouse/keyboard control. The gameplay evidence below is the only multiplayer claim.
+
+BASELINE TEST
+COMMAND: python tools\pipeline.py test --target evidence\v34\baseline
+INPUT: E:\pzmod; baseline is the pre-v1.15 NeighborhoodLife production copy in evidence\v34\baseline
+OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: baseline accepted
+EXIT: 0
+
+MODIFIED TEST
+COMMAND: python tools\pipeline.py test
+INPUT: E:\pzmod\NeighborhoodLife
+OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: modified source accepted; household Lua, authority and panel suites passed in both Lua 5.1 and installed Kahlua VM
+EXIT: 0
+
+PACKAGE
+COMMAND: python tools\pipeline.py package --version v34 --baseline evidence\v34\baseline
+INPUT: E:\pzmod\NeighborhoodLife and E:\pzmod\evidence\v34\baseline
+OUTPUT: PASS: release package E:\pzmod\evidence\v34\MODIFIED_FILE.zip
+RESULT: ZIP_TEST None; QA_ENTRIES []; HOUSEHOLD_AUTH True; HOUSEHOLD_PANEL True; HOUSEHOLD_SHARED True
+EXIT: 0
+
+ACTUAL MULTIPLAYER GAMEPLAY
+COMMAND: & .\tools\launch-multiplayer-qa.ps1
+INPUT: isolated E:\pzmod\test-profile; Project Zomboid Build 42.20.4; dedicated server, host and guest; QA-only mod enabled only for the run
+OUTPUT: host logged `HOUSEHOLD CREATE: Neighborhood Home`, `HOUSEHOLD INVITE SENT: target=nl-guest`, `HOUSEHOLD SNAPSHOT: username=nl-host members=2 message=nl-guest joined the household.`, and `HOUSEHOLD TASK RESULT: Tidy shared home complete: +5 credits.`
+OUTPUT: guest logged `HOUSEHOLD INVITE: from=nl-host id=home:nl-host`, `HOUSEHOLD ACCEPT: shared home`, and `HOUSEHOLD JOIN RESULT: shared home members=2.`
+OUTPUT: server logged `NLQA HOUSEHOLD RESULT: username=nl-host command=create message=Neighborhood Home created`, `... command=invite message=Invitation sent to nl-guest`, `... username=nl-guest command=accept message=Joined the household`, and `... username=nl-host command=task message=Tidy shared home complete: +5 credits`
+OUTPUT: the same run logged `productionNpcReplicas=3 productionNpcNativePaths=3` on host and guest; PIDs server=35404, host=35128, guest=17476 were stopped after capture.
+RESULT: real host plus guest household create/invite/accept/activity loop passed; this does not claim native server-body reannouncement, furnishings, or broader co-op completion.
+EXIT: 0
+
+ROLLBACK TEST
+COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v34/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' -lc "bash /e/pzmod/evidence/v34/ROLLBACK.sh"
+INPUT: another copy at E:\pzmod\evidence\v34\rollback-target, populated from current source before rollback; target is workspace-contained
+OUTPUT: ROLLBACK RESTORED: v1.14 source, tooling, QA scripts and docs; removed v1.15 household files from /e/pzmod/evidence/v34/rollback-target
+RESULT: restored test returned `PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites`; all ten rollback-baseline files matched; all seven v1.15 household files were absent
+EXIT: 0
+
+RESTORED BEHAVIOR/STATUS
+- v1.14 source, tooling, QA scripts and docs restored byte-for-byte in the rollback target.
+- Household production files and household tests removed in the rollback target.
+- Restored Lua 5.1, syntax and installed-game Kahlua verification passed.
+
+OPEN GATES
+- Native Build 42 server-body reannouncement, obstacle/danger handling, damage/death/offscreen NPC behavior.
+- Inventory sharing, home ownership transfer, furnishings, offline household routines, household-linked aspirations and broader UI/customization.
+- Full same-loop coverage with zombies disabled and enabled, beyond the tested delivery/household scenario.
+
+ARTIFACTS
+- MODIFIED_FILE: E:\pzmod\evidence\v34\MODIFIED_FILE.zip
+- DIFF_FILE: E:\pzmod\evidence\v34\DIFF_FILE.patch
+- VERIFICATION: E:\pzmod\evidence\v34\VERIFICATION.txt
+- ROLLBACK: E:\pzmod\evidence\v34\ROLLBACK.sh (executable, SHA-256 A0D89C0D8D107FFC6F785A3B51B87A73A6AEE2B23AC97EC9E9B55820B91477A7)
+
+KEY SOURCE HASHES (SHA-256)
+- Households.lua C03E475A40537C2EF8026552392533231A4F862D31871E70BC43C43978A04BCC
+- HouseholdAuthority.lua 81BC6B09778A14A508D8FB2987E1DC12A350E8E0C2A48860429026993C1E3350
+- HouseholdClient.lua 8680E8CF822F1088D6DA3F3A31EE4548926C3C0ADBBE96FA2EFA7709BB774C5F
+- HouseholdPanel.lua D6BA2A03E0453CF0CBA2DFE3B57117BC27C156081CBD1EFA915B573BD8E5C008
+- MODIFIED_FILE.zip 47DE42C87495F97C75D2058904FC385A5E1428B1C2D4F97A06A9A21555826BB9
+- DIFF_FILE.patch 9347DE6406E71367E4772C0DD92F4B8C5DA97C0112F086F49A870282EBA649C4

@@ -1,0 +1,521 @@
+--- baseline/42/media/lua/client/NL/HouseholdClient.lua
++++ modified/42/media/lua/client/NL/HouseholdClient.lua
+@@ -0,0 +1,48 @@
++NLHouseholdClient = { snapshots = {} }
++
++function NLHouseholdClient.receive(module, command, args)
++    if module ~= "NeighborhoodHousehold" or type(args) ~= "table" then return end
++    if command == "invite" then
++        for i = 0, getNumActivePlayers() - 1 do
++            local player = getSpecificPlayer(i)
++            if player then
++                local key = player:getUsername()
++                if not key or key == "" then key = "local:" .. i end
++                local old = NLHouseholdClient.snapshots[i] or { username = key, householdRevision = 0 }
++                old.invite = args
++                old.message = "Household invitation received"
++                NLHouseholdClient.snapshots[i] = old
++            end
++        end
++        return
++    end
++    if command ~= "snapshot" then return end
++    for i = 0, getNumActivePlayers() - 1 do
++        local player = getSpecificPlayer(i)
++        if player then
++            local key = player:getUsername()
++            if not key or key == "" then key = "local:" .. i end
++            if key == args.username then
++                local old = NLHouseholdClient.snapshots[i]
++                local oldRevision = old and old.householdRevision or -1
++                if (args.householdRevision or 0) >= oldRevision then
++                    NLHouseholdClient.snapshots[i] = args
++                end
++            end
++        end
++    end
++end
++
++function NLHouseholdClient.request(index, command, args)
++    local player = getSpecificPlayer(index)
++    if not player or player:isDead() then return end
++    if isClient() then
++        sendClientCommand(player, "NeighborhoodHousehold", command, args or {})
++    elseif NLHouseholdAuthority then
++        NLHouseholdAuthority.command("NeighborhoodHousehold", command, player, args or {})
++    end
++end
++
++Events.OnServerCommand.Add(NLHouseholdClient.receive)
++Events.OnMainMenuEnter.Add(function() NLHouseholdClient.snapshots = {} end)
++return NLHouseholdClient
+--- baseline/42/media/lua/client/NL/HouseholdPanel.lua
++++ modified/42/media/lua/client/NL/HouseholdPanel.lua
+@@ -0,0 +1,125 @@
++require "ISUI/ISPanel"
++require "ISUI/ISButton"
++require "NL/Client"
++require "NL/HouseholdClient"
++
++NLHouseholdPanel = ISPanel:derive("NLHouseholdPanel")
++NLHouseholdPanel.instances = {}
++
++function NLHouseholdPanel:new(index)
++    local o = ISPanel.new(self, 330, 130, 590, 450)
++    o.playerIndex = index
++    o.backgroundColor = { r = 0.96, g = 0.98, b = 1, a = 0.98 }
++    o.borderColor = { r = 0.62, g = 0.76, b = 0.88, a = 1 }
++    o.moveWithMouse = true
++    return o
++end
++
++function NLHouseholdPanel:button(x, y, w, text, action, value)
++    local button = ISButton:new(x, y, w, 28, text, self, self.onButton)
++    button.action, button.value = action, value
++    button.backgroundColor = { r = 0.86, g = 0.92, b = 0.97, a = 1 }
++    button.backgroundColorMouseOver = { r = 0.69, g = 0.87, b = 0.98, a = 1 }
++    button.borderColor = { r = 0.53, g = 0.69, b = 0.82, a = 1 }
++    button.textColor = { r = 0.12, g = 0.30, b = 0.47, a = 1 }
++    button:initialise(); self:addChild(button)
++    return button
++end
++
++function NLHouseholdPanel:initialise()
++    ISPanel.initialise(self)
++    self:button(self.width - 75, 10, 60, "Close", "close")
++    self:button(16, 48, 135, "Create home", "create")
++    self:button(160, 48, 105, "Accept invite", "accept")
++    self:button(274, 48, 105, "Invite guest", "invite")
++    self:button(388, 48, 105, "Leave", "leave")
++    self:button(500, 48, 74, "Refresh", "refresh")
++    self.taskButtons = {}
++    for i, task in ipairs(NLHouseholds.taskOrder) do
++        self.taskButtons[task] = self:button(16 + (i - 1) * 185, 350, 170,
++            NLHouseholds.tasks[task].label, "task", task)
++    end
++end
++
++function NLHouseholdPanel:inviteTarget()
++    local selfPlayer = getSpecificPlayer(self.playerIndex)
++    local selfName = selfPlayer and selfPlayer:getUsername()
++    local presence = NLClient.presence
++    for _, row in ipairs((presence and presence.players) or {}) do
++        if row.username and row.username ~= selfName then return row.username end
++    end
++end
++
++function NLHouseholdPanel:onButton(button)
++    if button.action == "close" then self:setVisible(false); return end
++    if button.action == "invite" then
++        local target = self:inviteTarget()
++        if target then NLHouseholdClient.request(self.playerIndex, "invite", { target = target }) end
++        return
++    end
++    NLHouseholdClient.request(self.playerIndex, button.action,
++        button.action == "task" and { task = button.value } or {})
++end
++
++function NLHouseholdPanel:prerender()
++    ISPanel.prerender(self)
++    self:drawText("NEIGHBORHOOD / HOUSEHOLD", 16, 14, 0.12, 0.38, 0.63, 1, UIFont.Small)
++    self:drawText("Shared home, responsibilities and co-op routines", 16, 80,
++        0.18, 0.24, 0.32, 1, UIFont.Small)
++    local state = NLHouseholdClient.snapshots[self.playerIndex]
++    if not state then
++        self:drawText("Waiting for household data. Refresh to check.", 16, 112,
++            0.18, 0.24, 0.32, 1, UIFont.Small)
++        return
++    end
++    local p = NLClient.profiles[self.playerIndex]
++    local invite = state.invite
++    if invite then
++        self:drawText("INVITE: " .. tostring(invite.name or invite.householdId)
++            .. " from " .. tostring(invite.from), 16, 112, 0.12, 0.38, 0.63, 1, UIFont.Small)
++    elseif state.household then
++        local h = state.household
++        self:drawText(h.name .. " / owner: " .. tostring(h.owner), 16, 112,
++            0.12, 0.38, 0.63, 1, UIFont.Small)
++        self:drawText("Home tile " .. tostring(h.home.x) .. ", " .. tostring(h.home.y)
++            .. ", " .. tostring(h.home.z), 16, 136, 0.30, 0.38, 0.47, 1, UIFont.Small)
++        local y = 164
++        for _, member in ipairs(h.members or {}) do
++            self:drawText((member.online and "● " or "○ ") .. member.username
++                .. " / " .. member.role .. " / " .. tostring(member.contribution) .. " routines",
++                16, y, 0.18, 0.24, 0.32, 1, UIFont.Small)
++            y = y + 24
++        end
++        self:drawText("Activities today: tidy " .. tostring(h.tasks.tidy or 0)
++            .. " | meal " .. tostring(h.tasks.meal or 0)
++            .. " | social " .. tostring(h.tasks.social or 0), 16, 304,
++            0.30, 0.38, 0.47, 1, UIFont.Small)
++    else
++        self:drawText("No household yet. Create a home or accept an invitation.", 16, 112,
++            0.18, 0.24, 0.32, 1, UIFont.Small)
++    end
++    for task, button in pairs(self.taskButtons) do
++        button:setEnable(state.household ~= nil and p ~= nil)
++    end
++    self:drawText(state.message or "", 16, 414, 0.12, 0.38, 0.63, 1, UIFont.Small)
++end
++
++function NLHouseholdPanel.open(index)
++    local panel = NLHouseholdPanel.instances[index]
++    if not panel then
++        panel = NLHouseholdPanel:new(index); panel:initialise()
++        NLHouseholdPanel.instances[index] = panel
++    end
++    panel:setX(getPlayerScreenLeft(index) + math.max(0,
++        (getPlayerScreenWidth(index) - panel.width) / 2))
++    panel:setY(getPlayerScreenTop(index) + math.max(0,
++        (getPlayerScreenHeight(index) - panel.height) / 2))
++    panel:removeFromUIManager(); panel:addToUIManager(); panel:setVisible(true); panel:bringToTop()
++    NLHouseholdClient.request(index, "refresh")
++end
++
++Events.OnMainMenuEnter.Add(function()
++    for _, panel in pairs(NLHouseholdPanel.instances) do panel:removeFromUIManager() end
++    NLHouseholdPanel.instances = {}
++end)
++return NLHouseholdPanel
+--- baseline/42/media/lua/client/NeighborhoodNeeds.lua
++++ modified/42/media/lua/client/NeighborhoodNeeds.lua
+@@ -2,6 +2,7 @@
+ require "NL/Journal"
+ require "NL/Relationships"
+ require "NL/WardrobePanel"
++require "NL/HouseholdPanel"
+ require "NL/Plumbob"
+ if Events.OnTick then
+     Events.OnTick.Add(function()
+@@ -46,8 +47,9 @@
+         self.collapsed = not self.collapsed
+         self:setHeight(self.collapsed and self.headerHeight or self.expandedHeight)
+     elseif not self.collapsed and y >= self.headerHeight + 6 * self.rowHeight then
+-        if x>self.width*2/3 then NLWardrobePanel.open(self.playerIndex)
+-        elseif x>self.width/3 then NLRelationships.open(self.playerIndex)
++        if x>self.width*0.75 then NLHouseholdPanel.open(self.playerIndex)
++        elseif x>self.width*0.50 then NLWardrobePanel.open(self.playerIndex)
++        elseif x>self.width*0.25 then NLRelationships.open(self.playerIndex)
+         else NLJournal.open(self.playerIndex) end
+     end
+     return true
+@@ -81,7 +83,7 @@
+             self:drawRect(12, by, (self.width - 24) * (1 - value), 5, 1, r, g, 0.18)
+         end
+     end
+-    self:drawText("Careers       Social       Wardrobe", 12,
++    self:drawText("Careers   Social   Wardrobe   Home", 12,
+         self.headerHeight + 6 * self.rowHeight + 3, 0.12, 0.38, 0.63, 1, UIFont.Small)
+ end
+ 
+--- baseline/42/media/lua/server/NL/HouseholdAuthority.lua
++++ modified/42/media/lua/server/NL/HouseholdAuthority.lua
+@@ -0,0 +1,173 @@
++if isClient() then return end
++require "NL/Households"
++require "NL/Authority"
++
++NLHouseholdAuthority = { module = "NeighborhoodHousehold", lastRequest = {} }
++
++local function onlineRows()
++    local rows = {}
++    if type(getOnlinePlayers) ~= "function" then return rows end
++    local ok, players = pcall(getOnlinePlayers)
++    if not ok or not players then return rows end
++    for i = 0, players:size() - 1 do
++        local player = players:get(i)
++        if player and player:getUsername() and player:getUsername() ~= "" then
++            rows[player:getUsername()] = player
++        end
++    end
++    return rows
++end
++
++local function householdOnline(household)
++    local players, result = onlineRows(), {}
++    for key in pairs(household.members or {}) do result[key] = players[key] ~= nil end
++    return result, players
++end
++
++local function findOnline(username)
++    return onlineRows()[username]
++end
++
++local function snapshot(player, message)
++    local world = NLAuthority.world()
++    local key = NLAuthority.key(player)
++    local profile = NLDomain.profile(world, key)
++    local household = profile.householdId and NLHouseholds.get(world, profile.householdId) or nil
++    local online = household and householdOnline(household) or {}
++    local result = {
++        username = key, revision = profile.revision, householdRevision = household and household.revision or 0,
++        message = message or "Updated", invite = NLDomain.copy(profile.householdInvite),
++        household = NLHouseholds.copySummary(household, online),
++    }
++    sendServerCommand(player, NLHouseholdAuthority.module, "snapshot", result)
++    return result
++end
++
++local function notifyMembers(world, household, message)
++    local _, players = householdOnline(household)
++    for key in pairs(household.members or {}) do
++        if players[key] then snapshot(players[key], message) end
++    end
++end
++
++local function homeOf(player)
++    return { x = math.floor(player:getX()), y = math.floor(player:getY()), z = math.floor(player:getZ()) }
++end
++
++local function nearbyHome(player, household)
++    if not household or not household.home then return false end
++    if math.floor(player:getZ()) ~= household.home.z then return false end
++    local dx, dy = player:getX() - household.home.x, player:getY() - household.home.y
++    return dx * dx + dy * dy <= 36
++end
++
++function NLHouseholdAuthority.command(module, command, player, args)
++    if module ~= NLHouseholdAuthority.module or not player or player:isDead() then return end
++    if command ~= "refresh" and command ~= "create" and command ~= "invite"
++            and command ~= "accept" and command ~= "leave" and command ~= "task" then return end
++    if type(args) ~= "table" then args = {} end
++    local key, now = NLAuthority.key(player), getTimestampMs()
++    if NLHouseholdAuthority.lastRequest[key] and now - NLHouseholdAuthority.lastRequest[key] < 200 then return end
++    NLHouseholdAuthority.lastRequest[key] = now
++    local world, profile = NLAuthority.world(), NLDomain.profile(NLAuthority.world(), key)
++    NLDomain.day(profile, math.floor(getGameTime():getWorldAgeHours() / 24))
++    local message = "Updated"
++    local household = profile.householdId and NLHouseholds.get(world, profile.householdId) or nil
++
++    if command == "create" then
++        if household then
++            message = "You already belong to a household"
++        else
++            local id = "home:" .. key
++            household = NLHouseholds.new(id, key, homeOf(player))
++            NLHouseholds.ensure(world)[id] = household
++            profile.householdId, profile.householdInvite = id, nil
++            profile.revision = profile.revision + 1
++            message = "Neighborhood Home created"
++        end
++    elseif command == "invite" then
++        local targetName = type(args.target) == "string" and args.target or ""
++        local target = household and findOnline(targetName) or nil
++        if not household then message = "Create a home first"
++        elseif targetName == "" or #targetName > 64 or not target then message = "That neighbor is not online"
++        elseif targetName == key then message = "You are already the owner"
++        else
++            local targetProfile = NLDomain.profile(world, targetName)
++            if targetProfile.householdId then message = "That neighbor already has a household"
++            else
++                targetProfile.householdInvite = { householdId = household.id, from = key, name = household.name }
++                targetProfile.revision = targetProfile.revision + 1
++                sendServerCommand(target, NLHouseholdAuthority.module, "invite", {
++                    householdId = household.id, from = key, name = household.name,
++                })
++                snapshot(target, "Household invitation received")
++                message = "Invitation sent to " .. targetName
++            end
++        end
++    elseif command == "accept" then
++        local invite = profile.householdInvite
++        local invited = invite and NLHouseholds.get(world, invite.householdId) or nil
++        if household then message = "You already belong to a household"
++        elseif not invited then profile.householdInvite = nil; message = "That invitation expired"
++        else
++            local ok
++            ok, message = NLHouseholds.addMember(invited, key)
++            if ok then
++                profile.householdId, profile.householdInvite = invited.id, nil
++                profile.revision = profile.revision + 1
++                notifyMembers(world, invited, key .. " joined the household")
++                if NLQAMultiplayerServer then
++                    print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key)
++                        .. " command=accept message=" .. tostring(message))
++                end
++                return
++            end
++        end
++    elseif command == "leave" then
++        if not household then message = "You are not in a household"
++        else
++            local ok
++            ok, message = NLHouseholds.removeMember(household, key)
++            if ok then
++                profile.householdId = nil
++                profile.revision = profile.revision + 1
++                if household.owner == key then
++                    local replacement
++                    for member in pairs(household.members) do replacement = member; break end
++                    household.owner = replacement
++                    if replacement and household.members[replacement] then household.members[replacement].role = "owner" end
++                end
++                if NLHouseholds.memberCount(household) == 0 then NLHouseholds.ensure(world)[household.id] = nil
++                else notifyMembers(world, household, key .. " left the household") end
++            end
++        end
++    elseif command == "task" then
++        local task = type(args.task) == "string" and args.task or ""
++        if not household then message = "Join a household first"
++        elseif not nearbyHome(player, household) then message = "Household activities happen at home"
++        else
++            local ok
++            ok, message = NLHouseholds.completeTask(household, key, task, profile.day)
++            if ok then
++                local definition = NLHouseholds.tasks[task]
++                profile.credits = profile.credits + definition.reward
++                profile.revision = profile.revision + 1
++                notifyMembers(world, household, message)
++                if NLQAMultiplayerServer then
++                    print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key)
++                        .. " command=task message=" .. tostring(message))
++                end
++                return
++            end
++        end
++    end
++    snapshot(player, message)
++    if NLQAMultiplayerServer then
++        print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key) .. " command=" .. tostring(command)
++            .. " message=" .. tostring(message))
++    end
++end
++
++Events.OnClientCommand.Add(NLHouseholdAuthority.command)
++Events.OnMainMenuEnter.Add(function() NLHouseholdAuthority.lastRequest = {} end)
++return NLHouseholdAuthority
+--- baseline/42/media/lua/server/NeighborhoodLifeServer.lua
++++ modified/42/media/lua/server/NeighborhoodLifeServer.lua
+@@ -5,6 +5,7 @@
+ require "NL/Authority"
+ require "NL/SocialAuthority"
+ require "NL/NpcAuthority"
++require "NL/HouseholdAuthority"
+ 
+ -- The required domain modules register their own command handlers. Keeping
+ -- registration in one place avoids duplicate authority calls when Build 42
+--- baseline/42/media/lua/shared/NL/Domain.lua
++++ modified/42/media/lua/shared/NL/Domain.lua
+@@ -1,18 +1,22 @@
+ require "NL/Definitions"
+ require "NL/Aspirations"
++require "NL/Households"
+ NLDomain = {}
+ 
+ function NLDomain.newWorld()
+-    return { version = NLDefinitions.version, players = {} }
++    return { version = NLDefinitions.version, players = {}, households = {} }
+ end
+ 
+ function NLDomain.profile(world, key)
+     world.players = world.players or {}
+     if not world.players[key] then
+         world.players[key] = { career = "tailor", careers = {}, credits = 0,
+-            revision = 0, day = -1, claimed = {}, outfits = {} }
++            revision = 0, day = -1, claimed = {}, outfits = {},
++            householdId = nil, householdInvite = nil }
+     end
+     local p = world.players[key]
++    p.householdId = p.householdId or nil
++    p.householdInvite = p.householdInvite or nil
+     for _, id in ipairs(NLDefinitions.careerOrder) do
+         p.careers[id] = p.careers[id] or { rank = 1, xp = 0, delivered = 0, variety = {} }
+     end
+--- baseline/42/media/lua/shared/NL/Households.lua
++++ modified/42/media/lua/shared/NL/Households.lua
+@@ -0,0 +1,86 @@
++NLHouseholds = {
++    taskOrder = { "tidy", "meal", "social" },
++    tasks = {
++        tidy = { label = "Tidy shared home", reward = 5 },
++        meal = { label = "Prepare a household meal", reward = 5 },
++        social = { label = "Spend time together", reward = 5 },
++    },
++}
++
++function NLHouseholds.new(id, owner, home)
++    return {
++        id = id, name = "Neighborhood Home", owner = owner,
++        home = home or { x = 0, y = 0, z = 0 }, members = {
++            [owner] = { role = "owner", contribution = 0 },
++        }, tasks = {}, claims = {}, revision = 1,
++    }
++end
++
++function NLHouseholds.ensure(world)
++    world.households = world.households or {}
++    return world.households
++end
++
++function NLHouseholds.get(world, id)
++    return NLHouseholds.ensure(world)[id]
++end
++
++function NLHouseholds.member(household, key)
++    return household and household.members and household.members[key]
++end
++
++function NLHouseholds.addMember(household, key)
++    if not household or not key or key == "" then return false, "Invalid member" end
++    if household.members[key] then return false, "Already a household member" end
++    household.members[key] = { role = "member", contribution = 0 }
++    household.revision = (household.revision or 0) + 1
++    return true, "Joined the household"
++end
++
++function NLHouseholds.removeMember(household, key)
++    if not NLHouseholds.member(household, key) then return false, "Not a household member" end
++    household.members[key] = nil
++    household.revision = (household.revision or 0) + 1
++    return true, "Left the household"
++end
++
++function NLHouseholds.completeTask(household, key, task, day)
++    local definition = NLHouseholds.tasks[task]
++    if not definition then return false, "Unknown household activity" end
++    local member = NLHouseholds.member(household, key)
++    if not member then return false, "You are not in this household" end
++    household.claims = household.claims or {}
++    local claim = tostring(day) .. ":" .. tostring(key) .. ":" .. task
++    if household.claims[claim] then return false, "This activity is already complete today" end
++    household.claims[claim] = true
++    household.tasks[task] = (household.tasks[task] or 0) + 1
++    member.contribution = (member.contribution or 0) + 1
++    household.revision = (household.revision or 0) + 1
++    return true, definition.label .. " complete: +" .. definition.reward .. " credits"
++end
++
++function NLHouseholds.memberCount(household)
++    local count = 0
++    for _ in pairs((household and household.members) or {}) do count = count + 1 end
++    return count
++end
++
++function NLHouseholds.copySummary(household, online)
++    if not household then return nil end
++    local result = {
++        id = household.id, name = household.name, owner = household.owner,
++        home = { x = household.home.x, y = household.home.y, z = household.home.z },
++        tasks = {}, members = {}, revision = household.revision,
++    }
++    for task, count in pairs(household.tasks or {}) do result.tasks[task] = count end
++    for key, member in pairs(household.members or {}) do
++        result.members[#result.members + 1] = {
++            username = key, role = member.role, contribution = member.contribution or 0,
++            online = online and online[key] == true or false,
++        }
++    end
++    table.sort(result.members, function(a, b) return a.username < b.username end)
++    return result
++end
++
++return NLHouseholds
+BINARY FILE CHANGED: baseline/42/media/textures/NL_Plumbob.png -> modified/42/media/textures/NL_Plumbob.png
+--- baseline/42/mod.info
++++ modified/42/mod.info
+@@ -1,4 +1,4 @@
+ name=Neighborhood Life - Needs HUD
+ id=NeighborhoodLifeHUD
+-description=Life sim vertical slice: needs HUD, careers, outfit presets, relationships and three persistent native neighborhood neighbors. Hosted NPC replication and broader household systems remain in development.
++description=Life sim vertical slice: needs HUD, careers, outfit presets, relationships, three persistent native neighbors and server-authoritative household routines. Native server-body reannouncement, furnishings and broader household progression remain in development.
+ versionMin=42.0

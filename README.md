@@ -257,3 +257,13 @@ picked them up through vanilla `ISInventoryTransferUtil` actions, and the
 production medic delivery consumed them and returned XP and credits. The guest
 also received the three production NPC replicas and native movement paths.
 QA helpers remain outside the production package.
+
+## v1.15 household vertical slice
+
+`evidence/v34/` records a real host plus guest loop for the first household
+slice: the host creates a Neighborhood Home, invites `nl-guest`, the guest
+accepts, and both clients receive the shared two-member state. The host then
+completes the server-authoritative `tidy` routine at the persisted home tile;
+the daily replay guard and five-credit reward are visible to both clients.
+The Home panel exposes create, invite, accept, leave, refresh and three shared
+activities. QA helpers remain outside the production package.

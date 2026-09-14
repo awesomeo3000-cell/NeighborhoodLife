@@ -8,7 +8,12 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     careerSelectSent = false, careerDeliverSent = false, careerResultLogged = false,
     careerDue = 0, careerStage = 0, careerPickupAttempted = false,
     careerPickupObserved = false, careerPickupExpected = 0, careerPickupItem = nil,
-    careerPickupNextAttempt = 0 }
+    careerPickupNextAttempt = 0, householdCreateSent = false,
+    householdInviteSent = false, householdAcceptSent = false,
+    householdTaskSent = false, householdResultLogged = false,
+    householdJoinLogged = false, householdCreatedObserved = false,
+    householdInviteDue = 0, householdMembersObserved = false,
+    householdTaskDue = 0, householdResetSent = false }
 
 local function emit(label, value)
     print("NLQA MP " .. label .. ": " .. tostring(value))
@@ -209,6 +214,8 @@ local function qaInventoryCount(player, fullType)
     return count
 end
 
+pcall(require, "NL/HouseholdClient")
+
 local function queueCareerWorldPickup(itemType, expected)
     local player = getSpecificPlayer(0)
     local square = player and player:getCurrentSquare()
@@ -321,6 +328,40 @@ Events.OnServerCommand.Add(function(module, command, args)
             NLQAMultiplayer.careerPickupExpected)
         emit("CAREER SEED ACK", "item="..tostring(args.item).." amount="..tostring(args.amount))
     end
+    if module == "NeighborhoodHousehold" and command == "invite" and type(args) == "table"
+            and qaIdentity().username == "nl-guest" and not NLQAMultiplayer.householdAcceptSent then
+        NLQAMultiplayer.householdAcceptSent=true
+        emit("HOUSEHOLD INVITE", "from="..tostring(args.from).." id="..tostring(args.householdId))
+        NLHouseholdClient.request(0,"accept")
+        emit("HOUSEHOLD ACCEPT", "shared home")
+    end
+    if module == "NeighborhoodHousehold" and command == "snapshot" and type(args) == "table" then
+        local home=args.household
+        local members=home and home.members or {}
+        emit("HOUSEHOLD SNAPSHOT", "username="..tostring(args.username)
+            .." members="..tostring(#members).." message="..tostring(args.message))
+        if qaIdentity().username=="nl-host" and home
+                and not NLQAMultiplayer.householdCreatedObserved then
+            NLQAMultiplayer.householdCreatedObserved=true
+            NLQAMultiplayer.householdInviteDue=NLQAMultiplayer.socialFrame+30
+        end
+        if qaIdentity().username=="nl-guest" and #members>=2
+                and not NLQAMultiplayer.householdJoinLogged then
+            NLQAMultiplayer.householdJoinLogged=true
+            emit("HOUSEHOLD JOIN RESULT", "shared home members="..tostring(#members))
+        end
+        if qaIdentity().username=="nl-host" and #members>=2
+                and not NLQAMultiplayer.householdTaskSent then
+            NLQAMultiplayer.householdMembersObserved=true
+            NLQAMultiplayer.householdTaskDue=NLQAMultiplayer.socialFrame+60
+        end
+        if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdTaskSent
+                and not NLQAMultiplayer.householdResultLogged and args.message
+                and string.find(args.message,"complete",1,true) then
+            NLQAMultiplayer.householdResultLogged=true
+            emit("HOUSEHOLD TASK RESULT", tostring(args.message))
+        end
+    end
 end)
 
 -- QA-only world-body conversation probe. The host starts beside the persisted
@@ -330,6 +371,14 @@ end)
 Events.OnRenderTick.Add(function()
     if not isClient() or not NLSocialClient then return end
     NLQAMultiplayer.socialFrame=NLQAMultiplayer.socialFrame+1
+    if qaIdentity().username=="nl-host" and not NLQAMultiplayer.householdResetSent then
+        local player=getSpecificPlayer(0)
+        if player then
+            sendClientCommand(player,"NeighborhoodQA","reset_household",{})
+            NLQAMultiplayer.householdResetSent=true
+            emit("HOUSEHOLD RESET", "isolated QA setup")
+        end
+    end
     if NLQAMultiplayer.socialFrame==900 then
         NLSocialClient.request(0,"refresh")
         NLQAMultiplayer.socialRefreshSent=true
@@ -412,6 +461,32 @@ Events.OnRenderTick.Add(function()
             NLQAMultiplayer.careerStage=2
             emit("CAREER DELIVERY", "id="..tostring(contract.id))
         end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerResultLogged
+            and not NLQAMultiplayer.householdCreateSent then
+        NLQAMultiplayer.householdCreateSent=true
+        NLHouseholdClient.request(0,"create")
+        emit("HOUSEHOLD CREATE", "Neighborhood Home")
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdCreatedObserved
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.householdInviteDue
+            and not NLQAMultiplayer.householdInviteSent then
+        local presence=NLClient.presence
+        for _,entry in ipairs((presence and presence.players) or {}) do
+            if entry.username and entry.username~="nl-host" then
+                NLQAMultiplayer.householdInviteSent=true
+                NLHouseholdClient.request(0,"invite",{target=entry.username})
+                emit("HOUSEHOLD INVITE SENT", "target="..tostring(entry.username))
+                break
+            end
+        end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdMembersObserved
+            and not NLQAMultiplayer.householdTaskSent
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.householdTaskDue then
+        NLQAMultiplayer.householdTaskSent=true
+        NLHouseholdClient.request(0,"task",{task="tidy"})
+        emit("HOUSEHOLD TASK", "tidy")
     end
 end)
 
