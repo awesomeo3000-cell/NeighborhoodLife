@@ -1,0 +1,57 @@
+LOG  : Lua          f:0> NLQA MP CONNECT ARMED: 127.0.0.1:16261
+LOG  : Lua          f:0> NLQA STAT HUNGER 0..1
+LOG  : Lua          f:0> NLQA STAT THIRST 0..1
+LOG  : Lua          f:0> NLQA STAT FATIGUE 0..1
+LOG  : Lua          f:0> NLQA STAT BOREDOM 0..100
+LOG  : Lua          f:0> NLQA STAT STRESS 0..1
+LOG  : Lua          f:0> NLQA STAT UNHAPPINESS 0..100
+LOG  : Lua          f:0> NLQA PASS: actual item/perk/stat APIs and real ISPanel journal construction
+LOG  : Lua          f:0> NLQA MP CONNECT REQUEST: nl-guest -> 127.0.0.1:16261 accountPassword=true
+LOG  : Lua          f:0 st:0> NLQA MP CONNECTION STATE: Connected message=nil arg=nil
+LOG  : Lua          f:0 st:0> NLQA STAT HUNGER 0..1
+LOG  : Lua          f:0 st:0> NLQA STAT THIRST 0..1
+LOG  : Lua          f:0 st:0> NLQA STAT FATIGUE 0..1
+LOG  : Lua          f:0 st:0> NLQA STAT BOREDOM 0..100
+LOG  : Lua          f:0 st:0> NLQA STAT STRESS 0..1
+LOG  : Lua          f:0 st:0> NLQA STAT UNHAPPINESS 0..100
+LOG  : Lua          f:0 st:0> NLQA PASS: actual item/perk/stat APIs and real ISPanel journal construction
+LOG  : Lua          f:0 st:0> NLQA MP CONNECTED: nl-guest
+LOG  : Lua          f:0 st:0> NLQA MP CLIENT START: username=nl-guest isClient=true isServer=false
+LOG  : Lua          f:20 st:198,789,219> NLQA MP PRESENCE: revision=1789346873151 players=2 names=nl-host@6818.53,5262.56,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:20 st:198,789,238> NLQA MP NPC PRESENCE: revision=1789346873151 count=3 entries=marisol@6816.70,5259.50,0/w1,kenji@6818.50,5260.50,0/w1,amara@6818.50,5264.50,0/w1
+LOG  : Lua          f:119 st:198,791,187> NLQA MP REFRESH SENT: attempt=1 player=nl-guest
+LOG  : Lua          f:120 st:198,791,214> NLQA MP SNAPSHOT: username=nl-guest revision=1 snapshotCount=1
+LOG  : Lua          f:120 st:198,791,214> NLQA MP PRESENCE: revision=1789346875149 players=2 names=nl-host@6820.89,5263.73,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:120 st:198,791,215> NLQA MP NPC PRESENCE: revision=1789346875149 count=3 entries=marisol@6816.70,5259.50,0/w1,kenji@6818.50,5260.50,0/w1,amara@6818.50,5264.50,0/w1
+LOG  : Lua          f:299 st:198,794,219> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=33 [username=Marisol Vega [Neighborhood Life] x=6816.15 y=5259.10 z=0 | local=nl-guest | username=Kenji Arakawa [Neighborhood Life] x=6818.13 y=5260.13 z=0 | username=Amara Okonkwo [Neighborhood Life] x=6818.13 y=5264.13 z=0] productionNpcReplicas=3 OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0
+LOG  : Lua          f:300 st:198,794,247> NLQA MP PRESENCE: revision=1789346878181 players=2 names=nl-host@6821.50,5260.01,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:300 st:198,794,248> NLQA MP NPC PRESENCE: revision=1789346878181 count=3 entries=marisol@6816.78,5259.50,0/w1,kenji@6818.58,5260.50,0/w1,amara@6818.58,5264.50,0/w1
+LOG  : Lua          f:307 st:198,794,364> NLQA MP PRESENCE: revision=1789346878300 players=2 names=nl-host@6821.50,5260.01,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:307 st:198,794,364> NLQA MP NPC PRESENCE: revision=1789346878300 count=3 entries=marisol@6816.78,5259.50,0/w1,kenji@6818.58,5260.50,0/w1,amara@6818.58,5264.50,0/w1
+LOG  : Lua          f:599 st:198,799,218> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=33 [username=Marisol Vega [Neighborhood Life] x=6816.15 y=5259.10 z=0 | local=nl-guest | username=Kenji Arakawa [Neighborhood Life] x=6818.14 y=5260.12 z=0 | username=Amara Okonkwo [Neighborhood Life] x=6818.14 y=5264.12 z=0] productionNpcReplicas=3 OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0
+LOG  : Lua          f:600 st:198,799,247> NLQA MP PRESENCE: revision=1789346883179 players=2 names=nl-host@6821.50,5259.50,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:600 st:198,799,247> NLQA MP NPC PRESENCE: revision=1789346883179 count=3 entries=marisol@6816.94,5259.50,0/w1,kenji@6818.74,5260.50,0/w1,amara@6818.74,5264.50,0/w1
+LOG  : Lua          f:608 st:198,799,381> NLQA MP PRESENCE: revision=1789346883301 players=2 names=nl-host@6821.50,5259.50,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:608 st:198,799,381> NLQA MP NPC PRESENCE: revision=1789346883301 count=3 entries=marisol@6816.94,5259.50,0/w1,kenji@6818.74,5260.50,0/w1,amara@6818.74,5264.50,0/w1
+LOG  : Lua          f:707 st:198,801,031> NLQA MP NPC PRESENCE: revision=1789346884964 count=3 entries=marisol@6816.94,5259.50,0/w1,kenji@6818.74,5260.50,0/w1,amara@6818.74,5264.50,0/w1
+LOG  : Lua          f:899 st:198,804,218> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=33 [username=Marisol Vega [Neighborhood Life] x=6816.16 y=5259.08 z=0 | local=nl-guest | username=Kenji Arakawa [Neighborhood Life] x=6818.15 y=5260.10 z=0 | username=Amara Okonkwo [Neighborhood Life] x=6818.15 y=5264.10 z=0] productionNpcReplicas=3 OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0
+LOG  : Lua          f:900 st:198,804,247> NLQA MP PRESENCE: revision=1789346888176 players=2 names=nl-host@6821.50,5259.50,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:900 st:198,804,247> NLQA MP NPC PRESENCE: revision=1789346888176 count=3 entries=marisol@6817.02,5259.50,0/w1,kenji@6818.82,5260.50,0/w1,amara@6818.82,5264.50,0/w1
+LOG  : Lua          f:907 st:198,804,364> NLQA MP PRESENCE: revision=1789346888299 players=2 names=nl-host@6821.50,5259.50,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:907 st:198,804,364> NLQA MP NPC PRESENCE: revision=1789346888299 count=3 entries=marisol@6817.02,5259.50,0/w1,kenji@6818.82,5260.50,0/w1,amara@6818.82,5264.50,0/w1
+LOG  : Lua          f:1199 st:198,809,217> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=33 [username=Marisol Vega [Neighborhood Life] x=6816.16 y=5259.08 z=0 | local=nl-guest | username=Kenji Arakawa [Neighborhood Life] x=6818.15 y=5260.09 z=0 | username=Amara Okonkwo [Neighborhood Life] x=6818.15 y=5264.09 z=0] productionNpcReplicas=3 OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0
+LOG  : Lua          f:1200 st:198,809,247> NLQA MP PRESENCE: revision=1789346893179 players=2 names=nl-host@6821.50,5259.50,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:1200 st:198,809,247> NLQA MP NPC PRESENCE: revision=1789346893179 count=3 entries=marisol@6817.18,5259.50,0/w1,kenji@6818.98,5260.50,0/w1,amara@6818.98,5264.50,0/w1
+LOG  : Lua          f:1207 st:198,809,364> NLQA MP PRESENCE: revision=1789346893303 players=2 names=nl-host@6821.50,5259.50,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:1207 st:198,809,364> NLQA MP NPC PRESENCE: revision=1789346893303 count=3 entries=marisol@6817.18,5259.50,0/w1,kenji@6818.98,5260.50,0/w1,amara@6818.98,5264.50,0/w1
+LOG  : Lua          f:1427 st:198,813,031> NLQA MP NPC PRESENCE: revision=1789346896961 count=3 entries=marisol@6817.26,5259.50,0/w1,kenji@6819.06,5260.50,0/w1,amara@6819.06,5264.50,0/w1
+LOG  : Lua          f:1499 st:198,814,218> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=33 [username=Marisol Vega [Neighborhood Life] x=6816.17 y=5259.07 z=0 | local=nl-guest | username=Kenji Arakawa [Neighborhood Life] x=6818.16 y=5260.08 z=0 | username=Amara Okonkwo [Neighborhood Life] x=6818.16 y=5264.08 z=0] productionNpcReplicas=3 OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0
+LOG  : Lua          f:1500 st:198,814,247> NLQA MP PRESENCE: revision=1789346898178 players=2 names=nl-host@6821.50,5259.50,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:1500 st:198,814,247> NLQA MP NPC PRESENCE: revision=1789346898178 count=3 entries=marisol@6817.34,5259.50,0/w1,kenji@6819.14,5260.50,0/w1,amara@6819.14,5264.50,0/w1
+LOG  : Lua          f:1508 st:198,814,381> NLQA MP PRESENCE: revision=1789346898302 players=2 names=nl-host@6821.50,5259.50,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:1508 st:198,814,381> NLQA MP NPC PRESENCE: revision=1789346898302 count=3 entries=marisol@6817.34,5259.50,0/w1,kenji@6819.14,5260.50,0/w1,amara@6819.14,5264.50,0/w1
+LOG  : Lua          f:1799 st:198,819,218> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=33 [username=Marisol Vega [Neighborhood Life] x=6816.17 y=5259.06 z=0 | local=nl-guest | username=Kenji Arakawa [Neighborhood Life] x=6818.17 y=5260.07 z=0 | username=Amara Okonkwo [Neighborhood Life] x=6818.17 y=5264.07 z=0] productionNpcReplicas=3 OnlinePlayersCount=1 [local=nl-guest] productionRemoteMarkers=0
+LOG  : Lua          f:1800 st:198,819,247> NLQA MP PRESENCE: revision=1789346903180 players=2 names=nl-host@6821.50,5259.50,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:1800 st:198,819,247> NLQA MP NPC PRESENCE: revision=1789346903180 count=3 entries=marisol@6817.42,5259.50,0/w1,kenji@6819.22,5260.50,0/w1,amara@6819.22,5264.50,0/w1
+LOG  : Lua          f:1807 st:198,819,364> NLQA MP PRESENCE: revision=1789346903301 players=2 names=nl-host@6821.50,5259.50,0,nl-guest@10754.50,10214.50,0
+LOG  : Lua          f:1807 st:198,819,364> NLQA MP NPC PRESENCE: revision=1789346903301 count=3 entries=marisol@6817.42,5259.50,0/w1,kenji@6819.22,5260.50,0/w1,amara@6819.22,5264.50,0/w1

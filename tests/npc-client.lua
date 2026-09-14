@@ -43,11 +43,19 @@ IsoPlayer={new=function(_,_,x,y,z)
     return b
 end}
 require 'NL/NpcClient'
-assert(NLNpcClient.apply({revision=1,npcs={{id='marisol',x=10,y=11,z=0,alive=true}}})==1)
+assert(NLNpcClient.apply({revision=1,npcs={
+    {id='marisol',name='Marisol Vega',female=true,x=10,y=11,z=0,alive=true},
+    {id='kenji',name='Kenji Arakawa',female=false,x=12,y=11,z=0,alive=true}
+}})==2)
 local body=NLNpcClient.bodies.marisol
 assert(body and body.npc and body:getModData().NeighborhoodNpcId=='marisol','native replica created')
 assert(plumbobs['npc:marisol']==body,'replica plumbob registered')
-NLNpcClient.apply({revision=2,npcs={{id='marisol',x=11,y=11,z=0,alive=true}}})
+assert(NLNpcClient.bodies.kenji and plumbobs['npc:kenji']==NLNpcClient.bodies.kenji,
+    'second authored replica and plumbob registered')
+NLNpcClient.apply({revision=2,npcs={
+    {id='marisol',x=11,y=11,z=0,alive=true},
+    {id='kenji',x=13,y=11,z=0,alive=true}
+}})
 NLNpcClient.update(); assert(body:getX()>10 and body:getX()<11,'replica interpolates authoritative target')
 local xAfterNewer=body:getX()
 local targetAfterNewer=NLNpcClient.targets.marisol
@@ -57,7 +65,9 @@ if NLNpcClient.revision then
         'stale NPC packet is ignored')
 end
 NLNpcClient.apply({revision=3,npcs={}})
-assert(NLNpcClient.bodies.marisol==nil and plumbobs['npc:marisol']==nil,'replica cleanup follows authoritative roster')
+assert(NLNpcClient.bodies.marisol==nil and NLNpcClient.bodies.kenji==nil
+    and plumbobs['npc:marisol']==nil and plumbobs['npc:kenji']==nil,
+    'replica cleanup follows authoritative roster')
 if disconnectHook then
     assert(disconnectHook,'disconnect cleanup hook registered')
     disconnectHook('server restart','qa')

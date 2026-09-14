@@ -1,0 +1,176 @@
+--- baseline/42/media/lua/client/NL/NpcClient.lua
++++ modified/42/media/lua/client/NL/NpcClient.lua
+@@ -41,13 +41,16 @@
+     if not body and IsoPlayer and SurvivorFactory then
+         local cell = getCell()
+         local desc = SurvivorFactory.CreateSurvivor()
+-        desc:setForename("Marisol"); desc:setSurname("Vega"); desc:setFemale(true)
++        local name = tostring(entry.name or "Marisol Vega")
++        local forename, surname = name:match("^(%S+)%s+(.+)$")
++        desc:setForename(forename or name); desc:setSurname(surname or "Neighbor")
++        desc:setFemale(entry.female ~= false)
+         body = IsoPlayer.new(cell, desc, math.floor(entry.x), math.floor(entry.y), math.floor(entry.z))
+         body:setNpc(true)
+-        body:setUsername("Marisol Vega [Neighborhood Life]")
++        body:setUsername(name .. " [Neighborhood Life]")
+         body:setGodMod(true)
+         body:getModData().NeighborhoodNpcId = id
+-        body:dressInNamedOutfit("Generic01")
++        body:dressInNamedOutfit(entry.outfit or "Generic01")
+         body:setSceneCulled(false)
+         body:setAlphaAndTarget(1, 1)
+         body:resetModelNextFrame()
+--- baseline/42/media/lua/server/NL/NpcAuthority.lua
++++ modified/42/media/lua/server/NL/NpcAuthority.lua
+@@ -16,7 +16,7 @@
+     tick = 0,
+     started = false,
+     startAttempts = 0,
+-    definitions = { "marisol" },
++    definitions = { "marisol", "kenji", "amara" },
+ }
+ 
+ local function presencePacket()
+@@ -24,10 +24,16 @@
+     local entries = {}
+     for id, body in pairs(NLNpcAuthority.bodies) do
+         local row = NLNeighbors.get(world, id)
++        local definition = NLNeighbors.definitions[id]
++        local isFemale = true
++        if definition and definition.female ~= nil then isFemale = definition.female end
+         entries[#entries + 1] = {
+             id=id, x=body:getX(), y=body:getY(), z=body:getZ(),
+             waypoint=row and row.waypoint or 1,
+             alive=not body:isDead(), revision=row and row.revision or 0,
++            name=definition and definition.name or id,
++            female=isFemale,
++            outfit=definition and definition.outfit or "Generic01",
+         }
+     end
+     return { revision=getTimestampMs(), npcs=entries }, #entries
+@@ -73,14 +79,15 @@
+     end
+ end
+ 
+-local function freeSquareNear(cell, x, y, z, minDistance, maxDistance)
++local function freeSquareNear(cell, x, y, z, minDistance, maxDistance, reserved)
+     local best, bestDistance
+     for dx = -maxDistance, maxDistance do
+         for dy = -maxDistance, maxDistance do
+             local distance = math.sqrt(dx * dx + dy * dy)
+             if distance >= minDistance and distance <= maxDistance then
+                 local square = cell:getGridSquare(x + dx, y + dy, z)
+-                if square and square:isFree(false)
++                local key = square and (square:getX() .. ":" .. square:getY() .. ":" .. square:getZ())
++                if square and square:isFree(false) and (not reserved or not reserved[key])
+                         and (not best or distance < bestDistance) then
+                     best, bestDistance = square, distance
+                 end
+@@ -139,16 +146,17 @@
+     end
+     if not square then return nil, "no free spawn square" end
+ 
++    local definition = NLNeighbors.definitions[id] or {}
+     local desc = SurvivorFactory.CreateSurvivor()
+-    desc:setForename("Marisol")
+-    desc:setSurname("Vega")
+-    desc:setFemale(true)
++    desc:setForename(definition.forename or id)
++    desc:setSurname(definition.surname or "Neighbor")
++    desc:setFemale(definition.female ~= false)
+     local body = IsoPlayer.new(cell, desc, square:getX(), square:getY(), square:getZ())
+     body:setNpc(true)
+-    body:setUsername("Marisol Vega [Neighborhood Life]")
++    body:setUsername((definition.name or id) .. " [Neighborhood Life]")
+     body:setGodMod(true)
+     body:getModData().NeighborhoodNpcId = id
+-    body:dressInNamedOutfit("Generic01")
++    body:dressInNamedOutfit(definition.outfit or "Generic01")
+     local exactX, exactY, exactZ
+     if row.revision > 0 and row.position
+             and math.floor(row.position.x) == square:getX()
+@@ -176,31 +184,39 @@
+     if not player then return end
+     local world = NLAuthority.world()
+     local rows = NLNeighbors.ensure(world)
+-    local id = NLNpcAuthority.definitions[1]
+-    local row = rows[id]
+-    if not row or row.alive == false then return end
+-    -- The first isolated world gets a nearby home so the vertical slice is
+-    -- immediately observable.  Subsequent starts restore the saved position.
+-    if row.revision == 0 and not row.spawned then
+-        local square = freeSquareNear(getCell(), math.floor(player:getX()), math.floor(player:getY()),
+-            math.floor(player:getZ()), 2, 4)
+-        if square then
+-            row.home = { x = square:getX(), y = square:getY(), z = square:getZ() }
+-            row.position = { x = square:getX(), y = square:getY(), z = square:getZ() }
+-            row.waypoint = 1
+-            row.spawned = true
+-        end
+-    end
+-    if row.revision > 0 then
+-        emit(string.format("RESTORE id=%s x=%.2f y=%.2f revision=%d", id,
+-            row.position.x, row.position.y, row.revision))
+-    end
+-    local body, err = spawnBody(id, row, player)
+-    if body then
++    local reserved = {}
++    for _, id in ipairs(NLNpcAuthority.definitions) do
++        local row = rows[id]
++        if row and row.alive ~= false and not NLNpcAuthority.bodies[id] then
++            -- The first isolated world gets a nearby home for every authored
++            -- neighbor so the vertical slice is immediately observable.
++            -- Subsequent starts restore each saved position independently.
++            if row.revision == 0 and not row.spawned then
++                local square = freeSquareNear(getCell(), math.floor(player:getX()), math.floor(player:getY()),
++                    math.floor(player:getZ()), 2, 4, reserved)
++                if square then
++                    row.home = { x = square:getX(), y = square:getY(), z = square:getZ() }
++                    row.position = { x = square:getX(), y = square:getY(), z = square:getZ() }
++                    row.waypoint = 1
++                    row.spawned = true
++                    reserved[square:getX() .. ":" .. square:getY() .. ":" .. square:getZ()] = true
++                end
++            end
++            if row.revision > 0 then
++                emit(string.format("RESTORE id=%s x=%.2f y=%.2f revision=%d", id,
++                    row.position.x, row.position.y, row.revision))
++            end
++            local body, err = spawnBody(id, row, player)
++            if not body then emit("SPAWN FAILED id=" .. id .. ": " .. tostring(err)) end
++        end
++    end
++    local complete = true
++    for _, id in ipairs(NLNpcAuthority.definitions) do
++        if not NLNpcAuthority.bodies[id] then complete = false end
++    end
++    if complete then
+         NLNpcAuthority.started = true
+         NLNpcAuthority.startAttempts = 0
+-    else
+-        emit("SPAWN FAILED: " .. tostring(err))
+     end
+ end
+ 
+--- baseline/42/media/lua/shared/NL/Neighbors.lua
++++ modified/42/media/lua/shared/NL/Neighbors.lua
+@@ -4,9 +4,15 @@
+ -- A missing body is therefore an unavailable neighbor, never a fake character.
+ NLNeighbors = {
+     definitions = {
+-        marisol = { home={x=10780,y=10268,z=0}, waypoints={{x=10780,y=10268,z=0},{x=10784,y=10268,z=0}}, schedule="tailor" },
+-        kenji = { home={x=10786,y=10270,z=0}, waypoints={{x=10786,y=10270,z=0},{x=10790,y=10270,z=0}}, schedule="carpenter" },
+-        amara = { home={x=10782,y=10274,z=0}, waypoints={{x=10782,y=10274,z=0},{x=10786,y=10274,z=0}}, schedule="medic" }
++        marisol = { forename="Marisol", surname="Vega", name="Marisol Vega", female=true,
++            outfit="Generic01", home={x=10780,y=10268,z=0},
++            waypoints={{x=10780,y=10268,z=0},{x=10784,y=10268,z=0}}, schedule="tailor" },
++        kenji = { forename="Kenji", surname="Arakawa", name="Kenji Arakawa", female=false,
++            outfit="Generic01", home={x=10786,y=10270,z=0},
++            waypoints={{x=10786,y=10270,z=0},{x=10790,y=10270,z=0}}, schedule="carpenter" },
++        amara = { forename="Amara", surname="Okonkwo", name="Amara Okonkwo", female=true,
++            outfit="Generic01", home={x=10782,y=10274,z=0},
++            waypoints={{x=10782,y=10274,z=0},{x=10786,y=10274,z=0}}, schedule="medic" }
+     }
+ }
+ 
+BINARY FILE CHANGED: baseline/42/media/textures/NL_Plumbob.png -> modified/42/media/textures/NL_Plumbob.png

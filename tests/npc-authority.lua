@@ -56,12 +56,20 @@ assert(NLNpcAuthority and type(NLNpcAuthority.start)=='function')
 NLNpcAuthority.start()
 local body=NLNpcAuthority.bodies.marisol
 assert(body and body:isNpc() and body:getModData().NeighborhoodNpcId=='marisol','production body created')
+local expectedBodies=#NLNpcAuthority.definitions
+if expectedBodies>=3 then
+    for _, id in ipairs({'kenji','amara'}) do
+        local extra=NLNpcAuthority.bodies[id]
+        assert(extra and extra:isNpc() and extra:getModData().NeighborhoodNpcId==id,
+            'all authored neighborhood bodies created: '..id)
+    end
+end
 local row=NLAuthority.world().neighbors.marisol
 assert(row and row.spawned and row.position.x==body:getX(),'body position persisted')
 local savedX,savedY=row.position.x,row.position.y
 body:setX(savedX+0.37); body:setY(savedY+0.23)
 if saveHook then
-    assert(saveHook()==1,'save hook persists the latest native body position')
+    assert(saveHook()==expectedBodies,'save hook persists all authored native body positions')
     assert(math.abs(row.position.x-body:getX())<0.001 and math.abs(row.position.y-body:getY())<0.001,
         'save hook writes the current authoritative position')
     savedX,savedY=row.position.x,row.position.y
@@ -73,4 +81,8 @@ NLNpcAuthority.start()
 local restored=NLNpcAuthority.bodies.marisol
 assert(restored and math.abs(restored:getX()-savedX)<0.001 and math.abs(restored:getY()-savedY)<0.001,
     'saved position restores into the native body')
+if expectedBodies>=3 then
+    assert(NLNpcAuthority.bodies.kenji and NLNpcAuthority.bodies.amara,
+        'all authored bodies restore after reset')
+end
 print('PASS: production NPC identity, native body adapter, route tick and save/reload position restoration')

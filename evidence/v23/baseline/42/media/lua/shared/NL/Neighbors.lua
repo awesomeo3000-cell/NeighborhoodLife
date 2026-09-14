@@ -4,15 +4,9 @@ require "NL/Domain"
 -- A missing body is therefore an unavailable neighbor, never a fake character.
 NLNeighbors = {
     definitions = {
-        marisol = { forename="Marisol", surname="Vega", name="Marisol Vega", female=true,
-            outfit="Generic01", home={x=10780,y=10268,z=0},
-            waypoints={{x=10780,y=10268,z=0},{x=10784,y=10268,z=0}}, schedule="tailor" },
-        kenji = { forename="Kenji", surname="Arakawa", name="Kenji Arakawa", female=false,
-            outfit="Generic01", home={x=10786,y=10270,z=0},
-            waypoints={{x=10786,y=10270,z=0},{x=10790,y=10270,z=0}}, schedule="carpenter" },
-        amara = { forename="Amara", surname="Okonkwo", name="Amara Okonkwo", female=true,
-            outfit="Generic01", home={x=10782,y=10274,z=0},
-            waypoints={{x=10782,y=10274,z=0},{x=10786,y=10274,z=0}}, schedule="medic" }
+        marisol = { home={x=10780,y=10268,z=0}, waypoints={{x=10780,y=10268,z=0},{x=10784,y=10268,z=0}}, schedule="tailor" },
+        kenji = { home={x=10786,y=10270,z=0}, waypoints={{x=10786,y=10270,z=0},{x=10790,y=10270,z=0}}, schedule="carpenter" },
+        amara = { home={x=10782,y=10274,z=0}, waypoints={{x=10782,y=10274,z=0},{x=10786,y=10274,z=0}}, schedule="medic" }
     }
 }
 

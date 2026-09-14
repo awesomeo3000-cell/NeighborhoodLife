@@ -16,7 +16,7 @@ NLNpcAuthority = {
     tick = 0,
     started = false,
     startAttempts = 0,
-    definitions = { "marisol", "kenji", "amara" },
+    definitions = { "marisol" },
 }
 
 local function presencePacket()
@@ -24,16 +24,10 @@ local function presencePacket()
     local entries = {}
     for id, body in pairs(NLNpcAuthority.bodies) do
         local row = NLNeighbors.get(world, id)
-        local definition = NLNeighbors.definitions[id]
-        local isFemale = true
-        if definition and definition.female ~= nil then isFemale = definition.female end
         entries[#entries + 1] = {
             id=id, x=body:getX(), y=body:getY(), z=body:getZ(),
             waypoint=row and row.waypoint or 1,
             alive=not body:isDead(), revision=row and row.revision or 0,
-            name=definition and definition.name or id,
-            female=isFemale,
-            outfit=definition and definition.outfit or "Generic01",
         }
     end
     return { revision=getTimestampMs(), npcs=entries }, #entries
@@ -79,15 +73,14 @@ local function emit(message)
     end
 end
 
-local function freeSquareNear(cell, x, y, z, minDistance, maxDistance, reserved)
+local function freeSquareNear(cell, x, y, z, minDistance, maxDistance)
     local best, bestDistance
     for dx = -maxDistance, maxDistance do
         for dy = -maxDistance, maxDistance do
             local distance = math.sqrt(dx * dx + dy * dy)
             if distance >= minDistance and distance <= maxDistance then
                 local square = cell:getGridSquare(x + dx, y + dy, z)
-                local key = square and (square:getX() .. ":" .. square:getY() .. ":" .. square:getZ())
-                if square and square:isFree(false) and (not reserved or not reserved[key])
+                if square and square:isFree(false)
                         and (not best or distance < bestDistance) then
                     best, bestDistance = square, distance
                 end
@@ -146,17 +139,16 @@ local function spawnBody(id, row, player)
     end
     if not square then return nil, "no free spawn square" end
 
-    local definition = NLNeighbors.definitions[id] or {}
     local desc = SurvivorFactory.CreateSurvivor()
-    desc:setForename(definition.forename or id)
-    desc:setSurname(definition.surname or "Neighbor")
-    desc:setFemale(definition.female ~= false)
+    desc:setForename("Marisol")
+    desc:setSurname("Vega")
+    desc:setFemale(true)
     local body = IsoPlayer.new(cell, desc, square:getX(), square:getY(), square:getZ())
     body:setNpc(true)
-    body:setUsername((definition.name or id) .. " [Neighborhood Life]")
+    body:setUsername("Marisol Vega [Neighborhood Life]")
     body:setGodMod(true)
     body:getModData().NeighborhoodNpcId = id
-    body:dressInNamedOutfit(definition.outfit or "Generic01")
+    body:dressInNamedOutfit("Generic01")
     local exactX, exactY, exactZ
     if row.revision > 0 and row.position
             and math.floor(row.position.x) == square:getX()
@@ -184,39 +176,31 @@ function NLNpcAuthority.start()
     if not player then return end
     local world = NLAuthority.world()
     local rows = NLNeighbors.ensure(world)
-    local reserved = {}
-    for _, id in ipairs(NLNpcAuthority.definitions) do
-        local row = rows[id]
-        if row and row.alive ~= false and not NLNpcAuthority.bodies[id] then
-            -- The first isolated world gets a nearby home for every authored
-            -- neighbor so the vertical slice is immediately observable.
-            -- Subsequent starts restore each saved position independently.
-            if row.revision == 0 and not row.spawned then
-                local square = freeSquareNear(getCell(), math.floor(player:getX()), math.floor(player:getY()),
-                    math.floor(player:getZ()), 2, 4, reserved)
-                if square then
-                    row.home = { x = square:getX(), y = square:getY(), z = square:getZ() }
-                    row.position = { x = square:getX(), y = square:getY(), z = square:getZ() }
-                    row.waypoint = 1
-                    row.spawned = true
-                    reserved[square:getX() .. ":" .. square:getY() .. ":" .. square:getZ()] = true
-                end
-            end
-            if row.revision > 0 then
-                emit(string.format("RESTORE id=%s x=%.2f y=%.2f revision=%d", id,
-                    row.position.x, row.position.y, row.revision))
-            end
-            local body, err = spawnBody(id, row, player)
-            if not body then emit("SPAWN FAILED id=" .. id .. ": " .. tostring(err)) end
+    local id = NLNpcAuthority.definitions[1]
+    local row = rows[id]
+    if not row or row.alive == false then return end
+    -- The first isolated world gets a nearby home so the vertical slice is
+    -- immediately observable.  Subsequent starts restore the saved position.
+    if row.revision == 0 and not row.spawned then
+        local square = freeSquareNear(getCell(), math.floor(player:getX()), math.floor(player:getY()),
+            math.floor(player:getZ()), 2, 4)
+        if square then
+            row.home = { x = square:getX(), y = square:getY(), z = square:getZ() }
+            row.position = { x = square:getX(), y = square:getY(), z = square:getZ() }
+            row.waypoint = 1
+            row.spawned = true
         end
     end
-    local complete = true
-    for _, id in ipairs(NLNpcAuthority.definitions) do
-        if not NLNpcAuthority.bodies[id] then complete = false end
+    if row.revision > 0 then
+        emit(string.format("RESTORE id=%s x=%.2f y=%.2f revision=%d", id,
+            row.position.x, row.position.y, row.revision))
     end
-    if complete then
+    local body, err = spawnBody(id, row, player)
+    if body then
         NLNpcAuthority.started = true
         NLNpcAuthority.startAttempts = 0
+    else
+        emit("SPAWN FAILED: " .. tostring(err))
     end
 end
 

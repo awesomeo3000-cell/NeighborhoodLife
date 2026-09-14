@@ -11,13 +11,13 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence | Actual multiplayer inventory sync, rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
-| Persistent neighborhood NPCs | Production `NpcAuthority` creates Marisol as a native `IsoPlayer` body, persists the authoritative ModData position through periodic checkpoints and `OnSave`, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients clear revision-checked local native replicas on disconnect/menu transitions; QA remains the observer and launcher helper | Native Build 42 body reannouncement to the engine's native player list, verified same-client reconnect, obstacle/danger handling, damage/death and offscreen behavior |
+| Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; QA remains the observer and launcher helper | Native Build 42 body reannouncement to the engine's native player list, verified same-client reconnect, obstacle/danger handling, damage/death and offscreen behavior |
 | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented; bodies supplied by adapter | Actual world-body integration and two-client conversations |
 | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel | In-world UI/interaction checks, richer date activities and two-client synchronization |
 | Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
 | Aspirations and home activities | Not implemented | Goals, progress/rewards, hobbies and functional furnishings |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence and disconnect-clean local native NPC replicas; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5 real host plus guest evidence | Verified same-client reconnect after a server restart, simultaneous gameplay/inventory delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
+| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, three named NPC replicas and disconnect-clean local native NPC replicas; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6 real host plus guest evidence | Verified same-client reconnect after a server restart, simultaneous gameplay/inventory delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -97,6 +97,23 @@ The original broad goal remains active. This ledger is not a reduced definition 
 - The hands-free forced-server-stop probe is recorded in `evidence/v22/`. Build
   42 did not emit a client `OnDisconnect` transition during that probe, so a
   real same-client reconnect is still unverified rather than claimed complete.
+
+## v1.6 three-neighbor vertical-slice evidence
+
+- Production `NLNpcAuthority` now iterates the three authored identities in
+  `NLNeighbors`: Marisol Vega, Kenji Arakawa and Amara Okonkwo. First-world
+  homes are reserved on distinct nearby free squares; later starts use each
+  row's persisted fractional position.
+- `npc_presence` now carries each neighbor's name, gender and outfit metadata.
+  The production client uses that metadata to construct correctly named native
+  replicas and plumbobs instead of hard-coding Marisol.
+- The hands-free B42.20.4 run in `evidence/v23/` recorded all three server
+  bodies moving, both clients receiving `count=3`, and both clients listing all
+  three native replicas in `ObjectListForLua`. This is actual multiplayer
+  evidence for the three-neighbor slice, not a unit-test claim.
+- Native Build 42 body reannouncement, same-client reconnect, inventory/action
+  delivery, obstacle/danger handling, damage/death, offscreen behavior and
+  households remain open gates.
 
 ## v1.3 reconnect-state evidence
 

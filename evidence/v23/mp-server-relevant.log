@@ -1,0 +1,43 @@
+LOG  : Lua          f:0 st:198,716,698> NLQA MP SERVER BOOT: authority=true requireOk=true error=nil
+LOG  : Network      f:0 st:198,721,319> *** SERVER STARTED ****
+LOG  : Network      f:229 st:198,745,852> Connected new client 486388958482004342 ID # 0
+LOG  : Network      f:274 st:198,750,347> Connected new client 72057792768779873 ID # 4
+LOG  : Lua          f:601 st:198,783,122> NLQA NPC PRODUCTION RESTORE id=marisol x=6816.70 y=5259.50 revision=5
+LOG  : Lua          f:601 st:198,783,123> NLQA NPC PRODUCTION SPAWN FAILED id=marisol: no free spawn square
+LOG  : Lua          f:601 st:198,783,123> NLQA NPC PRODUCTION SPAWN FAILED id=kenji: no free spawn square
+LOG  : Lua          f:601 st:198,783,124> NLQA NPC PRODUCTION SPAWN FAILED id=amara: no free spawn square
+LOG  : Lua          f:632 st:198,786,208> NLQA PRODUCTION AUTHORITY COMMAND: refresh username=nl-host
+LOG  : Lua          f:632 st:198,786,211> NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-host revision=1
+LOG  : Lua          f:632 st:198,786,211> NLQA MP SERVER COMMAND: refresh username=nl-host
+LOG  : Lua          f:632 st:198,786,212> NLQA MP SERVER PLAYER: dead=false authorityKey=nl-host argsType=nil
+LOG  : Lua          f:632 st:198,786,214> NLQA MP SERVER GAME-SERVER API: unavailable=attempted index: getPlayers of non-table: null java.lang.RuntimeException
+LOG  : Lua          f:661 st:198,789,024> NLQA NPC PRODUCTION RESTORE id=marisol x=6816.70 y=5259.50 revision=5
+LOG  : Lua          f:661 st:198,789,035> NLQA NPC PRODUCTION SPAWN id=marisol x=6816.70 y=5259.50 z=0
+LOG  : Lua          f:661 st:198,789,037> NLQA NPC PRODUCTION SPAWN id=kenji x=6818.50 y=5260.50 z=0
+LOG  : Lua          f:661 st:198,789,040> NLQA NPC PRODUCTION SPAWN id=amara x=6818.50 y=5264.50 z=0
+LOG  : Lua          f:662 st:198,789,120> NLQA NPC PRODUCTION PATH id=marisol from=6816.70,5259.50 to=6817.00,5259.00 waypoint=1
+LOG  : Lua          f:662 st:198,789,125> NLQA NPC PRODUCTION PATH id=kenji from=6818.50,5260.50 to=6820.00,5260.00 waypoint=1
+LOG  : Lua          f:662 st:198,789,127> NLQA NPC PRODUCTION PATH id=amara from=6818.50,5264.50 to=6820.00,5264.00 waypoint=1
+LOG  : Lua          f:662 st:198,789,203> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:682 st:198,791,201> NLQA PRODUCTION AUTHORITY COMMAND: refresh username=nl-guest
+LOG  : Lua          f:682 st:198,791,202> NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-guest revision=1
+LOG  : Lua          f:682 st:198,791,203> NLQA MP SERVER COMMAND: refresh username=nl-guest
+LOG  : Lua          f:682 st:198,791,203> NLQA MP SERVER PLAYER: dead=false authorityKey=nl-guest argsType=nil
+LOG  : Lua          f:682 st:198,791,205> NLQA MP SERVER GAME-SERVER API: unavailable=attempted index: getPlayers of non-table: null java.lang.RuntimeException
+LOG  : Lua          f:713 st:198,794,233> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:714 st:198,794,352> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:763 st:198,799,230> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:764 st:198,799,353> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:813 st:198,804,227> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:814 st:198,804,351> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:863 st:198,809,230> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:864 st:198,809,355> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:913 st:198,814,229> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:914 st:198,814,355> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:961 st:198,819,014> NLQA NPC PRODUCTION TICK id=marisol x=6817.42 y=5259.50
+LOG  : Lua          f:961 st:198,819,016> NLQA NPC PRODUCTION TICK id=kenji x=6819.22 y=5260.50
+LOG  : Lua          f:961 st:198,819,016> NLQA NPC PRODUCTION TICK id=amara x=6819.22 y=5264.50
+LOG  : Lua          f:963 st:198,819,231> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:964 st:198,819,353> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:970 st:198,819,914> NLQA NPC PRODUCTION MOVE id=marisol x=6817.50 y=5259.50 waypoint=2
+LOG  : Lua          f:971 st:198,820,016> NLQA NPC PRODUCTION PATH id=marisol from=6817.50,5259.50 to=6815.00,5261.00 waypoint=2

@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, wardrobe and relationship prototype (v1.5)
+# Neighborhood Life: careers, wardrobe and relationship prototype (v1.6)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -170,3 +170,9 @@ the same client process.
 The client replica layer now clears native NPC bodies, plumbobs and revision state
 on both `OnDisconnect` and `OnMainMenuEnter`, preventing stale replicas from
 surviving a normal engine disconnect transition.
+
+The production neighborhood adapter now materializes all three authored vertical-
+slice neighbors—Marisol Vega, Kenji Arakawa and Amara Okonkwo—with identity,
+outfit and gender data carried in the authoritative presence stream. Each body
+gets its own nearby persisted home/route, native movement cadence and client
+replica/plumbob rather than sharing Marisol-only construction logic.

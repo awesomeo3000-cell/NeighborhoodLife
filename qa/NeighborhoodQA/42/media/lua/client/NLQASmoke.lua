@@ -3,22 +3,24 @@ require "NL/Journal"
 local productionNpcChecked=false
 Events.OnRenderTick.Add(function()
     if productionNpcChecked or not NLNpcAuthority or not NLNpcAuthority.bodies then return end
-    local body=NLNpcAuthority.bodies.marisol
-    if not body then return end
-    local data=body:getModData()
-    local row=NLAuthority.world().neighbors and NLAuthority.world().neighbors.marisol
-    assert(body:isNpc() and data.NeighborhoodNpcId=="marisol","production NPC identity missing")
-    assert(row and row.position and math.abs(row.position.x-body:getX())<0.01,
-        "production NPC position is not persisted")
-    if NLPlumbob and NLPlumbob.instances["npc:marisol"] then
-        assert(NLPlumbob.instances["npc:marisol"]:positionOverCharacter(),
-            "production NPC plumbob did not anchor")
-        print("NLQA PASS: production NPC body, persisted position and plumbob verified at "
-            ..string.format("%.2f,%.2f",body:getX(),body:getY()))
-    else
-        print("NLQA PASS: production NPC body and persisted position verified at "
-            ..string.format("%.2f,%.2f",body:getX(),body:getY()))
+    local ids={"marisol","kenji","amara"}
+    local positions={}
+    for _,id in ipairs(ids) do
+        local body=NLNpcAuthority.bodies[id]
+        assert(body,"production NPC body missing: "..id)
+        local data=body:getModData()
+        local row=NLAuthority.world().neighbors and NLAuthority.world().neighbors[id]
+        assert(body:isNpc() and data.NeighborhoodNpcId==id,"production NPC identity missing: "..id)
+        assert(row and row.position and math.abs(row.position.x-body:getX())<0.01,
+            "production NPC position is not persisted: "..id)
+        if NLPlumbob and NLPlumbob.instances["npc:"..id] then
+            assert(NLPlumbob.instances["npc:"..id]:positionOverCharacter(),
+                "production NPC plumbob did not anchor: "..id)
+        end
+        positions[#positions+1]=id.."="..string.format("%.2f,%.2f",body:getX(),body:getY())
     end
+    print("NLQA PASS: 3 production NPC bodies, persisted positions and plumbobs verified at "
+        ..table.concat(positions, " "))
     productionNpcChecked=true
 end)
 

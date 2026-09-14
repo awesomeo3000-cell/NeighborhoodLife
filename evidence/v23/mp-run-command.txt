@@ -1,0 +1,9 @@
+MULTI-NPC VERTICAL SLICE COMMAND: & .\tools\launch-multiplayer-qa.ps1
+MULTI-NPC VERTICAL SLICE INPUT: E:\pzmod\test-profile, isolated no-Steam B42.20.4 dedicated server plus two hands-free QA clients; no mouse or keyboard
+LAUNCHER LITERAL OUTPUT: QA multiplayer processes started: server=30980 host=3700 guest=28844
+SERVER OBSERVATION: initial saved-position square was unavailable; retry spawned Marisol, Kenji and Amara at 6816.70,5259.50; 6818.50,5260.50; 6818.50,5264.50.
+SERVER MOVEMENT OBSERVATION: authoritative NPC presence later advanced through Marisol 6817.34,5259.50; Kenji 6819.14,5260.50; Amara 6819.14,5264.50.
+HOST OBSERVATION: NPC PRESENCE count=3 and ObjectListForLua listed Marisol Vega, Kenji Arakawa and Amara Okonkwo; productionNpcReplicas=3.
+GUEST OBSERVATION: NPC PRESENCE count=3 and ObjectListForLua listed Marisol Vega, Kenji Arakawa and Amara Okonkwo; productionNpcReplicas=3.
+PROCESS CLEANUP: server, host and guest processes were stopped after capture; no PZ/Java processes remained.
+CLASSIFICATION: actual isolated multiplayer engine evidence for three native server bodies, named client replicas, plumbobs and moving revisioned presence. It does not prove native Build 42 body reannouncement, same-client reconnect, inventory/action delivery, obstacle/danger handling, damage/death, offscreen behavior or household completion.
