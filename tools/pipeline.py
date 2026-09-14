@@ -66,6 +66,9 @@ def suites(target: Path, engine: bool, record: list[str]) -> None:
         suite_names.append("npc-client")
     if (target / "42/media/lua/client/NL/RemotePlayerClient.lua").exists():
         suite_names.append("remote-player-client")
+    social_client = target / "42/media/lua/client/NL/SocialClient.lua"
+    if social_client.exists() and "lastEvent" in social_client.read_text(encoding="utf-8"):
+        suite_names.append("social-events")
     for suite in suite_names:
         run("LUA", [LUA, ROOT / f"tests/{suite}.lua", target], record=record)
     if engine:

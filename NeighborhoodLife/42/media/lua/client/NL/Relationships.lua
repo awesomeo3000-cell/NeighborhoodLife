@@ -64,6 +64,12 @@ function NLRelationships:prerender()
     local memories=npc.relation.memories
     local latest=memories[#memories]
     if latest then self:drawText("Memory: "..string.sub(latest.text,1,70),16,396,0.30,0.38,0.47,1,UIFont.Small) end
+    local event=NLSocialClient.lastEvent
+    if event then
+        self:drawText("Shared event: "..tostring(event.actor).." "
+            ..tostring(event.action).." with "..tostring(event.npcName),16,423,
+            0.30,0.38,0.47,1,UIFont.Small)
+    end
 end
 function NLRelationships.open(index)
     local panel=NLRelationships.instances[index]

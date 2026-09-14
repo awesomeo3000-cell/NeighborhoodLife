@@ -365,6 +365,12 @@ Events.OnServerCommand.Add(function(module, command, args)
         emit("NPC PRESENCE", "revision="..tostring(args.revision)
             .." count="..tostring(#args.npcs).." entries="..table.concat(rows, ","))
     end
+    if module == "NeighborhoodSocial" and command == "event" and type(args) == "table" then
+        emit("SOCIAL EVENT", "actor="..tostring(args.actor)
+            .." action="..tostring(args.action)
+            .." npc="..tostring(args.npcId)
+            .." message="..tostring(args.message))
+    end
     if module == "NeighborhoodSocial" and command == "snapshot" and type(args) == "table" then
         local rows={}
         for _,entry in ipairs(args.neighbors or {}) do

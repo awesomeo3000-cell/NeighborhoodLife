@@ -399,3 +399,17 @@ household snapshots but remained refresh-only for social interaction. This is
 actual two-client session evidence for a multi-step host conversation; direct
 cross-account conversation synchronization and richer world actions remain
 open gates.
+
+## v1.24 replicated social event feed
+
+Successful production social interactions now broadcast a small event packet to
+all connected clients. The packet identifies the actor, NPC, action and dialogue
+without exposing the actor's private friendship, trust or attraction values.
+`NLSocialClient` retains a bounded twenty-event feed, clears it on disconnect or
+menu entry, and the Relationships panel displays the latest shared event.
+
+`evidence/v43/` records the actual host+guest result: the host completed `chat`
+and `joke`, the dedicated server logged both commands, and the guest received
+both `SOCIAL EVENT` packets. The existing career delivery and household loop
+also completed in the same run. This is cross-client event replication, not a
+claim that private relationship values are shared.

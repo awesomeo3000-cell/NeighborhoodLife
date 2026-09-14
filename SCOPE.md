@@ -12,8 +12,8 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
 | Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, and v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback | Native Build 42 body reannouncement to the engine's native player list, obstacle/danger handling, damage/death and offscreen behavior |
-| NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot; v1.23 completes a real host `chat` -> `joke` sequence against Marisol during a connected host+guest run with cooldown and line-of-sight gates | Direct cross-account conversation synchronization, richer world actions and inventory exchange |
-| Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence | In-world UI/interaction checks, richer date activities and two-client synchronization |
+| NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot; v1.23 completes a real host `chat` -> `joke` sequence against Marisol during a connected host+guest run with cooldown and line-of-sight gates; v1.24 broadcasts successful social events to every connected client without sharing private relationship values | Richer world actions and inventory exchange |
+| Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence; v1.24 adds a bounded replicated social-event feed and Relationships-panel shared-event line, with a real guest receiving the host's `chat` and `joke` events | In-world UI/interaction checks, richer date activities and direct two-client actions/romance synchronization |
 | Household life | v1.16 extends the v1.15 server-authoritative Neighborhood Home with persistent shared storage, exact item-type deposits from unequipped main inventory, member withdrawals, capacity and malformed-item guards, shared-storage UI actions, and real host-to-guest inventory transfer evidence | Home ownership transfer UX, functional furnishings, offline/co-op routines beyond the tested activity, richer item metadata/container transfer |
 | Aspirations and home activities | Delivery milestones already persist and render in the career journal; v1.15 adds three authoritative home routines (tidy, meal, social) with daily replay guards and rewards | Household-linked aspiration goals, hobbies, functional furnishings and broader home progression |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
@@ -532,3 +532,19 @@ The original broad goal remains active. This ledger is not a reduced definition 
   refresh-only. This proves a multi-step conversation inside a real two-client
   session, not two-player social state mutation; direct cross-account
   conversation synchronization remains open.
+
+## v1.24 replicated social event feed
+
+- Production `NLSocialAuthority` now broadcasts only successful interaction
+  events to every online client. Each event carries the authoritative actor,
+  NPC, action and dialogue text, but never exposes another player's private
+  friendship, trust or attraction values.
+- `NLSocialClient` keeps a bounded twenty-event feed, clears it on disconnect
+  and menu entry, and the Relationships panel shows the latest shared event.
+  `tests/social-events.lua` covers receipt, bounded history and cleanup; the
+  engine-VM suite passes the same client implementation.
+- `evidence/v43/` records the real host+guest run: the host completed `chat`
+  and `joke`, the server logged both authoritative commands, and the guest
+  received `SOCIAL EVENT` packets for both actions. The host then completed
+  the existing career and household loop. This proves cross-client social
+  event replication, not shared private relationship mutation.

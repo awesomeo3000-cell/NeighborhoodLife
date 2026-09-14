@@ -1,0 +1,83 @@
+Neighborhood Life v1.24 verification
+
+CHANGED BRANCH/FIELDS
+- Production server branch: NeighborhoodLife/42/media/lua/server/NL/SocialAuthority.lua now broadcasts successful social events to every online player without including private relationship values.
+- Production client branch: NL/SocialClient.lua stores a bounded 20-event feed and clears it on disconnect/menu; NL/Relationships.lua displays the latest shared event.
+- QA branch: NLQAMultiplayer.lua logs replicated SOCIAL EVENT packets; tests/social-events.lua covers feed receipt, bounded history and cleanup; tools/pipeline.py runs the new suite only when the feature exists.
+- Modified hashes: SocialAuthority FA2D32A1DC135C4C791DA8878BC98FE5383F5C1571C40D7C235298E63634FD3A; SocialClient DA61103F1918460EB5026FC05AA67668CBAAE04040594417C8A8E929218F144D; Relationships 1CF7A925D86DA5DF23617946362A11C8499174236BF324DC5E3B2221C3E19A0F; QA E211A98A68816F4E49803E122CA51868282E09C5E4A823B1D0B173C6571A22B2.
+
+ARTIFACTS
+- MODIFIED_FILE: E:\pzmod\evidence\v43\MODIFIED_FILE.zip
+- DIFF_FILE: E:\pzmod\evidence\v43\DIFF_FILE.patch
+- VERIFICATION.txt: E:\pzmod\evidence\v43\VERIFICATION.txt
+- ROLLBACK.sh: E:\pzmod\evidence\v43\ROLLBACK.sh
+- Host gameplay log: E:\pzmod\evidence\v43\mp-host-full.log
+- Guest gameplay log: E:\pzmod\evidence\v43\mp-guest-full.log
+- Server gameplay log: E:\pzmod\evidence\v43\mp-server-full.log
+- Launcher record: E:\pzmod\evidence\v43\mp-run-command.txt
+
+BASELINE
+COMMAND: python tools\pipeline.py test --target evidence\v43\baseline
+INPUT: E:\pzmod
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: pre-change production baseline passed
+EXIT: 0
+
+MODIFIED
+COMMAND: python tools\pipeline.py test
+INPUT: E:\pzmod
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: modified production and engine-VM suites passed, including social-events
+EXIT: 0
+COMMAND: & 'C:\Program Files (x86)\Lua\5.1\lua.exe' tests\social-events.lua NeighborhoodLife
+INPUT: E:\pzmod
+LITERAL OUTPUT: PASS: replicated social event feed, bounded history, disconnect and menu cleanup
+RESULT: targeted social event contract passed
+EXIT: 0
+COMMAND: & 'C:\Program Files (x86)\Lua\5.1\luac.exe' -p qa\NeighborhoodQA\42\media\lua\client\NLQAMultiplayer.lua
+INPUT: E:\pzmod
+LITERAL OUTPUT: [empty]
+RESULT: QA syntax passed
+EXIT: 0
+COMMAND: python tools\pipeline.py package --version v43 --baseline evidence\v43\baseline
+INPUT: E:\pzmod
+LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v43\MODIFIED_FILE.zip
+RESULT: production package built
+EXIT: 0
+COMMAND: python -c "import zipfile; z=zipfile.ZipFile(r'evidence/v43/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('PRODUCTION_QA',any('qa/' in n for n in z.namelist())); print('SOCIAL_EVENT_AUTH',b'broadcastEvent' in z.read('NeighborhoodLife/42/media/lua/server/NL/SocialAuthority.lua')); print('SOCIAL_EVENT_CLIENT',b'lastEvent' in z.read('NeighborhoodLife/42/media/lua/client/NL/SocialClient.lua'))"
+INPUT: E:\pzmod
+LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; PRODUCTION_QA False; SOCIAL_EVENT_AUTH True; SOCIAL_EVENT_CLIENT True
+RESULT: readable production package contains social event replication and excludes QA helpers
+EXIT: 0
+
+ROLLBACK
+COMMAND: & 'C:\Program Files\Git\bin\bash.exe' -lc 'TARGET_ROOT=/e/pzmod/evidence/v43/rollback-target bash /e/pzmod/evidence/v43/ROLLBACK.sh'; python tools\pipeline.py test --target evidence\v43\rollback-target
+INPUT: E:\pzmod\evidence\v43\rollback-target
+LITERAL OUTPUT: ROLLBACK RESTORED: baseline production and QA/test trees
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: rollback restored pre-v1.24 source and passed the suite
+RESTORED STATUS: rollback-target SocialAuthority SHA-256 3BF3B91DAF01C262B3156A4A97A6EA1854DB494E029F7E5DC92DE5177E9D6BE9 matches rollback-baseline; SocialClient SHA-256 EB8470A0709F11A83F6BD23CC68805AD2CAF6D9C00873FDF01F3D32FA4534475 matches rollback-baseline; restored files contain no broadcastEvent or lastEvent
+EXIT: 0
+
+ACTUAL MULTIPLAYER GAMEPLAY
+COMMAND: & .\tools\launch-multiplayer-qa.ps1
+INPUT: E:\pzmod\test-profile
+LITERAL OUTPUT: QA multiplayer processes started: server=992 host=24972 guest=17472
+LITERAL OUTPUT: host NLQA MP SOCIAL ACTION: chat id=marisol step=1
+LITERAL OUTPUT: host NLQA MP SOCIAL EVENT: actor=nl-host action=chat npc=marisol message=I'd like to hear how you've been getting on.
+LITERAL OUTPUT: host NLQA MP SOCIAL ACTION: joke id=marisol step=2
+LITERAL OUTPUT: host NLQA MP SOCIAL CONVERSATION COMPLETE: target=marisol friendship=38 trust=14
+LITERAL OUTPUT: host NLQA MP SOCIAL EVENT: actor=nl-host action=joke npc=marisol message=I needed that laugh today.
+LITERAL OUTPUT: guest NLQA MP SOCIAL EVENT: actor=nl-host action=chat npc=marisol message=I'd like to hear how you've been getting on.
+LITERAL OUTPUT: guest NLQA MP SOCIAL EVENT: actor=nl-host action=joke npc=marisol message=I needed that laugh today.
+LITERAL OUTPUT: server NLQA SOCIAL COMMAND: interact username=nl-host id=marisol action=chat
+LITERAL OUTPUT: server NLQA SOCIAL COMMAND: interact username=nl-host id=marisol action=joke
+LITERAL OUTPUT: host then logged career delivery complete and household tidy complete in the same connected run.
+RESULT: actual two-client engine run proves authoritative cross-client social-event replication while keeping relationship values private; it does not claim direct guest mutation of the host's relationship.
+EXIT: 0 launcher/evidence capture; processes stopped after logs flushed
+
+TEST CLASSIFICATION
+- Mock/unit: tests/social-events.lua, exit 0, plus existing social/domain suites.
+- Engine-VM: consolidated Lua 5.1/Kahlua suite, exit 0.
+- Actual gameplay: evidence/v43 host, guest and server logs above.
+- QA helpers remain outside the production package.

@@ -1,0 +1,206 @@
+--- baseline/NeighborhoodLife/42/media/lua/client/NL/Relationships.lua
++++ modified/NeighborhoodLife/42/media/lua/client/NL/Relationships.lua
+@@ -64,6 +64,12 @@
+     local memories=npc.relation.memories
+     local latest=memories[#memories]
+     if latest then self:drawText("Memory: "..string.sub(latest.text,1,70),16,396,0.30,0.38,0.47,1,UIFont.Small) end
++    local event=NLSocialClient.lastEvent
++    if event then
++        self:drawText("Shared event: "..tostring(event.actor).." "
++            ..tostring(event.action).." with "..tostring(event.npcName),16,423,
++            0.30,0.38,0.47,1,UIFont.Small)
++    end
+ end
+ function NLRelationships.open(index)
+     local panel=NLRelationships.instances[index]
+--- baseline/NeighborhoodLife/42/media/lua/client/NL/SocialClient.lua
++++ modified/NeighborhoodLife/42/media/lua/client/NL/SocialClient.lua
+@@ -1,6 +1,13 @@
+-NLSocialClient={snapshots={}}
++NLSocialClient={snapshots={},events={},lastEvent=nil}
+ function NLSocialClient.receive(module,command,args)
+-    if module~="NeighborhoodSocial" or command~="snapshot" or type(args)~="table" then return end
++    if module~="NeighborhoodSocial" or type(args)~="table" then return end
++    if command=="event" then
++        NLSocialClient.events[#NLSocialClient.events+1]=args
++        while #NLSocialClient.events>20 do table.remove(NLSocialClient.events,1) end
++        NLSocialClient.lastEvent=args
++        return
++    end
++    if command~="snapshot" then return end
+     for i=0,getNumActivePlayers()-1 do
+         local p=getSpecificPlayer(i)
+         if p then
+@@ -20,5 +27,10 @@
+     elseif NLSocialAuthority then NLSocialAuthority.command("NeighborhoodSocial",command,p,args or {}) end
+ end
+ Events.OnServerCommand.Add(NLSocialClient.receive)
+-Events.OnMainMenuEnter.Add(function() NLSocialClient.snapshots={} end)
++Events.OnMainMenuEnter.Add(function()
++    NLSocialClient.snapshots={}; NLSocialClient.events={}; NLSocialClient.lastEvent=nil
++end)
++if Events.OnDisconnect then Events.OnDisconnect.Add(function()
++    NLSocialClient.snapshots={}; NLSocialClient.events={}; NLSocialClient.lastEvent=nil
++end) end
+ return NLSocialClient
+--- baseline/NeighborhoodLife/42/media/lua/server/NL/SocialAuthority.lua
++++ modified/NeighborhoodLife/42/media/lua/server/NL/SocialAuthority.lua
+@@ -3,6 +3,22 @@
+ require "NL/Authority"
+ require "NL/Neighbors"
+ NLSocialAuthority={bodies={},lastRequest={}}
++
++function NLSocialAuthority.broadcastEvent(actor,npcId,action,message)
++    if not isServer() or type(getOnlinePlayers)~="function" then return 0 end
++    local ok,players=pcall(getOnlinePlayers)
++    if not ok or not players then return 0 end
++    local person=NLSocial.people[npcId] or {}
++    local packet={actor=NLAuthority.key(actor),npcId=npcId,
++        npcName=person.name or tostring(npcId),action=action,message=message,
++        revision=getTimestampMs()}
++    local count=0
++    for i=0,players:size()-1 do
++        sendServerCommand(players:get(i),"NeighborhoodSocial","event",packet)
++        count=count+1
++    end
++    return count
++end
+ 
+ function NLSocialAuthority.register(id,body,home)
+     if not NLSocial.people[id] or not body or not NLNeighbors.definitions[id] then return false end
+@@ -51,6 +67,7 @@
+     if NLSocialAuthority.lastRequest[key] and now-NLSocialAuthority.lastRequest[key]<200 then return end
+     NLSocialAuthority.lastRequest[key]=now
+     local message="Updated"
++    local completed=command~="interact"
+     if command=="interact" then
+         local npc=(NLAuthority.world().neighbors or {})[args.id]
+         local body=NLSocialAuthority.bodies[args.id]
+@@ -64,10 +81,14 @@
+             local profile=NLDomain.profile(NLAuthority.world(),key)
+             local ok
+             ok,message=NLSocial.interact(profile,npc,args.action,getGameTime():getWorldAgeHours(),key)
+-            if not ok then message="Not completed: "..message end
++            completed=ok==true
++            if not completed then message="Not completed: "..message end
+         end
+     end
+     NLSocialAuthority.snapshot(player,message)
++    if completed and command=="interact" then
++        NLSocialAuthority.broadcastEvent(player,args.id,args.action,message)
++    end
+     if NLQAMultiplayerServer and command=="interact" then
+         print("NLQA SOCIAL RESULT: username="..tostring(key).." message="..tostring(message))
+     end
+--- baseline/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
++++ modified/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
+@@ -364,6 +364,12 @@
+         end
+         emit("NPC PRESENCE", "revision="..tostring(args.revision)
+             .." count="..tostring(#args.npcs).." entries="..table.concat(rows, ","))
++    end
++    if module == "NeighborhoodSocial" and command == "event" and type(args) == "table" then
++        emit("SOCIAL EVENT", "actor="..tostring(args.actor)
++            .." action="..tostring(args.action)
++            .." npc="..tostring(args.npcId)
++            .." message="..tostring(args.message))
+     end
+     if module == "NeighborhoodSocial" and command == "snapshot" and type(args) == "table" then
+         local rows={}
+--- baseline/tests/social-events.lua
++++ modified/tests/social-events.lua
+@@ -0,0 +1,29 @@
++local root=arg[1]
++package.path=root..'/42/media/lua/client/?.lua;'..package.path
++local serverHandler,menuHandler,disconnectHandler
++Events={
++    OnServerCommand={Add=function(fn) serverHandler=fn end},
++    OnMainMenuEnter={Add=function(fn) menuHandler=fn end},
++    OnDisconnect={Add=function(fn) disconnectHandler=fn end},
++}
++dofile(root..'/42/media/lua/client/NL/SocialClient.lua')
++assert(NLSocialClient.lastEvent==nil and #NLSocialClient.events==0)
++serverHandler('NeighborhoodSocial','event',{
++    actor='nl-host',npcId='marisol',npcName='Marisol Vega',action='chat',message='Hello',revision=1})
++assert(NLSocialClient.lastEvent.actor=='nl-host')
++assert(NLSocialClient.lastEvent.action=='chat')
++assert(#NLSocialClient.events==1)
++for i=2,22 do
++    serverHandler('NeighborhoodSocial','event',{actor='nl-host',npcId='marisol',
++        action='joke',message='event '..i,revision=i})
++end
++assert(#NLSocialClient.events==20,'event feed remains bounded')
++assert(NLSocialClient.events[1].message=='event 3','oldest event rolls off')
++assert(NLSocialClient.lastEvent.message=='event 22')
++disconnectHandler()
++assert(NLSocialClient.lastEvent==nil and #NLSocialClient.events==0,'disconnect clears feed')
++serverHandler('NeighborhoodSocial','event',{actor='nl-guest',npcId='kenji',
++    action='chat',message='after disconnect',revision=23})
++menuHandler()
++assert(NLSocialClient.lastEvent==nil and #NLSocialClient.events==0,'menu clears feed')
++print('PASS: replicated social event feed, bounded history, disconnect and menu cleanup')
+--- baseline/tools/pipeline.py
++++ modified/tools/pipeline.py
+@@ -66,6 +66,9 @@
+         suite_names.append("npc-client")
+     if (target / "42/media/lua/client/NL/RemotePlayerClient.lua").exists():
+         suite_names.append("remote-player-client")
++    social_client = target / "42/media/lua/client/NL/SocialClient.lua"
++    if social_client.exists() and "lastEvent" in social_client.read_text(encoding="utf-8"):
++        suite_names.append("social-events")
+     for suite in suite_names:
+         run("LUA", [LUA, ROOT / f"tests/{suite}.lua", target], record=record)
+     if engine:
+--- baseline/README.md
++++ modified/README.md
+@@ -399,3 +399,17 @@
+ actual two-client session evidence for a multi-step host conversation; direct
+ cross-account conversation synchronization and richer world actions remain
+ open gates.
++
++## v1.24 replicated social event feed
++
++Successful production social interactions now broadcast a small event packet to
++all connected clients. The packet identifies the actor, NPC, action and dialogue
++without exposing the actor's private friendship, trust or attraction values.
++`NLSocialClient` retains a bounded twenty-event feed, clears it on disconnect or
++menu entry, and the Relationships panel displays the latest shared event.
++
++`evidence/v43/` records the actual host+guest result: the host completed `chat`
++and `joke`, the dedicated server logged both commands, and the guest received
++both `SOCIAL EVENT` packets. The existing career delivery and household loop
++also completed in the same run. This is cross-client event replication, not a
++claim that private relationship values are shared.
+--- baseline/SCOPE.md
++++ modified/SCOPE.md
+@@ -12,8 +12,8 @@
+ | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
+ | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
+ | Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, and v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback | Native Build 42 body reannouncement to the engine's native player list, obstacle/danger handling, damage/death and offscreen behavior |
+-| NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot; v1.23 completes a real host `chat` -> `joke` sequence against Marisol during a connected host+guest run with cooldown and line-of-sight gates | Direct cross-account conversation synchronization, richer world actions and inventory exchange |
+-| Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence | In-world UI/interaction checks, richer date activities and two-client synchronization |
++| NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot; v1.23 completes a real host `chat` -> `joke` sequence against Marisol during a connected host+guest run with cooldown and line-of-sight gates; v1.24 broadcasts successful social events to every connected client without sharing private relationship values | Richer world actions and inventory exchange |
++| Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence; v1.24 adds a bounded replicated social-event feed and Relationships-panel shared-event line, with a real guest receiving the host's `chat` and `joke` events | In-world UI/interaction checks, richer date activities and direct two-client actions/romance synchronization |
+ | Household life | v1.16 extends the v1.15 server-authoritative Neighborhood Home with persistent shared storage, exact item-type deposits from unequipped main inventory, member withdrawals, capacity and malformed-item guards, shared-storage UI actions, and real host-to-guest inventory transfer evidence | Home ownership transfer UX, functional furnishings, offline/co-op routines beyond the tested activity, richer item metadata/container transfer |
+ | Aspirations and home activities | Delivery milestones already persist and render in the career journal; v1.15 adds three authoritative home routines (tidy, meal, social) with daily replay guards and rewards | Household-linked aspiration goals, hobbies, functional furnishings and broader home progression |
+ | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
+@@ -532,3 +532,19 @@
+   refresh-only. This proves a multi-step conversation inside a real two-client
+   session, not two-player social state mutation; direct cross-account
+   conversation synchronization remains open.
++
++## v1.24 replicated social event feed
++
++- Production `NLSocialAuthority` now broadcasts only successful interaction
++  events to every online client. Each event carries the authoritative actor,
++  NPC, action and dialogue text, but never exposes another player's private
++  friendship, trust or attraction values.
++- `NLSocialClient` keeps a bounded twenty-event feed, clears it on disconnect
++  and menu entry, and the Relationships panel shows the latest shared event.
++  `tests/social-events.lua` covers receipt, bounded history and cleanup; the
++  engine-VM suite passes the same client implementation.
++- `evidence/v43/` records the real host+guest run: the host completed `chat`
++  and `joke`, the server logged both authoritative commands, and the guest
++  received `SOCIAL EVENT` packets for both actions. The host then completed
++  the existing career and household loop. This proves cross-client social
++  event replication, not shared private relationship mutation.

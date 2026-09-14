@@ -4,6 +4,22 @@ require "NL/Authority"
 require "NL/Neighbors"
 NLSocialAuthority={bodies={},lastRequest={}}
 
+function NLSocialAuthority.broadcastEvent(actor,npcId,action,message)
+    if not isServer() or type(getOnlinePlayers)~="function" then return 0 end
+    local ok,players=pcall(getOnlinePlayers)
+    if not ok or not players then return 0 end
+    local person=NLSocial.people[npcId] or {}
+    local packet={actor=NLAuthority.key(actor),npcId=npcId,
+        npcName=person.name or tostring(npcId),action=action,message=message,
+        revision=getTimestampMs()}
+    local count=0
+    for i=0,players:size()-1 do
+        sendServerCommand(players:get(i),"NeighborhoodSocial","event",packet)
+        count=count+1
+    end
+    return count
+end
+
 function NLSocialAuthority.register(id,body,home)
     if not NLSocial.people[id] or not body or not NLNeighbors.definitions[id] then return false end
     local world=NLAuthority.world()
@@ -51,6 +67,7 @@ function NLSocialAuthority.command(module,command,player,args)
     if NLSocialAuthority.lastRequest[key] and now-NLSocialAuthority.lastRequest[key]<200 then return end
     NLSocialAuthority.lastRequest[key]=now
     local message="Updated"
+    local completed=command~="interact"
     if command=="interact" then
         local npc=(NLAuthority.world().neighbors or {})[args.id]
         local body=NLSocialAuthority.bodies[args.id]
@@ -64,10 +81,14 @@ function NLSocialAuthority.command(module,command,player,args)
             local profile=NLDomain.profile(NLAuthority.world(),key)
             local ok
             ok,message=NLSocial.interact(profile,npc,args.action,getGameTime():getWorldAgeHours(),key)
-            if not ok then message="Not completed: "..message end
+            completed=ok==true
+            if not completed then message="Not completed: "..message end
         end
     end
     NLSocialAuthority.snapshot(player,message)
+    if completed and command=="interact" then
+        NLSocialAuthority.broadcastEvent(player,args.id,args.action,message)
+    end
     if NLQAMultiplayerServer and command=="interact" then
         print("NLQA SOCIAL RESULT: username="..tostring(key).." message="..tostring(message))
     end

@@ -1,6 +1,13 @@
-NLSocialClient={snapshots={}}
+NLSocialClient={snapshots={},events={},lastEvent=nil}
 function NLSocialClient.receive(module,command,args)
-    if module~="NeighborhoodSocial" or command~="snapshot" or type(args)~="table" then return end
+    if module~="NeighborhoodSocial" or type(args)~="table" then return end
+    if command=="event" then
+        NLSocialClient.events[#NLSocialClient.events+1]=args
+        while #NLSocialClient.events>20 do table.remove(NLSocialClient.events,1) end
+        NLSocialClient.lastEvent=args
+        return
+    end
+    if command~="snapshot" then return end
     for i=0,getNumActivePlayers()-1 do
         local p=getSpecificPlayer(i)
         if p then
@@ -20,5 +27,10 @@ function NLSocialClient.request(index,command,args)
     elseif NLSocialAuthority then NLSocialAuthority.command("NeighborhoodSocial",command,p,args or {}) end
 end
 Events.OnServerCommand.Add(NLSocialClient.receive)
-Events.OnMainMenuEnter.Add(function() NLSocialClient.snapshots={} end)
+Events.OnMainMenuEnter.Add(function()
+    NLSocialClient.snapshots={}; NLSocialClient.events={}; NLSocialClient.lastEvent=nil
+end)
+if Events.OnDisconnect then Events.OnDisconnect.Add(function()
+    NLSocialClient.snapshots={}; NLSocialClient.events={}; NLSocialClient.lastEvent=nil
+end) end
 return NLSocialClient
