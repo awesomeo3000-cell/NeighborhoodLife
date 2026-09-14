@@ -7,7 +7,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Requirement | Current implementation | Completion evidence still required |
 |---|---|---|
 | Sims-inspired HUD | Six live adverse-stat bars, fold control, career journal link | Actual host+guest independent values; resolution and accessibility polish |
-| Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.20 uses an 8x11 panel with a 56px lift so the gem sits tiny and close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
+| Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.22 uses a 5x8 panel with a 42px lift so the gem is much smaller and remains close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits | Rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
@@ -504,3 +504,13 @@ The original broad goal remains active. This ledger is not a reduced definition 
   `nl-host`/`nl-guest` bodies in both clients across repeated scans; it did not
   naturally enter the missing-peer fallback branch, so that branch is not
   claimed as actual multiplayer evidence yet.
+
+## v1.22 extra-small plumbob placement
+
+- The production marker is now a 5x8 panel with a 42-pixel world-to-screen
+  lift. This presentation-only reduction keeps the faceted gem directly above
+  the character model without dominating the surrounding scene.
+- The Lua/Kahlua suite verifies the new dimensions and anchor calculation. A
+  fresh hands-free isolated launcher run reached the game state but did not
+  emit the marker assertion before the disposable process was stopped, so this
+  change is not overstated as a fresh actual-game screenshot.

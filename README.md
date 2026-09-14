@@ -370,3 +370,13 @@ the real `nl-host`/`nl-guest` native bodies visible on both clients across
 repeated scans, so it verifies the no-duplicate native path; it did not
 naturally trigger the missing-peer fallback and that branch remains explicitly
 unclaimed as gameplay evidence.
+
+## v1.22 extra-small plumbob placement
+
+The production marker is now a 5x8 panel with a 42-pixel world-to-screen lift.
+The faceted gem remains directly above the character model while occupying
+substantially less screen space. Lua and installed-game Kahlua verification
+passed for the new dimensions and anchor calculation. A fresh hands-free
+isolated launcher run reached the game state but did not emit the marker
+assertion before the disposable process was stopped, so no new screenshot is
+claimed here.

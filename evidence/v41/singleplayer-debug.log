@@ -1,0 +1,262 @@
+[14-09-26 01:55:22.599] LOG  : General      f:0> 14-09-2026 01:55:22.
+[14-09-26 01:55:22.615] LOG  : General      f:0> SLF4J(I): Attempting to load provider "zombie.core.logger.Slf4jBridge" specified via "slf4j.provider" system property.
+[14-09-26 01:55:22.770] LOG  : General      f:0> ===== System specs =====.
+[14-09-26 01:55:22.771] LOG  : General      f:0> CPU: AMD Ryzen 7 7800X3D 8-Core Processor           , vendor: AuthenticAMD, cores: 8, threads: 16.
+[14-09-26 01:55:22.775] LOG  : General      f:0> RAM: 31905 Mb.
+[14-09-26 01:55:22.782] LOG  : General      f:0> Base board: MAG B650 TOMAHAWK WIFI (MS-7D75), vendor: Micro-Star International Co., Ltd..
+[14-09-26 01:55:22.786] LOG  : General      f:0> GPU: AMD Radeon(TM) Graphics, vendor: Advanced Micro Devices, Inc., video memory: 512 Mb, driver: 31.0.24002.92.
+[14-09-26 01:55:22.788] LOG  : General      f:0> GPU: NVIDIA GeForce RTX 4070, vendor: NVIDIA, video memory: 12282 Mb, driver: 32.0.15.9186.
+[14-09-26 01:55:22.790] LOG  : General      f:0> Disk info: 1863.00 Gb, free space: 239.38 Gb, usable space: 239.38 Gb.
+[14-09-26 01:55:22.883] LOG  : General      f:0> OS: Windows 11, version: 10.0, arch: amd64, build: 26200.
+[14-09-26 01:55:22.884] LOG  : General      f:0> JVM (free: 471 Mb, max: 2048 Mb, total available: 502 Mb).
+[14-09-26 01:55:22.884] LOG  : General      f:0> ========================.
+[14-09-26 01:55:22.884] LOG  : General      f:0> java.specification.version=25.
+[14-09-26 01:55:22.884] LOG  : General      f:0> sun.cpu.isalist=amd64.
+[14-09-26 01:55:22.884] LOG  : General      f:0> sun.jnu.encoding=Cp1252.
+[14-09-26 01:55:22.885] LOG  : General      f:0> java.vm.vendor=Azul Systems, Inc..
+[14-09-26 01:55:22.885] LOG  : General      f:0> sun.arch.data.model=64.
+[14-09-26 01:55:22.885] LOG  : General      f:0> java.vendor.url=http://www.azul.com/.
+[14-09-26 01:55:22.885] LOG  : General      f:0> zomboid.steam=0.
+[14-09-26 01:55:22.885] LOG  : General      f:0> java.vm.specification.version=25.
+[14-09-26 01:55:22.885] LOG  : General      f:0> os.name=Windows 11.
+[14-09-26 01:55:22.885] LOG  : General      f:0> sun.java.launcher=SUN_STANDARD.
+[14-09-26 01:55:22.885] LOG  : General      f:0> sun.java.command=zombie.gameStates.MainScreenState -ca....
+[14-09-26 01:55:22.886] LOG  : General      f:0> slf4j.provider=zombie.core.logger.Slf4jBridge.
+[14-09-26 01:55:22.886] LOG  : General      f:0> jdk.debug=release.
+[14-09-26 01:55:22.886] LOG  : General      f:0> sun.cpu.endian=little.
+[14-09-26 01:55:22.886] LOG  : General      f:0> java.specification.vendor=Oracle Corporation.
+[14-09-26 01:55:22.886] LOG  : General      f:0> java.version.date=2025-10-21.
+[14-09-26 01:55:22.886] LOG  : General      f:0> java.home=E:\SteamLibrary\steamapps\common\Proj....
+[14-09-26 01:55:22.886] LOG  : General      f:0> file.separator=\.
+[14-09-26 01:55:22.886] LOG  : General      f:0> java.vm.compressedOopsMode=32-bit.
+[14-09-26 01:55:22.887] LOG  : General      f:0> line.separator=.
+[14-09-26 01:55:22.887] LOG  : General      f:0> java.vm.specification.vendor=Oracle Corporation.
+[14-09-26 01:55:22.887] LOG  : General      f:0> java.specification.name=Java Platform API Specification.
+[14-09-26 01:55:22.887] LOG  : General      f:0> java.awt.headless=true.
+[14-09-26 01:55:22.888] LOG  : General      f:0> sun.management.compiler=HotSpot 64-Bit Tiered Compilers.
+[14-09-26 01:55:22.888] LOG  : General      f:0> java.runtime.version=25.0.1+8-LTS.
+[14-09-26 01:55:22.888] LOG  : General      f:0> stdout.encoding=Cp1252.
+[14-09-26 01:55:22.888] LOG  : General      f:0> os.version=10.0.
+[14-09-26 01:55:22.888] LOG  : General      f:0> jna.nosys=false.
+[14-09-26 01:55:22.888] LOG  : General      f:0> java.runtime.name=OpenJDK Runtime Environment.
+[14-09-26 01:55:22.888] LOG  : General      f:0> file.encoding=UTF-8.
+[14-09-26 01:55:22.888] LOG  : General      f:0> java.vm.name=OpenJDK 64-Bit Server VM.
+[14-09-26 01:55:22.889] LOG  : General      f:0> java.vendor.version=Zulu25.30+17-CA.
+[14-09-26 01:55:22.889] LOG  : General      f:0> jna.loaded=true.
+[14-09-26 01:55:22.889] LOG  : General      f:0> java.vendor.url.bug=http://www.azul.com/support/.
+[14-09-26 01:55:22.889] LOG  : General      f:0> java.version=25.0.1.
+[14-09-26 01:55:22.889] LOG  : General      f:0> os.arch=amd64.
+[14-09-26 01:55:22.890] LOG  : General      f:0> java.vm.specification.name=Java Virtual Machine Specification.
+[14-09-26 01:55:22.890] LOG  : General      f:0> sun.os.patch.level=.
+[14-09-26 01:55:22.890] LOG  : General      f:0> native.encoding=Cp1252.
+[14-09-26 01:55:22.890] LOG  : General      f:0> java.vm.info=mixed mode, sharing.
+[14-09-26 01:55:22.890] LOG  : General      f:0> stderr.encoding=Cp1252.
+[14-09-26 01:55:22.890] LOG  : General      f:0> java.vendor=Azul Systems, Inc..
+[14-09-26 01:55:22.891] LOG  : General      f:0> java.vm.version=25.0.1+8-LTS.
+[14-09-26 01:55:22.891] LOG  : General      f:0> stdin.encoding=Cp1252.
+[14-09-26 01:55:22.891] LOG  : General      f:0> sun.io.unicode.encoding=UnicodeLittle.
+[14-09-26 01:55:22.891] LOG  : General      f:0> java.class.version=69.0.
+[14-09-26 01:55:22.891] LOG  : General      f:0> -----.
+[14-09-26 01:55:22.895] LOG  : General      f:0> version=42.20.4 b0bbce05d5 demo=false.
+[14-09-26 01:55:22.895] LOG  : General      f:0> revision=b0bbce05d5 pzbullet=1.0.0.28.
+[14-09-26 01:55:22.936] LOG  : General      f:0> Logs configuration:.
+[14-09-26 01:55:22.938] LOG  : General      f:0>      General: General.
+[14-09-26 01:55:22.938] LOG  : General      f:0>      Network: General.
+[14-09-26 01:55:22.938] LOG  : General      f:0>          Lua: General.
+[14-09-26 01:55:22.939] LOG  : General      f:0>          Mod: General.
+[14-09-26 01:55:22.939] LOG  : General      f:0>  Multiplayer: General.
+[14-09-26 01:55:22.939] LOG  : General      f:0>      Default: Off.
+[14-09-26 01:55:22.945] LOG  : General      f:0> LightingFPS set to 15.
+[14-09-26 01:55:23.398] LOG  : General      f:0> Display mode changed to 1280x720 freq=0 fullScreen=false.
+[14-09-26 01:55:23.399] LOG  : General      f:0> GraphicsCard: NVIDIA Corporation NVIDIA GeForce RTX 4070/PCIe/SSE2.
+[14-09-26 01:55:23.399] LOG  : General      f:0> OpenGL version: 4.6.0 NVIDIA 591.86.
+[14-09-26 01:55:23.399] LOG  : General      f:0> Desktop resolution 2560x1440.
+[14-09-26 01:55:23.400] LOG  : General      f:0> Initial resolution 1280x720 fullScreen=false.
+[14-09-26 01:55:23.400] LOG  : General      f:0> OpenGL 1.5 buffer objects supported.
+[14-09-26 01:55:23.401] LOG  : General      f:0> VSync: OFF.
+[14-09-26 01:55:26.392] LOG  : General      f:0> Loading networking libraries....
+[14-09-26 01:55:26.393] LOG  : General      f:0> Loading RakNet64....
+[14-09-26 01:55:26.394] LOG  : General      f:0> Loading ZNetNoSteam64....
+[14-09-26 01:55:26.514] LOG  : General      f:0> SteamUtils started without Steam.
+[14-09-26 01:55:26.541] LOG  : General      f:0> Loading Mods.
+[14-09-26 01:55:26.558] LOG  : Mod          f:0> loading NeighborhoodLifeHUD.
+[14-09-26 01:55:26.561] LOG  : Mod          f:0> loading NeighborhoodQA.
+[14-09-26 01:55:26.561] LOG  : General      f:0> Loading Translations.
+[14-09-26 01:55:28.018] LOG  : General      f:0> texturepack: loading UI.
+[14-09-26 01:55:28.018] LOG  : General      f:0> Loading UI texture pack.
+[14-09-26 01:55:28.058] LOG  : General      f:0> texturepack: loading UI2.
+[14-09-26 01:55:28.059] LOG  : General      f:0> Loading UI2 texture pack.
+[14-09-26 01:55:28.067] LOG  : General      f:0> texturepack: loading IconsMoveables.
+[14-09-26 01:55:28.067] LOG  : General      f:0> Loading IconsMoveables texture pack.
+[14-09-26 01:55:28.067] LOG  : General      f:0> texturepack: loading RadioIcons.
+[14-09-26 01:55:28.067] LOG  : General      f:0> Loading RadioIcons texture pack.
+[14-09-26 01:55:28.069] LOG  : General      f:0> texturepack: loading ApComUI.
+[14-09-26 01:55:28.069] LOG  : General      f:0> Loading ApComUI texture pack.
+[14-09-26 01:55:28.070] LOG  : General      f:0> texturepack: loading Mechanics.
+[14-09-26 01:55:28.070] LOG  : General      f:0> Loading Mechanics texture pack.
+[14-09-26 01:55:28.076] LOG  : General      f:0> texturepack: loading WeatherFx.
+[14-09-26 01:55:28.076] LOG  : General      f:0> Loading WeatherFx texture pack.
+[14-09-26 01:55:28.094] LOG  : General      f:0> Loading Scripts.
+[14-09-26 01:55:29.469] ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces..
+[14-09-26 01:55:29.887] ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces..
+[14-09-26 01:55:29.955] WARN : General      f:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil.
+[14-09-26 01:55:29.955] WARN : General      f:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone.
+[14-09-26 01:55:29.957] WARN : General      f:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil.
+[14-09-26 01:55:29.959] WARN : General      f:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone.
+[14-09-26 01:55:29.960] WARN : General      f:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil.
+[14-09-26 01:55:29.961] WARN : General      f:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone.
+[14-09-26 01:55:29.962] WARN : General      f:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil.
+[14-09-26 01:55:29.962] WARN : General      f:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone.
+[14-09-26 01:55:30.001] WARN : General      f:0 at TaggedObjectManager.createTagBits   > manager-> new tag discovered that was not preprocessed, tag: keyduplicator.
+[14-09-26 01:55:30.003] WARN : General      f:0 at TaggedObjectManager.createTagBits   > manager-> new tag discovered that was not preprocessed, tag: choppingblock.
+[14-09-26 01:55:30.060] LOG  : General      f:0> Loading Clothing.
+[14-09-26 01:55:30.322] LOG  : General      f:0> .
+[14-09-26 01:55:32.900] LOG  : General      f:0> Loading Lua.
+[14-09-26 01:55:34.073] WARN : Lua          f:0 at Lua(Vanilla).corpseStorageCheck     > require("ISUI/ISInventoryPaneContextMenu") failed.
+[14-09-26 01:55:34.073] WARN : Lua          f:0 at Lua(Vanilla).corpseStorageCheck     > require("ISUI/ISVehicleMenu") failed.
+[14-09-26 01:55:34.073] WARN : Lua          f:0 at Lua(Vanilla).corpseStorageCheck     > require("ISUI/ISContextMenu") failed.
+[14-09-26 01:55:34.089] WARN : Lua          f:0 at Lua(Vanilla).ISCampingMenu          > require("Camping/CCampfireSystem") failed.
+[14-09-26 01:55:34.428] WARN : Lua          f:0 at Lua(Vanilla).ISInventoryTransferUtil> require("TimedActions/ISInventoryTransferAction") failed.
+[14-09-26 01:55:34.429] WARN : Lua          f:0 at Lua(Vanilla).ISInventoryTransferUtil> require("ISUI/PlayerData/ISPlayerData") failed.
+[14-09-26 01:55:35.689] WARN : Lua          f:0 at Lua(Vanilla).ISAnimalContextMenu    > require("BuildingObjects/ISAnimalPickMateCursor") failed.
+[14-09-26 01:55:35.754] WARN : Lua          f:0 at Lua(Vanilla).TakeSameType           > require("ISUI/InventoryWindow/ISLootWindowControlHandler") failed.
+[14-09-26 01:55:35.756] WARN : Lua          f:0 at Lua(Vanilla).FloorTakeSameType      > require("ISUI/InventoryWindow/ISLootWindowControlHandler") failed.
+[14-09-26 01:55:36.288] WARN : Lua          f:0 at Lua(Vanilla).testUI                 > require("pzapi/ui/ui") failed.
+[14-09-26 01:55:36.422] LOG  : Lua          f:0> OnLoadSoundbanks.
+[14-09-26 01:55:36.424] LOG  : General      f:0> texturepack: loading Tiles2x.
+[14-09-26 01:55:36.424] LOG  : General      f:0> Loading Tiles2x texture pack.
+[14-09-26 01:55:36.470] LOG  : General      f:0> texturepack: loading Overlays2x.
+[14-09-26 01:55:36.470] LOG  : General      f:0> Loading Overlays2x texture pack.
+[14-09-26 01:55:36.472] LOG  : General      f:0> texturepack: loading JumboTrees2x.
+[14-09-26 01:55:36.472] LOG  : General      f:0> Loading JumboTrees2x texture pack.
+[14-09-26 01:55:36.608] LOG  : General      f:0> texturepack: loading JumboTreesBigs2x.
+[14-09-26 01:55:36.608] LOG  : General      f:0> Loading JumboTreesBigs2x texture pack.
+[14-09-26 01:55:36.611] LOG  : General      f:0> texturepack: loading Tiles2x.floor.
+[14-09-26 01:55:36.611] LOG  : General      f:0> Loading Tiles2x.floor texture pack.
+[14-09-26 01:55:36.613] LOG  : General      f:0> texturepack: loading B42ChunkCaching2x.
+[14-09-26 01:55:36.613] LOG  : General      f:0> Loading B42ChunkCaching2x texture pack.
+[14-09-26 01:55:36.614] LOG  : General      f:0> texturepack: loading B42ChunkCaching2x.floor.
+[14-09-26 01:55:36.614] LOG  : General      f:0> Loading B42ChunkCaching2x.floor texture pack.
+[14-09-26 01:55:36.614] LOG  : General      f:0> texturepack: loading Clock2x.
+[14-09-26 01:55:36.614] LOG  : General      f:0> Loading Clock2x texture pack.
+[14-09-26 01:55:36.617] LOG  : General      f:0> Loading models and animations.
+[14-09-26 01:55:37.474] LOG  : General      f:0> Game booting.
+[14-09-26 01:55:43.063] LOG  : General      f:0> STATE: exit zombie.gameStates.TISLogoState.
+[14-09-26 01:55:43.078] LOG  : General      f:0> STATE: exit zombie.gameStates.TermsOfServiceState.
+[14-09-26 01:55:43.639] LOG  : General      f:0> binkId: 1.
+[14-09-26 01:55:43.747] WARN : Lua          f:0 at Lua(Vanilla).namedColorToTable      > env.lua-> namedColorToTable color not found: ProgressYellow.
+[14-09-26 01:55:43.930] LOG  : Lua          f:0> NLQA MP CONNECT ARMED: args.
+[14-09-26 01:55:43.931] LOG  : Lua          f:0> NLQA STAT HUNGER 0..1.
+[14-09-26 01:55:43.931] LOG  : Lua          f:0> NLQA STAT THIRST 0..1.
+[14-09-26 01:55:43.931] LOG  : Lua          f:0> NLQA STAT FATIGUE 0..1.
+[14-09-26 01:55:43.931] LOG  : Lua          f:0> NLQA STAT BOREDOM 0..100.
+[14-09-26 01:55:43.931] LOG  : Lua          f:0> NLQA STAT STRESS 0..1.
+[14-09-26 01:55:43.931] LOG  : Lua          f:0> NLQA STAT UNHAPPINESS 0..100.
+[14-09-26 01:55:43.932] LOG  : Lua          f:0> NLQA PASS: actual item/perk/stat APIs and real ISPanel journal construction.
+[14-09-26 01:55:43.965] LOG  : General      f:0> binkId: 2.
+[14-09-26 01:55:43.995] LOG  : General      f:0> STATE: exit zombie.gameStates.MainScreenState.
+[14-09-26 01:55:43.996] LOG  : General      f:0> LOADED UP A TOTAL OF 575 TEXTURES.
+[14-09-26 01:55:44.278] LOG  : General      f:0> STATE: exit zombie.gameStates.LoadingQueueState.
+[14-09-26 01:55:44.657] LOG  : Lua          f:0> Initializing Randomized World Tabletop Clutter Tables.
+[14-09-26 01:55:44.691] WARN : Lua          f:0 at Lua(Vanilla).Features               > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua.
+[14-09-26 01:55:44.713] WARN : Lua          f:0 at Lua(Vanilla).Biomes                 > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua.
+[14-09-26 01:55:44.724] WARN : Lua          f:0 at Lua(Vanilla).Selection              > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua.
+[14-09-26 01:55:44.724] WARN : Lua          f:0 at Lua(Vanilla).Veins                  > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua.
+[14-09-26 01:55:44.725] WARN : Lua          f:0 at Lua(Vanilla).Roads                  > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua.
+[14-09-26 01:55:44.725] WARN : Lua          f:0 at Lua(Vanilla).WorldGen               > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/attachments/Priorities.lua.
+[14-09-26 01:55:44.756] LOG  : Lua          f:0> NLQA MP SERVER BOOT: authority=true requireOk=true error=nil.
+[14-09-26 01:55:44.756] LOG  : Lua          f:0> NLQA MP SERVER BRIDGE: getClass=nil.
+[14-09-26 01:55:44.757] LOG  : Lua          f:0> NLQA MP SERVER BRIDGE: importClass=nil.
+[14-09-26 01:55:44.757] LOG  : Lua          f:0> NLQA MP SERVER BRIDGE: Java=nil.
+[14-09-26 01:55:44.757] LOG  : Lua          f:0> NLQA MP SERVER BRIDGE: luautils=table.
+[14-09-26 01:55:44.757] LOG  : Lua          f:0> NLQA MP SERVER BRIDGE: GameServer=nil.
+[14-09-26 01:55:44.757] LOG  : Lua          f:0> NLQA MP SERVER BRIDGE: GameClient=nil.
+[14-09-26 01:55:44.757] LOG  : Lua          f:0> NLQA MP SERVER BRIDGE: luautilsKeys=concatenateArrays,countItemsRecursive,equipItems,exportGlobals,findRootInventory,getConditionRGB,getCorrectSquareForWall,getNextTiles,haveToBeTransfered,haveToBeTransferedWhileTrading,indexOf,isEquipped,isSquareAdjacentToSquare,lerp,okModal,packString,remove,roughlyEqual,round,split,splitJavaStyle,stringEnds,stringStarts,tableContains,trim,unpackString,updatePerksXp,walk,walkAdj,walkAdjAltTest,walkAdjFence,walkAdjObject,walkAdjSquares,walkAdjSquaresExcluded,walkAdjTest,walkAdjWall,walkAdjWindowOrDoor,walkToContainer,walkToObject,weaponLowerCondition.
+[14-09-26 01:55:44.762] ERROR: General      f:0 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first world object face for recipe icon..
+[14-09-26 01:55:44.768] LOG  : General      f:0> SafeMode is off.
+[14-09-26 01:55:44.848] LOG  : General      f:0> Loading worldgen params.
+[14-09-26 01:55:44.849] LOG  : General      f:0> IsoMetaGrid.Create: begin scanning directories.
+[14-09-26 01:55:44.850] LOG  : General      f:0> Looking in these map folders:.
+[14-09-26 01:55:44.850] LOG  : General      f:0> <End of map-folders list>.
+[14-09-26 01:55:44.888] LOG  : General      f:0> IsoMetaGrid.Create: X: [ -250 250 ], Y: [ -250 250 ].
+[14-09-26 01:55:44.888] LOG  : General      f:0> World seed: vaeZfszPtLptRCtp 1004588780.
+[14-09-26 01:55:44.889] LOG  : General      f:0> IsoMetaGrid.Create: finished scanning directories in 0.039 seconds.
+[14-09-26 01:55:44.941] LOG  : General      f:0> IsoMetaGrid.Create: begin loading.
+[14-09-26 01:55:44.942] LOG  : General      f:0> VehiclesDB2.init() start.
+[14-09-26 01:55:44.950] LOG  : General      f:0> VehiclesDB2.init() end.
+[14-09-26 01:55:44.950] LOG  : General      f:0> triggerEvent OnInitWorld.
+[14-09-26 01:55:44.963] LOG  : General      f:0> SandboxOptions.load() start.
+[14-09-26 01:55:44.966] LOG  : General      f:0> SandboxOptions.load() end.
+[14-09-26 01:55:44.966] LOG  : General      f:0> ItemPickerJava.Parse() start.
+[14-09-26 01:55:45.196] LOG  : General      f:0> ItemPickerJava.Parse() end.
+[14-09-26 01:55:45.196] LOG  : General      f:0> LoadTileDefinitions start.
+[14-09-26 01:55:46.194] LOG  : General      f:0> LoadTileDefinitions end.
+[14-09-26 01:55:46.209] LOG  : General      f:0> triggerEvent OnLoadedTileDefinitions.
+[14-09-26 01:55:46.324] LOG  : General      f:0> loadAnimalDefinitions start.
+[14-09-26 01:55:46.441] LOG  : General      f:0> loadAnimalDefinitions end.
+[14-09-26 01:55:46.464] LOG  : General      f:0> GameTime.init() and load() start.
+[14-09-26 01:55:46.469] LOG  : General      f:0> GameTime.init() and load() end.
+[14-09-26 01:55:46.469] LOG  : General      f:0> ZomboidRadio.Init() start.
+[14-09-26 01:55:46.712] LOG  : Lua          f:0> scriptmanager = zombie.radio.scripting.RadioScriptManager@7fd3138d, isNewGame = false.
+[14-09-26 01:55:46.712] LOG  : Lua          f:0> name = Automated Emergency Broadcast System, freq = 91800, cat = Emergency, uuid = EMRG-711984.
+[14-09-26 01:55:46.719] LOG  : General      f:0> Radio Loading channels....
+[14-09-26 01:55:46.719] LOG  : General      f:0> ZomboidRadio.Init() end.
+[14-09-26 01:55:46.720] LOG  : General      f:0> GlobalModData.init() start.
+[14-09-26 01:55:46.740] LOG  : General      f:0> GlobalModData.init() end.
+[14-09-26 01:55:46.740] LOG  : General      f:0> InstanceTracker.load() start.
+[14-09-26 01:55:46.750] LOG  : General      f:0> InstanceTracker.load() end.
+[14-09-26 01:55:46.750] LOG  : General      f:0> ErosionGlobals.Boot() start.
+[14-09-26 01:55:46.798] LOG  : General      f:0> ErosionGlobals.Boot() end.
+[14-09-26 01:55:46.798] LOG  : General      f:0> WorldDictionary.init() start.
+[14-09-26 01:55:46.799] LOG  : General      f:0> WorldDictionary: Checking dictionary....
+[14-09-26 01:55:46.817] LOG  : General      f:0> Loading WorldDictionary:E:\pzmod\test-profile\Saves\Apocalypse\2026-09-12_20-19-59\WorldDictionary.bin.
+[14-09-26 01:55:46.952] LOG  : General      f:0> WorldDictionary.init() end.
+[14-09-26 01:55:46.958] LOG  : General      f:0> GameEntityManager.Init() start.
+[14-09-26 01:55:46.987] LOG  : General      f:0> GameEntityManager.Init() end.
+[14-09-26 01:55:46.987] LOG  : General      f:0> PersistentOutfits.init() start.
+[14-09-26 01:55:46.995] LOG  : General      f:0> PersistentOutfits.init() end.
+[14-09-26 01:55:47.427] LOG  : General      f:0> IsoMetaGrid.Create: finished loading in 2.486 seconds.
+[14-09-26 01:55:48.233] ERROR: Lua          f:0 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0.
+[14-09-26 01:55:49.067] WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/West Point, KY/objects.lua.
+[14-09-26 01:55:49.245] WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Valley Station, KY/objects.lua.
+[14-09-26 01:55:49.395] WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Rosewood, KY/objects.lua.
+[14-09-26 01:55:49.540] WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Riverside, KY/objects.lua.
+[14-09-26 01:55:49.697] WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/March Ridge, KY/objects.lua.
+[14-09-26 01:55:49.839] WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Irvington, KY/objects.lua.
+[14-09-26 01:55:49.982] WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Fallas Lake, KY/objects.lua.
+[14-09-26 01:55:50.125] WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Ekron, KY/objects.lua.
+[14-09-26 01:55:50.272] WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Echo Creek, KY/objects.lua.
+[14-09-26 01:55:50.415] WARN : Lua          f:0 at Lua(Vanilla).doMapZones             > can't find map objects file: media/maps/Brandenburg, KY/objects.lua.
+[14-09-26 01:55:50.662] ERROR: General      f:0 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0.
+[14-09-26 01:55:50.842] ERROR: General      f:0 at IsoMetaGrid.load                    > invalid room metaID #231 in cell 25,33 while reading map_meta.bin.
+[14-09-26 01:55:50.842] ERROR: General      f:0 at IsoMetaGrid.load                    > invalid room metaID #327914 in cell 25,33 while reading map_meta.bin.
+[14-09-26 01:55:50.842] ERROR: General      f:0 at IsoMetaGrid.load                    > invalid room metaID #327911 in cell 25,33 while reading map_meta.bin.
+[14-09-26 01:55:50.842] ERROR: General      f:0 at IsoMetaGrid.load                    > invalid room metaID #655594 in cell 25,33 while reading map_meta.bin.
+[14-09-26 01:55:50.895] LOG  : General      f:0> loading 8867 zones from map_zone.bin.
+[14-09-26 01:55:51.122] LOG  : General      f:0> loading 121 zones from map_animals.bin.
+[14-09-26 01:55:51.166] LOG  : General      f:0> Max #ZONES on one chunk is 27.
+[14-09-26 01:55:51.166] LOG  : General      f:0> triggerEvent OnLoadedMapZones.
+[14-09-26 01:55:51.348] LOG  : General      f:0> ItemConfigurator.Preprocess() start.
+[14-09-26 01:55:51.387] LOG  : General      f:0> ItemConfigurator.Preprocess() end.
+[14-09-26 01:55:51.393] LOG  : General      f:0> MapCollisionData.init() start.
+[14-09-26 01:55:52.293] LOG  : General      f:0> MapCollisionData.init() end.
+[14-09-26 01:55:52.293] LOG  : General      f:0> AnimalPopulationManager.init() start.
+[14-09-26 01:55:52.330] LOG  : General      f:0> AnimalPopulationManager.init() end.
+[14-09-26 01:55:52.330] LOG  : General      f:0> ZombiePopulationManager.init() start.
+[14-09-26 01:55:52.380] LOG  : General      f:0> ZombiePopulationManager.init() end.
+[14-09-26 01:55:52.380] LOG  : General      f:0> Pathfind init() start.
+[14-09-26 01:55:52.394] LOG  : General      f:0> Pathfind init() end.
+[14-09-26 01:55:52.407] LOG  : General      f:0> WorldStreamer.create() start.
+[14-09-26 01:55:52.409] LOG  : General      f:0> WorldStreamer.create() end.
+[14-09-26 01:55:52.409] LOG  : General      f:0> CellLoader.LoadCellBinaryChunk start.
+[14-09-26 01:55:52.412] LOG  : General      f:0> CellLoader.LoadCellBinaryChunk start.
+[14-09-26 01:55:52.413] LOG  : General      f:0> MapItem.LoadWorldMap() start.
+[14-09-26 01:55:52.416] LOG  : General      f:0> MapItem.LoadWorldMap() start.
+[14-09-26 01:55:52.416] LOG  : General      f:0> WorldStreamer.isBusy() loop start.
+[14-09-26 01:55:54.150] LOG  : General      f:0> WorldStreamer.isBusy() loop end.
+[14-09-26 01:55:55.688] LOG  : General      f:0> MetaTracker.load() start.
+[14-09-26 01:55:55.690] LOG  : General      f:0> MetaTracker.load() end.
+[14-09-26 01:55:55.712] LOG  : General      f:0> triggerEvent OnGameTimeLoaded.
+[14-09-26 01:55:55.712] LOG  : General      f:0> GlobalObjects.initSystems() start.
+[14-09-26 01:55:55.735] LOG  : General      f:0> GlobalObjects.initSystems() end.
+[14-09-26 01:55:55.753] LOG  : General      f:0> bWaitForAssetLoadingToFinish2 start.

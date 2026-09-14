@@ -32,21 +32,21 @@ local panel=NLPlumbob.register('test:character',character,0)
 assert(panel.texture.path=='media/textures/NL_Plumbob.png')
 assert(panel.visible,"registered plumbob must start visible so UIManager can prerender it")
 panel:prerender()
-assert(panel.visible and panel.x==100-math.floor(panel.width/2))
+assert(panel.visible and panel.x==math.floor(100-panel.width/2))
 local expectedLift = NLPlumbob.baseLift or 128
 assert(panel.y==300-panel.height-expectedLift)
 if NLPlumbob.baseWidth then
     assert(panel.width==NLPlumbob.baseWidth and panel.height==NLPlumbob.baseHeight,
         "plumbob panel uses its configured compact dimensions")
-    if NLPlumbob.baseWidth==8 then
-        assert(NLPlumbob.baseHeight==11,
-            "plumbob uses the tiny in-world marker dimensions")
+    if NLPlumbob.baseWidth==5 then
+        assert(NLPlumbob.baseHeight==8,
+            "plumbob uses the very small in-world marker dimensions")
     end
     if NLPlumbob.baseWidth <= 12 then
         assert(NLPlumbob.baseHeight <= 16,
             "plumbob remains smaller than the character model")
-        if NLPlumbob.baseWidth==8 then
-            assert(NLPlumbob.baseLift <= 56,
+        if NLPlumbob.baseWidth==5 then
+            assert(NLPlumbob.baseLift <= 42,
                 "plumbob tip stays close to the character")
         else
             assert(NLPlumbob.baseLift <= 80,

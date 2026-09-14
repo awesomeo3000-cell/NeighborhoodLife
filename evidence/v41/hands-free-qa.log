@@ -1,0 +1,150 @@
+PASS: ready loading screen acknowledged without OS input
+PASS: ready loading screen acknowledged without OS input
+PASS: ready loading screen acknowledged without OS input
+PASS: OnSteamGameJoin invoked with engine client identity nl-host
+PASS: ready loading screen acknowledged without OS input
+PASS: OnSteamGameJoin invoked with engine client identity nl-host
+PASS: ready loading screen acknowledged without OS input
+PASS: OnSteamGameJoin invoked with engine client identity nl-host
+PASS: ready loading screen acknowledged without OS input
+PASS: OnSteamGameJoin invoked with engine client identity nl-host
+PASS: ready loading screen acknowledged without OS input
+PASS: OnSteamGameJoin invoked with engine client identity nl-host
+PASS: ready loading screen acknowledged without OS input
+PASS: OnSteamGameJoin invoked with engine client identity nl-host
+PASS: ready loading screen acknowledged without OS input
+PASS: OnSteamGameJoin invoked with engine client identity nl-host
+PASS: ready loading screen acknowledged without OS input
+PASS: OnSteamGameJoin invoked with engine client identity nl-host
+PASS: ready loading screen acknowledged without OS input
+PASS: OnSteamGameJoin invoked with engine client identity nl-host
+PASS: ready loading screen acknowledged without OS input
+PASS: OnSteamGameJoin invoked with engine client identity nl-host
+PASS: ready loading screen acknowledged without OS input
+PASS: OnSteamGameJoin invoked with engine client identity nl-host
+PASS: ready loading screen acknowledged without OS input
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.TermsOfServiceState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.TermsOfServiceState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
