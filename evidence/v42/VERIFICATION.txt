@@ -1,0 +1,80 @@
+Neighborhood Life v1.23 verification
+
+CHANGED BRANCH/FIELD
+- QA-only multiplayer evidence branch: qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua.
+- Added a real multi-step social state machine: introduce/chat/joke sequencing, 3600-frame cooldown between authoritative interactions, line-of-sight-aware adjacent viewpoint setup for the disposable QA client, and explicit SOCIAL CONVERSATION COMPLETE logging.
+- Production social authority was not moved into QA and client coordinates are never accepted as social state.
+- QA baseline SHA-256 before editing: F807C625EBD4558ED94B7932CB6462A0F1933588932F4664BC683DF37C1DB74D
+- QA modified SHA-256: E62AACACB88F183CF1A10ADF9336CB23706C673CD904F53282CC03E6B2FCF386
+
+ARTIFACTS
+- MODIFIED_FILE: E:\pzmod\evidence\v42\MODIFIED_FILE.zip
+- DIFF_FILE: E:\pzmod\evidence\v42\DIFF_FILE.patch
+- VERIFICATION.txt: E:\pzmod\evidence\v42\VERIFICATION.txt
+- ROLLBACK.sh: E:\pzmod\evidence\v42\ROLLBACK.sh
+- Host gameplay log: E:\pzmod\evidence\v42\mp-host-full.log
+- Guest gameplay log: E:\pzmod\evidence\v42\mp-guest-full.log
+- Server gameplay log: E:\pzmod\evidence\v42\mp-server-full.log
+- Launcher record: E:\pzmod\evidence\v42\mp-run-command.txt
+
+BASELINE
+COMMAND: python tools\pipeline.py test --target evidence\v42\baseline
+INPUT: E:\pzmod
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: pre-change production baseline passed
+EXIT: 0
+
+MODIFIED
+COMMAND: python tools\pipeline.py test
+INPUT: E:\pzmod
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: production regression suite passed
+EXIT: 0
+COMMAND: & 'C:\Program Files (x86)\Lua\5.1\luac.exe' -p qa\NeighborhoodQA\42\media\lua\client\NLQAMultiplayer.lua
+INPUT: E:\pzmod
+LITERAL OUTPUT: [empty]
+RESULT: QA-only Lua syntax passed
+EXIT: 0
+COMMAND: python tools\pipeline.py package --version v42 --baseline evidence\v42\baseline
+INPUT: E:\pzmod
+LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v42\MODIFIED_FILE.zip
+RESULT: production package built; QA remains outside the package
+EXIT: 0
+COMMAND: python -c "import zipfile; z=zipfile.ZipFile(r'evidence/v42/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('PRODUCTION_QA',any('qa/' in n for n in z.namelist())); print('SOCIAL_PRODUCTION',any(n.endswith('42/media/lua/server/NL/SocialAuthority.lua') for n in z.namelist()))"
+INPUT: E:\pzmod
+LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; PRODUCTION_QA False; SOCIAL_PRODUCTION True
+RESULT: readable production package excludes QA helpers
+EXIT: 0
+
+ROLLBACK
+COMMAND: & 'C:\Program Files\Git\bin\bash.exe' -lc 'TARGET_ROOT=/e/pzmod/evidence/v42/rollback-target bash /e/pzmod/evidence/v42/ROLLBACK.sh'; python tools\pipeline.py test --target evidence\v42\rollback-target
+INPUT: E:\pzmod\evidence\v42\rollback-target
+LITERAL OUTPUT: ROLLBACK RESTORED: baseline production and QA/test trees
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: rollback restored the pre-v1.23 QA and production trees and passed verification
+RESTORED STATUS: rollback-target QA file SHA-256 28C1EED77B9BA1D15C3B85703A332F35A5A70986A2AC46F7146AD7509C725C21 matches rollback-baseline SHA-256 28C1EED77B9BA1D15C3B85703A332F35A5A70986A2AC46F7146AD7509C725C21; restored social helper no longer contains socialCooldownFrames
+EXIT: 0
+
+ACTUAL MULTIPLAYER GAMEPLAY
+COMMAND: & .\tools\launch-multiplayer-qa.ps1
+INPUT: E:\pzmod\test-profile
+LITERAL OUTPUT: QA multiplayer processes started: server=30624 host=35420 guest=3464
+LITERAL OUTPUT: host NLQA MP SOCIAL ACTION: chat id=marisol step=1
+LITERAL OUTPUT: host NLQA MP SOCIAL STEP RESULT: chat friendship=24 trust=11
+LITERAL OUTPUT: host NLQA MP SOCIAL ACTION: joke id=marisol step=2
+LITERAL OUTPUT: host NLQA MP SOCIAL CONVERSATION COMPLETE: target=marisol friendship=28 trust=11
+LITERAL OUTPUT: server NLQA SOCIAL COMMAND: interact username=nl-host id=marisol action=chat
+LITERAL OUTPUT: server NLQA SOCIAL RESULT: username=nl-host message=I'd like to hear how you've been getting on.
+LITERAL OUTPUT: server NLQA SOCIAL COMMAND: interact username=nl-host id=marisol action=joke
+LITERAL OUTPUT: server NLQA SOCIAL RESULT: username=nl-host message=I needed that laugh today.
+LITERAL OUTPUT: host then logged career pickup localInventory=9, delivery complete +20 career XP/+10 credits, household invite, shared storage, guest withdrawal and tidy +5 credits.
+LITERAL OUTPUT: guest logged household join and authoritative presence/NPC snapshots while remaining a separate account.
+RESULT: actual two-client engine run proves a multi-step production conversation for the host inside a real connected session; direct cross-account conversation synchronization remains open
+EXIT: 0 launcher/evidence capture; processes stopped after logs flushed
+
+TEST CLASSIFICATION
+- Mock/unit: existing social domain/authority suites remain unit fixtures.
+- Engine-VM: consolidated Lua 5.1/Kahlua suite, exit 0.
+- Actual gameplay: evidence/v42 host, guest and server logs above.
+- QA helpers remain outside the production package.
+

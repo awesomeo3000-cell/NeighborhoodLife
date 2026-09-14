@@ -3,7 +3,10 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     presenceCount = 0, movementFrame = 0, movementSent = false,
     remoteScanFrame = 0, remoteScanCount = 0, remoteScanLogged = false,
     socialFrame = 0, socialRefreshSent = false, socialActionSent = false,
-    socialActionScheduled = false, socialTarget = nil, socialActionDue = 0,
+    socialActionScheduled = false, socialActionName = nil, socialTarget = nil,
+    socialActionDue = 0, socialActionCount = 0, socialActionPrepared = false,
+    socialPositioned = false,
+    socialConversationComplete = false,
     socialResultLogged = false, careerSeedSent = false, careerSeeded = false,
     careerSelectSent = false, careerDeliverSent = false, careerResultLogged = false,
     careerDue = 0, careerStage = 0, careerPickupAttempted = false,
@@ -16,6 +19,7 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     householdStoreSent = false, householdStoreObserved = false,
     householdRetrieveSent = false, householdRetrieveObserved = false,
     householdTaskDue = 0, householdResetSent = false }
+NLQAMultiplayer.socialCooldownFrames = 3600
 
 local function emit(label, value)
     print("NLQA MP " .. label .. ": " .. tostring(value))
@@ -216,6 +220,51 @@ local function qaInventoryCount(player, fullType)
     return count
 end
 
+-- QA-only viewpoint setup. The saved host can be several tiles from the
+-- moving Marisol body after an earlier persistence run, so place the host on
+-- a free adjacent square before the production proximity gate is exercised.
+local function positionHostForSocial(targetId)
+    if qaIdentity().username ~= "nl-host" then return false end
+    local player=getSpecificPlayer(0)
+    local npc=NLNpcClient and NLNpcClient.bodies
+        and NLNpcClient.bodies[targetId or "marisol"]
+    local cell=getCell and getCell()
+    if not player or not npc or not cell then return false end
+    local z=math.floor(npc:getZ())
+    local nx,ny=math.floor(npc:getX()),math.floor(npc:getY())
+    local candidates={{nx+1,ny},{nx-1,ny},{nx,ny+1},{nx,ny-1}}
+    local fallback=nil
+    for _,point in ipairs(candidates) do
+        local square=cell:getGridSquare(point[1],point[2],z)
+        if square and square:isFree(false) then
+            fallback=fallback or point
+            if player.teleportTo then player:teleportTo(point[1]+0.5,point[2]+0.5,z)
+            else
+                player:setX(point[1]+0.5); player:setY(point[2]+0.5)
+                if player.setZ then player:setZ(z) end
+                if player.setCurrent then player:setCurrent(square) end
+            end
+            local visible=true
+            if player.CanSee then
+                local visibleOk,visibleValue=pcall(player.CanSee,player,npc)
+                visible=visibleOk and visibleValue==true
+            end
+            emit("SOCIAL VIEWPOINT CHECK", string.format("target=%s square=%d,%d,%d canSee=%s",
+                tostring(targetId or "marisol"),point[1],point[2],z,tostring(visible)))
+            if visible then
+                NLQAMultiplayer.socialPositioned=true
+                emit("SOCIAL VIEWPOINT", string.format("host beside %s at %d,%d,%d",
+                    tostring(targetId or "marisol"),point[1],point[2],z))
+                return true
+            end
+        end
+    end
+    if fallback then
+        emit("SOCIAL VIEWPOINT WAIT", "no visible adjacent square yet")
+    end
+    return false
+end
+
 pcall(require, "NL/HouseholdClient")
 
 local function queueCareerWorldPickup(itemType, expected)
@@ -327,15 +376,43 @@ Events.OnServerCommand.Add(function(module, command, args)
         emit("SOCIAL SNAPSHOT", "message="..tostring(args.message)
             .." username="..tostring(args.username).." entries="..table.concat(rows, ","))
         local hostMet=false
+        local hostEntry=nil
         for _,entry in ipairs(args.neighbors or {}) do
             if entry.id=="marisol" and entry.relation and entry.relation.met then hostMet=true end
+            if entry.id==NLQAMultiplayer.socialTarget then hostEntry=entry end
         end
-        if qaIdentity().username == "nl-host" and args.message
-                and (string.find(args.message, "I'm ", 1, true) or hostMet)
-                and not NLQAMultiplayer.socialResultLogged then
-            NLQAMultiplayer.socialResultLogged=true
-            emit("SOCIAL RESULT", hostMet and "host introduction already persisted"
-                or "host introduction delivered")
+        if qaIdentity().username == "nl-host" and hostEntry
+                and NLQAMultiplayer.socialActionSent and hostEntry.relation then
+            local relation=hostEntry.relation
+            local action=NLQAMultiplayer.socialActionName
+            local nextAction=nil
+            if action=="introduce" and relation.met then
+                emit("SOCIAL STEP RESULT", "introduce met=true friendship="
+                    ..tostring(relation.friendship).." trust="..tostring(relation.trust))
+                nextAction="chat"
+            elseif action=="chat" and (tonumber(relation.friendship or 0) or 0)>=12
+                    and (tonumber(relation.trust or 0) or 0)>=5 then
+                emit("SOCIAL STEP RESULT", "chat friendship="..tostring(relation.friendship)
+                    .." trust="..tostring(relation.trust))
+                nextAction="joke"
+            elseif action=="joke" and (tonumber(relation.friendship or 0) or 0)>=16 then
+                NLQAMultiplayer.socialConversationComplete=true
+                NLQAMultiplayer.socialResultLogged=true
+                NLQAMultiplayer.socialActionSent=false
+                emit("SOCIAL CONVERSATION COMPLETE", "target="..tostring(NLQAMultiplayer.socialTarget)
+                    .." friendship="..tostring(relation.friendship)
+                    .." trust="..tostring(relation.trust))
+            end
+            if nextAction then
+                NLQAMultiplayer.socialActionSent=false
+                NLQAMultiplayer.socialActionName=nextAction
+                NLQAMultiplayer.socialActionScheduled=true
+                NLQAMultiplayer.socialActionPrepared=false
+                NLQAMultiplayer.socialActionDue=NLQAMultiplayer.socialFrame
+                    +NLQAMultiplayer.socialCooldownFrames
+                emit("SOCIAL ACTION SCHEDULED", nextAction
+                    .." id="..tostring(NLQAMultiplayer.socialTarget))
+            end
         end
     end
     if module == "NeighborhoodQA" and command == "career_seeded" and type(args) == "table"
@@ -411,12 +488,16 @@ Events.OnServerCommand.Add(function(module, command, args)
 end)
 
 -- QA-only world-body conversation probe. The host starts beside the persisted
--- neighborhood slice and introduces itself through the real production social
--- command. The guest requests the same snapshot from its separate position;
--- its result remains proximity-gated rather than being fabricated locally.
+-- neighborhood slice and completes introduce -> chat -> joke through the real
+-- production social command. The guest requests the same snapshot from its
+-- separate position; its result remains proximity-gated rather than being
+-- fabricated locally.
 Events.OnRenderTick.Add(function()
     if not isClient() or not NLSocialClient then return end
     NLQAMultiplayer.socialFrame=NLQAMultiplayer.socialFrame+1
+    if NLQAMultiplayer.socialFrame>=840 and not NLQAMultiplayer.socialPositioned then
+        positionHostForSocial()
+    end
     if qaIdentity().username=="nl-host" and not NLQAMultiplayer.householdResetSent then
         local player=getSpecificPlayer(0)
         if player then
@@ -425,12 +506,14 @@ Events.OnRenderTick.Add(function()
             emit("HOUSEHOLD RESET", "isolated QA setup")
         end
     end
-    if NLQAMultiplayer.socialFrame==900 then
+    if NLQAMultiplayer.socialFrame>=900 and NLQAMultiplayer.socialPositioned
+            and not NLQAMultiplayer.socialRefreshSent then
         NLSocialClient.request(0,"refresh")
         NLQAMultiplayer.socialRefreshSent=true
         emit("SOCIAL REFRESH", qaIdentity().username or "?")
     end
     if NLQAMultiplayer.socialRefreshSent and not NLQAMultiplayer.socialActionSent
+            and not NLQAMultiplayer.socialConversationComplete
             and NLSocialClient.snapshots[0] then
         local snapshot=NLSocialClient.snapshots[0]
         if qaIdentity().username=="nl-host" then
@@ -438,17 +521,31 @@ Events.OnRenderTick.Add(function()
                 for _,entry in ipairs(snapshot.neighbors or {}) do
                     if entry.canInteract then
                         NLQAMultiplayer.socialTarget=entry.id
-                        NLQAMultiplayer.socialActionDue=NLQAMultiplayer.socialFrame+30
+                        NLQAMultiplayer.socialActionName=(entry.relation and entry.relation.met)
+                            and "chat" or "introduce"
+                        NLQAMultiplayer.socialActionDue=NLQAMultiplayer.socialFrame
+                            +NLQAMultiplayer.socialCooldownFrames
+                        NLQAMultiplayer.socialActionPrepared=false
                         NLQAMultiplayer.socialActionScheduled=true
-                        emit("SOCIAL ACTION SCHEDULED", "introduce id="..tostring(entry.id))
+                        emit("SOCIAL ACTION SCHEDULED", NLQAMultiplayer.socialActionName
+                            .." id="..tostring(entry.id))
                         break
                     end
                 end
-            elseif NLQAMultiplayer.socialFrame>=NLQAMultiplayer.socialActionDue then
+            elseif not NLQAMultiplayer.socialActionPrepared
+                    and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.socialActionDue-60 then
+                NLQAMultiplayer.socialActionPrepared=positionHostForSocial(
+                    NLQAMultiplayer.socialTarget)
+            elseif NLQAMultiplayer.socialActionPrepared
+                    and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.socialActionDue then
                 NLSocialClient.request(0,"interact",
-                    {id=NLQAMultiplayer.socialTarget,action="introduce"})
+                    {id=NLQAMultiplayer.socialTarget,action=NLQAMultiplayer.socialActionName})
                 NLQAMultiplayer.socialActionSent=true
-                emit("SOCIAL ACTION", "introduce id="..tostring(NLQAMultiplayer.socialTarget))
+                NLQAMultiplayer.socialActionScheduled=false
+                NLQAMultiplayer.socialActionCount=NLQAMultiplayer.socialActionCount+1
+                emit("SOCIAL ACTION", tostring(NLQAMultiplayer.socialActionName)
+                    .." id="..tostring(NLQAMultiplayer.socialTarget)
+                    .." step="..tostring(NLQAMultiplayer.socialActionCount))
             end
         else
             NLQAMultiplayer.socialActionSent=true

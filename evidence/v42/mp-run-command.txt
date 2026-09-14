@@ -1,0 +1,3 @@
+COMMAND: & .\tools\launch-multiplayer-qa.ps1
+INPUT: E:\pzmod\test-profile
+RESULT: dedicated server plus nl-host/nl-guest launched hands-free; process IDs are recorded in mp-processes.txt; processes were stopped after logs flushed.

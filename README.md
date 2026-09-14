@@ -380,3 +380,22 @@ passed for the new dimensions and anchor calculation. A fresh hands-free
 isolated launcher run reached the game state but did not emit the marker
 assertion before the disposable process was stopped, so no new screenshot is
 claimed here.
+
+## v1.23 multi-step NPC conversation evidence
+
+The isolated QA client now waits through the production social cooldown and
+repositions only its disposable viewpoint beside the moving target when needed.
+It does not alter the production server authority.
+
+`evidence/v42/` records a real Build 42.20.4 dedicated server with `nl-host`
+and `nl-guest`. The host completed the production `chat` then `joke` sequence
+with Marisol: friendship advanced from 18 to 24 and then 28, while trust
+advanced from 5 to 11. The server logged both authoritative commands and
+responses, after which the same host continued through career pickup/delivery
+and the household invite, shared-storage and tidy loop.
+
+The guest stayed connected and received authoritative presence, NPC and
+household snapshots but remained refresh-only for social interaction. This is
+actual two-client session evidence for a multi-step host conversation; direct
+cross-account conversation synchronization and richer world actions remain
+open gates.
