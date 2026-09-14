@@ -8,9 +8,6 @@ NLPlumbob.instances = {}
 NLPlumbob.texturePath = "media/textures/NL_Plumbob.png"
 NLPlumbob.defaultColor = { r = 0.22, g = 0.88, b = 0.58 }
 NLPlumbob.remoteColor = { r = 0.28, g = 0.86, b = 0.95 }
-NLPlumbob.baseWidth = 28
-NLPlumbob.baseHeight = 40
-NLPlumbob.baseLift = 104
 
 function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, lift)
     return math.floor(screenX - left - width / 2), math.floor(screenY - top - height - lift)
@@ -42,17 +39,15 @@ function NLPlumbob:positionOverCharacter()
 
     local zoom = 1
     if getCore and getCore().getZoom then zoom = math.max(0.5, getCore():getZoom(index)) end
-    local scale = math.max(0.72, math.min(1.15, 1 / zoom))
-    local width, height = math.floor(NLPlumbob.baseWidth * scale),
-        math.floor(NLPlumbob.baseHeight * scale)
+    local scale = math.max(0.75, math.min(1.35, 1 / zoom))
+    local width, height = math.floor(40 * scale), math.floor(56 * scale)
     self:setWidth(width)
     self:setHeight(height)
     local sx = isoToScreenX(index, character:getX(), character:getY(), character:getZ())
     local sy = isoToScreenY(index, character:getX(), character:getY(), character:getZ())
     local left, top = getPlayerScreenLeft(index), getPlayerScreenTop(index)
     -- Lift the bottom tip past the full player model, leaving the gem above the head.
-    local x, y = NLPlumbob.screenPosition(sx, sy, left, top, width, height,
-        math.floor(NLPlumbob.baseLift * scale))
+    local x, y = NLPlumbob.screenPosition(sx, sy, left, top, width, height, math.floor(128 * scale))
     self:setX(x)
     self:setY(y)
     self:setVisible(true)

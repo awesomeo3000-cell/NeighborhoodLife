@@ -1,0 +1,52 @@
+-- Client NPC replica contract test. This uses native-shaped fixtures; it is
+-- not two-client or real gameplay evidence.
+package.path = arg[1] .. '/42/media/lua/client/?.lua;' .. package.path
+function isClient() return true end
+local hooks={Add=function() end}
+Events={OnTick=hooks,OnMainMenuEnter=hooks,OnCreatePlayer=hooks,OnRenderTick=hooks}
+package.preload['ISUI/ISPanel']=function() end
+ISPanel={}
+function ISPanel:derive() local t={}; t.__index=t; return setmetatable(t,{__index=self}) end
+function ISPanel:new(x,y,w,h) return setmetatable({x=x,y=y,width=w,height=h},self) end
+function ISPanel:initialise() end; function ISPanel:addToUIManager() end
+function ISPanel:removeFromUIManager() end; function ISPanel:bringToTop() end
+function ISPanel:setVisible(v) self.visible=v end; function ISPanel:setWidth(v) self.width=v end
+function ISPanel:setHeight(v) self.height=v end; function ISPanel:setX(v) self.x=v end
+function ISPanel:setY(v) self.y=v end
+local plumbobs={}
+NLPlumbob={remoteColor={r=1,g=1,b=1},register=function(id,b) plumbobs[id]=b; return b end,
+    unregister=function(id) plumbobs[id]=nil end}
+package.preload['NL/Plumbob']=function() return NLPlumbob end
+function getTexture(path) return {path=path} end
+local objects={}
+function objects:size() return #objects end
+function objects:get(i) return objects[i+1] end
+function objects:contains(object) for _,v in ipairs(self) do if v==object then return true end end return false end
+function objects:add(object) self[#self+1]=object end
+function objects:remove(object) for i,v in ipairs(self) do if v==object then table.remove(self,i); return end end end
+local cell={getObjectListForLua=function() return objects end,getObjectList=function() return objects end}
+function cell:getGridSquare(x,y,z) return {getX=function() return x end,getY=function() return y end,getZ=function() return z end} end
+function getCell() return cell end
+local function desc() return {setForename=function() end,setSurname=function() end,setFemale=function() end} end
+SurvivorFactory={CreateSurvivor=desc}
+IsoPlayer={new=function(_,_,x,y,z)
+    local b={x=x+0.5,y=y+0.5,z=z,data={}}
+    function b:setNpc(v) self.npc=v end; function b:setUsername(v) self.username=v end
+    function b:setGodMod() end; function b:getModData() return self.data end
+    function b:dressInNamedOutfit() end; function b:setSceneCulled() end
+    function b:setAlphaAndTarget() end; function b:resetModelNextFrame() end
+    function b:setX(v) self.x=v end; function b:setY(v) self.y=v end; function b:setZ(v) self.z=v end
+    function b:getX() return self.x end; function b:getY() return self.y end; function b:getZ() return self.z end
+    function b:setCurrent(v) self.current=v end
+    return b
+end}
+require 'NL/NpcClient'
+assert(NLNpcClient.apply({revision=1,npcs={{id='marisol',x=10,y=11,z=0,alive=true}}})==1)
+local body=NLNpcClient.bodies.marisol
+assert(body and body.npc and body:getModData().NeighborhoodNpcId=='marisol','native replica created')
+assert(plumbobs['npc:marisol']==body,'replica plumbob registered')
+NLNpcClient.apply({revision=2,npcs={{id='marisol',x=11,y=11,z=0,alive=true}}})
+NLNpcClient.update(); assert(body:getX()>10 and body:getX()<11,'replica interpolates authoritative target')
+NLNpcClient.apply({revision=3,npcs={}})
+assert(NLNpcClient.bodies.marisol==nil and plumbobs['npc:marisol']==nil,'replica cleanup follows authoritative roster')
+print('PASS: client NPC native replica creation, authoritative interpolation, plumbob and cleanup')

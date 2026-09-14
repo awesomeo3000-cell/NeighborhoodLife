@@ -15,30 +15,8 @@ NLNpcAuthority = {
     targets = {},
     tick = 0,
     started = false,
-    startAttempts = 0,
     definitions = { "marisol" },
 }
-
-function NLNpcAuthority.broadcastPresence()
-    if not isServer() or type(getOnlinePlayers) ~= "function" then return 0 end
-    local ok, players = pcall(getOnlinePlayers)
-    if not ok or not players then return 0 end
-    local world = NLAuthority.world()
-    local entries = {}
-    for id, body in pairs(NLNpcAuthority.bodies) do
-        local row = NLNeighbors.get(world, id)
-        entries[#entries + 1] = {
-            id=id, x=body:getX(), y=body:getY(), z=body:getZ(),
-            waypoint=row and row.waypoint or 1,
-            alive=not body:isDead(), revision=row and row.revision or 0,
-        }
-    end
-    local packet = { revision=getTimestampMs(), npcs=entries }
-    for i=0,players:size()-1 do
-        sendServerCommand(players:get(i), "NeighborhoodLife", "npc_presence", packet)
-    end
-    return #entries
-end
 
 local function emit(message)
     if NLQANpc or NLQAMultiplayerServer then
@@ -72,31 +50,13 @@ local function setBodyPosition(body, square)
     body:resetModelNextFrame()
 end
 
-local function anchorPlayer()
-    if getSpecificPlayer then
-        local ok, player = pcall(getSpecificPlayer, 0)
-        if ok and player then return player end
-    end
-    if type(getOnlinePlayers) == "function" then
-        local ok, players = pcall(getOnlinePlayers)
-        if ok and players then
-            local sizeOk, size = pcall(players.size, players)
-            if sizeOk and size > 0 then
-                local playerOk, player = pcall(players.get, players, 0)
-                if playerOk and player then return player end
-            end
-        end
-    end
-    return nil
-end
-
 local function spawnBody(id, row, player)
     if not IsoPlayer or not SurvivorFactory then return nil, "native NPC constructors unavailable" end
     local cell = getCell()
     if not cell then return nil, "cell unavailable" end
     local x, y, z = math.floor(row.position.x), math.floor(row.position.y), math.floor(row.position.z)
     local square = cell:getGridSquare(x, y, z)
-    if (not square or not square:isFree(false)) and player then
+    if not square or not square:isFree(false) then
         square = freeSquareNear(cell, math.floor(player:getX()), math.floor(player:getY()),
             math.floor(player:getZ()), 2, 4)
     end
@@ -126,9 +86,7 @@ end
 
 function NLNpcAuthority.start()
     if NLNpcAuthority.started or isClient() then return end
-    NLNpcAuthority.startAttempts = NLNpcAuthority.startAttempts + 1
-    if NLNpcAuthority.startAttempts > 1 and NLNpcAuthority.startAttempts % 60 ~= 1 then return end
-    local player = anchorPlayer()
+    local player = getSpecificPlayer(0)
     if not player then return end
     local world = NLAuthority.world()
     local rows = NLNeighbors.ensure(world)
@@ -152,12 +110,7 @@ function NLNpcAuthority.start()
             row.position.x, row.position.y, row.revision))
     end
     local body, err = spawnBody(id, row, player)
-    if body then
-        NLNpcAuthority.started = true
-        NLNpcAuthority.startAttempts = 0
-    else
-        emit("SPAWN FAILED: " .. tostring(err))
-    end
+    if body then NLNpcAuthority.started = true else emit("SPAWN FAILED: " .. tostring(err)) end
 end
 
 local function nextWaypoint(row, body)
@@ -198,8 +151,7 @@ function NLNpcAuthority.update()
                 NLNpcAuthority.targets = NLNpcAuthority.targets or {}
                 local target, index = nextWaypoint(row, body)
                 if target then
-                    NLNpcAuthority.targets[id] = { x=target.x, y=target.y, z=target.z, waypoint=index,
-                        lastX=body:getX(), lastY=body:getY(), stall=0 }
+                    NLNpcAuthority.targets[id] = { x=target.x, y=target.y, z=target.z, waypoint=index }
                     behavior:pathToLocation(target.x, target.y, target.z)
                     emit(string.format("PATH id=%s from=%.2f,%.2f to=%.2f,%.2f waypoint=%d",
                         id, body:getX(), body:getY(), target.x, target.y, index))
@@ -207,40 +159,12 @@ function NLNpcAuthority.update()
             end
             local target = NLNpcAuthority.targets and NLNpcAuthority.targets[id]
             if target then
-                local currentX, currentY = body:getX(), body:getY()
-                if target.lastX and math.abs(currentX-target.lastX)<0.001
-                        and math.abs(currentY-target.lastY)<0.001 then
-                    target.stall = target.stall + 1
-                else
-                    target.stall = 0
-                end
-                target.lastX, target.lastY = currentX, currentY
-                -- Dedicated B42 has no local animation frame for an unowned
-                -- IsoPlayer, so PathFindBehavior2 can remain stationary there.
-                -- Keep the server-native body authoritative with a small tile
-                -- step after the native behavior has demonstrably stalled.
-                if isServer() and target.stall >= 30 then
-                    local destinationX, destinationY = target.x + 0.5, target.y + 0.5
-                    local dx, dy = destinationX-currentX, destinationY-currentY
-                    local distance = math.sqrt(dx*dx + dy*dy)
-                    if distance > 0.05 then
-                        local step = math.min(0.08, distance)
-                        body:setX(currentX + dx/distance*step)
-                        body:setY(currentY + dy/distance*step)
-                        local square = getCell():getGridSquare(math.floor(body:getX()),
-                            math.floor(body:getY()), math.floor(body:getZ()))
-                        if square then body:setCurrent(square) end
-                    end
-                end
                 local ok, result = pcall(function()
                     body:preupdate(); body:update(); local r = behavior:update(); body:postupdate(); return r
                 end)
                 if not ok then
                     behavior:cancel(); body:setPath2(nil); NLNpcAuthority.targets[id] = nil
-                elseif result == BehaviorResult.Succeeded
-                        or (isServer() and target.stall >= 30
-                            and math.abs(body:getX()-(target.x+0.5))<0.06
-                            and math.abs(body:getY()-(target.y+0.5))<0.06) then
+                elseif result == BehaviorResult.Succeeded then
                     behavior:cancel(); body:setPath2(nil)
                     local next = (target.waypoint or 1) + 1
                     local route = NLNeighbors.definitions[id].waypoints
@@ -258,14 +182,12 @@ function NLNpcAuthority.update()
             end
         end
     end
-    if NLNpcAuthority.tick % 120 == 0 then NLNpcAuthority.broadcastPresence() end
 end
 
 function NLNpcAuthority.reset()
     NLNpcAuthority.bodies = {}
     NLNpcAuthority.targets = {}
     NLNpcAuthority.started = false
-    NLNpcAuthority.startAttempts = 0
     NLNpcAuthority.tick = 0
 end
 

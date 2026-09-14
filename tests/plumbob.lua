@@ -31,7 +31,13 @@ local character={getX=function() return 12 end,getY=function() return 13 end,get
 local panel=NLPlumbob.register('test:character',character,0)
 assert(panel.texture.path=='media/textures/NL_Plumbob.png')
 assert(panel.visible,"registered plumbob must start visible so UIManager can prerender it")
-panel:prerender(); assert(panel.visible and panel.x==80 and panel.y==116)
+panel:prerender()
+assert(panel.visible and panel.x==100-math.floor(panel.width/2))
+local expectedLift = NLPlumbob.baseLift or 128
+assert(panel.y==300-panel.height-expectedLift)
+if NLPlumbob.baseWidth then
+    assert(panel.width==28 and panel.height==40,"plumbob is compact")
+end
 character.isDead=function() return true end; panel:prerender(); assert(not panel.visible)
 NLPlumbob.unregister('test:character'); assert(NLPlumbob.instances['test:character']==nil)
 local localPlayer={getX=function() return 12 end,getY=function() return 13 end,getZ=function() return 0 end,isDead=function() return false end}

@@ -64,6 +64,11 @@ SYNTAX INPUT: E:\pzmod
 SYNTAX OUTPUT: 
 SYNTAX STDERR: 
 SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\NpcClient.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
 SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Plumbob.lua
 SYNTAX INPUT: E:\pzmod
 SYNTAX OUTPUT: 
@@ -138,7 +143,7 @@ LUA STDERR:
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\replication.lua E:\pzmod\NeighborhoodLife
 LUA INPUT: E:\pzmod
-LUA OUTPUT: PASS: authoritative two-player presence broadcast, coordinates, recipients and client storage
+LUA OUTPUT: PASS: authoritative player presence plus native-NPC state broadcast and client storage
 LUA STDERR: 
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\npc-authority.lua E:\pzmod\NeighborhoodLife
@@ -149,6 +154,11 @@ NLQA NPC PRODUCTION MOVE id=marisol x=98.50 y=100.50 waypoint=2
 NLQA NPC PRODUCTION RESTORE id=marisol x=98.50 y=100.50 revision=2
 NLQA NPC PRODUCTION SPAWN id=marisol x=98.50 y=100.50 z=0
 PASS: production NPC identity, native body adapter, route tick and save/reload position restoration
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\npc-client.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: client NPC native replica creation, authoritative interpolation, plumbob and cleanup
 LUA STDERR: 
 LUA EXIT: 0
 JAVAC COMMAND: javac -cp E:\SteamLibrary\steamapps\common\ProjectZomboid\projectzomboid.jar -d E:\pzmod\tests\classes E:\pzmod\tests\EngineLua.java
@@ -214,7 +224,7 @@ KAHLUA STDERR:
 KAHLUA EXIT: 0
 KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\replication.lua
 KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
-KAHLUA OUTPUT: PASS: authoritative two-player presence broadcast, coordinates, recipients and client storage
+KAHLUA OUTPUT: PASS: authoritative player presence plus native-NPC state broadcast and client storage
 PASS: installed Project Zomboid Kahlua VM execution
 KAHLUA STDERR: 
 KAHLUA EXIT: 0
@@ -226,6 +236,12 @@ NLQA NPC PRODUCTION MOVE id=marisol x=98.50 y=100.50 waypoint=2
 NLQA NPC PRODUCTION RESTORE id=marisol x=98.50 y=100.50 revision=2
 NLQA NPC PRODUCTION SPAWN id=marisol x=98.50 y=100.50 z=0
 PASS: production NPC identity, native body adapter, route tick and save/reload position restoration
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\npc-client.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: client NPC native replica creation, authoritative interpolation, plumbob and cleanup
 PASS: installed Project Zomboid Kahlua VM execution
 KAHLUA STDERR: 
 KAHLUA EXIT: 0

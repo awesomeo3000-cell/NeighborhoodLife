@@ -1,0 +1,43 @@
+[13-09-26 19:52:14.668] LOG  : Lua          f:0 st:0> NLQA MP CONNECTED: nl-host.
+[13-09-26 19:52:48.973] LOG  : Lua          f:119 st:195,485,021> NLQA MP REFRESH SENT: attempt=1 player=nl-host.
+[13-09-26 19:52:49.033] LOG  : Lua          f:122 st:195,485,079> NLQA MP SNAPSHOT: username=nl-host revision=1 snapshotCount=1.
+[13-09-26 19:52:49.033] LOG  : Lua          f:122 st:195,485,080> NLQA MP PRESENCE: revision=1789343568999 players=1 names=nl-host@6817.50,5259.50,0.
+[13-09-26 19:52:52.243] LOG  : Lua          f:299 st:195,488,290> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=31 [local=nl-host | username=nl-guest x=10754.00 y=10214.00 z=0] OnlinePlayersCount=2 [local=nl-host | username=nl-guest x=10754.00 y=10214.00 z=0] productionRemoteMarkers=1.
+[13-09-26 19:52:52.333] LOG  : Lua          f:304 st:195,488,380> NLQA MP PRESENCE: revision=1789343572306 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:52:54.849] LOG  : Lua          f:455 st:195,490,896> NLQA MP PRESENCE: revision=1789343574825 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:52:57.241] LOG  : Lua          f:599 st:195,493,287> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=30 [local=nl-host] OnlinePlayersCount=1 [local=nl-host] productionRemoteMarkers=0.
+[13-09-26 19:52:57.283] LOG  : Lua          f:601 st:195,493,329> NLQA MP PRESENCE: revision=1789343577262 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:52:57.787] LOG  : Lua          f:631 st:195,493,834> NLQA MP NPC PRESENCE: revision=1789343577759 count=1 entries=marisol@6815.74,5259.50,0/w1.
+[13-09-26 19:52:57.849] LOG  : Lua          f:635 st:195,493,896> NLQA MP PRESENCE: revision=1789343577820 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:02.239] LOG  : Lua          f:899 st:195,498,285> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=31 [username=Marisol Vega [Neighborhood Life] x=6815.74 y=5259.50 z=0 | local=nl-host] OnlinePlayersCount=1 [local=nl-host] productionRemoteMarkers=0.
+[13-09-26 19:53:02.266] LOG  : Lua          f:900 st:195,498,313> NLQA MP PRESENCE: revision=1789343582247 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:02.850] LOG  : Lua          f:935 st:195,498,896> NLQA MP PRESENCE: revision=1789343582820 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:07.238] LOG  : Lua          f:1199 st:195,503,285> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=31 [username=Marisol Vega [Neighborhood Life] x=6815.74 y=5259.50 z=0 | local=nl-host] OnlinePlayersCount=1 [local=nl-host] productionRemoteMarkers=0.
+[13-09-26 19:53:07.283] LOG  : Lua          f:1201 st:195,503,330> NLQA MP PRESENCE: revision=1789343587257 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:07.849] LOG  : Lua          f:1235 st:195,503,896> NLQA MP PRESENCE: revision=1789343587826 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:09.782] LOG  : Lua          f:1351 st:195,505,829> NLQA MP NPC PRESENCE: revision=1789343589749 count=1 entries=marisol@6816.06,5259.50,0/w1.
+[13-09-26 19:53:12.239] LOG  : Lua          f:1499 st:195,508,286> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=31 [username=Marisol Vega [Neighborhood Life] x=6816.06 y=5259.50 z=0 | local=nl-host] OnlinePlayersCount=1 [local=nl-host] productionRemoteMarkers=0.
+[13-09-26 19:53:12.282] LOG  : Lua          f:1501 st:195,508,329> NLQA MP PRESENCE: revision=1789343592252 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:12.832] LOG  : Lua          f:1534 st:195,508,879> NLQA MP PRESENCE: revision=1789343592806 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:17.239] LOG  : Lua          f:1799 st:195,513,285> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=31 [username=Marisol Vega [Neighborhood Life] x=6816.06 y=5259.50 z=0 | local=nl-host] OnlinePlayersCount=1 [local=nl-host] productionRemoteMarkers=0.
+[13-09-26 19:53:17.266] LOG  : Lua          f:1800 st:195,513,313> NLQA MP PRESENCE: revision=1789343597255 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:17.832] LOG  : Lua          f:1834 st:195,513,880> NLQA MP PRESENCE: revision=1789343597810 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:21.782] LOG  : Lua          f:2071 st:195,517,830> NLQA MP NPC PRESENCE: revision=1789343601755 count=1 entries=marisol@6816.38,5259.50,0/w1.
+[13-09-26 19:53:22.237] LOG  : Lua          f:2099 st:195,518,285> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=31 [username=Marisol Vega [Neighborhood Life] x=6816.38 y=5259.50 z=0 | local=nl-host] OnlinePlayersCount=1 [local=nl-host] productionRemoteMarkers=0.
+[13-09-26 19:53:22.283] LOG  : Lua          f:2101 st:195,518,329> NLQA MP PRESENCE: revision=1789343602246 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:22.849] LOG  : Lua          f:2135 st:195,518,896> NLQA MP PRESENCE: revision=1789343602819 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:27.238] LOG  : Lua          f:2399 st:195,523,285> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=31 [username=Marisol Vega [Neighborhood Life] x=6816.38 y=5259.50 z=0 | local=nl-host] OnlinePlayersCount=1 [local=nl-host] productionRemoteMarkers=0.
+[13-09-26 19:53:27.266] LOG  : Lua          f:2400 st:195,523,313> NLQA MP PRESENCE: revision=1789343607243 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:27.849] LOG  : Lua          f:2435 st:195,523,896> NLQA MP PRESENCE: revision=1789343607815 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:32.283] LOG  : Lua          f:2701 st:195,528,330> NLQA MP PRESENCE: revision=1789343612257 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:32.833] LOG  : Lua          f:2734 st:195,528,879> NLQA MP PRESENCE: revision=1789343612802 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:33.782] LOG  : Lua          f:2791 st:195,529,829> NLQA MP NPC PRESENCE: revision=1789343613762 count=1 entries=marisol@6816.70,5259.50,0/w1.
+[13-09-26 19:53:37.266] LOG  : Lua          f:3000 st:195,533,313> NLQA MP PRESENCE: revision=1789343617244 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:37.849] LOG  : Lua          f:3035 st:195,533,896> NLQA MP PRESENCE: revision=1789343617814 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:42.282] LOG  : Lua          f:3301 st:195,538,329> NLQA MP PRESENCE: revision=1789343622254 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:42.832] LOG  : Lua          f:3334 st:195,538,879> NLQA MP PRESENCE: revision=1789343622809 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:45.782] LOG  : Lua          f:3511 st:195,541,829> NLQA MP NPC PRESENCE: revision=1789343625758 count=1 entries=marisol@6817.02,5259.50,0/w1.
+[13-09-26 19:53:47.282] LOG  : Lua          f:3601 st:195,543,329> NLQA MP PRESENCE: revision=1789343627258 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:47.849] LOG  : Lua          f:3635 st:195,543,896> NLQA MP PRESENCE: revision=1789343627828 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:52.283] LOG  : Lua          f:3901 st:195,548,329> NLQA MP PRESENCE: revision=1789343632257 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.
+[13-09-26 19:53:52.850] LOG  : Lua          f:3935 st:195,548,896> NLQA MP PRESENCE: revision=1789343632815 players=2 names=nl-host@6819.50,5259.50,0,nl-guest@10754.50,10214.50,0.

@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, wardrobe and relationship prototype (v1.1)
+# Neighborhood Life: careers, wardrobe and relationship prototype (v1.2)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -26,8 +26,11 @@ Relationships use separate friendship, trust and attraction bars, with introduct
 chat, jokes, flirting, dates, partnerships and breakups. They only operate on a neighbor
 registered with a real server-side body. In a new or loaded single-player world,
 Neighborhood Life now creates the persistent Marisol native body, gives her a small
-two-point route, and anchors the reduced plumbob above her model. Multiplayer NPC
-distribution is still under active verification.
+two-point route, and anchors a compact plumbob just above her model. The dedicated
+server now broadcasts authoritative NPC state, and each client creates a local native
+replica that interpolates only toward that state. Multiplayer NPC distribution is
+engine-proven at the mod-state/replica layer; native server-body reannouncement is
+still an open Build 42 API gate.
 
 ## Required game checks (not yet performed)
 - Host and guest join: each sees one panel with their own six current stats.
@@ -40,7 +43,7 @@ distribution is still under active verification.
 ## Roadmap
 1. In-game host/guest HUD verification and layout polish.
 2. Complete the persistent server-controlled NPC gate: obstacle/danger reactions,
-   damage/death, offscreen behavior and replication to two clients.
+   damage/death, offscreen behavior, native body reannouncement and reconnect state.
 3. Individual friendship/trust, server-validated requests and exactly-once rewards.
 4. Tailoring career, clothing variants and wardrobe; new meshes are separate art work.
 5. Adult NPC mutual-interest romance, routines and shared households.
@@ -48,9 +51,13 @@ distribution is still under active verification.
 
 NPC breadth, portraits and households remain unfinished. Relationship/romance
 logic is implemented and unit-tested, but its full world/multiplayer integration is pending.
-The v1.1 production adapter now proves single-player native spawning, path-following,
-plumbob anchoring and ModData save/reload restoration in `evidence/v18/`; native
-two-client NPC replication remains open. No new clothing meshes/textures are included yet.
+The v1.1 production adapter proves single-player native spawning, path-following,
+plumbob anchoring and ModData save/reload restoration in `evidence/v18/`. The v1.2
+run in `evidence/v19/` proves a dedicated server moving the authoritative native body
+and both real clients receiving the same `npc_presence` stream while rendering local
+native replicas. That run does not prove Build 42 native body reannouncement,
+reconnect/restart persistence, inventory, danger, damage/death, or household life.
+No new clothing meshes/textures are included yet.
 
 ## Developer verification
 tools/launch-qa.ps1 starts a separate no-Steam game process with its own profile
@@ -123,3 +130,15 @@ the body, `GameWindow.save(false)`, and a second launch restoring the saved posi
 The QA mod only observes and drives the isolated test profile; it is not in the release
 package. This is single-player gameplay evidence, not proof of two-client NPC
 replication or completed household life.
+
+## v1.2 two-client NPC state and replica evidence
+
+`evidence/v19/` records `tools/launch-multiplayer-qa.ps1` starting one isolated
+dedicated server plus `nl-host` and `nl-guest`. The server spawned the production
+native Marisol body, logged authoritative movement from `6815.50,5259.50` through
+`6816.22,5259.50` to `6817.02,5259.50`, and broadcast `npc_presence`. Both clients
+received the same revisioned NPC positions and logged a native `Marisol Vega
+[Neighborhood Life]` object in their local object list. This is actual engine
+multiplayer evidence for the server-state/client-replica layer, distinct from the
+Lua mock and installed-game Kahlua suites. Build 42 did not expose `GameServer` as a
+Lua table in this run, so native server-body reannouncement remains open.

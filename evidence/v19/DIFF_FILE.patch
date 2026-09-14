@@ -1,0 +1,342 @@
+--- baseline/42/media/lua/client/NL/Client.lua
++++ modified/42/media/lua/client/NL/Client.lua
+@@ -1,8 +1,15 @@
+ require "NL/Domain"
+-NLClient = { profiles = {}, presence = nil, presenceFrame = 0 }
++pcall(require, "NL/NpcClient")
++NLClient = { profiles = {}, presence = nil, npcPresence = nil, presenceFrame = 0 }
+ 
+ function NLClient.receive(module, command, args)
+     if module ~= "NeighborhoodLife" or type(args) ~= "table" then return end
++    if command == "npc_presence" then
++        local old = NLClient.npcPresence
++        if not old or (args.revision or 0) >= (old.revision or 0) then NLClient.npcPresence = args end
++        if NLNpcClient then NLNpcClient.apply(args) end
++        return
++    end
+     if command == "presence" then
+         local old = NLClient.presence
+         if not old or (args.revision or 0) >= (old.revision or 0) then NLClient.presence = args end
+@@ -41,6 +48,6 @@
+     end
+ end)
+ Events.OnMainMenuEnter.Add(function()
+-    NLClient.profiles = {}; NLClient.presence = nil; NLClient.presenceFrame = 0
++    NLClient.profiles = {}; NLClient.presence = nil; NLClient.npcPresence = nil; NLClient.presenceFrame = 0
+ end)
+ return NLClient
+--- baseline/42/media/lua/client/NL/NpcClient.lua
++++ modified/42/media/lua/client/NL/NpcClient.lua
+@@ -0,0 +1,120 @@
++-- Client view of authoritative NPC state.
++--
++-- Build 42.20.4 does not expose the native server re-announcement path to Lua.
++-- When a native server body is not present in the client's online list, this
++-- creates a local native IsoPlayer replica driven only by server npc_presence
++-- packets. It remains a real in-world character locally (model, object and
++-- plumbob), while all position/state authority remains server-side.
++if not isClient or not isClient() then return end
++
++require "NL/Plumbob"
++NLNpcClient = { bodies={}, targets={}, states={} }
++
++local function nativeBody(id)
++    local cellOk, cell = pcall(getCell)
++    if not cellOk or not cell then return nil end
++    local listOk, list = pcall(cell.getObjectListForLua, cell)
++    if not listOk or not list then return nil end
++    local countOk, count = pcall(list.size, list)
++    if not countOk then return nil end
++    for i=0,count-1 do
++        local itemOk, object = pcall(list.get, list, i)
++        if itemOk and object and object.getModData then
++            local dataOk, data = pcall(object.getModData, object)
++            if dataOk and data and data.NeighborhoodNpcId == id then return object end
++        end
++    end
++    return nil
++end
++
++local function positionBody(body, x, y, z)
++    body:setX(x); body:setY(y)
++    if body.setZ then body:setZ(z) end
++    local cell = getCell()
++    local square = cell and cell:getGridSquare(math.floor(x), math.floor(y), math.floor(z))
++    if square and body.setCurrent then body:setCurrent(square) end
++end
++
++local function createReplica(entry)
++    local id = tostring(entry.id)
++    local body = nativeBody(id)
++    if not body and IsoPlayer and SurvivorFactory then
++        local cell = getCell()
++        local desc = SurvivorFactory.CreateSurvivor()
++        desc:setForename("Marisol"); desc:setSurname("Vega"); desc:setFemale(true)
++        body = IsoPlayer.new(cell, desc, math.floor(entry.x), math.floor(entry.y), math.floor(entry.z))
++        body:setNpc(true)
++        body:setUsername("Marisol Vega [Neighborhood Life]")
++        body:setGodMod(true)
++        body:getModData().NeighborhoodNpcId = id
++        body:dressInNamedOutfit("Generic01")
++        body:setSceneCulled(false)
++        body:setAlphaAndTarget(1, 1)
++        body:resetModelNextFrame()
++        if not cell:getObjectList():contains(body) then cell:getObjectList():add(body) end
++    end
++    if not body then return nil end
++    NLNpcClient.bodies[id] = body
++    positionBody(body, entry.x, entry.y, entry.z)
++    NLPlumbob.register("npc:" .. id, body, 0, NLPlumbob.remoteColor)
++    return body
++end
++
++function NLNpcClient.apply(packet)
++    if type(packet) ~= "table" or type(packet.npcs) ~= "table" then return 0 end
++    local seen = {}
++    for _, entry in ipairs(packet.npcs) do
++        if entry.id and entry.alive ~= false then
++            local id = tostring(entry.id)
++            seen[id] = true
++            NLNpcClient.states[id] = entry
++            local body = NLNpcClient.bodies[id] or createReplica(entry)
++            if body then NLNpcClient.targets[id] = entry end
++        end
++    end
++    for id, body in pairs(NLNpcClient.bodies) do
++        if not seen[id] then
++            NLPlumbob.unregister("npc:" .. id)
++            if getCell then
++                local cell = getCell()
++                local list = cell and cell:getObjectList()
++                if list and list.remove then list:remove(body) end
++            end
++            NLNpcClient.bodies[id] = nil
++            NLNpcClient.targets[id] = nil
++            NLNpcClient.states[id] = nil
++        end
++    end
++    return #packet.npcs
++end
++
++function NLNpcClient.update()
++    for id, target in pairs(NLNpcClient.targets) do
++        local body = NLNpcClient.bodies[id]
++        if body and target then
++            local dx, dy = target.x-body:getX(), target.y-body:getY()
++            local distance = math.sqrt(dx*dx + dy*dy)
++            if distance > 0.02 then
++                local step = math.min(distance, 0.18)
++                positionBody(body, body:getX()+dx/distance*step,
++                    body:getY()+dy/distance*step, target.z)
++            else
++                positionBody(body, target.x, target.y, target.z)
++            end
++        end
++    end
++end
++
++function NLNpcClient.cleanup()
++    for id, body in pairs(NLNpcClient.bodies) do
++        NLPlumbob.unregister("npc:" .. id)
++        local cell = getCell()
++        local list = cell and cell:getObjectList()
++        if list and list.remove then list:remove(body) end
++    end
++    NLNpcClient.bodies={}; NLNpcClient.targets={}; NLNpcClient.states={}
++end
++
++Events.OnTick.Add(NLNpcClient.update)
++Events.OnMainMenuEnter.Add(NLNpcClient.cleanup)
++return NLNpcClient
+--- baseline/42/media/lua/client/NL/Plumbob.lua
++++ modified/42/media/lua/client/NL/Plumbob.lua
+@@ -8,6 +8,9 @@
+ NLPlumbob.texturePath = "media/textures/NL_Plumbob.png"
+ NLPlumbob.defaultColor = { r = 0.22, g = 0.88, b = 0.58 }
+ NLPlumbob.remoteColor = { r = 0.28, g = 0.86, b = 0.95 }
++NLPlumbob.baseWidth = 28
++NLPlumbob.baseHeight = 40
++NLPlumbob.baseLift = 104
+ 
+ function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, lift)
+     return math.floor(screenX - left - width / 2), math.floor(screenY - top - height - lift)
+@@ -39,15 +42,17 @@
+ 
+     local zoom = 1
+     if getCore and getCore().getZoom then zoom = math.max(0.5, getCore():getZoom(index)) end
+-    local scale = math.max(0.75, math.min(1.35, 1 / zoom))
+-    local width, height = math.floor(40 * scale), math.floor(56 * scale)
++    local scale = math.max(0.72, math.min(1.15, 1 / zoom))
++    local width, height = math.floor(NLPlumbob.baseWidth * scale),
++        math.floor(NLPlumbob.baseHeight * scale)
+     self:setWidth(width)
+     self:setHeight(height)
+     local sx = isoToScreenX(index, character:getX(), character:getY(), character:getZ())
+     local sy = isoToScreenY(index, character:getX(), character:getY(), character:getZ())
+     local left, top = getPlayerScreenLeft(index), getPlayerScreenTop(index)
+     -- Lift the bottom tip past the full player model, leaving the gem above the head.
+-    local x, y = NLPlumbob.screenPosition(sx, sy, left, top, width, height, math.floor(128 * scale))
++    local x, y = NLPlumbob.screenPosition(sx, sy, left, top, width, height,
++        math.floor(NLPlumbob.baseLift * scale))
+     self:setX(x)
+     self:setY(y)
+     self:setVisible(true)
+--- baseline/42/media/lua/server/NL/NpcAuthority.lua
++++ modified/42/media/lua/server/NL/NpcAuthority.lua
+@@ -15,8 +15,30 @@
+     targets = {},
+     tick = 0,
+     started = false,
++    startAttempts = 0,
+     definitions = { "marisol" },
+ }
++
++function NLNpcAuthority.broadcastPresence()
++    if not isServer() or type(getOnlinePlayers) ~= "function" then return 0 end
++    local ok, players = pcall(getOnlinePlayers)
++    if not ok or not players then return 0 end
++    local world = NLAuthority.world()
++    local entries = {}
++    for id, body in pairs(NLNpcAuthority.bodies) do
++        local row = NLNeighbors.get(world, id)
++        entries[#entries + 1] = {
++            id=id, x=body:getX(), y=body:getY(), z=body:getZ(),
++            waypoint=row and row.waypoint or 1,
++            alive=not body:isDead(), revision=row and row.revision or 0,
++        }
++    end
++    local packet = { revision=getTimestampMs(), npcs=entries }
++    for i=0,players:size()-1 do
++        sendServerCommand(players:get(i), "NeighborhoodLife", "npc_presence", packet)
++    end
++    return #entries
++end
+ 
+ local function emit(message)
+     if NLQANpc or NLQAMultiplayerServer then
+@@ -50,13 +72,31 @@
+     body:resetModelNextFrame()
+ end
+ 
++local function anchorPlayer()
++    if getSpecificPlayer then
++        local ok, player = pcall(getSpecificPlayer, 0)
++        if ok and player then return player end
++    end
++    if type(getOnlinePlayers) == "function" then
++        local ok, players = pcall(getOnlinePlayers)
++        if ok and players then
++            local sizeOk, size = pcall(players.size, players)
++            if sizeOk and size > 0 then
++                local playerOk, player = pcall(players.get, players, 0)
++                if playerOk and player then return player end
++            end
++        end
++    end
++    return nil
++end
++
+ local function spawnBody(id, row, player)
+     if not IsoPlayer or not SurvivorFactory then return nil, "native NPC constructors unavailable" end
+     local cell = getCell()
+     if not cell then return nil, "cell unavailable" end
+     local x, y, z = math.floor(row.position.x), math.floor(row.position.y), math.floor(row.position.z)
+     local square = cell:getGridSquare(x, y, z)
+-    if not square or not square:isFree(false) then
++    if (not square or not square:isFree(false)) and player then
+         square = freeSquareNear(cell, math.floor(player:getX()), math.floor(player:getY()),
+             math.floor(player:getZ()), 2, 4)
+     end
+@@ -86,7 +126,9 @@
+ 
+ function NLNpcAuthority.start()
+     if NLNpcAuthority.started or isClient() then return end
+-    local player = getSpecificPlayer(0)
++    NLNpcAuthority.startAttempts = NLNpcAuthority.startAttempts + 1
++    if NLNpcAuthority.startAttempts > 1 and NLNpcAuthority.startAttempts % 60 ~= 1 then return end
++    local player = anchorPlayer()
+     if not player then return end
+     local world = NLAuthority.world()
+     local rows = NLNeighbors.ensure(world)
+@@ -110,7 +152,12 @@
+             row.position.x, row.position.y, row.revision))
+     end
+     local body, err = spawnBody(id, row, player)
+-    if body then NLNpcAuthority.started = true else emit("SPAWN FAILED: " .. tostring(err)) end
++    if body then
++        NLNpcAuthority.started = true
++        NLNpcAuthority.startAttempts = 0
++    else
++        emit("SPAWN FAILED: " .. tostring(err))
++    end
+ end
+ 
+ local function nextWaypoint(row, body)
+@@ -151,7 +198,8 @@
+                 NLNpcAuthority.targets = NLNpcAuthority.targets or {}
+                 local target, index = nextWaypoint(row, body)
+                 if target then
+-                    NLNpcAuthority.targets[id] = { x=target.x, y=target.y, z=target.z, waypoint=index }
++                    NLNpcAuthority.targets[id] = { x=target.x, y=target.y, z=target.z, waypoint=index,
++                        lastX=body:getX(), lastY=body:getY(), stall=0 }
+                     behavior:pathToLocation(target.x, target.y, target.z)
+                     emit(string.format("PATH id=%s from=%.2f,%.2f to=%.2f,%.2f waypoint=%d",
+                         id, body:getX(), body:getY(), target.x, target.y, index))
+@@ -159,12 +207,40 @@
+             end
+             local target = NLNpcAuthority.targets and NLNpcAuthority.targets[id]
+             if target then
++                local currentX, currentY = body:getX(), body:getY()
++                if target.lastX and math.abs(currentX-target.lastX)<0.001
++                        and math.abs(currentY-target.lastY)<0.001 then
++                    target.stall = target.stall + 1
++                else
++                    target.stall = 0
++                end
++                target.lastX, target.lastY = currentX, currentY
++                -- Dedicated B42 has no local animation frame for an unowned
++                -- IsoPlayer, so PathFindBehavior2 can remain stationary there.
++                -- Keep the server-native body authoritative with a small tile
++                -- step after the native behavior has demonstrably stalled.
++                if isServer() and target.stall >= 30 then
++                    local destinationX, destinationY = target.x + 0.5, target.y + 0.5
++                    local dx, dy = destinationX-currentX, destinationY-currentY
++                    local distance = math.sqrt(dx*dx + dy*dy)
++                    if distance > 0.05 then
++                        local step = math.min(0.08, distance)
++                        body:setX(currentX + dx/distance*step)
++                        body:setY(currentY + dy/distance*step)
++                        local square = getCell():getGridSquare(math.floor(body:getX()),
++                            math.floor(body:getY()), math.floor(body:getZ()))
++                        if square then body:setCurrent(square) end
++                    end
++                end
+                 local ok, result = pcall(function()
+                     body:preupdate(); body:update(); local r = behavior:update(); body:postupdate(); return r
+                 end)
+                 if not ok then
+                     behavior:cancel(); body:setPath2(nil); NLNpcAuthority.targets[id] = nil
+-                elseif result == BehaviorResult.Succeeded then
++                elseif result == BehaviorResult.Succeeded
++                        or (isServer() and target.stall >= 30
++                            and math.abs(body:getX()-(target.x+0.5))<0.06
++                            and math.abs(body:getY()-(target.y+0.5))<0.06) then
+                     behavior:cancel(); body:setPath2(nil)
+                     local next = (target.waypoint or 1) + 1
+                     local route = NLNeighbors.definitions[id].waypoints
+@@ -182,12 +258,14 @@
+             end
+         end
+     end
++    if NLNpcAuthority.tick % 120 == 0 then NLNpcAuthority.broadcastPresence() end
+ end
+ 
+ function NLNpcAuthority.reset()
+     NLNpcAuthority.bodies = {}
+     NLNpcAuthority.targets = {}
+     NLNpcAuthority.started = false
++    NLNpcAuthority.startAttempts = 0
+     NLNpcAuthority.tick = 0
+ end
+ 
+BINARY FILE CHANGED: baseline/42/media/textures/NL_Plumbob.png -> modified/42/media/textures/NL_Plumbob.png

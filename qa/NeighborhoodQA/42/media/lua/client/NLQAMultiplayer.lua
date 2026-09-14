@@ -189,6 +189,17 @@ Events.OnServerCommand.Add(function(module, command, args)
             .. " players=" .. tostring(NLQAMultiplayer.presenceCount)
             .. " names=" .. table.concat(names, ","))
     end
+    if module == "NeighborhoodLife" and command == "npc_presence" and type(args) == "table"
+            and type(args.npcs) == "table" then
+        local rows={}
+        for _,entry in ipairs(args.npcs) do
+            rows[#rows+1]=string.format("%s@%.2f,%.2f,%.0f/w%d", tostring(entry.id),
+                tonumber(entry.x or 0), tonumber(entry.y or 0), tonumber(entry.z or 0),
+                tonumber(entry.waypoint or 0))
+        end
+        emit("NPC PRESENCE", "revision="..tostring(args.revision)
+            .." count="..tostring(#args.npcs).." entries="..table.concat(rows, ","))
+    end
 end)
 
 -- Keep the discovery probe beside the already-loaded multiplayer logger. Some
@@ -237,7 +248,7 @@ local function scanRemoteObjects()
     local ok, players = pcall(function() return IsoPlayer.getPlayers() end)
     details[#details + 1] = ok and scanList("IsoPlayer", players, player)
         or "IsoPlayer=error:" .. tostring(players)
-    local clientOk, client = pcall(function() return GameClient.instance end)
+    local clientOk, client = pcall(function() return GameClient and GameClient.instance end)
     if clientOk and client then
         local listOk, list = pcall(client.getPlayers, client)
         details[#details + 1] = listOk and scanList("GameClientPlayers", list, player)
@@ -256,6 +267,20 @@ local function scanRemoteObjects()
         local luaListOk, luaList = pcall(cell.getObjectListForLua, cell)
         details[#details + 1] = luaListOk and scanList("ObjectListForLua", luaList, player)
             or "ObjectListForLua=error:" .. tostring(luaList)
+        local npcReplicas=0
+        if luaListOk and luaList then
+            local listCountOk,listCount=pcall(luaList.size,luaList)
+            if listCountOk then
+                for i=0,listCount-1 do
+                    local objectOk,object=pcall(luaList.get,luaList,i)
+                    if objectOk and object and object.getModData then
+                        local dataOk,data=pcall(object.getModData,object)
+                        if dataOk and data and data.NeighborhoodNpcId then npcReplicas=npcReplicas+1 end
+                    end
+                end
+            end
+        end
+        details[#details + 1] = "productionNpcReplicas=" .. tostring(npcReplicas)
     end
     if type(getOnlinePlayers) == "function" then
         local onlineOk, online = pcall(getOnlinePlayers)

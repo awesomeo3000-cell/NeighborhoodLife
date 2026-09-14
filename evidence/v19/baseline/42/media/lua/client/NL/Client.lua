@@ -1,15 +1,8 @@
 require "NL/Domain"
-pcall(require, "NL/NpcClient")
-NLClient = { profiles = {}, presence = nil, npcPresence = nil, presenceFrame = 0 }
+NLClient = { profiles = {}, presence = nil, presenceFrame = 0 }
 
 function NLClient.receive(module, command, args)
     if module ~= "NeighborhoodLife" or type(args) ~= "table" then return end
-    if command == "npc_presence" then
-        local old = NLClient.npcPresence
-        if not old or (args.revision or 0) >= (old.revision or 0) then NLClient.npcPresence = args end
-        if NLNpcClient then NLNpcClient.apply(args) end
-        return
-    end
     if command == "presence" then
         local old = NLClient.presence
         if not old or (args.revision or 0) >= (old.revision or 0) then NLClient.presence = args end
@@ -48,6 +41,6 @@ Events.OnRenderTick.Add(function()
     end
 end)
 Events.OnMainMenuEnter.Add(function()
-    NLClient.profiles = {}; NLClient.presence = nil; NLClient.npcPresence = nil; NLClient.presenceFrame = 0
+    NLClient.profiles = {}; NLClient.presence = nil; NLClient.presenceFrame = 0
 end)
 return NLClient

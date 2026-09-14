@@ -1,0 +1,20 @@
+LOG  : Lua          f:0 st:195,402,870> NLQA MP SERVER BOOT: authority=true requireOk=true error=nil
+LOG  : Network      f:253 st:195,438,947> Connected new client 833166126480740970 ID # 0
+LOG  : Network      f:297 st:195,443,369> Connected new client 891712921641540875 ID # 4
+LOG  : Lua          f:675 st:195,481,295> NLQA NPC PRODUCTION SPAWN FAILED: no free spawn square
+LOG  : Lua          f:676 st:195,481,335> NLQA NPC PRODUCTION SPAWN FAILED: no free spawn square
+LOG  : Lua          f:677 st:195,481,337> NLQA NPC PRODUCTION SPAWN FAILED: no free spawn square
+LOG  : Lua          f:678 st:195,481,402> NLQA NPC PRODUCTION SPAWN FAILED: no free spawn square
+LOG  : Lua          f:679 st:195,481,514> NLQA NPC PRODUCTION SPAWN FAILED: no free spawn square
+LOG  : Lua          f:680 st:195,481,608> NLQA NPC PRODUCTION SPAWN FAILED: no free spawn square
+LOG  : Lua          f:681 st:195,481,710> NLQA NPC PRODUCTION SPAWN FAILED: no free spawn square
+LOG  : Lua          f:682 st:195,481,998> NLQA NPC PRODUCTION SPAWN id=marisol x=6815.50 y=5259.50 z=0
+LOG  : Lua          f:683 st:195,482,019> NLQA NPC PRODUCTION PATH id=marisol from=6815.50,5259.50 to=6817.00,5259.00 waypoint=1
+LOG  : Lua          f:714 st:195,485,052> NLQA MP SERVER COMMAND: refresh username=nl-host
+LOG  : Lua          f:714 st:195,485,052> NLQA MP SERVER PLAYER: dead=false authorityKey=nl-host argsType=nil
+LOG  : Lua          f:714 st:195,485,056> NLQA MP SERVER GAME-SERVER API: unavailable=attempted index: getPlayers of non-table: null java.lang.RuntimeException
+LOG  : Lua          f:772 st:195,490,878> NLQA MP SERVER COMMAND: refresh username=nl-guest
+LOG  : Lua          f:772 st:195,490,878> NLQA MP SERVER PLAYER: dead=false authorityKey=nl-guest argsType=nil
+LOG  : Lua          f:772 st:195,490,880> NLQA MP SERVER GAME-SERVER API: unavailable=attempted index: getPlayers of non-table: null java.lang.RuntimeException
+LOG  : Lua          f:982 st:195,511,800> NLQA NPC PRODUCTION TICK id=marisol x=6816.22 y=5259.50
+LOG  : Lua          f:1282 st:195,541,809> NLQA NPC PRODUCTION TICK id=marisol x=6817.02 y=5259.50

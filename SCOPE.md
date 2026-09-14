@@ -11,13 +11,13 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence | Actual multiplayer inventory sync, rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
-| Persistent neighborhood NPCs | Production `NpcAuthority` now creates Marisol as a native `IsoPlayer` body in isolated single-player, persists the authoritative ModData position, follows two nearby waypoints with native path behavior, and restores the body on save/reload; QA remains the observer and launcher helper | Obstacle handling, two-client replication, persistence across a normal user session, damage/death and offscreen behavior; dedicated-server body distribution |
+| Persistent neighborhood NPCs | Production `NpcAuthority` creates Marisol as a native `IsoPlayer` body, persists the authoritative ModData position, follows two nearby waypoints, restores on save/reload, broadcasts `npc_presence` from a dedicated server, and production clients render local native replicas with compact plumbobs; QA remains the observer and launcher helper | Native Build 42 body reannouncement, reconnect/restart persistence, obstacle/danger handling, damage/death and offscreen behavior |
 | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented; bodies supplied by adapter | Actual world-body integration and two-client conversations |
 | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel | In-world UI/interaction checks, richer date activities and two-client synchronization |
 | Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
 | Aspirations and home activities | Not implemented | Goals, progress/rewards, hobbies and functional furnishings |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter, private snapshots, authoritative presence broadcast, and production client heartbeat; v0.7/v0.9/v1.0 real host plus guest evidence | Reconnect, simultaneous gameplay/inventory delivery, restart, mod distribution, stable two-way native remote movement and replicated-character UI |
+| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, production client heartbeat, and local native NPC replicas; v0.7/v0.9/v1.0/v1.2 real host plus guest evidence | Reconnect, simultaneous gameplay/inventory delivery, restart, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -58,6 +58,20 @@ The original broad goal remains active. This ledger is not a reduced definition 
 3. NPC body/movement/network experiment in the isolated world, then persistent neighbors.
 4. Integrate conversations, relationships, romance and neighborhood careers.
 5. Expand appearance/clothing assets, households, aspirations, furnishings and UI polish.
+
+## v1.2 two-client NPC state and replica evidence
+
+- `evidence/v19/` records the real hands-free run from `tools/launch-multiplayer-qa.ps1`
+  with one dedicated server and two isolated clients.
+- The production server spawned Marisol as a native body and logged authoritative
+  movement from `6815.50,5259.50` through `6816.22,5259.50` to `6817.02,5259.50`.
+- Both real clients received revisioned `npc_presence` packets containing the same
+  server positions and logged a local native `Marisol Vega [Neighborhood Life]`
+  object. This is actual gameplay evidence for mod-state distribution and client
+  replicas, not a unit-test or Kahlua claim.
+- Build 42 did not expose `GameServer` as a Lua table in the run. Native server-body
+  reannouncement, reconnect/restart, inventory/action delivery, danger, damage/death,
+  obstacles and offscreen behavior remain open gates.
 
 ## v1.1 production NPC vertical-slice evidence
 
