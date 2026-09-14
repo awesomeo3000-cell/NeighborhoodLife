@@ -90,6 +90,10 @@ if NLSocialAuthority.inventoryExchange then
         check(world.neighbors.marisol.inventory['bad']==nil,'malformed saved inventory entries are normalized away')
     end
 end
+local mutationThrottleBefore=NLSocialAuthority.lastRequest.host
+NLSocialAuthority.command('NeighborhoodSocial','refresh',p,{})
+check(NLSocialAuthority.lastRequest.host==mutationThrottleBefore,
+    'read-only social refresh does not consume the mutation throttle')
 if NLSocialAuthority.recoverInventoryJournal then
     local repairCount=p:itemCount('Base.Hammer')
     local row=world.neighbors.marisol

@@ -3,6 +3,7 @@
 NLQAMultiplayerServer = true
 if isClient() then return end
 pcall(require, "NLQANativeRosterConfig")
+pcall(require, "NLQAPartnershipConfig")
 local ok,err=pcall(function() require "NL/Authority" end)
 print("NLQA MP SERVER BOOT: authority=" .. tostring(NLAuthority ~= nil) .. " requireOk=" .. tostring(ok)
     .. " error=" .. tostring(err))
@@ -30,6 +31,73 @@ local householdViewpointMoved = false
 local inventoryFaultArmed = false
 local householdRestartProbeSent = false
 local nativeRosterProbeDone = false
+local partnershipProbeSeeded = false
+local partnershipSnapshotAttempts = 0
+
+-- QA-only relationship fixture. It gives the host the exact progression
+-- prerequisites for the production partner command, then leaves the command,
+-- snapshot, event and rejection paths entirely authoritative.
+Events.OnTick.Add(function()
+    if partnershipProbeSeeded or NLQAPartnershipProbe ~= true
+            or not NLNpcAuthority or not NLNpcAuthority.started
+            or type(getOnlinePlayers) ~= "function" then return end
+    local listOk, players = pcall(getOnlinePlayers)
+    if not listOk or not players then return end
+    local host
+    for index = 0, players:size() - 1 do
+        local player = players:get(index)
+        if player and player:getUsername() == "nl-host" then host = player; break end
+    end
+    if not host then return end
+    local world = NLAuthority.world()
+    local profile = NLDomain.profile(world, "nl-host")
+    local relation = NLSocial.relation(profile, "marisol")
+    relation.met = true
+    relation.friendship = 40
+    relation.trust = 30
+    relation.attraction = 30
+    relation.dates = 2
+    relation.status = "Friend"
+    relation.lastAction = -100
+    profile.revision = profile.revision + 1
+    -- Both accounts know the NPC before the guest attempts the same command;
+    -- this makes the observed rejection come from the persisted partnership
+    -- guard rather than the earlier "Introduce yourself first" gate.
+    local guestProfile = NLDomain.profile(world, "nl-guest")
+    local guestRelation = NLSocial.relation(guestProfile, "marisol")
+    guestRelation.met = true
+    guestRelation.friendship = 5
+    guestRelation.trust = 2
+    guestRelation.status = "Acquaintance"
+    guestRelation.lastAction = -100
+    guestProfile.revision = guestProfile.revision + 1
+    partnershipProbeSeeded = true
+    sendServerCommand(host, "NeighborhoodQA", "partnership_seeded", {target="marisol"})
+    print("NLQA PARTNERSHIP SEED: target=marisol dates=2 trust=30 attraction=30 friendship=40")
+end)
+
+-- Some no-Steam Build 42 clients can drop a server command sent in the same
+-- frame as the interaction event. Re-issue the production social snapshot
+-- for the guest on later server ticks; the QA layer adds no relationship data.
+Events.OnTick.Add(function()
+    if NLQAPartnershipProbe ~= true or partnershipSnapshotAttempts >= 12
+            or type(getOnlinePlayers) ~= "function" then return end
+    local world = NLAuthority.world()
+    local npc = world.neighbors and world.neighbors.marisol
+    if not npc or npc.partner ~= "nl-host" then return end
+    local listOk, players = pcall(getOnlinePlayers)
+    if not listOk or not players then return end
+    for index = 0, players:size() - 1 do
+        local player = players:get(index)
+        if player and player:getUsername() == "nl-guest" then
+            NLSocialAuthority.snapshot(player, "partnership probe refresh")
+            partnershipSnapshotAttempts = partnershipSnapshotAttempts + 1
+            print("NLQA PARTNERSHIP SNAPSHOT RETRY: guest=nl-guest attempt="
+                ..tostring(partnershipSnapshotAttempts))
+            return
+        end
+    end
+end)
 
 -- These helpers are QA-only. They seed genuine Item instances in the host's
 -- networked inventory so the production household authority must capture and

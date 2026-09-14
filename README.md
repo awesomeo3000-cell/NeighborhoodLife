@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.71)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.72)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -1051,3 +1051,16 @@ is covered by the social-authority mock suite plus the installed-game Kahlua
 suite. A direct two-client romance result still needs actual gameplay evidence;
 this milestone does not claim that gate complete. QA helpers remain outside
 the production package.
+
+## v1.72 actual two-client partnership loop
+
+The QA-only `-PartnershipProbe` now runs a real no-Steam dedicated server with
+separate host and guest clients. The server seeds only the tested progression
+fixture; the host uses the production partner command, the guest receives the
+production social event and snapshot, then the guest's production partner
+attempt is rejected by the authoritative partnership guard. Evidence is in
+`evidence/v102/actual/partnership-h/`: host `Partner`, guest `Unavailable`,
+and guest `Not completed: Already in a partnership.`. This closes the direct
+two-client partnership synchronization gate, while native NPC server-body
+reannouncement remains blocked by the Build 42 Lua bridge. QA helpers stay
+outside the production package.

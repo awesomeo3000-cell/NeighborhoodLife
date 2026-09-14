@@ -71,7 +71,13 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
      inventoryPositioned = false,
     connectionCount = 0, inventoryRestartProbeSent = false,
     inventoryRestartObserved = false, inventoryRestartDue = 0,
-    nativeRosterObserved = false }
+    nativeRosterObserved = false, partnershipSeeded = false,
+    partnershipPositioned = false, partnershipActionSent = false,
+    partnershipHostObserved = false, partnershipGuestObserved = false,
+    partnershipGuestRefreshDue = 0, partnershipGuestRefreshSent = false,
+    partnershipGuestRefreshSentFrame = 0,
+    partnershipGuestRepositioned = false, partnershipGuestRejectSent = false,
+    partnershipGuestRejectObserved = false }
 NLQAMultiplayer.deliveryRecoverySnapshot = false
 NLQAMultiplayer.deliveryRecoveryObserved = false
 -- Keep the hands-free probe bounded while retaining one full render-loop delay
@@ -700,6 +706,12 @@ Events.OnServerCommand.Add(function(module, command, args)
                 .. tostring(args.x) .. " y=" .. tostring(args.y) .. " z=" .. tostring(args.z))
         end
     end
+    if module == "NeighborhoodQA" and command == "partnership_seeded"
+            and type(args) == "table" and qaIdentity().username == "nl-host" then
+        NLQAMultiplayer.partnershipSeeded = true
+        NLSocialClient.request(0, "refresh")
+        emit("PARTNERSHIP SEED ACK", "target=" .. tostring(args.target))
+    end
     if (module == "NeighborhoodLife" or module == "NeighborhoodSocial")
             and command == "snapshot" and type(args) == "table" then
         NLQAMultiplayer.snapshots = NLQAMultiplayer.snapshots + 1
@@ -888,6 +900,11 @@ Events.OnServerCommand.Add(function(module, command, args)
             .." action="..tostring(args.action)
             .." npc="..tostring(args.npcId)
             .." message="..tostring(args.message))
+        if qaIdentity().partnershipProbe == true and qaIdentity().username == "nl-guest"
+                and args.action == "partner" then
+            NLQAMultiplayer.partnershipGuestRefreshDue = NLQAMultiplayer.socialFrame + 60
+            emit("PARTNERSHIP GUEST EVENT", "refresh=scheduled")
+        end
     end
     if module == "NeighborhoodSocial" and command == "snapshot" and type(args) == "table" then
         local rows={}
@@ -899,6 +916,33 @@ Events.OnServerCommand.Add(function(module, command, args)
         end
         emit("SOCIAL SNAPSHOT", "message="..tostring(args.message)
             .." username="..tostring(args.username).." entries="..table.concat(rows, ","))
+        if qaIdentity().partnershipProbe == true then
+            for _,entry in ipairs(args.neighbors or {}) do
+                if entry.id == "marisol" and entry.relation then
+                    local status = tostring(entry.relation.status)
+                    if qaIdentity().username == "nl-host"
+                            and entry.exclusive == true and entry.isPartner == true
+                            and status == "Partner" and not NLQAMultiplayer.partnershipHostObserved then
+                        NLQAMultiplayer.partnershipHostObserved = true
+                        emit("PARTNERSHIP HOST RESULT", "target=marisol status="..status
+                            .." exclusive=true isPartner=true")
+                    elseif qaIdentity().username == "nl-guest"
+                            and entry.exclusive == true and entry.isPartner == false
+                            and status == "Unavailable" and not NLQAMultiplayer.partnershipGuestObserved then
+                        NLQAMultiplayer.partnershipGuestObserved = true
+                        emit("PARTNERSHIP GUEST RESULT", "target=marisol status="..status
+                            .." exclusive=true isPartner=false")
+                    end
+                end
+            end
+        end
+        if qaIdentity().partnershipProbe == true and qaIdentity().username == "nl-guest"
+                and NLQAMultiplayer.partnershipGuestRejectSent
+                and not NLQAMultiplayer.partnershipGuestRejectObserved
+                and args.message and string.find(args.message, "Already in a partnership", 1, true) then
+            NLQAMultiplayer.partnershipGuestRejectObserved = true
+            emit("PARTNERSHIP GUEST REJECTION", "message="..tostring(args.message))
+        end
         if args.username == qaIdentity().username and NLQAMultiplayer.socialActionSent then
             NLQAMultiplayer.socialActionSnapshotRevision = tonumber(args.revision or 0) or 0
         end
@@ -1201,6 +1245,62 @@ end)
 Events.OnRenderTick.Add(function()
     if not isClient() or not NLSocialClient then return end
     NLQAMultiplayer.socialFrame=NLQAMultiplayer.socialFrame+1
+    -- QA-only direct two-client partnership probe. The server seeds only the
+    -- host's progression state; every relationship mutation and rejection
+    -- below uses the production command and snapshot paths.
+    if qaIdentity().partnershipProbe == true then
+        if qaIdentity().username == "nl-host" and NLQAMultiplayer.partnershipSeeded
+                and not NLQAMultiplayer.partnershipPositioned then
+            NLQAMultiplayer.partnershipPositioned=positionHostForSocial("marisol")
+        elseif qaIdentity().username == "nl-guest" and not NLQAMultiplayer.partnershipPositioned
+                and NLQAMultiplayer.socialFrame>=840 then
+            NLQAMultiplayer.partnershipPositioned=positionGuestForSocial("marisol")
+        end
+        local snapshot=NLSocialClient.snapshots[0]
+        local target
+        for _,entry in ipairs((snapshot and snapshot.neighbors) or {}) do
+            if entry.id=="marisol" then target=entry; break end
+        end
+        if qaIdentity().username=="nl-host" and NLQAMultiplayer.partnershipPositioned
+                and target and target.canInteract and target.relation
+                and not NLQAMultiplayer.partnershipActionSent
+                and (tonumber(target.relation.dates or 0) or 0)>=2
+                and (tonumber(target.relation.trust or 0) or 0)>=30
+                and (tonumber(target.relation.attraction or 0) or 0)>=30 then
+            NLSocialClient.request(0,"interact",{id="marisol",action="partner"})
+            NLQAMultiplayer.partnershipActionSent=true
+            emit("PARTNERSHIP HOST ACTION", "partner target=marisol")
+        end
+        if qaIdentity().username=="nl-guest"
+                and NLQAMultiplayer.partnershipGuestRefreshDue>0
+                and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.partnershipGuestRefreshDue-30
+                and not NLQAMultiplayer.partnershipGuestRepositioned then
+            NLQAMultiplayer.partnershipPositioned=positionGuestForSocial("marisol")
+            NLQAMultiplayer.partnershipGuestRepositioned=true
+        end
+        if qaIdentity().username=="nl-guest"
+                and NLQAMultiplayer.partnershipGuestRefreshDue>0
+                and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.partnershipGuestRefreshDue
+                and not NLQAMultiplayer.partnershipGuestRefreshSent then
+            NLSocialClient.request(0,"refresh")
+            NLQAMultiplayer.partnershipGuestRefreshSent=true
+            NLQAMultiplayer.partnershipGuestRefreshSentFrame=NLQAMultiplayer.socialFrame
+            emit("PARTNERSHIP GUEST REFRESH", "after=host-partner-event")
+        end
+        if qaIdentity().username=="nl-guest" and NLQAMultiplayer.partnershipGuestObserved
+                and target and target.canInteract and not NLQAMultiplayer.partnershipGuestRejectSent
+                then
+            NLSocialClient.request(0,"interact",{id="marisol",action="partner"})
+            NLQAMultiplayer.partnershipGuestRejectSent=true
+            emit("PARTNERSHIP GUEST ACTION", "partner target=marisol")
+        elseif qaIdentity().username=="nl-guest" and NLQAMultiplayer.partnershipGuestObserved
+                and target and not target.canInteract and not NLQAMultiplayer.partnershipGuestRejectSent
+                and NLQAMultiplayer.socialFrame % 120 == 0 then
+            NLQAMultiplayer.partnershipPositioned=positionGuestForSocial("marisol")
+            NLSocialClient.request(0,"refresh")
+            emit("PARTNERSHIP GUEST RETRY", "reposition=refresh")
+        end
+    end
     if qaIdentity().username=="nl-host"
             and not NLQAMultiplayer.inventoryRestartProbeSent
             and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.inventoryRestartDue then
@@ -1209,7 +1309,8 @@ Events.OnRenderTick.Add(function()
         emit("NPC INVENTORY RESTART REFRESH", "connection="..tostring(NLQAMultiplayer.connectionCount))
     end
     if NLQAMultiplayer.socialFrame>=840 and not NLQAMultiplayer.socialPositioned
-            and qaIdentity().promotionProbe ~= true then
+            and qaIdentity().promotionProbe ~= true
+            and qaIdentity().partnershipProbe ~= true then
         if qaIdentity().username=="nl-host" then
             positionHostForSocial()
         else
@@ -1243,6 +1344,7 @@ Events.OnRenderTick.Add(function()
     end
     if NLQAMultiplayer.socialFrame>=900 and NLQAMultiplayer.socialPositioned
             and qaIdentity().promotionProbe ~= true
+            and qaIdentity().partnershipProbe ~= true
             and not NLQAMultiplayer.socialConversationComplete
             and not NLQAMultiplayer.socialActionScheduled
             and not NLQAMultiplayer.socialActionSent
@@ -1254,6 +1356,7 @@ Events.OnRenderTick.Add(function()
         emit("SOCIAL REFRESH", qaIdentity().username or "?")
     end
     if NLQAMultiplayer.socialRefreshSent and not NLQAMultiplayer.socialActionSent
+            and qaIdentity().partnershipProbe ~= true
             and not NLQAMultiplayer.socialConversationComplete
             and NLSocialClient.snapshots[0] then
         local snapshot=NLSocialClient.snapshots[0]

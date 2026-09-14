@@ -1,4 +1,4 @@
-# Neighborhood Life — full scope and evidence ledger (v1.71)
+# Neighborhood Life — full scope and evidence ledger (v1.72)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
@@ -1131,3 +1131,22 @@ player body replication or completion of the remaining multiplayer gates.
   consolidated Lua 5.1, syntax, and installed-game Kahlua suites pass. Actual
   direct two-client romance synchronization remains an evidence gate, so this
   milestone does not claim that gameplay gate complete.
+
+## v1.72 actual two-client partnership loop
+
+- The QA-only `-PartnershipProbe` ran a real Build 42.20.4 dedicated server,
+  host, and guest from isolated profiles. The server seeded the host's tested
+  relationship prerequisites, then the host used the production `partner`
+  command against Marisol.
+- Actual host evidence: `PARTNERSHIP HOST RESULT: target=marisol
+  status=Partner exclusive=true isPartner=true`.
+- Actual guest evidence: `PARTNERSHIP GUEST RESULT: target=marisol
+  status=Unavailable exclusive=true isPartner=false`, followed by the
+  production guest attempt and `PARTNERSHIP GUEST REJECTION: message=Not
+  completed: Already in a partnership.`.
+- The helper result is `PASS: actual host-plus-guest partnership snapshot and
+  rejection loop completed` in
+  `evidence/v102/actual/partnership-h/RESULT.txt`. This is actual gameplay
+  evidence, distinct from mock/unit and installed Kahlua VM tests. Native NPC
+  server-body reannouncement remains open because the installed server still
+  exposes `GameServer=nil`, `Java=nil`, and `getClass=nil`.

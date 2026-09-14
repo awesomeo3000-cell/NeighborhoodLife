@@ -299,8 +299,11 @@ function NLSocialAuthority.command(module,command,player,args)
         print("NLQA SOCIAL COMMAND: "..tostring(command).." username="..tostring(key)
             .." id="..tostring(args.id).." action="..tostring(args.action))
     end
-    if NLSocialAuthority.lastRequest[key] and now-NLSocialAuthority.lastRequest[key]<200 then return end
-    NLSocialAuthority.lastRequest[key]=now
+    -- Refresh is read-only and may follow a cross-client event immediately;
+    -- only mutating social commands use the anti-spam window.
+    if command~="refresh" and NLSocialAuthority.lastRequest[key]
+            and now-NLSocialAuthority.lastRequest[key]<200 then return end
+    if command~="refresh" then NLSocialAuthority.lastRequest[key]=now end
     local world=NLAuthority.world()
     local recovered,recoveryState=NLSocialAuthority.recoverInventoryJournal(world,player)
     if not recovered then
@@ -348,7 +351,9 @@ function NLSocialAuthority.command(module,command,player,args)
     end
     NLSocialAuthority.snapshot(player,message)
     if completed and (command=="interact" or command=="give" or command=="request") then
-        NLSocialAuthority.broadcastEvent(player,args.id,command,message)
+        local eventAction=command
+        if command=="interact" then eventAction=args.action end
+        NLSocialAuthority.broadcastEvent(player,args.id,eventAction,message)
     end
     if NLQAMultiplayerServer and command=="interact" then
         print("NLQA SOCIAL RESULT: username="..tostring(key).." message="..tostring(message))
