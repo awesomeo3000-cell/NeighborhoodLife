@@ -17,6 +17,7 @@ NLNpcAuthority = {
     tick = 0,
     started = false,
     startAttempts = 0,
+    danger = {},
     repairStacked = true,
     definitions = { "marisol", "kenji", "amara" },
 }
@@ -60,13 +61,29 @@ end
 -- Build 42 exposes the native server reannouncement entry point only on
 -- installations that publish GameServer to Lua. Use it when available, but
 -- keep the authoritative npc_presence path as the compatibility route.
+local function gameServerApi()
+    local apiOk, api = pcall(function() return GameServer end)
+    if apiOk and api and api.getConnectionFromPlayer and api.sendPlayerConnected then
+        return api, "global"
+    end
+    -- Dedicated Build 42 omits the GameServer global, but its Kahlua bridge
+    -- can expose the loaded static class through getClass. Keep this adapter
+    -- best-effort: the authoritative npc_presence packet remains the fallback.
+    if type(getClass) == "function" then
+        local classOk, classApi = pcall(getClass, "zombie.network.GameServer")
+        if classOk and classApi and classApi.getConnectionFromPlayer
+                and classApi.sendPlayerConnected then
+            return classApi, "getClass"
+        end
+    end
+    return nil, nil
+end
+NLNpcAuthority.resolveGameServer = gameServerApi
+
 function NLNpcAuthority.reannounceTo(player)
     if not player then return 0 end
-    local apiOk, api = pcall(function() return GameServer end)
-    if not apiOk or not api or not api.getConnectionFromPlayer
-            or not api.sendPlayerConnected then
-        return 0
-    end
+    local api, source = gameServerApi()
+    if not api then return 0 end
     local connectionOk, connection = pcall(api.getConnectionFromPlayer, player)
     if not connectionOk or not connection then return 0 end
     local sent = 0
@@ -76,6 +93,7 @@ function NLNpcAuthority.reannounceTo(player)
             if ok then sent = sent + 1 end
         end
     end
+    if sent > 0 then emit("REANNOUNCE source=" .. tostring(source) .. " sent=" .. tostring(sent)) end
     return sent
 end
 
@@ -199,6 +217,97 @@ end
 -- Exposed for the deterministic contract suite; gameplay still reaches this
 -- helper only through the server's stalled-native-path branch.
 NLNpcAuthority.safeFallbackStep = fallbackStep
+
+local function listSize(list)
+    if not list or not list.size then return 0 end
+    local ok, size = pcall(list.size, list)
+    return ok and (tonumber(size) or 0) or 0
+end
+
+local function listGet(list, index)
+    if not list or not list.get then return nil end
+    local ok, value = pcall(list.get, list, index)
+    return ok and value or nil
+end
+
+local function livingZombie(value)
+    if not value or not value.isZombie then return false end
+    local zombieOk, zombie = pcall(value.isZombie, value)
+    if not zombieOk or zombie ~= true then return false end
+    if value.isDead then
+        local deadOk, dead = pcall(value.isDead, value)
+        if deadOk and dead == true then return false end
+    end
+    if value.isFakeDead then
+        local fakeOk, fake = pcall(value.isFakeDead, value)
+        if fakeOk and fake == true then return false end
+    end
+    return true
+end
+
+-- Return the closest living zombie in the loaded server cell. Build 42's
+-- getZombieList is cheaper and more reliable than trusting a single square's
+-- moving-object list, while the square scan keeps the adapter usable on older
+-- engine builds and deterministic fixtures.
+local function dangerNear(body, radius)
+    if not body or not body.getX or not body.getY then return nil end
+    if type(getCell) ~= "function" then return nil end
+    local cellOk, cell = pcall(getCell)
+    if not cellOk or not cell then return nil end
+    local bx, by, bz = body:getX(), body:getY(), body.getZ and body:getZ() or 0
+    local limit = tonumber(radius or 4) or 4
+    local best, bestDistance
+    local function inspect(value)
+        if not livingZombie(value) or not value.getX or not value.getY then return end
+        local sameZ = not value.getZ or math.abs((value:getZ() or bz) - bz) <= 0.5
+        if not sameZ then return end
+        local dx, dy = value:getX() - bx, value:getY() - by
+        local distance = math.sqrt(dx * dx + dy * dy)
+        if distance <= limit and (not bestDistance or distance < bestDistance) then
+            best, bestDistance = value, distance
+        end
+    end
+    local listOk, zombies = false, nil
+    if cell.getZombieList then listOk, zombies = pcall(cell.getZombieList, cell) end
+    if listOk and zombies then
+        for index = 0, listSize(zombies) - 1 do inspect(listGet(zombies, index)) end
+    elseif cell.getGridSquare then
+        local minX, maxX = math.floor(bx - limit), math.floor(bx + limit)
+        local minY, maxY = math.floor(by - limit), math.floor(by + limit)
+        for x = minX, maxX do
+            for y = minY, maxY do
+                local squareOk, square = pcall(cell.getGridSquare, cell, x, y, bz)
+                if squareOk and square and square.getMovingObjects then
+                    local objectsOk, objects = pcall(square.getMovingObjects, square)
+                    if objectsOk and objects then
+                        for index = 0, listSize(objects) - 1 do inspect(listGet(objects, index)) end
+                    end
+                end
+            end
+        end
+    end
+    return best, bestDistance
+end
+
+local function dangerStep(body, zombie)
+    if not body or not zombie or not body.getX or not zombie.getX then return nil end
+    local bx, by, bz = body:getX(), body:getY(), body:getZ()
+    local dx, dy = bx - zombie:getX(), by - zombie:getY()
+    local distance = math.sqrt(dx * dx + dy * dy)
+    if distance < 0.001 then return nil end
+    local step = math.min(0.12, math.max(0.04, distance * 0.25))
+    local nextX, nextY = bx + dx / distance * step, by + dy / distance * step
+    local crossesTile = math.floor(nextX) ~= math.floor(bx)
+        or math.floor(nextY) ~= math.floor(by)
+    local square = true
+    if crossesTile then square = walkableSquare(type(getCell) == "function" and getCell() or nil,
+        nextX, nextY, bz) end
+    if not square then return nil end
+    return nextX, nextY, square
+end
+
+NLNpcAuthority.dangerNear = dangerNear
+NLNpcAuthority.safeDangerStep = dangerStep
 
 local function npcReservedSquares()
     local reserved = {}
@@ -513,7 +622,24 @@ function NLNpcAuthority.update()
             retireBody(id, row, body, "DEATH")
             lifecycleChanged = true
         else
-            local behavior = body:getPathFindBehavior2()
+            local threat, threatDistance = dangerNear(body, 4.0)
+            if threat then
+                local previous = NLNpcAuthority.danger[id]
+                cancelBodyPath(id, body)
+                local nextX, nextY, square = dangerStep(body, threat)
+                if nextX then
+                    body:setX(nextX); body:setY(nextY)
+                    if square and square ~= true then body:setCurrent(square) end
+                    NLNeighbors.position(world, id, nextX, nextY, body:getZ(), row.waypoint)
+                end
+                NLNpcAuthority.danger[id] = { zombie=threat, distance=threatDistance }
+                if not previous or previous.zombie ~= threat then
+                    emit(string.format("DANGER id=%s distance=%.2f moved=%s", id,
+                        threatDistance or -1, tostring(nextX ~= nil)))
+                end
+            else
+                NLNpcAuthority.danger[id] = nil
+                local behavior = body:getPathFindBehavior2()
             if not body:hasPath() and not NLNpcAuthority.targets[id] then
                 NLNpcAuthority.targets = NLNpcAuthority.targets or {}
                 local target, index = nextWaypoint(row, body)
@@ -590,6 +716,7 @@ function NLNpcAuthority.update()
             if NLNpcAuthority.tick % 120 == 0 then
                 NLNpcAuthority.persist()
             end
+            end
         end
     end
     if lifecycleChanged or NLNpcAuthority.tick % 120 == 0 then
@@ -606,6 +733,7 @@ function NLNpcAuthority.reset()
     NLNpcAuthority.bodies = {}
     NLNpcAuthority.targets = {}
     NLNpcAuthority.offscreen = {}
+    NLNpcAuthority.danger = {}
     NLNpcAuthority.started = false
     NLNpcAuthority.startAttempts = 0
     NLNpcAuthority.tick = 0

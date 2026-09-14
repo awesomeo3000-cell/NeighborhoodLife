@@ -703,3 +703,17 @@ the character model. The isolated profile was resynchronized from the production
 mod; the hands-free host and guest run logged `player:0=2x3 texture=8x11` on
 both clients. This is presentation evidence, not a claim about native NPC
 reannouncement or broader multiplayer completion.
+
+## v1.47 server-authoritative zombie danger handling
+
+Production NPC authority now scans the loaded Build 42 server cell for living
+zombies within four tiles. When a threat is present, it cancels the NPC's
+current route, pauses or takes a bounded retreat onto a walkable square, and
+persists the resulting position before normal route work resumes.
+
+The isolated hands-free run seeded one real zombie beside Marisol through the
+vanilla `addZombiesInOutfit` API. The dedicated server logged
+`NLQA DANGER PROBE: ok=true count=1` and production `NPC PRODUCTION DANGER`
+events for all three neighbors; the host and guest remained connected with
+three native NPC replicas. This is actual engine gameplay evidence for the
+danger probe, not a claim that the full optional-zombies loop is complete.

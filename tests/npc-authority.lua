@@ -26,8 +26,12 @@ local objects={}
 function objects:contains(value) return objectSet[value] == true end
 function objects:add(value) objectSet[value] = true end
 function objects:remove(value) objectSet[value] = nil end
+local zombies={}
+local zombieList={}
+function zombieList:size() return #zombies end
+function zombieList:get(index) return zombies[index+1] end
 function getCell() return {getGridSquare=function(_,x,y,z) local s=square(x,y,z); s.getObjectList=function() return objects end; return s end,
-    getObjectList=function() return objects end} end
+    getObjectList=function() return objects end,getZombieList=function() return zombieList end} end
 SurvivorFactory={CreateSurvivor=function() return {
     setForename=function() end,setSurname=function() end,setFemale=function() end} end}
 BehaviorResult={Succeeded='succeeded'}
@@ -89,11 +93,44 @@ if NLNpcAuthority.safeFallbackStep then
     getCell=originalGetCell
     body:setX(originalBodyX); body:setY(originalBodyY)
 end
+if NLNpcAuthority.dangerNear and NLNpcAuthority.safeDangerStep then
+    local threat={x=body:getX()-1.0,y=body:getY(),z=body:getZ(),dead=false}
+    function threat:getX() return self.x end; function threat:getY() return self.y end
+    function threat:getZ() return self.z end; function threat:isZombie() return true end
+    function threat:isDead() return self.dead end; function threat:isFakeDead() return false end
+    zombies[1]=threat
+    local nearest,distance=NLNpcAuthority.dangerNear(body,4.0)
+    assert(nearest==threat and distance<4.0,'loaded-cell danger scan finds a living nearby zombie')
+    local retreatX,retreatY=NLNpcAuthority.safeDangerStep(body,threat)
+    assert(retreatX and retreatY and retreatX>body:getX(),'danger fallback steps away from the zombie')
+    local originalIsServer=isServer
+    isServer=function() return true end
+    local beforeDangerX=body:getX()
+    NLNpcAuthority.targets.marisol={x=body:getX()+2,y=body:getY(),z=body:getZ(),waypoint=1,
+        lastX=body:getX(),lastY=body:getY(),stall=0}
+    NLNpcAuthority.update()
+    assert(NLNpcAuthority.danger.marisol and not NLNpcAuthority.targets.marisol
+        and body:getX()>beforeDangerX,'server route pauses and retreats from nearby danger')
+    isServer=originalIsServer
+    zombies[1]=nil
+end
 local expectedBodies=#NLNpcAuthority.definitions
 if NLNpcAuthority.reannounceTo then
     assert(NLNpcAuthority.reannounceTo(player)==expectedBodies
         and #reannounced==expectedBodies,
         'native reannounce adapter sends authored bodies to a connected player')
+    if NLNpcAuthority.resolveGameServer then
+        local globalGameServer=GameServer
+        GameServer=nil
+        function getClass(name)
+            if name == 'zombie.network.GameServer' then return globalGameServer end
+        end
+        local beforeClassRoute=#reannounced
+        assert(NLNpcAuthority.reannounceTo(player)==expectedBodies
+            and #reannounced==beforeClassRoute+expectedBodies,
+            'native reannounce adapter uses the loaded GameServer class when global is absent')
+        GameServer=globalGameServer
+    end
 end
 if expectedBodies>=3 then
     for _, id in ipairs({'kenji','amara'}) do
