@@ -1,0 +1,73 @@
+Neighborhood Life v1.28 verification
+
+Changed branch/fields:
+- Server authority branch `wardrobe_save` validates slot 1..3, reads the authoritative player's worn-item list, stores exact `fullType` and `itemId` entries in private `profile.outfits[slot]`, increments `profile.revision`, and returns the private snapshot.
+- Client snapshot acceptance applies `outfits` into player ModData; Wardrobe and WardrobePanel route Save current outfit through the server command.
+- QA-only helper opens the real production wardrobe panel and schedules one server-authoritative save. QA remains outside the production package.
+
+Required artifacts:
+MODIFIED_FILE: E:\pzmod\evidence\v47\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v47\DIFF_FILE.patch
+VERIFICATION.txt: E:\pzmod\evidence\v47\VERIFICATION.txt
+ROLLBACK.sh: E:\pzmod\evidence\v47\ROLLBACK.sh
+
+Hashes:
+BASELINE Authority.lua SHA256 B0F0EC6046E4021A6327558682AB6769DFCC4B113BD10A379D103EF7C4E81282
+MODIFIED Authority.lua SHA256 3FC6FCA4D45D62C935FFD66E0B6130B62F2902B52427899B32A8F85156A93BE9
+DIFF_FILE.patch SHA256 33E4C69E2E251B83427FD13FE4627CA6A616419C862D252957EAEBF2C82AD685
+
+BASELINE
+COMMAND: cmd /c "python tools\pipeline.py test --target evidence\v47\baseline > evidence\v47\baseline-test.log 2>&1"
+INPUT: evidence\v47\baseline
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+EXIT STATUS: 0
+COMMAND: C:\Program Files (x86)\Lua\5.1\lua.exe tests\wardrobe-authority.lua evidence\v47\baseline
+INPUT: evidence\v47\baseline
+LITERAL OUTPUT: PASS: baseline wardrobe authority adapter absent (legacy branch)
+EXIT STATUS: 0
+
+MODIFIED
+COMMAND: cmd /c "python tools\pipeline.py test > evidence\v47\modified-test.log 2>&1"
+INPUT: NeighborhoodLife production tree
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+EXIT STATUS: 0
+COMMAND: C:\Program Files (x86)\Lua\5.1\lua.exe tests\wardrobe-authority.lua NeighborhoodLife
+INPUT: NeighborhoodLife
+LITERAL OUTPUT: PASS: server-authoritative wardrobe capture, validation, persistence and snapshot
+EXIT STATUS: 0
+COMMAND: C:\Program Files (x86)\Lua\5.1\luac.exe -p qa\NeighborhoodQA\42\media\lua\client\NLQAMultiplayer.lua
+INPUT: QA helper source
+LITERAL OUTPUT: [empty stdout/stderr]
+EXIT STATUS: 0
+
+ROLLBACK
+COMMAND: C:\Program Files\Git\bin\bash.exe -lc "chmod +x /e/pzmod/evidence/v47/ROLLBACK.sh && TARGET_ROOT=/e/pzmod/evidence/v47/rollback-target bash /e/pzmod/evidence/v47/ROLLBACK.sh"
+INPUT: rollback baseline at evidence\v47\rollback-baseline; target evidence\v47\rollback-target
+LITERAL OUTPUT: ROLLBACK RESTORED: baseline production and QA/test trees
+EXIT STATUS: 0
+COMMAND: cmd /c "python tools\pipeline.py test --target evidence\v47\rollback-target\NeighborhoodLife > evidence\v47\rollback-test.log 2>&1"
+INPUT: evidence\v47\rollback-target\NeighborhoodLife
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+EXIT STATUS: 0
+RESTORED STATUS: rollback target passed the baseline consolidated suite; the pre-v1.28 wardrobe authority branch was restored.
+
+RELEASE PACKAGE
+COMMAND: cmd /c "python tools\pipeline.py package --version v47 --baseline evidence\v47\baseline > evidence\v47\package.log 2>&1"
+INPUT: NeighborhoodLife; baseline evidence\v47\baseline
+LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v47\MODIFIED_FILE.zip
+EXIT STATUS: 0
+ZIP RESULT: testzip=None; QA_ENTRIES=0; ZIP_ENTRIES=28; executable rollback check=0.
+
+ACTUAL GAMEPLAY EVIDENCE
+CLASSIFICATION: actual Build 42.20.4 two-process host/guest run using the isolated test profile and hands-free QA launcher. This is gameplay evidence, not a mock or engine-VM claim.
+COMMAND: powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\launch-multiplayer-qa.ps1
+INPUT: isolated test-profile; hands-free-qa.jar; Build 42.20.4
+RESULT: host logged `NLQA MP CLIENT START: username=nl-host isClient=true isServer=false`; host logged `NLQA MP PLUMBOB SIZE: player:0=6x10 texture=16x22`; host logged `NLQA MP WARDROBE UI: visible=true x=345 y=135 width=590 height=450`; server logged `NLQA PRODUCTION AUTHORITY COMMAND: wardrobe_save username=nl-host`; server logged `NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-host revision=72`; host logged `NLQA MP WARDROBE SNAPSHOT: slot=1 pieces=0 revision=72`.
+ACTUAL LIMIT: the disposable test character had zero worn garments, so this proves the real panel, server command, private persistence, and revisioned snapshot path. It does not yet prove visual garment replacement or reconnect restoration of non-empty clothing.
+MULTIPLAYER CONTEXT: guest logged a real client start, plumbob `6x10`, native NPC snapshots, and the guest social action path. Existing native NPC gameplay loop remains evidenced separately; the native GameServer reannouncement adapter remains blocked by the observed `GameServer=nil` runtime exposure.
+
+Artifact reopen checks:
+- MODIFIED_FILE.zip reopened with Python zipfile: testzip=None, no NeighborhoodQA entries.
+- DIFF_FILE.patch reopened and measured at 22813 bytes.
+- ROLLBACK.sh reopened and passed `test -x`.
+- This VERIFICATION.txt is the reopened record for the v1.28 run.

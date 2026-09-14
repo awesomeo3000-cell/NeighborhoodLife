@@ -57,6 +57,10 @@ print('PASS: relationship UI empty/populated/deceased states, correct derived ca
 if arg[2]=='wardrobe-panel' then
     package.preload['NL/Wardrobe']=function()
         NLWardrobe={save=function(p,slot) p.data.NeighborhoodOutfits[slot]={'Base.Shirt'} end,
+            requestSave=function(p,slot)
+                NLWardrobe.save(p,slot)
+                if NLClient.profiles[0] then NLClient.profiles[0].outfits=p.data.NeighborhoodOutfits end
+            end,
             wear=function(p,slot) p.worn=slot end}
     end
     require 'NL/WardrobePanel'

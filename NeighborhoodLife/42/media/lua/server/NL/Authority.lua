@@ -86,10 +86,38 @@ function NLAuthority.delivery(player, profile, id)
     return NLDomain.complete(profile, contract)
 end
 
+-- Capture the authoritative player's currently worn garment identities. The
+-- client only requests a slot; the server reads the real worn-item list so a
+-- preset cannot contain client-invented item types or IDs.
+function NLAuthority.captureOutfit(player, profile, slot)
+    if type(slot) ~= "number" or slot ~= math.floor(slot) or slot < 1 or slot > 3 then
+        return false, "Choose wardrobe slot 1, 2 or 3"
+    end
+    if not player or not player.getWornItems then return false, "Wardrobe unavailable" end
+    local worn = player:getWornItems()
+    local saved = {}
+    if worn and worn.size and worn.get then
+        for i = 0, worn:size() - 1 do
+            local wornItem = worn:get(i)
+            local item = wornItem and wornItem.getItem and wornItem:getItem()
+            if item and item.getFullType then
+                saved[#saved + 1] = {
+                    fullType = item:getFullType(),
+                    itemId = item.getID and item:getID() or nil,
+                }
+            end
+        end
+    end
+    profile.outfits = profile.outfits or {}
+    profile.outfits[slot] = saved
+    profile.revision = profile.revision + 1
+    return true, "Outfit " .. tostring(slot) .. " saved (" .. tostring(#saved) .. " pieces)."
+end
+
 function NLAuthority.command(module, command, player, args)
     if module ~= NLAuthority.module or not player or player:isDead() then return end
     if command ~= "refresh" and command ~= "presence" and command ~= "select"
-            and command ~= "deliver" and command ~= "promote" then return end
+            and command ~= "deliver" and command ~= "promote" and command ~= "wardrobe_save" then return end
     -- Build 42's dedicated-server callback can omit the empty packet table for
     -- no-argument commands. Treat that as an empty request instead of dropping
     -- an otherwise valid refresh from a real client.
@@ -116,6 +144,8 @@ function NLAuthority.command(module, command, player, args)
     elseif command == "deliver" then ok, message = NLAuthority.delivery(player, profile, args.id)
     elseif command == "promote" then
         ok, message = NLDomain.promote(profile, player:getPerkLevel(Perks[NLDefinitions.careers[profile.career].perk]))
+    elseif command == "wardrobe_save" then
+        ok, message = NLAuthority.captureOutfit(player, profile, args.slot)
     end
     if not ok then message = "Not completed: " .. message end
     NLAuthority.snapshot(player, profile, message)

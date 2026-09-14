@@ -30,8 +30,13 @@ function NLClient.receive(module, command, args)
             local key = player:getUsername()
             if not key or key == "" then key = "local:" .. i end
             if key == args.username then
-                local old = NLClient.profiles[i]
-                if not old or args.revision >= old.revision then NLClient.profiles[i] = args end
+            local old = NLClient.profiles[i]
+            if not old or args.revision >= old.revision then
+                NLClient.profiles[i] = args
+                if NLWardrobe and NLWardrobe.applyProfile then
+                    NLWardrobe.applyProfile(player, args.outfits)
+                end
+            end
             end
         end
     end

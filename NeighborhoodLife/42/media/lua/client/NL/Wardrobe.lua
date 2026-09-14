@@ -2,6 +2,11 @@ require "TimedActions/ISWearClothing"
 require "TimedActions/ISTimedActionQueue"
 NLWardrobe = {}
 
+function NLWardrobe.applyProfile(player, outfits)
+    if not player or type(outfits) ~= "table" then return end
+    player:getModData().NeighborhoodOutfits = outfits
+end
+
 function NLWardrobe.save(player, slot)
     local outfits = player:getModData().NeighborhoodOutfits or {}
     local items, saved = player:getWornItems(), {}
@@ -42,6 +47,15 @@ function NLWardrobe.wear(player, slot)
     if missing>0 then player:Say(missing.." outfit pieces missing from main inventory.") end
 end
 
+function NLWardrobe.requestSave(player, slot)
+    if not player then return end
+    if NLClient and NLClient.request then
+        NLClient.request(player:getPlayerNum(), "wardrobe_save", { slot = slot })
+    else
+        NLWardrobe.save(player, slot)
+    end
+end
+
 function NLWardrobe.menu(index, context)
     local player=getSpecificPlayer(index)
     if not player or player:isDead() then return end
@@ -49,7 +63,7 @@ function NLWardrobe.menu(index, context)
     local sub=ISContextMenu:getNew(context)
     context:addSubMenu(option,sub)
     for slot=1,3 do
-        sub:addOption("Save current outfit "..slot,player,NLWardrobe.save,slot)
+        sub:addOption("Save current outfit "..slot,player,NLWardrobe.requestSave,slot)
         sub:addOption("Wear saved outfit "..slot,player,NLWardrobe.wear,slot)
     end
 end

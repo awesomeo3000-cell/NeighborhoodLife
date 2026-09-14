@@ -1,0 +1,3 @@
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\launch-multiplayer-qa.ps1
+isolated test-profile; hands-free-qa.jar; Build 42.20.4
+host wardrobe_save delayed beyond 200ms duplicate-command window

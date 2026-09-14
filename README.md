@@ -448,3 +448,19 @@ server spawned and moved all three neighbors, both clients received three
 moving native replicas, and the guest completed its Kenji social probe. The
 same server logged `GameServer=nil` during both refresh probes, so native
 reannouncement remains an open engine-exposure gate.
+
+## v1.28 server-authoritative wardrobe slice
+
+Wardrobe saves now use the production `wardrobe_save` command. The server reads
+the connected player's real worn-item list, validates slots 1-3, stores exact
+garment identities in the private profile, increments its revision and returns
+the preset through the normal snapshot packet. The production panel and world
+context menu both use this route; wearing still uses vanilla
+`ISWearClothing` actions.
+
+`tests/wardrobe-authority.lua` covers the capture, validation, persistence and
+snapshot contract in Lua 5.1 and the installed Kahlua VM. In the actual
+Build 42.20.4 run under `evidence/v47/`, the host opened the real 590x450
+wardrobe panel and received revision 72 after the authoritative save. The
+disposable character had zero worn garments, so the run proves the empty-preset
+and UI/server integration path, not visual garment replacement yet.

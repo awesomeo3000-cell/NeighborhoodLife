@@ -19,7 +19,9 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     householdInviteDue = 0, householdMembersObserved = false,
     householdStoreSent = false, householdStoreObserved = false,
     householdRetrieveSent = false, householdRetrieveObserved = false,
-    householdTaskDue = 0, householdResetSent = false }
+    householdTaskDue = 0, householdResetSent = false,
+    wardrobeSaveSent = false, wardrobeSaveDue = 0, wardrobeSnapshotLogged = false,
+    wardrobeUiLogged = false }
 NLQAMultiplayer.socialCooldownFrames = 3600
 
 local function emit(label, value)
@@ -351,6 +353,22 @@ Events.OnServerCommand.Add(function(module, command, args)
         emit("SNAPSHOT", "username=" .. tostring(args.username) .. " revision=" .. tostring(args.revision)
             .. " snapshotCount=" .. tostring(NLQAMultiplayer.snapshots)
             .. " message=" .. tostring(args.message))
+        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                and NLQAMultiplayer.wardrobeSaveSent
+                and not NLQAMultiplayer.wardrobeSnapshotLogged then
+            local outfits = args.outfits or {}
+            local pieces = outfits[1] and #outfits[1] or 0
+            NLQAMultiplayer.wardrobeSnapshotLogged = true
+            emit("WARDROBE SNAPSHOT", "slot=1 pieces=" .. tostring(pieces)
+                .. " revision=" .. tostring(args.revision))
+        end
+        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                and not NLQAMultiplayer.wardrobeSaveSent
+                and NLQAMultiplayer.wardrobeSaveDue == 0 then
+            -- Keep the probe outside the production command adapter's
+            -- duplicate-request window after refresh.
+            NLQAMultiplayer.wardrobeSaveDue=NLQAMultiplayer.socialFrame+30
+        end
         if qaIdentity().username == "nl-host" and args.username == "nl-host"
                 and NLQAMultiplayer.careerDeliverSent and not NLQAMultiplayer.careerResultLogged
                 and args.message and string.find(args.message,"Delivery complete",1,true) then
@@ -913,5 +931,34 @@ Events.OnRenderTick.Add(function()
     if #details > 0 then
         NLQAMultiplayer.plumbobSizeLogged = true
         emit("PLUMBOB SIZE", table.concat(details, " "))
+    end
+end)
+
+-- QA-only clothing vertical-slice probe. It opens the real production panel
+-- and asks the server to capture the host's current worn garments; no QA item
+-- or client-invented preset enters the production profile.
+Events.OnRenderTick.Add(function()
+    if not isClient() or qaIdentity().username ~= "nl-host"
+            or NLQAMultiplayer.snapshots == 0
+            or NLQAMultiplayer.socialFrame < NLQAMultiplayer.wardrobeSaveDue
+            or NLQAMultiplayer.wardrobeSaveSent then return end
+    local player=getSpecificPlayer(0)
+    if not player then return end
+    pcall(require, "NL/Wardrobe")
+    if NLWardrobe and NLWardrobe.requestSave then
+        NLWardrobe.requestSave(player, 1)
+        NLQAMultiplayer.wardrobeSaveSent=true
+        emit("WARDROBE SAVE", "slot=1 source=server-authoritative-worn-items")
+    end
+    pcall(require, "NL/WardrobePanel")
+    if NLWardrobePanel and NLWardrobePanel.open then
+        NLWardrobePanel.open(0)
+        local panel=NLWardrobePanel.instances and NLWardrobePanel.instances[0]
+        if panel and not NLQAMultiplayer.wardrobeUiLogged then
+            NLQAMultiplayer.wardrobeUiLogged=true
+            emit("WARDROBE UI", "visible="..tostring(panel.isVisible and panel:isVisible() or panel.visible)
+                .." x="..tostring(panel.x).." y="..tostring(panel.y)
+                .." width="..tostring(panel.width).." height="..tostring(panel.height))
+        end
     end
 end)

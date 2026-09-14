@@ -1,0 +1,309 @@
+diff --git a/NeighborhoodLife/42/media/lua/client/NL/Client.lua b/NeighborhoodLife/42/media/lua/client/NL/Client.lua
+index 24f947d..9aa39c2 100644
+--- a/NeighborhoodLife/42/media/lua/client/NL/Client.lua
++++ b/NeighborhoodLife/42/media/lua/client/NL/Client.lua
+@@ -30,8 +30,13 @@ function NLClient.receive(module, command, args)
+             local key = player:getUsername()
+             if not key or key == "" then key = "local:" .. i end
+             if key == args.username then
+-                local old = NLClient.profiles[i]
+-                if not old or args.revision >= old.revision then NLClient.profiles[i] = args end
++            local old = NLClient.profiles[i]
++            if not old or args.revision >= old.revision then
++                NLClient.profiles[i] = args
++                if NLWardrobe and NLWardrobe.applyProfile then
++                    NLWardrobe.applyProfile(player, args.outfits)
++                end
++            end
+             end
+         end
+     end
+diff --git a/NeighborhoodLife/42/media/lua/client/NL/Wardrobe.lua b/NeighborhoodLife/42/media/lua/client/NL/Wardrobe.lua
+index d673ac4..f0ac9ed 100644
+--- a/NeighborhoodLife/42/media/lua/client/NL/Wardrobe.lua
++++ b/NeighborhoodLife/42/media/lua/client/NL/Wardrobe.lua
+@@ -2,6 +2,11 @@ require "TimedActions/ISWearClothing"
+ require "TimedActions/ISTimedActionQueue"
+ NLWardrobe = {}
+ 
++function NLWardrobe.applyProfile(player, outfits)
++    if not player or type(outfits) ~= "table" then return end
++    player:getModData().NeighborhoodOutfits = outfits
++end
++
+ function NLWardrobe.save(player, slot)
+     local outfits = player:getModData().NeighborhoodOutfits or {}
+     local items, saved = player:getWornItems(), {}
+@@ -42,6 +47,15 @@ function NLWardrobe.wear(player, slot)
+     if missing>0 then player:Say(missing.." outfit pieces missing from main inventory.") end
+ end
+ 
++function NLWardrobe.requestSave(player, slot)
++    if not player then return end
++    if NLClient and NLClient.request then
++        NLClient.request(player:getPlayerNum(), "wardrobe_save", { slot = slot })
++    else
++        NLWardrobe.save(player, slot)
++    end
++end
++
+ function NLWardrobe.menu(index, context)
+     local player=getSpecificPlayer(index)
+     if not player or player:isDead() then return end
+@@ -49,7 +63,7 @@ function NLWardrobe.menu(index, context)
+     local sub=ISContextMenu:getNew(context)
+     context:addSubMenu(option,sub)
+     for slot=1,3 do
+-        sub:addOption("Save current outfit "..slot,player,NLWardrobe.save,slot)
++        sub:addOption("Save current outfit "..slot,player,NLWardrobe.requestSave,slot)
+         sub:addOption("Wear saved outfit "..slot,player,NLWardrobe.wear,slot)
+     end
+ end
+diff --git a/NeighborhoodLife/42/media/lua/client/NL/WardrobePanel.lua b/NeighborhoodLife/42/media/lua/client/NL/WardrobePanel.lua
+index c2e2b0d..64a2b0b 100644
+--- a/NeighborhoodLife/42/media/lua/client/NL/WardrobePanel.lua
++++ b/NeighborhoodLife/42/media/lua/client/NL/WardrobePanel.lua
+@@ -17,7 +17,9 @@ function NLWardrobePanel:onButton(button)
+     if button.action=="close" then self:setVisible(false); return end
+     local player=getSpecificPlayer(self.playerIndex)
+     if not player or player:isDead() then return end
+-    if button.action=="save" then NLWardrobe.save(player,button.value)
++    if button.action=="save" then
++        if NLWardrobe.requestSave then NLWardrobe.requestSave(player,button.value)
++        else NLWardrobe.save(player,button.value) end
+     elseif button.action=="wear" then NLWardrobe.wear(player,button.value) end
+ end
+ function NLWardrobePanel:prerender()
+@@ -26,7 +28,8 @@ function NLWardrobePanel:prerender()
+     self:drawText("Your looks / save three outfits from clothes you own",16,60,0.18,0.24,0.32,1,UIFont.Small)
+     local player=getSpecificPlayer(self.playerIndex)
+     local alive=player~=nil and not player:isDead()
+-    local outfits=alive and player:getModData().NeighborhoodOutfits or {}
++    local profile=NLClient.profiles[self.playerIndex]
++    local outfits=alive and ((profile and profile.outfits) or player:getModData().NeighborhoodOutfits or {}) or {}
+     for i=1,3 do
+         local y=95+(i-1)*90
+         local saved=outfits[i]
+diff --git a/NeighborhoodLife/42/media/lua/server/NL/Authority.lua b/NeighborhoodLife/42/media/lua/server/NL/Authority.lua
+index f6c9e31..1396dfd 100644
+--- a/NeighborhoodLife/42/media/lua/server/NL/Authority.lua
++++ b/NeighborhoodLife/42/media/lua/server/NL/Authority.lua
+@@ -86,10 +86,38 @@ function NLAuthority.delivery(player, profile, id)
+     return NLDomain.complete(profile, contract)
+ end
+ 
++-- Capture the authoritative player's currently worn garment identities. The
++-- client only requests a slot; the server reads the real worn-item list so a
++-- preset cannot contain client-invented item types or IDs.
++function NLAuthority.captureOutfit(player, profile, slot)
++    if type(slot) ~= "number" or slot ~= math.floor(slot) or slot < 1 or slot > 3 then
++        return false, "Choose wardrobe slot 1, 2 or 3"
++    end
++    if not player or not player.getWornItems then return false, "Wardrobe unavailable" end
++    local worn = player:getWornItems()
++    local saved = {}
++    if worn and worn.size and worn.get then
++        for i = 0, worn:size() - 1 do
++            local wornItem = worn:get(i)
++            local item = wornItem and wornItem.getItem and wornItem:getItem()
++            if item and item.getFullType then
++                saved[#saved + 1] = {
++                    fullType = item:getFullType(),
++                    itemId = item.getID and item:getID() or nil,
++                }
++            end
++        end
++    end
++    profile.outfits = profile.outfits or {}
++    profile.outfits[slot] = saved
++    profile.revision = profile.revision + 1
++    return true, "Outfit " .. tostring(slot) .. " saved (" .. tostring(#saved) .. " pieces)."
++end
++
+ function NLAuthority.command(module, command, player, args)
+     if module ~= NLAuthority.module or not player or player:isDead() then return end
+     if command ~= "refresh" and command ~= "presence" and command ~= "select"
+-            and command ~= "deliver" and command ~= "promote" then return end
++            and command ~= "deliver" and command ~= "promote" and command ~= "wardrobe_save" then return end
+     -- Build 42's dedicated-server callback can omit the empty packet table for
+     -- no-argument commands. Treat that as an empty request instead of dropping
+     -- an otherwise valid refresh from a real client.
+@@ -116,6 +144,8 @@ function NLAuthority.command(module, command, player, args)
+     elseif command == "deliver" then ok, message = NLAuthority.delivery(player, profile, args.id)
+     elseif command == "promote" then
+         ok, message = NLDomain.promote(profile, player:getPerkLevel(Perks[NLDefinitions.careers[profile.career].perk]))
++    elseif command == "wardrobe_save" then
++        ok, message = NLAuthority.captureOutfit(player, profile, args.slot)
+     end
+     if not ok then message = "Not completed: " .. message end
+     NLAuthority.snapshot(player, profile, message)
+diff --git a/README.md b/README.md
+index d611f84..cd122a2 100644
+--- a/README.md
++++ b/README.md
+@@ -448,3 +448,19 @@ server spawned and moved all three neighbors, both clients received three
+ moving native replicas, and the guest completed its Kenji social probe. The
+ same server logged `GameServer=nil` during both refresh probes, so native
+ reannouncement remains an open engine-exposure gate.
++
++## v1.28 server-authoritative wardrobe slice
++
++Wardrobe saves now use the production `wardrobe_save` command. The server reads
++the connected player's real worn-item list, validates slots 1-3, stores exact
++garment identities in the private profile, increments its revision and returns
++the preset through the normal snapshot packet. The production panel and world
++context menu both use this route; wearing still uses vanilla
++`ISWearClothing` actions.
++
++`tests/wardrobe-authority.lua` covers the capture, validation, persistence and
++snapshot contract in Lua 5.1 and the installed Kahlua VM. In the actual
++Build 42.20.4 run under `evidence/v47/`, the host opened the real 590x450
++wardrobe panel and received revision 72 after the authoritative save. The
++disposable character had zero worn garments, so the run proves the empty-preset
++and UI/server integration path, not visual garment replacement yet.
+diff --git a/SCOPE.md b/SCOPE.md
+index da710d6..c257d1a 100644
+--- a/SCOPE.md
++++ b/SCOPE.md
+@@ -10,14 +10,14 @@ The original broad goal remains active. This ledger is not a reduced definition
+ | Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.25 uses a compact 16x22 source texture, a 6x10 panel and a 30px lift so the gem remains very small and close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
+ | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits | Rank/restart tests, richer work beyond deliveries, rewards and balance |
+ | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
+-| Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
++| Clothing options | Three saved outfit-layer slots; server-authoritative worn-garment capture and revisioned private snapshots in v1.28; vanilla wear actions; light-themed wardrobe panel reachable from HUD | Actual garment replacement and reconnect/reload evidence; new garment variants, original assets, unlock/reward integration |
+ | Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback, and v1.27 adds a best-effort `GameServer` reannouncement adapter plus mock contract coverage | Build 42 native server-body reannouncement remains unproven because the real dedicated server exposes `GameServer=nil` to Lua; obstacle/danger handling, damage/death and offscreen behavior remain open |
+ | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot; v1.23 completes a real host `chat` -> `joke` sequence against Marisol during a connected host+guest run with cooldown and line-of-sight gates; v1.24 broadcasts successful social events to every connected client without sharing private relationship values; v1.26 drives a guest `introduce` against Kenji while the host remains connected and receives the guest event | Richer world actions and inventory exchange |
+ | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence; v1.24 adds a bounded replicated social-event feed and Relationships-panel shared-event line; v1.26 proves the guest independently mutates Kenji to friendship 3/trust 2 while the host receives only the event | In-world UI/interaction checks, richer date activities and direct two-client romance synchronization |
+ | Household life | v1.16 extends the v1.15 server-authoritative Neighborhood Home with persistent shared storage, exact item-type deposits from unequipped main inventory, member withdrawals, capacity and malformed-item guards, shared-storage UI actions, and real host-to-guest inventory transfer evidence | Home ownership transfer UX, functional furnishings, offline/co-op routines beyond the tested activity, richer item metadata/container transfer |
+ | Aspirations and home activities | Delivery milestones already persist and render in the career journal; v1.15 adds three authoritative home routines (tidy, meal, social) with daily replay guards and rewards | Household-linked aspiration goals, hobbies, functional furnishings and broader home progression |
+ | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
+-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host and guest social mutations with private relationship state, replicated social events, server-authoritative career delivery, vanilla client-acquisition inventory transfer, server-authoritative household invite/accept/activity loop, shared-storage host deposit plus guest withdrawal, disconnect-clean local native NPC replicas, authoritative remote marker fallback and v1.21 local native remote-player fallback, and v1.27 native reannouncement adapter probing | Simultaneous gameplay beyond the tested delivery, mod distribution, successful native body reannouncement, stable two-way remote movement under a naturally missing native peer, and replicated-character UI |
++| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host and guest social mutations with private relationship state, replicated social events, server-authoritative career delivery, server-authoritative wardrobe capture, vanilla client-acquisition inventory transfer, server-authoritative household invite/accept/activity loop, shared-storage host deposit plus guest withdrawal, disconnect-clean local native NPC replicas, authoritative remote marker fallback and v1.21 local native remote-player fallback, and v1.27 native reannouncement adapter probing | Simultaneous gameplay beyond the tested delivery, mod distribution, successful native body reannouncement, stable two-way remote movement under a naturally missing native peer, and replicated-character UI |
+ | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile; v1.14 vanilla world-item pickup plus fresh production delivery | Broader world/inventory/NPC/host integration tests and regression suite |
+ 
+ ## Current test environments
+@@ -89,6 +89,25 @@ romance synchronization remain open.
+   through the native engine API. Successful native reannouncement remains an
+   open engine-exposure gate.
+ 
++## v1.28 server-authoritative wardrobe slice
++
++- Production wardrobe saves now go through `NeighborhoodLife` as a
++  `wardrobe_save` command. The server reads the connected player's actual
++  worn-item list, validates slots 1-3, persists exact garment full types and
++  item identities in the private profile, increments the profile revision and
++  returns the preset in the normal snapshot packet.
++- The client wardrobe panel and world-object context menu request that
++  authoritative save. The client applies returned presets to its local outfit
++  data, while the existing vanilla `ISWearClothing` action remains the wear
++  path. `tests/wardrobe-authority.lua` covers capture, invalid slots,
++  persistence and snapshot delivery in Lua 5.1 and the installed Kahlua VM.
++- `evidence/v47/` records an actual host-plus-guest Build 42.20.4 run. The
++  host opened the real 590x450 wardrobe panel, sent `wardrobe_save` after the
++  command-throttle interval, and received revision 72 with slot 1 persisted.
++  The disposable character had zero worn garments in this run, so this proves
++  the server-authoritative empty-preset path and UI integration, not a visual
++  garment replacement yet.
++
+ ## v1.25 compact plumbob asset and placement
+ 
+ The production plumbob source texture is now 16x22 pixels, the runtime panel is
+diff --git a/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua b/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
+index ad8acd2..626d83d 100644
+--- a/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
++++ b/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
+@@ -19,7 +19,9 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
+     householdInviteDue = 0, householdMembersObserved = false,
+     householdStoreSent = false, householdStoreObserved = false,
+     householdRetrieveSent = false, householdRetrieveObserved = false,
+-    householdTaskDue = 0, householdResetSent = false }
++    householdTaskDue = 0, householdResetSent = false,
++    wardrobeSaveSent = false, wardrobeSaveDue = 0, wardrobeSnapshotLogged = false,
++    wardrobeUiLogged = false }
+ NLQAMultiplayer.socialCooldownFrames = 3600
+ 
+ local function emit(label, value)
+@@ -351,6 +353,22 @@ Events.OnServerCommand.Add(function(module, command, args)
+         emit("SNAPSHOT", "username=" .. tostring(args.username) .. " revision=" .. tostring(args.revision)
+             .. " snapshotCount=" .. tostring(NLQAMultiplayer.snapshots)
+             .. " message=" .. tostring(args.message))
++        if qaIdentity().username == "nl-host" and args.username == "nl-host"
++                and NLQAMultiplayer.wardrobeSaveSent
++                and not NLQAMultiplayer.wardrobeSnapshotLogged then
++            local outfits = args.outfits or {}
++            local pieces = outfits[1] and #outfits[1] or 0
++            NLQAMultiplayer.wardrobeSnapshotLogged = true
++            emit("WARDROBE SNAPSHOT", "slot=1 pieces=" .. tostring(pieces)
++                .. " revision=" .. tostring(args.revision))
++        end
++        if qaIdentity().username == "nl-host" and args.username == "nl-host"
++                and not NLQAMultiplayer.wardrobeSaveSent
++                and NLQAMultiplayer.wardrobeSaveDue == 0 then
++            -- Keep the probe outside the production command adapter's
++            -- duplicate-request window after refresh.
++            NLQAMultiplayer.wardrobeSaveDue=NLQAMultiplayer.socialFrame+30
++        end
+         if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                 and NLQAMultiplayer.careerDeliverSent and not NLQAMultiplayer.careerResultLogged
+                 and args.message and string.find(args.message,"Delivery complete",1,true) then
+@@ -915,3 +933,32 @@ Events.OnRenderTick.Add(function()
+         emit("PLUMBOB SIZE", table.concat(details, " "))
+     end
+ end)
++
++-- QA-only clothing vertical-slice probe. It opens the real production panel
++-- and asks the server to capture the host's current worn garments; no QA item
++-- or client-invented preset enters the production profile.
++Events.OnRenderTick.Add(function()
++    if not isClient() or qaIdentity().username ~= "nl-host"
++            or NLQAMultiplayer.snapshots == 0
++            or NLQAMultiplayer.socialFrame < NLQAMultiplayer.wardrobeSaveDue
++            or NLQAMultiplayer.wardrobeSaveSent then return end
++    local player=getSpecificPlayer(0)
++    if not player then return end
++    pcall(require, "NL/Wardrobe")
++    if NLWardrobe and NLWardrobe.requestSave then
++        NLWardrobe.requestSave(player, 1)
++        NLQAMultiplayer.wardrobeSaveSent=true
++        emit("WARDROBE SAVE", "slot=1 source=server-authoritative-worn-items")
++    end
++    pcall(require, "NL/WardrobePanel")
++    if NLWardrobePanel and NLWardrobePanel.open then
++        NLWardrobePanel.open(0)
++        local panel=NLWardrobePanel.instances and NLWardrobePanel.instances[0]
++        if panel and not NLQAMultiplayer.wardrobeUiLogged then
++            NLQAMultiplayer.wardrobeUiLogged=true
++            emit("WARDROBE UI", "visible="..tostring(panel.isVisible and panel:isVisible() or panel.visible)
++                .." x="..tostring(panel.x).." y="..tostring(panel.y)
++                .." width="..tostring(panel.width).." height="..tostring(panel.height))
++        end
++    end
++end)
+diff --git a/tests/interfaces.lua b/tests/interfaces.lua
+index e0d4b16..c132309 100644
+--- a/tests/interfaces.lua
++++ b/tests/interfaces.lua
+@@ -57,6 +57,10 @@ print('PASS: relationship UI empty/populated/deceased states, correct derived ca
+ if arg[2]=='wardrobe-panel' then
+     package.preload['NL/Wardrobe']=function()
+         NLWardrobe={save=function(p,slot) p.data.NeighborhoodOutfits[slot]={'Base.Shirt'} end,
++            requestSave=function(p,slot)
++                NLWardrobe.save(p,slot)
++                if NLClient.profiles[0] then NLClient.profiles[0].outfits=p.data.NeighborhoodOutfits end
++            end,
+             wear=function(p,slot) p.worn=slot end}
+     end
+     require 'NL/WardrobePanel'
+diff --git a/tools/pipeline.py b/tools/pipeline.py
+index 9675931..35d8f1d 100644
+--- a/tools/pipeline.py
++++ b/tools/pipeline.py
+@@ -53,7 +53,7 @@ def suites(target: Path, engine: bool, record: list[str]) -> None:
+         suite_names.append("neighbors")
+     if (target / "42/media/lua/client/NL/Plumbob.lua").exists():
+         suite_names.append("plumbob")
+-    suite_names += ["interfaces", "wardrobe-panel", "aspirations", "replication"]
++    suite_names += ["interfaces", "wardrobe-panel", "wardrobe-authority", "aspirations", "replication"]
+     if (target / "42/media/lua/shared/NL/Households.lua").exists():
+         suite_names += ["households", "household-authority", "household-panel"]
+     if (target / "42/media/lua/server/NL/HouseholdFurnishings.lua").exists():

@@ -17,7 +17,9 @@ function NLWardrobePanel:onButton(button)
     if button.action=="close" then self:setVisible(false); return end
     local player=getSpecificPlayer(self.playerIndex)
     if not player or player:isDead() then return end
-    if button.action=="save" then NLWardrobe.save(player,button.value)
+    if button.action=="save" then
+        if NLWardrobe.requestSave then NLWardrobe.requestSave(player,button.value)
+        else NLWardrobe.save(player,button.value) end
     elseif button.action=="wear" then NLWardrobe.wear(player,button.value) end
 end
 function NLWardrobePanel:prerender()
@@ -26,7 +28,8 @@ function NLWardrobePanel:prerender()
     self:drawText("Your looks / save three outfits from clothes you own",16,60,0.18,0.24,0.32,1,UIFont.Small)
     local player=getSpecificPlayer(self.playerIndex)
     local alive=player~=nil and not player:isDead()
-    local outfits=alive and player:getModData().NeighborhoodOutfits or {}
+    local profile=NLClient.profiles[self.playerIndex]
+    local outfits=alive and ((profile and profile.outfits) or player:getModData().NeighborhoodOutfits or {}) or {}
     for i=1,3 do
         local y=95+(i-1)*90
         local saved=outfits[i]
