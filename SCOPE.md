@@ -456,3 +456,21 @@ The original broad goal remains active. This ledger is not a reduced definition 
   cross-client `IsoObject` replication, normal streamed-in walking without the
   QA viewpoint fixture, native server-body reannouncement, richer item metadata
   and offline household routines remain open gates.
+
+## v1.19 native furnishing packet diagnosis
+
+- The QA client now records both the broad `getObjectListForLua()` scan and the
+  authoritative home square's native `IsoGridSquare:getObjects()` list. The
+  former omitted tile objects in the v1.18 run, so
+  `productionHouseholdFurnishings=0` was an instrumentation blind spot rather
+  than proof that the packet was absent.
+- A fresh hands-free run records one `NeighborhoodHouseholdStorage` object with
+  `NeighborhoodHouseholdFurnishing=storage` on both host and guest after the
+  shared home tile loads. The client fallback still covers the guest's
+  transient partial or unloaded packet state and clears its pending entry after
+  local creation.
+- Re-sending an existing native object on every household action was tested and
+  produced duplicate client tile objects, so the server transmits only on
+  creation. Normal streamed-in walking without the QA viewpoint fixture, native
+  server-body reannouncement, richer item metadata and offline household
+  routines remain open gates.

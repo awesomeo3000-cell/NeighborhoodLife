@@ -326,3 +326,20 @@ retry path in the engine, while the viewpoint fixture is not presented as normal
 guest walking. Native cross-client furnishing packets, normal streamed-in
 walking, native server-body reannouncement, richer item metadata and offline
 household routines remain open.
+
+## v1.19 native furnishing packet diagnosis
+
+The QA client now inspects the authoritative home square with the engine's
+native `IsoGridSquare:getObjects()` list in addition to the broader
+`getObjectListForLua()` probe. The v1.18 probe was incomplete: it excluded the
+tile object even when the native object was present. A fresh hands-free run
+showed one `NeighborhoodHouseholdStorage` object with household ModData on
+both host and guest after the shared home tile loaded. The production snapshot
+fallback still handles the guest's transient unloaded or partial packet state.
+
+The server only transmits the native object on creation; retransmitting the
+same object on every household action produced duplicate client tile objects,
+so that branch remains intentionally absent. QA helpers remain outside the
+production package. Normal streamed-in walking, native server-body
+reannouncement, richer item metadata and offline household routines remain
+open gates.

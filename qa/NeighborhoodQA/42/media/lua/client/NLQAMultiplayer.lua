@@ -634,6 +634,34 @@ local function scanRemoteObjects()
         end
         details[#details + 1] = "productionHouseholdFurnishingClient=" .. tostring(furnishingClientCount)
             .. " productionHouseholdFurnishingPending=" .. tostring(furnishingPendingCount)
+        -- QA-only packet diagnosis: list every object at the shared-home tile
+        -- so a native AddItemToMap object without household ModData cannot be
+        -- mistaken for the production snapshot replica.
+        local tileOk, tile = pcall(cell.getGridSquare, cell, 8282, 11720, 1)
+        if tileOk and tile and tile.getObjects then
+            local objectOk, objects = pcall(tile.getObjects, tile)
+            if objectOk and objects and objects.size and objects.get then
+                local tileObjects = {}
+                local nativeFurnishings = 0
+                for i = 0, objects:size() - 1 do
+                    local item = objects:get(i)
+                    local function objectValue(method, fallback)
+                        if not item or not item[method] then return fallback end
+                        local valueOk, value = pcall(item[method], item)
+                        return valueOk and value or fallback
+                    end
+                    local modData = item and item.getModData and item:getModData() or nil
+                    if modData and modData.NeighborhoodHouseholdFurnishing then
+                        nativeFurnishings = nativeFurnishings + 1
+                    end
+                    tileObjects[#tileObjects + 1] = tostring(objectValue("getName", "?"))
+                        .. "/" .. tostring(objectValue("getSpriteName", "?"))
+                        .. "/household=" .. tostring(modData and modData.NeighborhoodHouseholdFurnishing or "none")
+                end
+                details[#details + 1] = "qaHouseholdNativeFurnishings=" .. tostring(nativeFurnishings)
+                details[#details + 1] = "qaHouseholdTileObjects=" .. table.concat(tileObjects, ";")
+            end
+        end
     end
     if type(getOnlinePlayers) == "function" then
         local onlineOk, online = pcall(getOnlinePlayers)
