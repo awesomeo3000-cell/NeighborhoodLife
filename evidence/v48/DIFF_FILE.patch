@@ -1,0 +1,344 @@
+diff --git a/README.md b/README.md
+index cd122a2..d8ce02a 100644
+--- a/README.md
++++ b/README.md
+@@ -464,3 +464,21 @@ Build 42.20.4 run under `evidence/v47/`, the host opened the real 590x450
+ wardrobe panel and received revision 72 after the authoritative save. The
+ disposable character had zero worn garments, so the run proves the empty-preset
+ and UI/server integration path, not visual garment replacement yet.
++
++## v1.29 actual non-empty wardrobe and reconnect evidence
++
++The isolated QA server fixture placed real `Base.Shirt_FormalWhite` and
++`Base.Trousers_Denim` items on the host's square. The host acquired them using
++the vanilla world-transfer action, equipped them using vanilla
++`ISWearClothing`, and saved them through the production server-authoritative
++`wardrobe_save` command. The fixture and all clothing seeding remain in the
++QA-only mod.
++
++`evidence/v48/` records the actual Build 42.20.4 host-plus-guest run: both
++garments were acquired and worn, slot 1 returned `pieces=2` at revision 73,
++and a stable hands-free same-client reconnect returned the same `pieces=2` at
++revision 74. The run also retained the compact 6x10 plumbob and the guest's
++three moving NPC replicas plus Kenji social event. Production saved-outfit
++replacement after removing currently worn layers remains the next clothing
++gameplay probe; the unit and Kahlua contracts already cover exact identity and
++fallback behavior.
+diff --git a/SCOPE.md b/SCOPE.md
+index c257d1a..48d51c1 100644
+--- a/SCOPE.md
++++ b/SCOPE.md
+@@ -10,14 +10,14 @@ The original broad goal remains active. This ledger is not a reduced definition
+ | Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.25 uses a compact 16x22 source texture, a 6x10 panel and a 30px lift so the gem remains very small and close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
+ | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits | Rank/restart tests, richer work beyond deliveries, rewards and balance |
+ | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
+-| Clothing options | Three saved outfit-layer slots; server-authoritative worn-garment capture and revisioned private snapshots in v1.28; vanilla wear actions; light-themed wardrobe panel reachable from HUD | Actual garment replacement and reconnect/reload evidence; new garment variants, original assets, unlock/reward integration |
++| Clothing options | Three saved outfit-layer slots; server-authoritative worn-garment capture and revisioned private snapshots in v1.28; v1.29 actual vanilla clothing acquisition, wear and reconnect snapshot persistence; light-themed wardrobe panel reachable from HUD | Production saved-outfit replacement action evidence after removing layers; new garment variants, original assets, unlock/reward integration |
+ | Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback, and v1.27 adds a best-effort `GameServer` reannouncement adapter plus mock contract coverage | Build 42 native server-body reannouncement remains unproven because the real dedicated server exposes `GameServer=nil` to Lua; obstacle/danger handling, damage/death and offscreen behavior remain open |
+ | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot; v1.23 completes a real host `chat` -> `joke` sequence against Marisol during a connected host+guest run with cooldown and line-of-sight gates; v1.24 broadcasts successful social events to every connected client without sharing private relationship values; v1.26 drives a guest `introduce` against Kenji while the host remains connected and receives the guest event | Richer world actions and inventory exchange |
+ | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence; v1.24 adds a bounded replicated social-event feed and Relationships-panel shared-event line; v1.26 proves the guest independently mutates Kenji to friendship 3/trust 2 while the host receives only the event | In-world UI/interaction checks, richer date activities and direct two-client romance synchronization |
+ | Household life | v1.16 extends the v1.15 server-authoritative Neighborhood Home with persistent shared storage, exact item-type deposits from unequipped main inventory, member withdrawals, capacity and malformed-item guards, shared-storage UI actions, and real host-to-guest inventory transfer evidence | Home ownership transfer UX, functional furnishings, offline/co-op routines beyond the tested activity, richer item metadata/container transfer |
+ | Aspirations and home activities | Delivery milestones already persist and render in the career journal; v1.15 adds three authoritative home routines (tidy, meal, social) with daily replay guards and rewards | Household-linked aspiration goals, hobbies, functional furnishings and broader home progression |
+ | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
+-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host and guest social mutations with private relationship state, replicated social events, server-authoritative career delivery, server-authoritative wardrobe capture, vanilla client-acquisition inventory transfer, server-authoritative household invite/accept/activity loop, shared-storage host deposit plus guest withdrawal, disconnect-clean local native NPC replicas, authoritative remote marker fallback and v1.21 local native remote-player fallback, and v1.27 native reannouncement adapter probing | Simultaneous gameplay beyond the tested delivery, mod distribution, successful native body reannouncement, stable two-way remote movement under a naturally missing native peer, and replicated-character UI |
++| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host and guest social mutations with private relationship state, replicated social events, server-authoritative career delivery, server-authoritative wardrobe capture plus vanilla clothing acquisition/wear and same-client reconnect snapshot persistence in v1.29, vanilla client-acquisition inventory transfer, server-authoritative household invite/accept/activity loop, shared-storage host deposit plus guest withdrawal, disconnect-clean local native NPC replicas, authoritative remote marker fallback and v1.21 local native remote-player fallback, and v1.27 native reannouncement adapter probing | Simultaneous gameplay beyond the tested delivery, mod distribution, successful native body reannouncement, stable two-way remote movement under a naturally missing native peer, and replicated-character UI |
+ | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile; v1.14 vanilla world-item pickup plus fresh production delivery | Broader world/inventory/NPC/host integration tests and regression suite |
+ 
+ ## Current test environments
+@@ -108,6 +108,26 @@ romance synchronization remain open.
+   the server-authoritative empty-preset path and UI integration, not a visual
+   garment replacement yet.
+ 
++## v1.29 actual non-empty wardrobe and reconnect evidence
++
++- The QA-only isolated server fixture placed real `Base.Shirt_FormalWhite` and
++  `Base.Trousers_Denim` items on the host's current square. The host acquired
++  both through the vanilla world-transfer action, equipped both through the
++  vanilla `ISWearClothing` action, and then invoked the production
++  server-authoritative `wardrobe_save` command. The fixture and items remain
++  outside the production package.
++- `evidence/v48/` records the actual Build 42.20.4 host-plus-guest run. The
++  host logged `WARDROBE PICKUP COMPLETE` for both garments,
++  `WARDROBE WORN COMPLETE` for both garments, and a saved slot 1 snapshot with
++  `pieces=2` at revision 73. After a stable hands-free same-client disconnect
++  and reconnect, the host received revision 74 with `pieces=2` again. This is
++  actual gameplay persistence evidence, not a mock or engine-VM claim.
++- The same run retained the 6x10 plumbob above the player and the guest logged
++  three moving native NPC replicas plus its Kenji social event. The production
++  saved-outfit replacement path after removing currently worn layers still
++  needs a dedicated gameplay probe; the Lua/Kahlua contract already covers its
++  exact-identity and fallback behavior.
++
+ ## v1.25 compact plumbob asset and placement
+ 
+ The production plumbob source texture is now 16x22 pixels, the runtime panel is
+diff --git a/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua b/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
+index 626d83d..2c251c7 100644
+--- a/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
++++ b/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
+@@ -20,8 +20,12 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
+     householdStoreSent = false, householdStoreObserved = false,
+     householdRetrieveSent = false, householdRetrieveObserved = false,
+     householdTaskDue = 0, householdResetSent = false,
+-    wardrobeSaveSent = false, wardrobeSaveDue = 0, wardrobeSnapshotLogged = false,
+-    wardrobeUiLogged = false }
++    wardrobeSeedSent = false, wardrobeSeeded = false, wardrobePickupAttempted = false,
++    wardrobePickupObserved = false, wardrobePickupNextAttempt = 0,
++    wardrobeItemTypes = {}, wardrobeWearSent = false, wardrobeWearObserved = false,
++    wardrobeWearDue = 0, wardrobeSaveSent = false, wardrobeSaveDue = 0,
++    wardrobePersisted = false, wardrobeSnapshotRevision = nil,
++    wardrobeSnapshotLogged = false, wardrobeUiLogged = false }
+ NLQAMultiplayer.socialCooldownFrames = 3600
+ 
+ local function emit(label, value)
+@@ -327,6 +331,86 @@ local function queueCareerWorldPickup(itemType, expected)
+     return queued
+ end
+ 
++-- QA-only clothing acquisition. The server seeds real vanilla clothing onto
++-- the host's square; the host transfers it with the same action used by a
++-- world-item click, then queues the production wear action before saving the
++-- preset. No item or outfit enters the production package from this helper.
++local function queueWardrobeWorldPickup(itemTypes)
++    local player = getSpecificPlayer(0)
++    local square = player and player:getCurrentSquare()
++    local worlds = square and square:getWorldObjects()
++    if not player or not worlds then return 0 end
++    local ok, err = pcall(function() require "TimedActions/ISInventoryTransferUtil" end)
++    if not ok or not ISTimedActionQueue or not ISInventoryTransferUtil then
++        emit("WARDROBE PICKUP FAILED", "vanilla transfer API unavailable error=" .. tostring(err))
++        return 0
++    end
++    local wanted = {}
++    for _, fullType in ipairs(itemTypes or {}) do wanted[fullType] = true end
++    local queued = 0
++    for index = 0, worlds:size() - 1 do
++        local worldObject = worlds:get(index)
++        local item = worldObject and worldObject:getItem()
++        if item and item.getFullType and wanted[item:getFullType()] then
++            local source = item:getContainer()
++            local action = source and ISInventoryTransferUtil.newInventoryTransferAction(
++                player, item, source, player:getInventory())
++            if action then
++                ISTimedActionQueue.add(action)
++                queued = queued + 1
++            end
++        end
++    end
++    NLQAMultiplayer.wardrobePickupAttempted = true
++    NLQAMultiplayer.wardrobePickupNextAttempt = NLQAMultiplayer.socialFrame + 60
++    emit("WARDROBE PICKUP QUEUED", "expected=" .. tostring(#(itemTypes or {}))
++        .. " queued=" .. tostring(queued))
++    return queued
++end
++
++local function qaWornCount(player, fullType)
++    if not player or not player.getWornItems then return 0 end
++    local worn = player:getWornItems()
++    if not worn or not worn.size or not worn.get then return 0 end
++    local count = 0
++    for index = 0, worn:size() - 1 do
++        local wornItem = worn:get(index)
++        local item = wornItem and wornItem.getItem and wornItem:getItem()
++        if item and item.getFullType and item:getFullType() == fullType then
++            count = count + 1
++        end
++    end
++    return count
++end
++
++local function queueWardrobeWear(itemTypes)
++    local player = getSpecificPlayer(0)
++    if not player or not player.getInventory then return 0 end
++    local ok, err = pcall(function() require "TimedActions/ISWearClothing" end)
++    if not ok or not ISTimedActionQueue or not ISWearClothing then
++        emit("WARDROBE WEAR FAILED", "vanilla wear API unavailable error=" .. tostring(err))
++        return 0
++    end
++    local wanted = {}
++    for _, fullType in ipairs(itemTypes or {}) do wanted[fullType] = true end
++    local items = player:getInventory():getItems()
++    local queued, used = 0, {}
++    if items and items.size and items.get then
++        for index = 0, items:size() - 1 do
++            local item = items:get(index)
++            if item and item.getFullType and wanted[item:getFullType()] and not used[item] then
++                used[item] = true
++                ISTimedActionQueue.add(ISWearClothing:new(player, item))
++                queued = queued + 1
++            end
++        end
++    end
++    NLQAMultiplayer.wardrobeWearSent = true
++    emit("WARDROBE WEAR QUEUED", "expected=" .. tostring(#(itemTypes or {}))
++        .. " queued=" .. tostring(queued))
++    return queued
++end
++
+ Events.OnServerCommand.Add(function(module, command, args)
+     if module == "NeighborhoodQA" and command == "household_viewpoint" and type(args) == "table"
+             and qaIdentity().username == "nl-guest" then
+@@ -353,14 +437,18 @@ Events.OnServerCommand.Add(function(module, command, args)
+         emit("SNAPSHOT", "username=" .. tostring(args.username) .. " revision=" .. tostring(args.revision)
+             .. " snapshotCount=" .. tostring(NLQAMultiplayer.snapshots)
+             .. " message=" .. tostring(args.message))
+-        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+-                and NLQAMultiplayer.wardrobeSaveSent
+-                and not NLQAMultiplayer.wardrobeSnapshotLogged then
++        if qaIdentity().username == "nl-host" and args.username == "nl-host" then
+             local outfits = args.outfits or {}
+             local pieces = outfits[1] and #outfits[1] or 0
+-            NLQAMultiplayer.wardrobeSnapshotLogged = true
+-            emit("WARDROBE SNAPSHOT", "slot=1 pieces=" .. tostring(pieces)
+-                .. " revision=" .. tostring(args.revision))
++            if pieces > 0 then
++                NLQAMultiplayer.wardrobePersisted = true
++                if NLQAMultiplayer.wardrobeSnapshotRevision ~= args.revision then
++                    NLQAMultiplayer.wardrobeSnapshotRevision = args.revision
++                    NLQAMultiplayer.wardrobeSnapshotLogged = true
++                    emit("WARDROBE SNAPSHOT", "slot=1 pieces=" .. tostring(pieces)
++                        .. " revision=" .. tostring(args.revision))
++                end
++            end
+         end
+         if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                 and not NLQAMultiplayer.wardrobeSaveSent
+@@ -477,6 +565,16 @@ Events.OnServerCommand.Add(function(module, command, args)
+             end
+         end
+     end
++    if module == "NeighborhoodQA" and command == "wardrobe_seeded" and type(args) == "table"
++            and qaIdentity().username == "nl-host" then
++        NLQAMultiplayer.wardrobeSeeded = true
++        NLQAMultiplayer.wardrobeItemTypes = args.items or {}
++        NLQAMultiplayer.wardrobePickupAttempted = false
++        NLQAMultiplayer.wardrobePickupObserved = false
++        NLQAMultiplayer.wardrobePickupNextAttempt = NLQAMultiplayer.socialFrame
++        queueWardrobeWorldPickup(NLQAMultiplayer.wardrobeItemTypes)
++        emit("WARDROBE SEED ACK", "items=" .. table.concat(NLQAMultiplayer.wardrobeItemTypes, ","))
++    end
+     if module == "NeighborhoodQA" and command == "career_seeded" and type(args) == "table"
+             and qaIdentity().username == "nl-host" then
+         NLQAMultiplayer.careerSeeded=true
+@@ -650,6 +748,62 @@ Events.OnRenderTick.Add(function()
+             end
+         end
+     end
++    if qaIdentity().username=="nl-host" and NLQAMultiplayer.snapshots > 0
++            and not NLQAMultiplayer.wardrobePersisted
++            and not NLQAMultiplayer.wardrobeSeedSent then
++        local player=getSpecificPlayer(0)
++        if player then
++            sendClientCommand(player,"NeighborhoodQA","seed_wardrobe",{})
++            NLQAMultiplayer.wardrobeSeedSent=true
++            emit("WARDROBE SEED REQUEST", "vanilla clothing on current square")
++        end
++    end
++    if qaIdentity().username=="nl-host" and NLQAMultiplayer.wardrobeSeeded
++            and not NLQAMultiplayer.wardrobePickupObserved
++            and (not NLQAMultiplayer.wardrobePickupAttempted
++                or NLQAMultiplayer.socialFrame>=NLQAMultiplayer.wardrobePickupNextAttempt) then
++        NLQAMultiplayer.wardrobePickupAttempted=false
++        queueWardrobeWorldPickup(NLQAMultiplayer.wardrobeItemTypes)
++    end
++    if qaIdentity().username=="nl-host" and NLQAMultiplayer.wardrobeSeeded
++            and not NLQAMultiplayer.wardrobePickupObserved then
++        local player=getSpecificPlayer(0)
++        local complete=true
++        local counts={}
++        for _, fullType in ipairs(NLQAMultiplayer.wardrobeItemTypes) do
++            local count=qaInventoryCount(player, fullType)
++            counts[#counts+1]=fullType.."="..tostring(count)
++            if count < 1 then complete=false end
++        end
++        if complete and #NLQAMultiplayer.wardrobeItemTypes > 0 then
++            NLQAMultiplayer.wardrobePickupObserved=true
++            NLQAMultiplayer.wardrobeWearDue=NLQAMultiplayer.socialFrame+30
++            emit("WARDROBE PICKUP COMPLETE", table.concat(counts, ",")
++                .. " source=world-transfer-action")
++        end
++    end
++    if qaIdentity().username=="nl-host" and NLQAMultiplayer.wardrobePickupObserved
++            and not NLQAMultiplayer.wardrobeWearSent
++            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.wardrobeWearDue then
++        queueWardrobeWear(NLQAMultiplayer.wardrobeItemTypes)
++    end
++    if qaIdentity().username=="nl-host" and NLQAMultiplayer.wardrobeWearSent
++            and not NLQAMultiplayer.wardrobeWearObserved then
++        local player=getSpecificPlayer(0)
++        local complete=true
++        local counts={}
++        for _, fullType in ipairs(NLQAMultiplayer.wardrobeItemTypes) do
++            local count=qaWornCount(player, fullType)
++            counts[#counts+1]=fullType.."="..tostring(count)
++            if count < 1 then complete=false end
++        end
++        if complete and #NLQAMultiplayer.wardrobeItemTypes > 0 then
++            NLQAMultiplayer.wardrobeWearObserved=true
++            NLQAMultiplayer.wardrobeSaveDue=NLQAMultiplayer.socialFrame+30
++            emit("WARDROBE WORN COMPLETE", table.concat(counts, ",")
++                .. " source=vanilla-wear-action")
++        end
++    end
+     if qaIdentity().username=="nl-host" and NLQAMultiplayer.socialResultLogged
+             and not NLQAMultiplayer.careerSeedSent then
+         local player=getSpecificPlayer(0)
+@@ -940,6 +1094,7 @@ end)
+ Events.OnRenderTick.Add(function()
+     if not isClient() or qaIdentity().username ~= "nl-host"
+             or NLQAMultiplayer.snapshots == 0
++            or not NLQAMultiplayer.wardrobeWearObserved
+             or NLQAMultiplayer.socialFrame < NLQAMultiplayer.wardrobeSaveDue
+             or NLQAMultiplayer.wardrobeSaveSent then return end
+     local player=getSpecificPlayer(0)
+diff --git a/qa/NeighborhoodQA/42/media/lua/server/NLQAMultiplayerServer.lua b/qa/NeighborhoodQA/42/media/lua/server/NLQAMultiplayerServer.lua
+index fb6b99e..aa664c6 100644
+--- a/qa/NeighborhoodQA/42/media/lua/server/NLQAMultiplayerServer.lua
++++ b/qa/NeighborhoodQA/42/media/lua/server/NLQAMultiplayerServer.lua
+@@ -21,6 +21,7 @@ if type(getClass) == "function" then
+ end
+ local reannounced = false
+ local careerSeeded = {}
++local wardrobeSeeded = {}
+ local householdViewpointMoved = false
+ 
+ -- QA-only viewpoint setup: after the real invite/accept flow, place the guest
+@@ -131,6 +132,38 @@ Events.OnClientCommand.Add(function(module, command, player, args)
+     sendServerCommand(player,"NeighborhoodQA","career_seeded",{item=item,amount=amount,mode="world"})
+ end)
+ 
++-- QA-only clothing fixture: place real vanilla garments in the current square
++-- so the host acquires them through the networked world-transfer action and
++-- equips them through the production ISWearClothing path.
++Events.OnClientCommand.Add(function(module, command, player)
++    if module ~= "NeighborhoodQA" or command ~= "seed_wardrobe" or not player
++            or player:getUsername() ~= "nl-host" or wardrobeSeeded["nl-host"] then return end
++    local square = player:getCurrentSquare()
++    if not square then
++        print("NLQA WARDROBE SEED FAILED: username=nl-host reason=no-current-square")
++        return
++    end
++    local items = {"Base.Shirt_FormalWhite", "Base.Trousers_Denim"}
++    local worldObjects = square:getWorldObjects()
++    if worldObjects then
++        for index=worldObjects:size()-1,0,-1 do
++            local worldObject = worldObjects:get(index)
++            local oldItem = worldObject and worldObject:getItem()
++            if oldItem and (oldItem:getFullType() == items[1] or oldItem:getFullType() == items[2]) then
++                square:transmitRemoveItemFromSquare(worldObject)
++            end
++        end
++    end
++    for index, item in ipairs(items) do
++        square:AddWorldInventoryItem(item, 0.25 + (index * 0.20), 0.50, 0.0)
++    end
++    wardrobeSeeded["nl-host"] = true
++    print("NLQA WARDROBE WORLD SEED: username=nl-host items=" .. table.concat(items, ",")
++        .. " square=" .. tostring(square:getX()) .. "," .. tostring(square:getY())
++        .. "," .. tostring(square:getZ()))
++    sendServerCommand(player, "NeighborhoodQA", "wardrobe_seeded", {items=items})
++end)
++
+ local function tryReannounce()
+     if reannounced then return end
+     local apiOk, api = pcall(function() return GameServer end)

@@ -1,0 +1,2 @@
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\launch-multiplayer-qa.ps1
+Then: create E:\pzmod\test-profile\mp-host\reconnect-request after WARDROBE SNAPSHOT slot=1 pieces=2 revision=73.

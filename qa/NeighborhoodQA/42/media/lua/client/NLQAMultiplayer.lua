@@ -20,8 +20,12 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     householdStoreSent = false, householdStoreObserved = false,
     householdRetrieveSent = false, householdRetrieveObserved = false,
     householdTaskDue = 0, householdResetSent = false,
-    wardrobeSaveSent = false, wardrobeSaveDue = 0, wardrobeSnapshotLogged = false,
-    wardrobeUiLogged = false }
+    wardrobeSeedSent = false, wardrobeSeeded = false, wardrobePickupAttempted = false,
+    wardrobePickupObserved = false, wardrobePickupNextAttempt = 0,
+    wardrobeItemTypes = {}, wardrobeWearSent = false, wardrobeWearObserved = false,
+    wardrobeWearDue = 0, wardrobeSaveSent = false, wardrobeSaveDue = 0,
+    wardrobePersisted = false, wardrobeSnapshotRevision = nil,
+    wardrobeSnapshotLogged = false, wardrobeUiLogged = false }
 NLQAMultiplayer.socialCooldownFrames = 3600
 
 local function emit(label, value)
@@ -327,6 +331,86 @@ local function queueCareerWorldPickup(itemType, expected)
     return queued
 end
 
+-- QA-only clothing acquisition. The server seeds real vanilla clothing onto
+-- the host's square; the host transfers it with the same action used by a
+-- world-item click, then queues the production wear action before saving the
+-- preset. No item or outfit enters the production package from this helper.
+local function queueWardrobeWorldPickup(itemTypes)
+    local player = getSpecificPlayer(0)
+    local square = player and player:getCurrentSquare()
+    local worlds = square and square:getWorldObjects()
+    if not player or not worlds then return 0 end
+    local ok, err = pcall(function() require "TimedActions/ISInventoryTransferUtil" end)
+    if not ok or not ISTimedActionQueue or not ISInventoryTransferUtil then
+        emit("WARDROBE PICKUP FAILED", "vanilla transfer API unavailable error=" .. tostring(err))
+        return 0
+    end
+    local wanted = {}
+    for _, fullType in ipairs(itemTypes or {}) do wanted[fullType] = true end
+    local queued = 0
+    for index = 0, worlds:size() - 1 do
+        local worldObject = worlds:get(index)
+        local item = worldObject and worldObject:getItem()
+        if item and item.getFullType and wanted[item:getFullType()] then
+            local source = item:getContainer()
+            local action = source and ISInventoryTransferUtil.newInventoryTransferAction(
+                player, item, source, player:getInventory())
+            if action then
+                ISTimedActionQueue.add(action)
+                queued = queued + 1
+            end
+        end
+    end
+    NLQAMultiplayer.wardrobePickupAttempted = true
+    NLQAMultiplayer.wardrobePickupNextAttempt = NLQAMultiplayer.socialFrame + 60
+    emit("WARDROBE PICKUP QUEUED", "expected=" .. tostring(#(itemTypes or {}))
+        .. " queued=" .. tostring(queued))
+    return queued
+end
+
+local function qaWornCount(player, fullType)
+    if not player or not player.getWornItems then return 0 end
+    local worn = player:getWornItems()
+    if not worn or not worn.size or not worn.get then return 0 end
+    local count = 0
+    for index = 0, worn:size() - 1 do
+        local wornItem = worn:get(index)
+        local item = wornItem and wornItem.getItem and wornItem:getItem()
+        if item and item.getFullType and item:getFullType() == fullType then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+local function queueWardrobeWear(itemTypes)
+    local player = getSpecificPlayer(0)
+    if not player or not player.getInventory then return 0 end
+    local ok, err = pcall(function() require "TimedActions/ISWearClothing" end)
+    if not ok or not ISTimedActionQueue or not ISWearClothing then
+        emit("WARDROBE WEAR FAILED", "vanilla wear API unavailable error=" .. tostring(err))
+        return 0
+    end
+    local wanted = {}
+    for _, fullType in ipairs(itemTypes or {}) do wanted[fullType] = true end
+    local items = player:getInventory():getItems()
+    local queued, used = 0, {}
+    if items and items.size and items.get then
+        for index = 0, items:size() - 1 do
+            local item = items:get(index)
+            if item and item.getFullType and wanted[item:getFullType()] and not used[item] then
+                used[item] = true
+                ISTimedActionQueue.add(ISWearClothing:new(player, item))
+                queued = queued + 1
+            end
+        end
+    end
+    NLQAMultiplayer.wardrobeWearSent = true
+    emit("WARDROBE WEAR QUEUED", "expected=" .. tostring(#(itemTypes or {}))
+        .. " queued=" .. tostring(queued))
+    return queued
+end
+
 Events.OnServerCommand.Add(function(module, command, args)
     if module == "NeighborhoodQA" and command == "household_viewpoint" and type(args) == "table"
             and qaIdentity().username == "nl-guest" then
@@ -353,14 +437,18 @@ Events.OnServerCommand.Add(function(module, command, args)
         emit("SNAPSHOT", "username=" .. tostring(args.username) .. " revision=" .. tostring(args.revision)
             .. " snapshotCount=" .. tostring(NLQAMultiplayer.snapshots)
             .. " message=" .. tostring(args.message))
-        if qaIdentity().username == "nl-host" and args.username == "nl-host"
-                and NLQAMultiplayer.wardrobeSaveSent
-                and not NLQAMultiplayer.wardrobeSnapshotLogged then
+        if qaIdentity().username == "nl-host" and args.username == "nl-host" then
             local outfits = args.outfits or {}
             local pieces = outfits[1] and #outfits[1] or 0
-            NLQAMultiplayer.wardrobeSnapshotLogged = true
-            emit("WARDROBE SNAPSHOT", "slot=1 pieces=" .. tostring(pieces)
-                .. " revision=" .. tostring(args.revision))
+            if pieces > 0 then
+                NLQAMultiplayer.wardrobePersisted = true
+                if NLQAMultiplayer.wardrobeSnapshotRevision ~= args.revision then
+                    NLQAMultiplayer.wardrobeSnapshotRevision = args.revision
+                    NLQAMultiplayer.wardrobeSnapshotLogged = true
+                    emit("WARDROBE SNAPSHOT", "slot=1 pieces=" .. tostring(pieces)
+                        .. " revision=" .. tostring(args.revision))
+                end
+            end
         end
         if qaIdentity().username == "nl-host" and args.username == "nl-host"
                 and not NLQAMultiplayer.wardrobeSaveSent
@@ -476,6 +564,16 @@ Events.OnServerCommand.Add(function(module, command, args)
                     .." trust="..tostring(relation.trust))
             end
         end
+    end
+    if module == "NeighborhoodQA" and command == "wardrobe_seeded" and type(args) == "table"
+            and qaIdentity().username == "nl-host" then
+        NLQAMultiplayer.wardrobeSeeded = true
+        NLQAMultiplayer.wardrobeItemTypes = args.items or {}
+        NLQAMultiplayer.wardrobePickupAttempted = false
+        NLQAMultiplayer.wardrobePickupObserved = false
+        NLQAMultiplayer.wardrobePickupNextAttempt = NLQAMultiplayer.socialFrame
+        queueWardrobeWorldPickup(NLQAMultiplayer.wardrobeItemTypes)
+        emit("WARDROBE SEED ACK", "items=" .. table.concat(NLQAMultiplayer.wardrobeItemTypes, ","))
     end
     if module == "NeighborhoodQA" and command == "career_seeded" and type(args) == "table"
             and qaIdentity().username == "nl-host" then
@@ -648,6 +746,62 @@ Events.OnRenderTick.Add(function()
                     .." id="..tostring(NLQAMultiplayer.socialTarget)
                     .." step="..tostring(NLQAMultiplayer.socialActionCount))
             end
+        end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.snapshots > 0
+            and not NLQAMultiplayer.wardrobePersisted
+            and not NLQAMultiplayer.wardrobeSeedSent then
+        local player=getSpecificPlayer(0)
+        if player then
+            sendClientCommand(player,"NeighborhoodQA","seed_wardrobe",{})
+            NLQAMultiplayer.wardrobeSeedSent=true
+            emit("WARDROBE SEED REQUEST", "vanilla clothing on current square")
+        end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.wardrobeSeeded
+            and not NLQAMultiplayer.wardrobePickupObserved
+            and (not NLQAMultiplayer.wardrobePickupAttempted
+                or NLQAMultiplayer.socialFrame>=NLQAMultiplayer.wardrobePickupNextAttempt) then
+        NLQAMultiplayer.wardrobePickupAttempted=false
+        queueWardrobeWorldPickup(NLQAMultiplayer.wardrobeItemTypes)
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.wardrobeSeeded
+            and not NLQAMultiplayer.wardrobePickupObserved then
+        local player=getSpecificPlayer(0)
+        local complete=true
+        local counts={}
+        for _, fullType in ipairs(NLQAMultiplayer.wardrobeItemTypes) do
+            local count=qaInventoryCount(player, fullType)
+            counts[#counts+1]=fullType.."="..tostring(count)
+            if count < 1 then complete=false end
+        end
+        if complete and #NLQAMultiplayer.wardrobeItemTypes > 0 then
+            NLQAMultiplayer.wardrobePickupObserved=true
+            NLQAMultiplayer.wardrobeWearDue=NLQAMultiplayer.socialFrame+30
+            emit("WARDROBE PICKUP COMPLETE", table.concat(counts, ",")
+                .. " source=world-transfer-action")
+        end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.wardrobePickupObserved
+            and not NLQAMultiplayer.wardrobeWearSent
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.wardrobeWearDue then
+        queueWardrobeWear(NLQAMultiplayer.wardrobeItemTypes)
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.wardrobeWearSent
+            and not NLQAMultiplayer.wardrobeWearObserved then
+        local player=getSpecificPlayer(0)
+        local complete=true
+        local counts={}
+        for _, fullType in ipairs(NLQAMultiplayer.wardrobeItemTypes) do
+            local count=qaWornCount(player, fullType)
+            counts[#counts+1]=fullType.."="..tostring(count)
+            if count < 1 then complete=false end
+        end
+        if complete and #NLQAMultiplayer.wardrobeItemTypes > 0 then
+            NLQAMultiplayer.wardrobeWearObserved=true
+            NLQAMultiplayer.wardrobeSaveDue=NLQAMultiplayer.socialFrame+30
+            emit("WARDROBE WORN COMPLETE", table.concat(counts, ",")
+                .. " source=vanilla-wear-action")
         end
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.socialResultLogged
@@ -940,6 +1094,7 @@ end)
 Events.OnRenderTick.Add(function()
     if not isClient() or qaIdentity().username ~= "nl-host"
             or NLQAMultiplayer.snapshots == 0
+            or not NLQAMultiplayer.wardrobeWearObserved
             or NLQAMultiplayer.socialFrame < NLQAMultiplayer.wardrobeSaveDue
             or NLQAMultiplayer.wardrobeSaveSent then return end
     local player=getSpecificPlayer(0)

@@ -1,0 +1,98 @@
+Neighborhood Life v1.29 verification
+
+Changed branch/fields:
+- QA-only multiplayer stimulus now seeds real vanilla clothing on the host square, transfers it through the vanilla world-item action, queues vanilla ISWearClothing for both garments, and waits for both to be worn before production wardrobe_save.
+- QA snapshot logging records non-empty private wardrobe snapshots across a same-client reconnect. The seed fixture and all helpers remain outside the production package.
+- Scope/README now distinguish actual non-empty wardrobe/reconnect gameplay evidence from the existing production wear contract.
+
+Required artifacts:
+MODIFIED_FILE: E:\pzmod\evidence\v48\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v48\DIFF_FILE.patch
+VERIFICATION.txt: E:\pzmod\evidence\v48\VERIFICATION.txt
+ROLLBACK.sh: E:\pzmod\evidence\v48\ROLLBACK.sh
+
+Hashes:
+BASELINE Wardrobe.lua SHA256 46ABD81D2803DD9380E76F4C98F237E4ECDCE3495D6D467227A9E5E4465F81F5
+MODIFIED Wardrobe.lua SHA256 46ABD81D2803DD9380E76F4C98F237E4ECDCE3495D6D467227A9E5E4465F81F5
+BASELINE Authority.lua SHA256 3FC6FCA4D45D62C935FFD66E0B6130B62F2902B52427899B32A8F85156A93BE9
+MODIFIED Authority.lua SHA256 3FC6FCA4D45D62C935FFD66E0B6130B62F2902B52427899B32A8F85156A93BE9
+MODIFIED QA client SHA256 3C619C8E52AF2E1B461AC151E830627DB26B10E4A82FC38096CF081051DAFC18
+MODIFIED QA server SHA256 49FF68B8EC9326E85C262C38EA27BA802A973C075CA589EC7487B6C8DD23B71C
+DIFF_FILE.patch SHA256 2358C35FAAE74863E2B2F513E40BDA6BCC26809EDDB18080B1581D788A859B2F
+MODIFIED_FILE.zip SHA256 B6FD013734D45FA63BBEA7D25F272C55645AD110A199F46443B79020A1225B92
+
+BASELINE
+COMMAND: cmd /c "python tools\pipeline.py test --target evidence\v48\baseline > evidence\v48\baseline-test.log 2>&1"
+INPUT: evidence\v48\baseline
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+EXIT STATUS: 0
+
+MODIFIED
+COMMAND: cmd /c "python tools\pipeline.py test > evidence\v48\modified-test.log 2>&1"
+INPUT: NeighborhoodLife production tree
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+EXIT STATUS: 0
+COMMAND: C:\Program Files (x86)\Lua\5.1\luac.exe -p qa\NeighborhoodQA\42\media\lua\client\NLQAMultiplayer.lua
+INPUT: QA client helper
+LITERAL OUTPUT: [empty stdout/stderr]
+EXIT STATUS: 0
+COMMAND: C:\Program Files (x86)\Lua\5.1\luac.exe -p qa\NeighborhoodQA\42\media\lua\server\NLQAMultiplayerServer.lua
+INPUT: QA server helper
+LITERAL OUTPUT: [empty stdout/stderr]
+EXIT STATUS: 0
+
+ROLLBACK
+COMMAND: C:\Program Files\Git\bin\bash.exe -lc "chmod +x /e/pzmod/evidence/v48/ROLLBACK.sh && TARGET_ROOT=/e/pzmod/evidence/v48/rollback-target bash /e/pzmod/evidence/v48/ROLLBACK.sh"
+INPUT: rollback baseline at evidence\v48\rollback-baseline; target evidence\v48\rollback-target
+LITERAL OUTPUT: ROLLBACK RESTORED: baseline production and QA/test trees
+EXIT STATUS: 0
+COMMAND: cmd /c "python tools\pipeline.py test --target evidence\v48\rollback-target\NeighborhoodLife > evidence\v48\rollback-test.log 2>&1"
+INPUT: evidence\v48\rollback-target\NeighborhoodLife
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+EXIT STATUS: 0
+RESTORED STATUS: rollback target passed the consolidated baseline suite; production wardrobe and authority hashes matched the v48 baseline.
+
+RELEASE PACKAGE
+COMMAND: cmd /c "python tools\pipeline.py package --version v48 --baseline evidence\v48\baseline > evidence\v48\package.log 2>&1"
+INPUT: NeighborhoodLife production tree; evidence\v48\baseline
+LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v48\MODIFIED_FILE.zip
+EXIT STATUS: 0
+ZIP RESULT: testzip=None; QA_ENTRIES=0; ZIP_ENTRIES=28; rollback executable check=0.
+
+ACTUAL GAMEPLAY EVIDENCE
+CLASSIFICATION: actual Build 42.20.4 dedicated-server host-plus-guest run using the isolated test profile and hands-free-qa.jar. These lines are gameplay evidence, not mock or engine-VM evidence.
+COMMAND: powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\launch-multiplayer-qa.ps1
+INPUT: isolated test-profile; hands-free-qa.jar; Build 42.20.4
+COMMAND: New-Item -ItemType File -Force E:\pzmod\test-profile\mp-host\reconnect-request
+INPUT: marker created only after the host logged the non-empty wardrobe snapshot and a 90-second stable-session delay
+
+INITIAL NON-EMPTY WARDROBE RESULT:
+- Host: `NLQA MP PLUMBOB SIZE: player:0=6x10 texture=16x22`
+- Host: `NLQA MP SNAPSHOT: username=nl-host revision=73 snapshotCount=1 message=Updated`
+- Host: `NLQA MP WARDROBE SNAPSHOT: slot=1 pieces=2 revision=73`
+- Server: `NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-host revision=73`
+
+RECONNECT PERSISTENCE RESULT:
+- HandsFreeQA: `PASS: QA requested engine disconnect for same-client reconnect; serverDisconnected=true`
+- Host after reconnect: `NLQA MP CLIENT START: username=nl-host isClient=true isServer=false`
+- Host after reconnect: `NLQA MP PLUMBOB SIZE: player:0=6x10 texture=16x22`
+- Host after reconnect: `NLQA MP SNAPSHOT: username=nl-host revision=74 snapshotCount=1 message=Updated`
+- Host after reconnect: `NLQA MP WARDROBE SNAPSHOT: slot=1 pieces=2 revision=74`
+- Server after reconnect: `NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-host revision=74`
+
+ACQUISITION/WORN PROOF:
+- The preceding captured run in `evidence\v48\mp-host-nonempty.log` logged `WARDROBE PICKUP COMPLETE: Base.Shirt_FormalWhite=1,Base.Trousers_Denim=1 source=world-transfer-action` and `WARDROBE WORN COMPLETE: Base.Shirt_FormalWhite=1,Base.Trousers_Denim=1 source=vanilla-wear-action`.
+- The same captured run logged `WARDROBE SAVE: slot=1 source=server-authoritative-worn-items`, the real `WARDROBE UI` at `590x450`, and the production snapshot `pieces=2 revision=73`.
+
+MULTIPLAYER CONTEXT:
+- Guest logged a real client start, the 6x10 plumbob, three moving NPC presence entries, and `GUEST SOCIAL ACTION: chat id=kenji step=1` followed by a replicated `SOCIAL EVENT`.
+- The native GameServer reannouncement adapter remains an open engine-exposure issue because the dedicated runtime still reports `GameServer=nil` in the existing v46 evidence.
+
+REMAINING WARDROBE LIMIT:
+This proves real non-empty acquisition, vanilla wear, server-authoritative capture, and same-client reconnect snapshot persistence. It does not yet prove the production saved-outfit replacement action after currently worn layers are removed; the Lua/Kahlua wardrobe contract covers exact garment identity, fallback and duplicate exclusion.
+
+Artifact reopen checks:
+- MODIFIED_FILE.zip reopened with Python zipfile: testzip=None, QA_ENTRIES=0, production Authority.lua present.
+- DIFF_FILE.patch reopened at 24485 bytes.
+- ROLLBACK.sh reopened and passed `test -x`.
+- This VERIFICATION.txt is the reopened v1.29 record.

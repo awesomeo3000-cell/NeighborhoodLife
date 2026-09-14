@@ -21,6 +21,7 @@ if type(getClass) == "function" then
 end
 local reannounced = false
 local careerSeeded = {}
+local wardrobeSeeded = {}
 local householdViewpointMoved = false
 
 -- QA-only viewpoint setup: after the real invite/accept flow, place the guest
@@ -129,6 +130,38 @@ Events.OnClientCommand.Add(function(module, command, player, args)
         .." amount="..amount.." square="..tostring(square:getX())..","..tostring(square:getY())
         ..","..tostring(square:getZ()))
     sendServerCommand(player,"NeighborhoodQA","career_seeded",{item=item,amount=amount,mode="world"})
+end)
+
+-- QA-only clothing fixture: place real vanilla garments in the current square
+-- so the host acquires them through the networked world-transfer action and
+-- equips them through the production ISWearClothing path.
+Events.OnClientCommand.Add(function(module, command, player)
+    if module ~= "NeighborhoodQA" or command ~= "seed_wardrobe" or not player
+            or player:getUsername() ~= "nl-host" or wardrobeSeeded["nl-host"] then return end
+    local square = player:getCurrentSquare()
+    if not square then
+        print("NLQA WARDROBE SEED FAILED: username=nl-host reason=no-current-square")
+        return
+    end
+    local items = {"Base.Shirt_FormalWhite", "Base.Trousers_Denim"}
+    local worldObjects = square:getWorldObjects()
+    if worldObjects then
+        for index=worldObjects:size()-1,0,-1 do
+            local worldObject = worldObjects:get(index)
+            local oldItem = worldObject and worldObject:getItem()
+            if oldItem and (oldItem:getFullType() == items[1] or oldItem:getFullType() == items[2]) then
+                square:transmitRemoveItemFromSquare(worldObject)
+            end
+        end
+    end
+    for index, item in ipairs(items) do
+        square:AddWorldInventoryItem(item, 0.25 + (index * 0.20), 0.50, 0.0)
+    end
+    wardrobeSeeded["nl-host"] = true
+    print("NLQA WARDROBE WORLD SEED: username=nl-host items=" .. table.concat(items, ",")
+        .. " square=" .. tostring(square:getX()) .. "," .. tostring(square:getY())
+        .. "," .. tostring(square:getZ()))
+    sendServerCommand(player, "NeighborhoodQA", "wardrobe_seeded", {items=items})
 end)
 
 local function tryReannounce()

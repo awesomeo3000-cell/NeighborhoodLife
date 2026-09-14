@@ -464,3 +464,21 @@ Build 42.20.4 run under `evidence/v47/`, the host opened the real 590x450
 wardrobe panel and received revision 72 after the authoritative save. The
 disposable character had zero worn garments, so the run proves the empty-preset
 and UI/server integration path, not visual garment replacement yet.
+
+## v1.29 actual non-empty wardrobe and reconnect evidence
+
+The isolated QA server fixture placed real `Base.Shirt_FormalWhite` and
+`Base.Trousers_Denim` items on the host's square. The host acquired them using
+the vanilla world-transfer action, equipped them using vanilla
+`ISWearClothing`, and saved them through the production server-authoritative
+`wardrobe_save` command. The fixture and all clothing seeding remain in the
+QA-only mod.
+
+`evidence/v48/` records the actual Build 42.20.4 host-plus-guest run: both
+garments were acquired and worn, slot 1 returned `pieces=2` at revision 73,
+and a stable hands-free same-client reconnect returned the same `pieces=2` at
+revision 74. The run also retained the compact 6x10 plumbob and the guest's
+three moving NPC replicas plus Kenji social event. Production saved-outfit
+replacement after removing currently worn layers remains the next clothing
+gameplay probe; the unit and Kahlua contracts already cover exact identity and
+fallback behavior.
