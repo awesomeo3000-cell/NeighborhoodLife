@@ -82,14 +82,27 @@ if NLNpcClient.bodyPresent then
     assert(plumbobs['npc:kenji']==NLNpcClient.bodies.kenji,
         'recreated streamed replica receives a fresh plumbob')
 end
+local promotionSupported=body:getModData().NeighborhoodNpcReplica==true
+local lateNative
+if promotionSupported then
+    lateNative=IsoPlayer.new(nil,nil,20,20,0)
+    lateNative:getModData().NeighborhoodNpcId='marisol'
+    objects:add(lateNative)
+    NLNpcClient.apply({revision=4,npcs={{id='marisol',x=20,y=20,z=0,alive=true},{id='kenji',x=14,y=11,z=0,alive=true}}})
+    assert(NLNpcClient.bodies.marisol==lateNative,
+        'late server-native body promotes over an existing compatibility replica')
+    assert(plumbobs['npc:marisol']==lateNative,
+        'promoted native body receives the existing plumbob registration')
+end
 local xAfterNewer=body:getX()
 local targetAfterNewer=NLNpcClient.targets.marisol
 if NLNpcClient.revision then
     NLNpcClient.apply({revision=1,npcs={}})
-    assert(NLNpcClient.targets.marisol==targetAfterNewer and NLNpcClient.bodies.marisol==body,
+    local expectedBody=promotionSupported and lateNative or body
+    assert(NLNpcClient.targets.marisol==targetAfterNewer and NLNpcClient.bodies.marisol==expectedBody,
         'stale NPC packet is ignored')
 end
-NLNpcClient.apply({revision=3,npcs={}})
+NLNpcClient.apply({revision=5,npcs={}})
 assert(NLNpcClient.bodies.marisol==nil and NLNpcClient.bodies.kenji==nil
     and plumbobs['npc:marisol']==nil and plumbobs['npc:kenji']==nil,
     'replica cleanup follows authoritative roster')

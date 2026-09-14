@@ -767,3 +767,13 @@ so the natural stream check correctly recorded `bodyPresent=true`; no natural
 stream-out claim is made. The same run still reached the explicit production
 stale-handle recovery probe afterward. Logs and the separate mock/engine-VM
 classification are in `evidence/v71/`.
+## v1.51 late native-body promotion
+
+The production NPC client now marks its locally-created compatibility replicas
+and excludes those marked bodies when searching the cell for a server-native
+body. If Build 42 supplies the native body after the fallback already exists,
+the next authoritative presence packet removes the fallback, promotes the
+native body, repositions it from the authoritative entry, and reuses the
+plumbob registration. The focused contract test and installed-game Kahlua
+execution cover the promotion path; a real naturally missing native peer is
+still not available in the current dedicated-server Lua exposure.

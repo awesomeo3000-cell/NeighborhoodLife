@@ -43,7 +43,8 @@ local function nativeBody(id)
         local itemOk, object = pcall(list.get, list, i)
         if itemOk and object and object.getModData then
             local dataOk, data = pcall(object.getModData, object)
-            if dataOk and data and data.NeighborhoodNpcId == id then return object end
+            if dataOk and data and data.NeighborhoodNpcId == id
+                    and data.NeighborhoodNpcReplica ~= true then return object end
         end
     end
     return nil
@@ -71,7 +72,9 @@ local function createReplica(entry)
         body:setNpc(true)
         body:setUsername(name .. " [Neighborhood Life]")
         body:setGodMod(true)
-        body:getModData().NeighborhoodNpcId = id
+        local replicaData = body:getModData()
+        replicaData.NeighborhoodNpcId = id
+        replicaData.NeighborhoodNpcReplica = true
         body:dressInNamedOutfit(entry.outfit or "Generic01")
         body:setSceneCulled(false)
         body:setAlphaAndTarget(1, 1)
@@ -111,6 +114,17 @@ function NLNpcClient.apply(packet)
             seen[id] = true
             NLNpcClient.states[id] = entry
             local body = NLNpcClient.bodies[id]
+            -- A server-native body can arrive after the client has already
+            -- created its compatibility replica. Promote to that body as
+            -- soon as it appears instead of leaving the fallback in place.
+            local discovered = nativeBody(id)
+            if discovered and discovered ~= body then
+                if body then forgetReplica(id, body) end
+                body = discovered
+                NLNpcClient.bodies[id] = body
+                positionBody(body, entry.x, entry.y, entry.z)
+                NLPlumbob.register("npc:" .. id, body, 0, NLPlumbob.remoteColor)
+            end
             if body and bodyPresent(body) == false then
                 forgetReplica(id, body)
                 body = nil
