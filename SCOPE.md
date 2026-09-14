@@ -11,7 +11,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits | Rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; server-authoritative worn-garment capture and revisioned private snapshots in v1.28; v1.29 actual vanilla clothing acquisition, wear and reconnect snapshot persistence; v1.30 actual production saved-outfit replacement after vanilla unequip; light-themed wardrobe panel reachable from HUD | New garment variants, original assets, unlock/reward integration |
-| Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback, v1.27 adds a best-effort `GameServer` reannouncement adapter plus mock contract coverage, and v1.31 makes the dedicated-server fallback collision-aware and reroutes a blocked waypoint instead of stepping through it | Build 42 native server-body reannouncement remains unproven because the real dedicated server exposes `GameServer=nil` to Lua; damage/death and offscreen behavior remain open |
+| Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback, v1.27 adds a best-effort `GameServer` reannouncement adapter plus mock contract coverage, v1.31 makes the dedicated-server fallback collision-aware and reroutes a blocked waypoint instead of stepping through it, and v1.32 retires native deaths into persistent dead rows and schedules saved-tile recovery for missing streamed bodies | Build 42 native server-body reannouncement remains unproven because the real dedicated server exposes `GameServer=nil` to Lua; danger handling and natural streamed-cell behavior still need actual gameplay evidence |
 | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot; v1.23 completes a real host `chat` -> `joke` sequence against Marisol during a connected host+guest run with cooldown and line-of-sight gates; v1.24 broadcasts successful social events to every connected client without sharing private relationship values; v1.26 drives a guest `introduce` against Kenji while the host remains connected and receives the guest event | Richer world actions and inventory exchange |
 | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence; v1.24 adds a bounded replicated social-event feed and Relationships-panel shared-event line; v1.26 proves the guest independently mutates Kenji to friendship 3/trust 2 while the host receives only the event | In-world UI/interaction checks, richer date activities and direct two-client romance synchronization |
 | Household life | v1.16 extends the v1.15 server-authoritative Neighborhood Home with persistent shared storage, exact item-type deposits from unequipped main inventory, member withdrawals, capacity and malformed-item guards, shared-storage UI actions, and real host-to-guest inventory transfer evidence | Home ownership transfer UX, functional furnishings, offline/co-op routines beyond the tested activity, richer item metadata/container transfer |
@@ -140,6 +140,26 @@ romance synchronization remain open.
   captured run.
 - This closes the actual saved-outfit replacement probe. New clothing
   variants, original assets and unlock/reward integration remain breadth work.
+
+## v1.32 native NPC lifecycle retirement and offscreen recovery
+
+- Production `NLNpcAuthority` now removes a dead native body from the
+  authoritative registry, cancels its path, unregisters its social body and
+  persists the row as dead. The next presence packet omits the dead neighbor,
+  allowing clients to remove its replica and plumbob instead of keeping a dead
+  body visible.
+- A body missing from the server cell object list is now retired as an offscreen
+  transient. Its last fractional position remains in the persistent neighbor
+  row; scheduled recovery calls `spawnBody` with no player fallback, so an
+  unloaded home tile cannot relocate the NPC to a connected player's position.
+- `tests/npc-authority.lua` covers body removal, saved-position retention,
+  saved-tile recovery and native death retirement. These are mock contract
+  assertions, and the consolidated Kahlua suite repeats them in the installed
+  game VM; neither is actual offscreen streaming or damage gameplay evidence.
+- `evidence/v52/` records the baseline/modified/rollback artifacts and a fresh
+  hands-free host+guest regression run. That run proves the existing three-NPC
+  presence, movement, plumbob and guest-social loop; it does not claim that the
+  QA session naturally caused damage, death or cell streaming.
 
 ## v1.31 collision-aware NPC fallback and runtime API gate
 

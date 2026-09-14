@@ -21,7 +21,11 @@ local function square(x,y,z)
     return {getX=function() return x end,getY=function() return y end,getZ=function() return z end,
         isFree=function() return true end}
 end
-local objects={contains=function() return false end,add=function() end}
+local objectSet={}
+local objects={}
+function objects:contains(value) return objectSet[value] == true end
+function objects:add(value) objectSet[value] = true end
+function objects:remove(value) objectSet[value] = nil end
 function getCell() return {getGridSquare=function(_,x,y,z) local s=square(x,y,z); s.getObjectList=function() return objects end; return s end,
     getObjectList=function() return objects end} end
 SurvivorFactory={CreateSurvivor=function() return {
@@ -36,7 +40,7 @@ local function bodyAt(cell,desc,x,y,z)
     function b:getY() return self.y end; function b:getZ() return self.z end
     function b:setCurrent(v) self.current=v end; function b:setSceneCulled() end
     function b:setAlphaAndTarget() end; function b:resetModelNextFrame() end
-    function b:isDead() return false end; function b:hasPath() return false end
+    function b:isDead() return self.dead == true end; function b:hasPath() return false end
     local behavior={}
     function behavior:pathToLocation(x1,y1,z1) self.target={x=x1,y=y1,z=z1} end
     function behavior:update() return BehaviorResult.Succeeded end
@@ -137,5 +141,27 @@ if NLNpcAuthority.repairStacked then
         assert(not occupied[key],'stacked legacy NPC rows are repaired to distinct squares')
         occupied[key]=true
     end
+end
+if NLNpcAuthority.reconcileBodies and NLNpcAuthority.recoverMissingBodies then
+    -- Lifecycle contract: a removed native body becomes an unavailable but
+    -- still alive persistent neighbor, then recovers only from its saved tile;
+    -- a native death is retired, persisted and omitted from the body table.
+    local offscreenBody=NLNpcAuthority.bodies.kenji
+    local offscreenRow=NLAuthority.world().neighbors.kenji
+    objectSet[offscreenBody]=nil
+    NLNpcAuthority.update()
+    assert(not NLNpcAuthority.bodies.kenji and NLNpcAuthority.offscreen.kenji,
+        'missing native body is retired as an offscreen transient')
+    assert(offscreenRow.alive==true and offscreenRow.position.x==offscreenBody:getX(),
+        'offscreen retirement preserves the persistent identity and last position')
+    NLNpcAuthority.tick=NLNpcAuthority.offscreen.kenji.nextAttempt
+    local recovered=NLNpcAuthority.recoverMissingBodies()
+    assert(recovered==1 and NLNpcAuthority.bodies.kenji,
+        'offscreen native body recovers at the persisted tile without player fallback')
+    local deadBody=NLNpcAuthority.bodies.amara
+    deadBody.dead=true
+    NLNpcAuthority.update()
+    assert(not NLNpcAuthority.bodies.amara and NLAuthority.world().neighbors.amara.alive==false,
+        'native death retires the body and persists a dead neighbor row')
 end
 print('PASS: production NPC identity, native body adapter, route tick and save/reload position restoration')

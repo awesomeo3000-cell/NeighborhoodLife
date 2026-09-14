@@ -45,9 +45,11 @@ position instead of snapping to the tile center.
 
 ## Roadmap
 1. In-game host/guest HUD verification and layout polish.
-2. Complete the persistent server-controlled NPC gate: damage/death, offscreen
-   behavior, native body reannouncement and reconnect state. The v1.31
-   dedicated-server fallback now refuses blocked tiles and reroutes safely.
+2. Complete the persistent server-controlled NPC gate: native body
+   reannouncement, natural streamed-cell gameplay and danger handling. v1.32
+   now retires native deaths persistently and schedules offscreen recovery
+   without player-position fallback; v1.31 refuses blocked tiles and reroutes
+   safely.
 3. Individual friendship/trust, server-validated requests and exactly-once rewards.
 4. Tailoring career, clothing variants and wardrobe; new meshes are separate art work.
 5. Adult NPC mutual-interest romance, routines and shared households.
@@ -496,6 +498,26 @@ wore both garments, saved revision 75, completed vanilla unequip with both
 garments at zero, and then logged replacement completion for both garments from
 `production-NLWardrobe.wear`. New clothing variants, original assets and
 unlock/reward integration remain breadth work.
+
+## v1.32 native NPC lifecycle retirement and offscreen recovery
+
+Production `NLNpcAuthority` now treats the native `IsoPlayer` as a transient
+engine body instead of the persistent identity. A native death cancels its path,
+removes its social/body registration, persists the neighbor as dead and causes
+the next authoritative presence roster to omit it. A body that disappears from
+the server cell object list is retained as an alive persistent row with its last
+fractional position; the scheduled recovery path calls the native spawn adapter
+without a connected-player fallback, preventing an offscreen neighbor from
+teleporting into the player's area.
+
+The NPC contract suite covers death retirement, offscreen removal, saved-position
+retention and saved-tile recovery in Lua 5.1 and the installed Kahlua VM. Those
+are mock/engine-VM checks, not damage or natural cell-streaming gameplay
+evidence. `evidence/v52/` records the baseline, modified package, diff,
+verification and executable rollback artifacts. The accompanying hands-free
+host-plus-guest run remains actual regression evidence for three moving NPCs,
+plumbobs and the guest social event; it does not claim a naturally caused NPC
+death or streamed-cell transition.
 
 ## v1.31 collision-aware NPC fallback and runtime API gate
 

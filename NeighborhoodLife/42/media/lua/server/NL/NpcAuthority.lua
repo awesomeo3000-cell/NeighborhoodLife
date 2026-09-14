@@ -13,6 +13,7 @@ require "NL/SocialAuthority"
 NLNpcAuthority = {
     bodies = {},
     targets = {},
+    offscreen = {},
     tick = 0,
     started = false,
     startAttempts = 0,
@@ -20,22 +21,30 @@ NLNpcAuthority = {
     definitions = { "marisol", "kenji", "amara" },
 }
 
+local function emit(message)
+    if NLQANpc or NLQAMultiplayerServer then
+        print("NLQA NPC PRODUCTION " .. message)
+    end
+end
+
 local function presencePacket()
     local world = NLAuthority.world()
     local entries = {}
     for id, body in pairs(NLNpcAuthority.bodies) do
         local row = NLNeighbors.get(world, id)
         local definition = NLNeighbors.definitions[id]
-        local isFemale = true
-        if definition and definition.female ~= nil then isFemale = definition.female end
-        entries[#entries + 1] = {
-            id=id, x=body:getX(), y=body:getY(), z=body:getZ(),
-            waypoint=row and row.waypoint or 1,
-            alive=not body:isDead(), revision=row and row.revision or 0,
-            name=definition and definition.name or id,
-            female=isFemale,
-            outfit=definition and definition.outfit or "Generic01",
-        }
+        if row and row.alive ~= false and body and not body:isDead() then
+            local isFemale = true
+            if definition and definition.female ~= nil then isFemale = definition.female end
+            entries[#entries + 1] = {
+                id=id, x=body:getX(), y=body:getY(), z=body:getZ(),
+                waypoint=row.waypoint or 1,
+                alive=true, revision=row.revision or 0,
+                name=definition and definition.name or id,
+                female=isFemale,
+                outfit=definition and definition.outfit or "Generic01",
+            }
+        end
     end
     return { revision=getTimestampMs(), npcs=entries }, #entries
 end
@@ -106,12 +115,6 @@ function NLNpcAuthority.persist()
         end
     end
     return count
-end
-
-local function emit(message)
-    if NLQANpc or NLQAMultiplayerServer then
-        print("NLQA NPC PRODUCTION " .. message)
-    end
 end
 
 local function freeSquareNear(cell, x, y, z, minDistance, maxDistance, reserved)
@@ -296,6 +299,110 @@ local function spawnBody(id, row, player)
     return body
 end
 
+-- A native body is transient.  The identity row remains authoritative when
+-- the streamed cell drops the body, so recovery never teleports an NPC to a
+-- player merely because its home tile is temporarily unavailable.
+local function bodyPresent(body)
+    if not body or type(getCell) ~= "function" then return nil end
+    local cellOk, cell = pcall(getCell)
+    if not cellOk or not cell or not cell.getObjectList then return nil end
+    -- Dedicated Build 42 can expose a server cell object list that omits
+    -- server-owned IsoPlayers even while their current square is valid. The
+    -- native square is the stronger liveness signal in that case.
+    for _, method in ipairs({"getCurrentSquare", "getSquare"}) do
+        if body[method] then
+            local squareOk, square = pcall(body[method], body)
+            if squareOk and square then return true end
+        end
+    end
+    local listOk, list = pcall(cell.getObjectList, cell)
+    if not listOk or not list or not list.contains then return nil end
+    local containsOk, present = pcall(list.contains, list, body)
+    if not containsOk then return nil end
+    return present == true
+end
+
+local function detachBody(body)
+    if not body or type(getCell) ~= "function" then return false end
+    local cellOk, cell = pcall(getCell)
+    if not cellOk or not cell or not cell.getObjectList then return false end
+    local listOk, list = pcall(cell.getObjectList, cell)
+    if not listOk or not list or not list.remove then return false end
+    local removedOk = pcall(list.remove, list, body)
+    return removedOk
+end
+
+local function cancelBodyPath(id, body)
+    local target = NLNpcAuthority.targets[id]
+    if target and target.behavior and target.behavior.cancel then
+        pcall(target.behavior.cancel, target.behavior)
+    end
+    if body and body.getPathFindBehavior2 then
+        local behaviorOk, behavior = pcall(body.getPathFindBehavior2, body)
+        if behaviorOk and behavior and behavior.cancel then pcall(behavior.cancel, behavior) end
+    end
+    if body and body.setPath2 then pcall(body.setPath2, body, nil) end
+    NLNpcAuthority.targets[id] = nil
+end
+
+local function retireBody(id, row, body, reason)
+    local world = NLAuthority.world()
+    if row and body and body.getX and body.getY and body.getZ then
+        local positionOk, x, y, z = pcall(function()
+            return body:getX(), body:getY(), body:getZ()
+        end)
+        if positionOk then
+            if reason == "DEATH" then
+                NLNeighbors.dead(world, id)
+            elseif row.alive ~= false then
+                NLNeighbors.position(world, id, x, y, z, row.waypoint)
+            end
+        end
+    elseif reason == "DEATH" and row then
+        NLNeighbors.dead(world, id)
+    end
+    cancelBodyPath(id, body)
+    detachBody(body)
+    if NLPlumbob and NLPlumbob.unregister then
+        pcall(NLPlumbob.unregister, "npc:" .. id)
+    end
+    NLSocialAuthority.bodies[id] = nil
+    NLNpcAuthority.bodies[id] = nil
+    if reason == "OFFSCREEN" then
+        NLNpcAuthority.offscreen[id] = { nextAttempt = NLNpcAuthority.tick + 30 }
+        emit(string.format("OFFSCREEN id=%s retryTick=%d", id, NLNpcAuthority.offscreen[id].nextAttempt))
+    else
+        NLNpcAuthority.offscreen[id] = nil
+        emit("DEATH id=" .. tostring(id))
+    end
+    return true
+end
+
+local function reconcileBodies()
+    local world = NLAuthority.world()
+    local changed = false
+    for id, body in pairs(NLNpcAuthority.bodies) do
+        local row = NLNeighbors.get(world, id)
+        local deadOk, dead = pcall(body.isDead, body)
+        if not row or row.alive == false or (deadOk and dead == true) then
+            retireBody(id, row, body, "DEATH")
+            changed = true
+        else
+            local present = bodyPresent(body)
+            if present == false then
+                retireBody(id, row, body, "OFFSCREEN")
+                changed = true
+            end
+        end
+    end
+    return changed
+end
+
+-- Exposed for the deterministic contract suite; actual offscreen recovery is
+-- still driven by the server update cadence and the loaded native cell.
+NLNpcAuthority.bodyPresent = bodyPresent
+NLNpcAuthority.reconcileBodies = reconcileBodies
+
 function NLNpcAuthority.start()
     if NLNpcAuthority.started or isClient() then return end
     NLNpcAuthority.startAttempts = NLNpcAuthority.startAttempts + 1
@@ -332,7 +439,8 @@ function NLNpcAuthority.start()
     end
     local complete = true
     for _, id in ipairs(NLNpcAuthority.definitions) do
-        if not NLNpcAuthority.bodies[id] then complete = false end
+        local row = rows[id]
+        if row and row.alive ~= false and not NLNpcAuthority.bodies[id] then complete = false end
     end
     if complete then
         NLNpcAuthority.started = true
@@ -341,6 +449,33 @@ function NLNpcAuthority.start()
         if sent > 0 then emit("REANNOUNCE sent=" .. tostring(sent)) end
     end
 end
+
+local function recoverMissingBodies()
+    local world = NLAuthority.world()
+    local rows = NLNeighbors.ensure(world)
+    local recovered = 0
+    for _, id in ipairs(NLNpcAuthority.definitions) do
+        local row = rows[id]
+        local schedule = NLNpcAuthority.offscreen[id]
+        if row and row.alive ~= false and row.spawned and not NLNpcAuthority.bodies[id]
+                and (not schedule or NLNpcAuthority.tick >= schedule.nextAttempt) then
+            local body, err = spawnBody(id, row, nil)
+            if body then
+                recovered = recovered + 1
+                NLNpcAuthority.offscreen[id] = nil
+                emit(string.format("RECOVER id=%s x=%.2f y=%.2f", id, body:getX(), body:getY()))
+            else
+                NLNpcAuthority.offscreen[id] = {
+                    nextAttempt = NLNpcAuthority.tick + 30,
+                }
+                emit("RECOVER WAIT id=" .. id .. ": " .. tostring(err))
+            end
+        end
+    end
+    return recovered
+end
+
+NLNpcAuthority.recoverMissingBodies = recoverMissingBodies
 
 local function nextWaypoint(row, body)
     if row.spawned and row.home then
@@ -364,6 +499,8 @@ end
 function NLNpcAuthority.update()
     if not NLNpcAuthority.started then NLNpcAuthority.start(); return end
     NLNpcAuthority.tick = NLNpcAuthority.tick + 1
+    local lifecycleChanged = NLNpcAuthority.reconcileBodies()
+    if NLNpcAuthority.recoverMissingBodies() > 0 then lifecycleChanged = true end
     if NLNpcAuthority.tick % 300 == 0 then
         for id, body in pairs(NLNpcAuthority.bodies) do
             emit(string.format("TICK id=%s x=%.2f y=%.2f", id, body:getX(), body:getY()))
@@ -373,7 +510,8 @@ function NLNpcAuthority.update()
         local world = NLAuthority.world()
         local row = NLNeighbors.get(world, id)
         if not row or row.alive == false or body:isDead() then
-            if row then NLNeighbors.dead(world, id) end
+            retireBody(id, row, body, "DEATH")
+            lifecycleChanged = true
         else
             local behavior = body:getPathFindBehavior2()
             if not body:hasPath() and not NLNpcAuthority.targets[id] then
@@ -454,12 +592,20 @@ function NLNpcAuthority.update()
             end
         end
     end
-    if NLNpcAuthority.tick % 120 == 0 then NLNpcAuthority.broadcastPresence() end
+    if lifecycleChanged or NLNpcAuthority.tick % 120 == 0 then
+        NLNpcAuthority.broadcastPresence()
+    end
 end
 
 function NLNpcAuthority.reset()
+    if NLPlumbob and NLPlumbob.unregister then
+        for id, _ in pairs(NLNpcAuthority.bodies) do
+            pcall(NLPlumbob.unregister, "npc:" .. id)
+        end
+    end
     NLNpcAuthority.bodies = {}
     NLNpcAuthority.targets = {}
+    NLNpcAuthority.offscreen = {}
     NLNpcAuthority.started = false
     NLNpcAuthority.startAttempts = 0
     NLNpcAuthority.tick = 0
