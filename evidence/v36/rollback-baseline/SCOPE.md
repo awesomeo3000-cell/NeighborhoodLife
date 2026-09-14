@@ -407,28 +407,3 @@ The original broad goal remains active. This ledger is not a reduced definition 
   native movement paths on both clients.
 - QA helpers remain outside the production package. Native server-body reannouncement,
   furnishings, richer item metadata and offline household routines remain open.
-
-## v1.17 household furnishing vertical slice
-
-- Production households now carry a persistent furnishing record for the shared
-  storage tile. The dedicated server reconciles that record to a native
-  `IsoObject` with household identity ModData and removes it when the last member
-  leaves. The Home snapshot includes the furnishing kind, sprite and tile.
-- Build 42.20.4 did not consistently replicate a Lua-created dedicated-server
-  `IsoObject` to clients in this run, so the production client creates the same
-  native tile object from the revisioned household snapshot when the home square
-  is streamed locally. This is a bounded engine workaround, not a claim of native
-  network-object replication.
-- The v1.17 hands-free run in `evidence/v36/` logged the persisted native server
-  furnishing at `8282,11720,1`; the host created a native client furnishing from
-  the authoritative snapshot, and the guest received the same `storage` snapshot
-  during the real invite, storage deposit/withdrawal and tidy loop. The guest's
-  camera remained away from the home tile, so its unloaded square correctly did
-  not produce a local object. Server storage, guest withdrawal and three native
-  NPC replicas with native movement paths were also observed.
-- Mock tests cover server creation/reuse/removal and client identity/cleanup;
-  the Kahlua engine-VM suite passes; the v36 logs are the actual host/guest
-  gameplay evidence. Native cross-client furnishing replication, streamed-in
-  client retry when a distant home becomes loaded, native server-body
-  reannouncement, richer item metadata and offline household routines remain
-  open gates.

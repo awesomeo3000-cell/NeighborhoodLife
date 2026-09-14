@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="${TARGET_ROOT:?TARGET_ROOT is required}"
+BASE="$(cd "$(dirname "$0")/rollback-baseline" && pwd)"
+cp "$BASE/Households.lua" "$ROOT/42/media/lua/shared/NL/Households.lua"
+cp "$BASE/HouseholdAuthority.lua" "$ROOT/42/media/lua/server/NL/HouseholdAuthority.lua"
+cp "$BASE/HouseholdClient.lua" "$ROOT/42/media/lua/client/NL/HouseholdClient.lua"
+cp "$BASE/NeighborhoodLifeServer.lua" "$ROOT/42/media/lua/server/NeighborhoodLifeServer.lua"
+cp "$BASE/pipeline.py" "$ROOT/tools/pipeline.py"
+cp "$BASE/README.md" "$ROOT/README.md"
+cp "$BASE/SCOPE.md" "$ROOT/SCOPE.md"
+cp "$BASE/NLQAMultiplayer.lua" "$ROOT/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua"
+rm -f "$ROOT/42/media/lua/server/NL/HouseholdFurnishings.lua"
+rm -f "$ROOT/42/media/lua/client/NL/HouseholdFurnishingClient.lua"
+rm -f "$ROOT/tests/household-furnishings.lua" "$ROOT/tests/household-furnishing-client.lua"

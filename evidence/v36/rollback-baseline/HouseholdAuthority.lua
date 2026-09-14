@@ -1,7 +1,6 @@
 if isClient() then return end
 require "NL/Households"
 require "NL/Authority"
-NLHouseholdFurnishings = require "NL/HouseholdFurnishings"
 
 NLHouseholdAuthority = { module = "NeighborhoodHousehold", lastRequest = {} }
 
@@ -34,7 +33,6 @@ local function snapshot(player, message)
     local key = NLAuthority.key(player)
     local profile = NLDomain.profile(world, key)
     local household = profile.householdId and NLHouseholds.get(world, profile.householdId) or nil
-    if household and NLHouseholdFurnishings then NLHouseholdFurnishings.ensure(household) end
     local online = household and householdOnline(household) or {}
     local result = {
         username = key, revision = profile.revision, householdRevision = household and household.revision or 0,
@@ -176,7 +174,6 @@ function NLHouseholdAuthority.command(module, command, player, args)
             local id = "home:" .. key
             household = NLHouseholds.new(id, key, homeOf(player))
             NLHouseholds.ensure(world)[id] = household
-            if NLHouseholdFurnishings then NLHouseholdFurnishings.ensure(household) end
             profile.householdId, profile.householdInvite = id, nil
             profile.revision = profile.revision + 1
             message = "Neighborhood Home created"
@@ -233,9 +230,7 @@ function NLHouseholdAuthority.command(module, command, player, args)
                     household.owner = replacement
                     if replacement and household.members[replacement] then household.members[replacement].role = "owner" end
                 end
-                if NLHouseholds.memberCount(household) == 0 then
-                    if NLHouseholdFurnishings then NLHouseholdFurnishings.remove(household) end
-                    NLHouseholds.ensure(world)[household.id] = nil
+                if NLHouseholds.memberCount(household) == 0 then NLHouseholds.ensure(world)[household.id] = nil
                 else notifyMembers(world, household, key .. " left the household") end
             end
         end

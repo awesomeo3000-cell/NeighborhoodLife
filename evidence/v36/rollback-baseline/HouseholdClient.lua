@@ -1,5 +1,4 @@
 NLHouseholdClient = { snapshots = {} }
-pcall(require, "NL/HouseholdFurnishingClient")
 
 function NLHouseholdClient.receive(module, command, args)
     if module ~= "NeighborhoodHousehold" or type(args) ~= "table" then return end
@@ -28,10 +27,6 @@ function NLHouseholdClient.receive(module, command, args)
                 local oldRevision = old and old.householdRevision or -1
                 if (args.householdRevision or 0) >= oldRevision then
                     NLHouseholdClient.snapshots[i] = args
-                    if NLHouseholdFurnishingClient then
-                        if args.household then NLHouseholdFurnishingClient.apply(args.household)
-                        else NLHouseholdFurnishingClient.clear() end
-                    end
                 end
             end
         end

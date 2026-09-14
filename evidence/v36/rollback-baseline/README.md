@@ -286,21 +286,3 @@ validated independently of the Home panel. The first UI action pair is wired to
 the career slice's `Base.RippedSheets` item. QA helpers remain outside the
 production package; native server-body reannouncement, furnishings and richer
 offline household routines remain open gates.
-
-## v1.17 household furnishing vertical slice
-
-The household now owns a persistent storage-furnishing record, including its
-native tile identity, sprite and coordinates. The dedicated server reconciles
-that record to a native `IsoObject` and includes it in every revisioned Home
-snapshot. The production client creates the same native tile object locally when
-the home square is loaded because Build 42.20.4 did not consistently replicate
-Lua-created server objects in the isolated run.
-
-`evidence/v36/` records the actual hands-free host/guest loop: the server reused
-the persisted furnishing at `8282,11720,1`, the host created its native client
-object from the authoritative snapshot, and the guest received the same
-furnishing snapshot while completing invite, shared storage withdrawal and tidy.
-The guest was not standing near the home tile, so its unloaded square produced no
-local tile object; this remains a streaming/replication gate rather than a hidden
-success claim. Mock and engine-VM tests remain separate from this gameplay
-evidence, and QA helpers stay outside the production package.

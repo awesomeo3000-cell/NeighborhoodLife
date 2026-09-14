@@ -12,7 +12,7 @@ function NLHouseholds.new(id, owner, home)
         id = id, name = "Neighborhood Home", owner = owner,
         home = home or { x = 0, y = 0, z = 0 }, members = {
             [owner] = { role = "owner", contribution = 0 },
-        }, tasks = {}, claims = {}, storage = {}, furnishing = nil, revision = 1,
+        }, tasks = {}, claims = {}, storage = {}, revision = 1,
     }
 end
 
@@ -125,11 +125,6 @@ function NLHouseholds.copySummary(household, online)
     local result = {
         id = household.id, name = household.name, owner = household.owner,
         home = { x = household.home.x, y = household.home.y, z = household.home.z },
-        furnishing = household.furnishing and {
-            kind = household.furnishing.kind, x = household.furnishing.x,
-            y = household.furnishing.y, z = household.furnishing.z,
-            sprite = household.furnishing.sprite,
-        } or nil,
         tasks = {}, storage = NLHouseholds.copyStorage(household), members = {}, revision = household.revision,
     }
     for task, count in pairs(household.tasks or {}) do result.tasks[task] = count end

@@ -341,12 +341,7 @@ Events.OnServerCommand.Add(function(module, command, args)
         local home=args.household
         local members=home and home.members or {}
         emit("HOUSEHOLD SNAPSHOT", "username="..tostring(args.username)
-            .." members="..tostring(#members).." furnishing="
-            ..tostring(home and home.furnishing and home.furnishing.kind)
-            .." furnishingTile="..tostring(home and home.furnishing and home.furnishing.x)
-            ..","..tostring(home and home.furnishing and home.furnishing.y)
-            ..","..tostring(home and home.furnishing and home.furnishing.z)
-            .." message="..tostring(args.message))
+            .." members="..tostring(#members).." message="..tostring(args.message))
         if qaIdentity().username=="nl-host" and home
                 and not NLQAMultiplayer.householdCreatedObserved then
             NLQAMultiplayer.householdCreatedObserved=true
@@ -589,7 +584,6 @@ local function scanRemoteObjects()
         details[#details + 1] = luaListOk and scanList("ObjectListForLua", luaList, player)
             or "ObjectListForLua=error:" .. tostring(luaList)
         local npcReplicas=0
-        local householdFurnishings=0
         if luaListOk and luaList then
             local listCountOk,listCount=pcall(luaList.size,luaList)
             if listCountOk then
@@ -598,15 +592,11 @@ local function scanRemoteObjects()
                     if objectOk and object and object.getModData then
                         local dataOk,data=pcall(object.getModData,object)
                         if dataOk and data and data.NeighborhoodNpcId then npcReplicas=npcReplicas+1 end
-                        if dataOk and data and data.NeighborhoodHouseholdFurnishing then
-                            householdFurnishings=householdFurnishings+1
-                        end
                     end
                 end
             end
         end
         details[#details + 1] = "productionNpcReplicas=" .. tostring(npcReplicas)
-        details[#details + 1] = "productionHouseholdFurnishings=" .. tostring(householdFurnishings)
     end
     if type(getOnlinePlayers) == "function" then
         local onlineOk, online = pcall(getOnlinePlayers)

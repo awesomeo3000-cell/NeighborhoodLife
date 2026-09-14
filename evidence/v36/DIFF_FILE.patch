@@ -1,0 +1,271 @@
+--- baseline/42/media/lua/client/NL/HouseholdClient.lua
++++ modified/42/media/lua/client/NL/HouseholdClient.lua
+@@ -1,4 +1,5 @@
+ NLHouseholdClient = { snapshots = {} }
++pcall(require, "NL/HouseholdFurnishingClient")
+ 
+ function NLHouseholdClient.receive(module, command, args)
+     if module ~= "NeighborhoodHousehold" or type(args) ~= "table" then return end
+@@ -27,6 +28,10 @@
+                 local oldRevision = old and old.householdRevision or -1
+                 if (args.householdRevision or 0) >= oldRevision then
+                     NLHouseholdClient.snapshots[i] = args
++                    if NLHouseholdFurnishingClient then
++                        if args.household then NLHouseholdFurnishingClient.apply(args.household)
++                        else NLHouseholdFurnishingClient.clear() end
++                    end
+                 end
+             end
+         end
+--- baseline/42/media/lua/client/NL/HouseholdFurnishingClient.lua
++++ modified/42/media/lua/client/NL/HouseholdFurnishingClient.lua
+@@ -0,0 +1,57 @@
++-- Client-side world representation for the server-authoritative household
++-- furnishing. Build 42.20.4 does not consistently replicate a Lua-created
++-- IsoObject from a dedicated server, so this creates the same native tile
++-- object locally from the revisioned household snapshot.
++if not isClient or not isClient() then return end
++
++NLHouseholdFurnishingClient = { objects = {} }
++
++local function existing(square, householdId)
++    if not square or not square.getObjects then return nil end
++    local ok, objects = pcall(square.getObjects, square)
++    if not ok or not objects then return nil end
++    for i = 0, objects:size() - 1 do
++        local object = objects:get(i)
++        if object and object.getModData then
++            local data = object:getModData()
++            if data and data.NeighborhoodHouseholdId == householdId then return object end
++        end
++    end
++end
++
++function NLHouseholdFurnishingClient.apply(household)
++    if not household or not household.id or not household.furnishing then return nil end
++    local furnishing = household.furnishing
++    local cell = getCell and getCell()
++    local square = cell and cell:getGridSquare(furnishing.x, furnishing.y, furnishing.z)
++    if not square then return nil end
++    local object = existing(square, household.id)
++    if not object and IsoObject and getSprite then
++        local ok, created = pcall(IsoObject.new, cell, square,
++            getSprite(furnishing.sprite or "furniture_storage_02_19"))
++        if ok then object = created end
++        if object then
++            object:setName("NeighborhoodHouseholdStorage")
++            local data = object:getModData()
++            data.NeighborhoodHouseholdId = household.id
++            data.NeighborhoodHouseholdFurnishing = furnishing.kind or "storage"
++            data.NeighborhoodHouseholdSprite = furnishing.sprite
++            if square.AddTileObject then square:AddTileObject(object) end
++            if object.resetModelNextFrame then object:resetModelNextFrame() end
++        end
++    end
++    if object then NLHouseholdFurnishingClient.objects[household.id] = object end
++    return object
++end
++
++function NLHouseholdFurnishingClient.clear()
++    for id, object in pairs(NLHouseholdFurnishingClient.objects) do
++        local square = object and object.getSquare and object:getSquare()
++        if square and square.RemoveTileObject then square:RemoveTileObject(object) end
++        NLHouseholdFurnishingClient.objects[id] = nil
++    end
++end
++
++Events.OnMainMenuEnter.Add(NLHouseholdFurnishingClient.clear)
++if Events.OnDisconnect then Events.OnDisconnect.Add(NLHouseholdFurnishingClient.clear) end
++return NLHouseholdFurnishingClient
+--- baseline/42/media/lua/server/NL/HouseholdAuthority.lua
++++ modified/42/media/lua/server/NL/HouseholdAuthority.lua
+@@ -1,6 +1,7 @@
+ if isClient() then return end
+ require "NL/Households"
+ require "NL/Authority"
++NLHouseholdFurnishings = require "NL/HouseholdFurnishings"
+ 
+ NLHouseholdAuthority = { module = "NeighborhoodHousehold", lastRequest = {} }
+ 
+@@ -33,6 +34,7 @@
+     local key = NLAuthority.key(player)
+     local profile = NLDomain.profile(world, key)
+     local household = profile.householdId and NLHouseholds.get(world, profile.householdId) or nil
++    if household and NLHouseholdFurnishings then NLHouseholdFurnishings.ensure(household) end
+     local online = household and householdOnline(household) or {}
+     local result = {
+         username = key, revision = profile.revision, householdRevision = household and household.revision or 0,
+@@ -174,6 +176,7 @@
+             local id = "home:" .. key
+             household = NLHouseholds.new(id, key, homeOf(player))
+             NLHouseholds.ensure(world)[id] = household
++            if NLHouseholdFurnishings then NLHouseholdFurnishings.ensure(household) end
+             profile.householdId, profile.householdInvite = id, nil
+             profile.revision = profile.revision + 1
+             message = "Neighborhood Home created"
+@@ -230,7 +233,9 @@
+                     household.owner = replacement
+                     if replacement and household.members[replacement] then household.members[replacement].role = "owner" end
+                 end
+-                if NLHouseholds.memberCount(household) == 0 then NLHouseholds.ensure(world)[household.id] = nil
++                if NLHouseholds.memberCount(household) == 0 then
++                    if NLHouseholdFurnishings then NLHouseholdFurnishings.remove(household) end
++                    NLHouseholds.ensure(world)[household.id] = nil
+                 else notifyMembers(world, household, key .. " left the household") end
+             end
+         end
+--- baseline/42/media/lua/server/NL/HouseholdFurnishings.lua
++++ modified/42/media/lua/server/NL/HouseholdFurnishings.lua
+@@ -0,0 +1,128 @@
++-- Native Build 42 furnishing for the authoritative household storage.
++-- The household record owns the identity and tile; the IsoObject is the
++-- visible, networked world representation at that tile.
++if isClient() then return end
++
++NLHouseholdFurnishings = {
++    sprite = "furniture_storage_02_19",
++    objectName = "NeighborhoodHouseholdStorage",
++}
++
++local function emit(message)
++    if NLQAMultiplayerServer then
++        print("NLQA HOUSEHOLD FURNISHING: " .. tostring(message))
++    end
++end
++
++local function squareFor(furnishing)
++    if not furnishing or not getCell then return nil end
++    local ok, cell = pcall(getCell)
++    if not ok or not cell then return nil end
++    return cell:getGridSquare(furnishing.x, furnishing.y, furnishing.z)
++end
++
++local function matches(object, householdId)
++    if not object or not object.getModData then return false end
++    local ok, data = pcall(object.getModData, object)
++    return ok and data and data.NeighborhoodHouseholdId == householdId
++end
++
++local function findIn(square, householdId)
++    if not square then return nil end
++    for _, method in ipairs({ "getObjects", "getSpecialObjects" }) do
++        local getter = square[method]
++        if getter then
++            local ok, list = pcall(getter, square)
++            if ok and list and list.size and list.get then
++                for i = 0, list:size() - 1 do
++                    local item = list:get(i)
++                    if matches(item, householdId) then return item end
++                end
++            end
++        end
++    end
++    return nil
++end
++
++local function record(household, square, object)
++    household.furnishing = {
++        kind = "storage",
++        x = square:getX(), y = square:getY(), z = square:getZ(),
++        sprite = NLHouseholdFurnishings.sprite,
++    }
++    local data = object:getModData()
++    data.NeighborhoodHouseholdId = household.id
++    data.NeighborhoodHouseholdFurnishing = "storage"
++    data.NeighborhoodHouseholdSprite = NLHouseholdFurnishings.sprite
++    return object
++end
++
++function NLHouseholdFurnishings.find(household)
++    return household and findIn(squareFor(household.furnishing), household.id) or nil
++end
++
++function NLHouseholdFurnishings.ensure(household)
++    if not household or not household.home then emit("SKIP reason=no-household-home"); return nil end
++    if not IsoObject then emit("SKIP reason=IsoObject-unavailable"); return nil end
++    local furnishing = household.furnishing or household.home
++    local square = squareFor(furnishing)
++    if not square then emit("SKIP reason=no-square x=" .. tostring(furnishing.x)
++        .. " y=" .. tostring(furnishing.y) .. " z=" .. tostring(furnishing.z)); return nil end
++    local existing = findIn(square, household.id)
++    if existing then
++        emit("REUSED household=" .. tostring(household.id) .. " x=" .. tostring(square:getX())
++            .. " y=" .. tostring(square:getY()) .. " z=" .. tostring(square:getZ()))
++        record(household, square, existing)
++        return existing
++    end
++    local cell = getCell and getCell() or nil
++    local ok, object = pcall(IsoObject.new, square, NLHouseholdFurnishings.sprite,
++        NLHouseholdFurnishings.objectName)
++    if (not ok or not object) and cell then
++        ok, object = pcall(IsoObject.new, cell, square, NLHouseholdFurnishings.sprite,
++            NLHouseholdFurnishings.objectName)
++    end
++    if not ok or not object then
++        emit("SKIP reason=IsoObject-new-failed square=" .. tostring(square:getX())
++            .. "," .. tostring(square:getY()) .. "," .. tostring(square:getZ()))
++        return nil
++    end
++    record(household, square, object)
++    if object.setSpecialTooltip then object:setSpecialTooltip(true) end
++    if object.setName then pcall(object.setName, object, NLHouseholdFurnishings.objectName) end
++    if square.AddTileObject then pcall(square.AddTileObject, square, object) end
++    if object.transmitCompleteItemToClients then pcall(object.transmitCompleteItemToClients, object) end
++    household.revision = (household.revision or 0) + 1
++    emit("CREATED household=" .. tostring(household.id) .. " kind=storage x="
++        .. tostring(square:getX()) .. " y=" .. tostring(square:getY()) .. " z="
++        .. tostring(square:getZ()))
++    return object
++end
++
++function NLHouseholdFurnishings.remove(household)
++    local object = NLHouseholdFurnishings.find(household)
++    if object and object.getSquare then
++        local square = object:getSquare()
++        if square and square.transmitRemoveItemFromSquare then
++            square:transmitRemoveItemFromSquare(object)
++        end
++        if square and square.RemoveTileObject then square:RemoveTileObject(object) end
++    end
++    if household then household.furnishing = nil end
++end
++
++function NLHouseholdFurnishings.reconcile(world)
++    local count = 0
++    for _, household in pairs((world and world.households) or {}) do
++        if NLHouseholdFurnishings.ensure(household) then count = count + 1 end
++    end
++    return count
++end
++
++if Events and Events.OnGameStart then
++    Events.OnGameStart.Add(function()
++        if NLAuthority then NLHouseholdFurnishings.reconcile(NLAuthority.world()) end
++    end)
++end
++
++return NLHouseholdFurnishings
+--- baseline/42/media/lua/shared/NL/Households.lua
++++ modified/42/media/lua/shared/NL/Households.lua
+@@ -12,7 +12,7 @@
+         id = id, name = "Neighborhood Home", owner = owner,
+         home = home or { x = 0, y = 0, z = 0 }, members = {
+             [owner] = { role = "owner", contribution = 0 },
+-        }, tasks = {}, claims = {}, storage = {}, revision = 1,
++        }, tasks = {}, claims = {}, storage = {}, furnishing = nil, revision = 1,
+     }
+ end
+ 
+@@ -125,6 +125,11 @@
+     local result = {
+         id = household.id, name = household.name, owner = household.owner,
+         home = { x = household.home.x, y = household.home.y, z = household.home.z },
++        furnishing = household.furnishing and {
++            kind = household.furnishing.kind, x = household.furnishing.x,
++            y = household.furnishing.y, z = household.furnishing.z,
++            sprite = household.furnishing.sprite,
++        } or nil,
+         tasks = {}, storage = NLHouseholds.copyStorage(household), members = {}, revision = household.revision,
+     }
+     for task, count in pairs(household.tasks or {}) do result.tasks[task] = count end
+BINARY FILE CHANGED: baseline/42/media/textures/NL_Plumbob.png -> modified/42/media/textures/NL_Plumbob.png

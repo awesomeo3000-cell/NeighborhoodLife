@@ -1,0 +1,60 @@
+Neighborhood Life v1.17 transaction verification
+
+CHANGED BRANCH/FIELD
+- Branch: persistent household furnishing vertical slice.
+- Field: NLHouseholds.new().furnishing and NLHouseholds.copySummary().furnishing.
+- Production files: server/NL/HouseholdFurnishings.lua, client/NL/HouseholdFurnishingClient.lua, household authority/client integration.
+- Native identity: NeighborhoodHouseholdStorage with ModData NeighborhoodHouseholdId and NeighborhoodHouseholdFurnishing=storage.
+
+ARTIFACTS
+- MODIFIED_FILE: E:\pzmod\evidence\v36\MODIFIED_FILE.zip
+- DIFF_FILE: E:\pzmod\evidence\v36\DIFF_FILE.patch
+- VERIFICATION.txt: E:\pzmod\evidence\v36\VERIFICATION.txt
+- ROLLBACK.sh: E:\pzmod\evidence\v36\ROLLBACK.sh
+
+BASELINE
+Command: python tools\pipeline.py test --target evidence\v36\baseline
+Input: E:\pzmod
+Literal output: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+Result: baseline Lua, syntax and installed-game Kahlua suite passed
+Exit status: 0
+Source hash: Households.lua A33B7F4394B75BEF24B760CFC1C30403A5294A6B5E0579FECDF22F0BBAFE55EE
+
+MODIFIED
+Command: & 'C:\Program Files (x86)\Lua\5.1\lua.exe' tests\household-furnishings.lua NeighborhoodLife; python tools\pipeline.py test
+Input: E:\pzmod
+Literal output:
+PASS: household furnishing creation, identity, reuse, snapshot persistence and removal
+PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+Result: mock furnishing contract passed; consolidated Lua, syntax and installed-game Kahlua suite passed
+Exit status: 0
+Package result: ZIP_TEST None; QA_ENTRIES []; FURNISHING_SERVER True; FURNISHING_CLIENT True
+
+ROLLBACK
+Command: & 'C:\Program Files\Git\bin\bash.exe' -lc 'chmod +x /e/pzmod/evidence/v36/ROLLBACK.sh && TARGET_ROOT=/e/pzmod/evidence/v36/rollback-target bash /e/pzmod/evidence/v36/ROLLBACK.sh'; python tools\pipeline.py test --target evidence\v36\rollback-target
+Input: E:\pzmod
+Literal output: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+Result: rollback script restored the previous source branch and the consolidated suite passed
+Exit status: 0
+Restored hash: rollback-target Households.lua A33B7F4394B75BEF24B760CFC1C30403A5294A6B5E0579FECDF22F0BBAFE55EE; new server furnishing=False; new client furnishing=False
+
+ENGINE-VM EVIDENCE
+- Command: python tools\pipeline.py test
+- Result: installed-game Kahlua suite passed, exit 0.
+- This is engine-VM evidence, not multiplayer completion.
+
+ACTUAL GAMEPLAY EVIDENCE
+- Launcher command: & .\tools\launch-multiplayer-qa.ps1
+- Profiles: isolated test-profile\mp-server, mp-host, mp-guest; no mouse or keyboard control.
+- Server literal evidence: NLQA HOUSEHOLD FURNISHING: REUSED household=home:nl-host x=8282 y=11720 z=1
+- Host literal evidence: NLQA HOUSEHOLD FURNISHING CLIENT: READY household=home:nl-host x=8282 y=11720 z=1
+- Host snapshot literal evidence: NLQA MP HOUSEHOLD SNAPSHOT: username=nl-host members=2 furnishing=storage furnishingTile=8282,11720,1 message=nl-host updated shared storage.
+- Guest snapshot literal evidence: NLQA MP HOUSEHOLD SNAPSHOT: username=nl-guest members=2 furnishing=storage furnishingTile=8282,11720,1 message=nl-guest joined the household.
+- Guest storage literal evidence: NLQA MP HOUSEHOLD RETRIEVE RESULT: nl-guest updated shared storage.
+- NPC literal evidence: productionNpcReplicas=3 productionNpcNativePaths=3 on both clients.
+- The guest camera was away from the home tile; its unloaded square returned no local furnishing object. This preserves the distinction between authoritative snapshot receipt and a loaded client tile.
+- Full logs: mp-server-full.log, mp-host-full.log, mp-guest-full.log.
+
+QA SEPARATION
+- NeighborhoodQA remains outside MODIFIED_FILE.zip; ZIP QA_ENTRIES was [] .
+- Mock tests, Kahlua engine-VM tests, and actual host/guest gameplay evidence are recorded separately above.
