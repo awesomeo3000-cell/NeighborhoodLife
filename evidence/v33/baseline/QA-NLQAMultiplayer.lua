@@ -247,8 +247,7 @@ Events.OnServerCommand.Add(function(module, command, args)
     if module == "NeighborhoodLife" and command == "snapshot" and type(args) == "table" then
         NLQAMultiplayer.snapshots = NLQAMultiplayer.snapshots + 1
         emit("SNAPSHOT", "username=" .. tostring(args.username) .. " revision=" .. tostring(args.revision)
-            .. " snapshotCount=" .. tostring(NLQAMultiplayer.snapshots)
-            .. " message=" .. tostring(args.message))
+            .. " snapshotCount=" .. tostring(NLQAMultiplayer.snapshots))
         if qaIdentity().username == "nl-host" and args.username == "nl-host"
                 and NLQAMultiplayer.careerDeliverSent and not NLQAMultiplayer.careerResultLogged
                 and args.message and string.find(args.message,"Delivery complete",1,true) then
@@ -364,9 +363,9 @@ Events.OnRenderTick.Add(function()
             and not NLQAMultiplayer.careerSeedSent then
         local player=getSpecificPlayer(0)
         if player then
-            sendClientCommand(player,"NeighborhoodQA","seed_inventory",{career="medic"})
+            sendClientCommand(player,"NeighborhoodQA","seed_inventory",{career="tailor"})
             NLQAMultiplayer.careerSeedSent=true
-            emit("CAREER SEED REQUEST", "medic")
+            emit("CAREER SEED REQUEST", "tailor")
         end
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerSeeded
@@ -394,11 +393,11 @@ Events.OnRenderTick.Add(function()
             and NLQAMultiplayer.careerPickupObserved
             and not NLQAMultiplayer.careerSelectSent
             and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.careerDue then
-        NLClient.request(0,"select",{career="medic"})
+        NLClient.request(0,"select",{career="tailor"})
         NLQAMultiplayer.careerSelectSent=true
         NLQAMultiplayer.careerStage=1
         NLQAMultiplayer.careerDue=NLQAMultiplayer.socialFrame+30
-        emit("CAREER SELECT", "medic")
+        emit("CAREER SELECT", "tailor")
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerSelectSent
             and not NLQAMultiplayer.careerDeliverSent

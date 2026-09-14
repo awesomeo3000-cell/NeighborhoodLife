@@ -248,12 +248,3 @@ the native behavior is unavailable or stalls. A fresh hands-free host/guest
 run logged `productionNpcNativePaths=3` on both clients while the three NPC
 positions advanced over repeated `npc_presence` packets. Native server-body
 reannouncement remains an open Build 42 Lua API gate.
-
-## v1.14 client-acquisition inventory sync
-
-`evidence/v33/` records a real hands-free host plus guest run in which the
-QA-only server spawned eight `Base.RippedSheets` world items, the host client
-picked them up through vanilla `ISInventoryTransferUtil` actions, and the
-production medic delivery consumed them and returned XP and credits. The guest
-also received the three production NPC replicas and native movement paths.
-QA helpers remain outside the production package.

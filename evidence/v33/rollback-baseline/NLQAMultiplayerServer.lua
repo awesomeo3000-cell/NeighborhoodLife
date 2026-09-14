@@ -22,50 +22,20 @@ end
 local reannounced = false
 local careerSeeded = {}
 
--- QA-only server fixture: seed real world inventory on the host, then let the
--- client acquire it through vanilla's networked transfer action before the
--- production career command consumes it. This does not modify the production
--- mod or fake the delivery response.
+-- QA-only server fixture: seed real authoritative inventory on the host, then
+-- let the production career command consume it. This does not modify the
+-- production mod or fake the delivery response; it only provides deterministic
+-- world inventory without mouse/keyboard control.
 Events.OnClientCommand.Add(function(module, command, player, args)
     if module ~= "NeighborhoodQA" or command ~= "seed_inventory" or not player then return end
     local username = player:getUsername()
     if username ~= "nl-host" or careerSeeded[username] then return end
     local item = "Base.RippedSheets"
-    local amount = 8
-    local square = player:getCurrentSquare()
-    if not square then
-        print("NLQA CAREER SEED FAILED: username="..tostring(username).." reason=no-current-square")
-        return
-    end
-    local inventory = player:getInventory()
-    local existing = inventory and inventory:getItems()
-    if existing then
-        for index=existing:size()-1,0,-1 do
-            local oldItem = existing:get(index)
-            if oldItem and oldItem:getFullType() == item then
-                inventory:Remove(oldItem)
-                sendRemoveItemFromContainer(inventory, oldItem)
-            end
-        end
-    end
-    local worldObjects = square:getWorldObjects()
-    if worldObjects then
-        for index=worldObjects:size()-1,0,-1 do
-            local worldObject = worldObjects:get(index)
-            local oldItem = worldObject and worldObject:getItem()
-            if oldItem and oldItem:getFullType() == item then
-                square:transmitRemoveItemFromSquare(worldObject)
-            end
-        end
-    end
-    for index=1,amount do
-        square:AddWorldInventoryItem(item, 0.25 + (index * 0.07), 0.50, 0.0)
-    end
+    local amount = 6
+    for _=1,amount do player:getInventory():AddItem(item) end
     careerSeeded[username] = true
-    print("NLQA CAREER WORLD SEED: username="..tostring(username).." item="..item
-        .." amount="..amount.." square="..tostring(square:getX())..","..tostring(square:getY())
-        ..","..tostring(square:getZ()))
-    sendServerCommand(player,"NeighborhoodQA","career_seeded",{item=item,amount=amount,mode="world"})
+    print("NLQA CAREER SEED: username="..tostring(username).." item="..item.." amount="..amount)
+    sendServerCommand(player,"NeighborhoodQA","career_seeded",{item=item,amount=amount})
 end)
 
 local function tryReannounce()

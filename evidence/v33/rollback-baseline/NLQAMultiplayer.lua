@@ -6,9 +6,7 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     socialActionScheduled = false, socialTarget = nil, socialActionDue = 0,
     socialResultLogged = false, careerSeedSent = false, careerSeeded = false,
     careerSelectSent = false, careerDeliverSent = false, careerResultLogged = false,
-    careerDue = 0, careerStage = 0, careerPickupAttempted = false,
-    careerPickupObserved = false, careerPickupExpected = 0, careerPickupItem = nil,
-    careerPickupNextAttempt = 0 }
+    careerDue = 0, careerStage = 0 }
 
 local function emit(label, value)
     print("NLQA MP " .. label .. ": " .. tostring(value))
@@ -188,67 +186,11 @@ end)
 Events.OnConnectionStateChanged.Add(function(state, message, arg)
     emit("CONNECTION STATE", tostring(state) .. " message=" .. tostring(message) .. " arg=" .. tostring(arg))
 end)
-
--- QA-only client-acquisition probe. The server places real world inventory on
--- the current square; the client queues the same transfer action vanilla uses
--- for a world-item click. The production career command runs only after the
--- items are visible in this client's inventory.
-local function qaInventoryCount(player, fullType)
-    if not player or not player.getInventory then return 0 end
-    local inventory = player:getInventory()
-    if not inventory or not inventory.getItems then return 0 end
-    local items = inventory:getItems()
-    if not items or not items.size then return 0 end
-    local count = 0
-    for index = 0, items:size() - 1 do
-        local item = items:get(index)
-        if item and item.getFullType and item:getFullType() == fullType then
-            count = count + 1
-        end
-    end
-    return count
-end
-
-local function queueCareerWorldPickup(itemType, expected)
-    local player = getSpecificPlayer(0)
-    local square = player and player:getCurrentSquare()
-    local worlds = square and square:getWorldObjects()
-    if not player or not worlds then return 0 end
-    local ok, err = pcall(function() require "TimedActions/ISInventoryTransferUtil" end)
-    if not ok or not ISTimedActionQueue or not ISInventoryTransferUtil then
-        emit("CAREER PICKUP FAILED", "vanilla transfer API unavailable error=" .. tostring(err))
-        return 0
-    end
-    local queued = 0
-    for index = 0, worlds:size() - 1 do
-        if queued >= expected then break end
-        local worldObject = worlds:get(index)
-        local item = worldObject and worldObject:getItem()
-        if item and item.getFullType and item:getFullType() == itemType then
-            local source = item:getContainer()
-            local action = source and ISInventoryTransferUtil.newInventoryTransferAction(
-                player, item, source, player:getInventory())
-            if action then
-                ISTimedActionQueue.add(action)
-                queued = queued + 1
-            end
-        end
-    end
-    NLQAMultiplayer.careerPickupAttempted = true
-    NLQAMultiplayer.careerPickupNextAttempt = NLQAMultiplayer.socialFrame + 60
-    NLQAMultiplayer.careerPickupExpected = expected
-    NLQAMultiplayer.careerPickupItem = itemType
-    emit("CAREER PICKUP QUEUED", "item=" .. tostring(itemType) .. " expected=" .. tostring(expected)
-        .. " queued=" .. tostring(queued))
-    return queued
-end
-
 Events.OnServerCommand.Add(function(module, command, args)
     if module == "NeighborhoodLife" and command == "snapshot" and type(args) == "table" then
         NLQAMultiplayer.snapshots = NLQAMultiplayer.snapshots + 1
         emit("SNAPSHOT", "username=" .. tostring(args.username) .. " revision=" .. tostring(args.revision)
-            .. " snapshotCount=" .. tostring(NLQAMultiplayer.snapshots)
-            .. " message=" .. tostring(args.message))
+            .. " snapshotCount=" .. tostring(NLQAMultiplayer.snapshots))
         if qaIdentity().username == "nl-host" and args.username == "nl-host"
                 and NLQAMultiplayer.careerDeliverSent and not NLQAMultiplayer.careerResultLogged
                 and args.message and string.find(args.message,"Delivery complete",1,true) then
@@ -312,13 +254,7 @@ Events.OnServerCommand.Add(function(module, command, args)
     if module == "NeighborhoodQA" and command == "career_seeded" and type(args) == "table"
             and qaIdentity().username == "nl-host" then
         NLQAMultiplayer.careerSeeded=true
-        NLQAMultiplayer.careerPickupAttempted=false
-        NLQAMultiplayer.careerPickupObserved=false
-        NLQAMultiplayer.careerPickupNextAttempt=NLQAMultiplayer.socialFrame
-        NLQAMultiplayer.careerPickupExpected=tonumber(args.amount or 0) or 0
-        NLQAMultiplayer.careerPickupItem=args.item
-        queueCareerWorldPickup(NLQAMultiplayer.careerPickupItem,
-            NLQAMultiplayer.careerPickupExpected)
+        NLQAMultiplayer.careerDue=NLQAMultiplayer.socialFrame+30
         emit("CAREER SEED ACK", "item="..tostring(args.item).." amount="..tostring(args.amount))
     end
 end)
@@ -364,41 +300,19 @@ Events.OnRenderTick.Add(function()
             and not NLQAMultiplayer.careerSeedSent then
         local player=getSpecificPlayer(0)
         if player then
-            sendClientCommand(player,"NeighborhoodQA","seed_inventory",{career="medic"})
+            sendClientCommand(player,"NeighborhoodQA","seed_inventory",{career="tailor"})
             NLQAMultiplayer.careerSeedSent=true
-            emit("CAREER SEED REQUEST", "medic")
+            emit("CAREER SEED REQUEST", "tailor")
         end
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerSeeded
-            and not NLQAMultiplayer.careerPickupObserved
-            and (not NLQAMultiplayer.careerPickupAttempted
-                or NLQAMultiplayer.socialFrame>=NLQAMultiplayer.careerPickupNextAttempt) then
-        NLQAMultiplayer.careerPickupAttempted=false
-        queueCareerWorldPickup(NLQAMultiplayer.careerPickupItem,
-            NLQAMultiplayer.careerPickupExpected)
-    end
-    if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerSeeded
-            and not NLQAMultiplayer.careerPickupObserved then
-        local player=getSpecificPlayer(0)
-        local count=qaInventoryCount(player, NLQAMultiplayer.careerPickupItem)
-        if count>=NLQAMultiplayer.careerPickupExpected
-                and NLQAMultiplayer.careerPickupExpected>0 then
-            NLQAMultiplayer.careerPickupObserved=true
-            NLQAMultiplayer.careerDue=NLQAMultiplayer.socialFrame+30
-            emit("CAREER PICKUP COMPLETE", "item="..tostring(NLQAMultiplayer.careerPickupItem)
-                .. " localInventory="..tostring(count)
-                .. " source=world-transfer-action")
-        end
-    end
-    if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerSeeded
-            and NLQAMultiplayer.careerPickupObserved
             and not NLQAMultiplayer.careerSelectSent
             and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.careerDue then
-        NLClient.request(0,"select",{career="medic"})
+        NLClient.request(0,"select",{career="tailor"})
         NLQAMultiplayer.careerSelectSent=true
         NLQAMultiplayer.careerStage=1
         NLQAMultiplayer.careerDue=NLQAMultiplayer.socialFrame+30
-        emit("CAREER SELECT", "medic")
+        emit("CAREER SELECT", "tailor")
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerSelectSent
             and not NLQAMultiplayer.careerDeliverSent

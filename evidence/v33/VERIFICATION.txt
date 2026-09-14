@@ -1,0 +1,62 @@
+Neighborhood Life v1.14 client-acquisition inventory verification
+
+CHANGED BRANCH/FIELD: QA-only multiplayer career probe now seeds eight Base.RippedSheets as server world objects, queues vanilla ISInventoryTransferUtil client pickup actions after the synced world objects arrive, waits for localInventory=8, then drives a fresh medic production delivery. README.md and SCOPE.md record v1.14. The QA helpers remain outside the production package.
+SOURCE QA CLIENT SHA256: 15F3BD77B2DAD086D84B687D4786FAC248FA9C2A205CD6B2CA97CA0BEDF23FCB
+SOURCE QA SERVER SHA256: A72937BDDD66C53DFC37CAF181DB1186703C5DC632E169D1E0491BB67A91B471
+SOURCE README SHA256: 95730BFCBECC32E1F23A735E855A070FCDDD93429795A48D11423EFD07E29EAF
+SOURCE SCOPE SHA256: 9A79AD7B5E76007E9F39ED162C65B20EABDAA0113A50F829BF95F0B2BF382320
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v33\baseline
+BASELINE INPUT: E:\pzmod\evidence\v33\baseline production tree plus pre-change QA copies
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE RESULT: v1.13 production baseline passed before the QA probe and v1.14 ledger edits.
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED RESULT: current mock tests, Lua syntax and installed-game Kahlua engine-VM suites passed.
+MODIFIED EXIT: 0
+
+QA SYNTAX COMMAND: & 'C:\Program Files (x86)\Lua\5.1\lua.exe' -e "assert(loadfile('qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua'))"; & 'C:\Program Files (x86)\Lua\5.1\lua.exe' -e "assert(loadfile('qa/NeighborhoodQA/42/media/lua/server/NLQAMultiplayerServer.lua'))"
+QA SYNTAX INPUT: E:\pzmod
+QA SYNTAX LITERAL OUTPUT: MODIFIED_PIPELINE_EXIT=0 QA_CLIENT_SYNTAX_EXIT=0 QA_SERVER_SYNTAX_EXIT=0
+QA SYNTAX RESULT: QA-only client and server scripts parse successfully.
+QA SYNTAX EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v33 --baseline evidence\v33\baseline
+PACKAGE INPUT: E:\pzmod
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v33\MODIFIED_FILE.zip
+PACKAGE RESULT: production-only release package created.
+PACKAGE EXIT: 0
+
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; z=zipfile.ZipFile('evidence/v33/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('NATIVE_NPC',any(n.endswith('42/media/lua/client/NL/NpcClient.lua') for n in z.namelist()))"
+PACKAGE VALIDATION INPUT: E:\pzmod
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; NATIVE_NPC True
+PACKAGE VALIDATION RESULT: package is readable, includes production NPC code, and excludes QA helpers.
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v33/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' 'E:\pzmod\evidence\v33\ROLLBACK.sh'
+ROLLBACK INPUT: modified-copy rollback target at E:\pzmod\evidence\v33\rollback-target
+ROLLBACK LITERAL OUTPUT: ROLLBACK RESTORED: QA inventory probe and scope docs from /e/pzmod/evidence/v33/rollback-baseline
+ROLLBACK RESULT: restored-copy behavior was verified by Lua syntax exits 0 and RESTORED_MATCH True; the workspace source remains changed.
+ROLLBACK EXIT: 0
+
+ACTUAL MULTIPLAYER COMMAND: & .\tools\launch-multiplayer-qa.ps1
+ACTUAL MULTIPLAYER INPUT: E:\pzmod\test-profile; isolated Build 42.20.4 dedicated server plus nl-host and nl-guest; no mouse or keyboard
+ACTUAL MULTIPLAYER LITERAL OUTPUT: QA multiplayer processes started: server=30804 host=25988 guest=7632; host logged CAREER PICKUP COMPLETE item=Base.RippedSheets localInventory=8 source=world-transfer-action; host logged Delivery complete: +20 career XP, +10 community credits.
+ACTUAL MULTIPLAYER RESULT: server log recorded NLQA CAREER WORLD SEED with amount=8 and production select/deliver commands. The host client first logged queued=0 while the world objects were still arriving, then queued=8 and completed the vanilla transfer actions. The fresh medic delivery succeeded after the client-acquired inventory was present. The guest independently logged two-player presence, three production NPC replicas and productionNpcNativePaths=3.
+ACTUAL MULTIPLAYER CLASSIFICATION: real Build 42 host plus guest gameplay evidence. The pipeline and Kahlua suites are mock/engine-VM evidence only and do not establish multiplayer.
+ACTUAL MULTIPLAYER EXIT: 0; PIDs 30804, 25988 and 7632 were stopped after capture.
+ACTUAL MULTIPLAYER EVIDENCE: E:\pzmod\evidence\v33\mp-server-full.log; E:\pzmod\evidence\v33\mp-host-full.log; E:\pzmod\evidence\v33\mp-guest-full.log
+
+OPEN GATES: native server-body reannouncement, simultaneous gameplay beyond the tested delivery, obstacle/danger handling, damage/death, offscreen behavior, rank/restart tests, richer work/rewards, clothing/customization expansion, households and aspirations remain open in SCOPE.md.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v33\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v33\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v33\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v33\ROLLBACK.sh
+SHA256 MODIFIED_FILE: FFDEBDA559FDEB56FDAACB7DFB7CE57DE7D17187A128F6075387EBE4940DF4AC
+SHA256 DIFF_FILE: 5060700C82587193505A24C29C55130FBCCD12C35B721EFAC532478580C59D1E
+SHA256 ROLLBACK: CF4ADC6A4786946AB1081785701BED705B704709132A2CAEB3D1ED81F5CA2129

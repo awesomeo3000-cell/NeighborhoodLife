@@ -31,32 +31,11 @@ Events.OnClientCommand.Add(function(module, command, player, args)
     local username = player:getUsername()
     if username ~= "nl-host" or careerSeeded[username] then return end
     local item = "Base.RippedSheets"
-    local amount = 8
+    local amount = 6
     local square = player:getCurrentSquare()
     if not square then
         print("NLQA CAREER SEED FAILED: username="..tostring(username).." reason=no-current-square")
         return
-    end
-    local inventory = player:getInventory()
-    local existing = inventory and inventory:getItems()
-    if existing then
-        for index=existing:size()-1,0,-1 do
-            local oldItem = existing:get(index)
-            if oldItem and oldItem:getFullType() == item then
-                inventory:Remove(oldItem)
-                sendRemoveItemFromContainer(inventory, oldItem)
-            end
-        end
-    end
-    local worldObjects = square:getWorldObjects()
-    if worldObjects then
-        for index=worldObjects:size()-1,0,-1 do
-            local worldObject = worldObjects:get(index)
-            local oldItem = worldObject and worldObject:getItem()
-            if oldItem and oldItem:getFullType() == item then
-                square:transmitRemoveItemFromSquare(worldObject)
-            end
-        end
     end
     for index=1,amount do
         square:AddWorldInventoryItem(item, 0.25 + (index * 0.07), 0.50, 0.0)
