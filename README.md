@@ -422,3 +422,12 @@ close above the character model, including on Build 42 paths that draw a source
 texture at native size. `evidence/v44/` records the baseline and modified
 Lua/Kahlua checks, live QA marker-size logging and rollback verification; the
 QA logger remains outside the production package.
+
+## v1.26 direct two-client social action
+
+The isolated host and guest now exercise independent production social actions.
+`evidence/v45/` records the guest moving beside Kenji, sending `introduce`,
+receiving `friendship=3` and `trust=2`, and the host receiving the guest's
+replicated social event without receiving the guest's private relationship
+values. This is actual Build 42 host-plus-guest evidence, not a mock or VM
+claim. Richer world actions and romance synchronization remain open.

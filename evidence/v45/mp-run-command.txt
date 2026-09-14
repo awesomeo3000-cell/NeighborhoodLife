@@ -1,0 +1,5 @@
+COMMAND: & .\tools\launch-multiplayer-qa.ps1
+INPUT: E:\pzmod\test-profile
+MODE: isolated hands-free QA launcher; no mouse or keyboard control
+PROCESS_CAPTURE: server=34288 host=30308 guest=33196
+STOP: processes stopped after guest direct interaction and event replication were logged
