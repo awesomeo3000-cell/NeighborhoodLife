@@ -94,6 +94,43 @@ local function mainInventoryItems(player, itemType, amount)
     return chosen, inventory
 end
 
+local function itemValue(item, method)
+    if not item then return nil end
+    local ok, fn = pcall(function() return item[method] end)
+    if not ok or not fn then return nil end
+    local valueOk, value = pcall(fn, item)
+    return valueOk and value or nil
+end
+
+local function itemStorageDetails(item, itemType)
+    local container = itemValue(item, "getContainer")
+    local containerType = container and itemValue(container, "getType") or nil
+    return {
+        item = itemType,
+        name = itemValue(item, "getName"),
+        category = itemValue(item, "getCategory"),
+        container = containerType,
+        condition = itemValue(item, "getCondition"),
+        maxCondition = itemValue(item, "getConditionMax"),
+        usedDelta = itemValue(item, "getUsedDelta"),
+    }
+end
+
+local function setItemValue(item, method, value)
+    if not item or value == nil then return end
+    local ok, fn = pcall(function() return item[method] end)
+    if ok and fn then pcall(fn, item, value) end
+end
+
+local function applyStorageDetails(item, details)
+    if not item or type(details) ~= "table" then return end
+    setItemValue(item, "setCondition", details.condition)
+    setItemValue(item, "setUsedDelta", details.usedDelta)
+    -- Build 42 permits a restored custom display name on item instances. If a
+    -- build omits the setter, the durable metadata still remains in the home.
+    setItemValue(item, "setName", details.name)
+end
+
 local function storageCommand(world, household, player, key, args, mode)
     local itemType = args and args.item
     local amount = requestedAmount(args)
@@ -105,16 +142,19 @@ local function storageCommand(world, household, player, key, args, mode)
         if #chosen < amount then
             return false, "Need " .. amount .. " unequipped " .. itemType .. " in main inventory"
         end
+        local details = {}
         for _, item in ipairs(chosen) do
+            details[#details + 1] = itemStorageDetails(item, itemType)
             inventoryOrMessage:Remove(item)
             if isServer() and sendRemoveItemFromContainer then
                 sendRemoveItemFromContainer(inventoryOrMessage, item)
             end
         end
-        local ok, message = NLHouseholds.store(household, itemType, amount)
+        local ok, message = NLHouseholds.store(household, itemType, amount, details)
         if not ok then
-            for _ = 1, amount do
+            for index = 1, amount do
                 local restored = inventoryOrMessage:AddItem(itemType)
+                applyStorageDetails(restored, details[index])
                 if isServer() and sendAddItemToContainer and restored then
                     sendAddItemToContainer(inventoryOrMessage, restored)
                 end
@@ -148,10 +188,11 @@ local function storageCommand(world, household, player, key, args, mode)
             sendAddItemToContainer(inventory, item)
         end
     end
-    local ok, message = NLHouseholds.retrieve(household, itemType, amount)
+    local ok, message, details = NLHouseholds.retrieve(household, itemType, amount)
     if not ok then
         for _, restored in ipairs(added) do inventory:Remove(restored) end
     end
+    for index, item in ipairs(added) do applyStorageDetails(item, details and details[index]) end
     return ok, message
 end
 

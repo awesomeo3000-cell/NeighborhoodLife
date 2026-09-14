@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.64)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.65)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -957,3 +957,18 @@ tests and installed-game Kahlua engine-VM tests. It closes the tested household
 storage process-restart slice; richer item/container metadata, global-data
 crash atomicity, broader home life, and native NPC server-body reannouncement
 remain open. QA helpers remain outside the production mod package.
+
+## v1.65 household item metadata foundation
+
+Household storage now keeps a bounded per-instance metadata record alongside
+the legacy item counts. The server captures item name, category, container type,
+condition, maximum condition and used-delta values before removing an item,
+restores those values on retrieval when Build 42 exposes the corresponding
+setter, and sends the records in household snapshots. The furnishing menu now
+offers unequipped item types from the player's main inventory and stored item
+types from the authoritative snapshot instead of only the sheet fixture.
+
+The focused Lua 5.1 and installed-game Kahlua suites pass, including metadata
+round-trip and menu fallback coverage. This is a production code and contract
+test milestone, not actual multiplayer proof for arbitrary item/container
+transfers; a hands-free host+guest capture remains required.

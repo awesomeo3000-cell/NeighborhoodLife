@@ -11,8 +11,8 @@ function NLHouseholds.new(id, owner, home)
     return {
         id = id, name = "Neighborhood Home", owner = owner,
         home = home or { x = 0, y = 0, z = 0 }, members = {
-            [owner] = { role = "owner", contribution = 0 },
-        }, tasks = {}, claims = {}, storage = {}, furnishing = nil, revision = 1,
+        [owner] = { role = "owner", contribution = 0 },
+        }, tasks = {}, claims = {}, storage = {}, storageEntries = {}, furnishing = nil, revision = 1,
     }
 end
 
@@ -95,7 +95,52 @@ function NLHouseholds.storageTotal(household)
     return total
 end
 
-function NLHouseholds.store(household, itemType, amount)
+local function cleanText(value, limit)
+    if type(value) ~= "string" then return nil end
+    if #value == 0 or #value > (limit or 100) then return nil end
+    return value
+end
+
+local function cleanNumber(value, minimum, maximum)
+    value = tonumber(value)
+    if not value then return nil end
+    value = math.floor(value * 1000 + 0.5) / 1000
+    if minimum and value < minimum then value = minimum end
+    if maximum and value > maximum then value = maximum end
+    return value
+end
+
+function NLHouseholds.normalizeStorageEntry(itemType, value)
+    value = type(value) == "table" and value or {}
+    return {
+        item = cleanText(value.item or itemType, 100) or itemType,
+        name = cleanText(value.name, 100),
+        category = cleanText(value.category, 60),
+        container = cleanText(value.container, 60),
+        condition = cleanNumber(value.condition, 0, 100),
+        maxCondition = cleanNumber(value.maxCondition, 0, 100),
+        usedDelta = cleanNumber(value.usedDelta, 0, 1),
+    }
+end
+
+function NLHouseholds.copyStorageDetails(household)
+    local result = {}
+    for itemType, entries in pairs((household and household.storageEntries) or {}) do
+        if type(entries) == "table" then
+            for _, entry in ipairs(entries) do
+                local copy = NLHouseholds.normalizeStorageEntry(itemType, entry)
+                copy.item = itemType
+                result[#result + 1] = copy
+            end
+        end
+    end
+    table.sort(result, function(a, b)
+        return tostring(a.item) .. tostring(a.name or "") < tostring(b.item) .. tostring(b.name or "")
+    end)
+    return result
+end
+
+function NLHouseholds.store(household, itemType, amount, details)
     if not household or type(itemType) ~= "string" or itemType == "" then
         return false, "Invalid storage item"
     end
@@ -105,7 +150,14 @@ function NLHouseholds.store(household, itemType, amount)
         return false, "Household storage is full"
     end
     household.storage = household.storage or {}
+    household.storageEntries = household.storageEntries or {}
     household.storage[itemType] = NLHouseholds.storageCount(household, itemType) + amount
+    local entries = household.storageEntries[itemType] or {}
+    for index = 1, amount do
+        entries[#entries + 1] = NLHouseholds.normalizeStorageEntry(itemType,
+            type(details) == "table" and details[index] or nil)
+    end
+    household.storageEntries[itemType] = entries
     household.revision = (household.revision or 0) + 1
     return true, "Stored " .. amount .. " " .. itemType .. " in shared storage"
 end
@@ -121,10 +173,17 @@ function NLHouseholds.retrieve(household, itemType, amount)
         return false, "Shared storage has only " .. available .. " " .. itemType
     end
     household.storage = household.storage or {}
+    household.storageEntries = household.storageEntries or {}
+    local entries = household.storageEntries[itemType] or {}
+    local removedDetails = {}
+    for _ = 1, amount do
+        if #entries > 0 then removedDetails[#removedDetails + 1] = table.remove(entries) end
+    end
+    if #entries == 0 then household.storageEntries[itemType] = nil end
     household.storage[itemType] = available - amount
     if household.storage[itemType] == 0 then household.storage[itemType] = nil end
     household.revision = (household.revision or 0) + 1
-    return true, "Retrieved " .. amount .. " " .. itemType .. " from shared storage"
+    return true, "Retrieved " .. amount .. " " .. itemType .. " from shared storage", removedDetails
 end
 
 function NLHouseholds.copyStorage(household)
@@ -147,7 +206,8 @@ function NLHouseholds.copySummary(household, online)
             y = household.furnishing.y, z = household.furnishing.z,
             sprite = household.furnishing.sprite,
         } or nil,
-        tasks = {}, storage = NLHouseholds.copyStorage(household), members = {}, revision = household.revision,
+        tasks = {}, storage = NLHouseholds.copyStorage(household),
+        storageDetails = NLHouseholds.copyStorageDetails(household), members = {}, revision = household.revision,
     }
     for task, count in pairs(household.tasks or {}) do result.tasks[task] = count end
     for key, member in pairs(household.members or {}) do

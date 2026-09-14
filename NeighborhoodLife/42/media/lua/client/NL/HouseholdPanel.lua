@@ -36,14 +36,14 @@ function NLHouseholdPanel:initialise()
     self:button(500, 48, 74, "Refresh", "refresh")
     self.transferButton = self:button(16, 82, 135, "Transfer owner", "transfer")
     self.storageButtons = {
-        store = self:button(16, 350, 175, "Store 1 RippedSheet", "store",
+        store = self:button(16, 370, 175, "Store 1 RippedSheet", "store",
             { item = "Base.RippedSheets", amount = 1 }),
-        retrieve = self:button(200, 350, 175, "Take 1 RippedSheet", "retrieve",
+        retrieve = self:button(200, 370, 175, "Take 1 RippedSheet", "retrieve",
             { item = "Base.RippedSheets", amount = 1 }),
     }
     self.taskButtons = {}
     for i, task in ipairs(NLHouseholds.taskOrder) do
-        self.taskButtons[task] = self:button(16 + (i - 1) * 185, 386, 170,
+        self.taskButtons[task] = self:button(16 + (i - 1) * 185, 410, 170,
             NLHouseholds.tasks[task].label, "task", task)
     end
 end
@@ -126,6 +126,21 @@ function NLHouseholdPanel:prerender()
         table.sort(stored)
         self:drawText("Shared storage: " .. (#stored > 0 and table.concat(stored, ", ") or "empty"),
             16, 328, 0.30, 0.38, 0.47, 1, UIFont.Small)
+        local detailLabels = {}
+        for _, detail in ipairs(h.storageDetails or {}) do
+            local label = tostring(detail.item)
+            if detail.name then label = label .. " / " .. tostring(detail.name) end
+            if detail.condition ~= nil then
+                label = label .. " condition " .. tostring(detail.condition)
+            end
+            if detail.usedDelta ~= nil then label = label .. " used " .. tostring(detail.usedDelta) end
+            detailLabels[#detailLabels + 1] = label
+            if #detailLabels == 2 then break end
+        end
+        if #detailLabels > 0 then
+            self:drawText("Saved item metadata: " .. table.concat(detailLabels, ", "),
+                16, 348, 0.30, 0.38, 0.47, 1, UIFont.Small)
+        end
     else
         self:drawText("No household yet. Create a home or accept an invitation.", 16, 112,
             0.18, 0.24, 0.32, 1, UIFont.Small)

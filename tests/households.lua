@@ -21,6 +21,22 @@ local copy = NLDomain.copy(world)
 assert(copy.households[home.id].members.guest.contribution == 1, 'household state persists')
 assert(not NLHouseholds.completeTask(home, 'outsider', 'social', 0), 'outsider cannot act')
 assert(not NLHouseholds.completeTask(home, 'host', 'bogus', 0), 'unknown activity rejected')
+local metadata = {
+    { name = 'Kitchen knife', category = 'Weapon', container = 'inventory', condition = 71,
+        maxCondition = 100 },
+    { name = 'Kitchen knife', category = 'Weapon', container = 'inventory', condition = 42,
+        maxCondition = 100, usedDelta = 0.25 },
+}
+assert(NLHouseholds.store(home, 'Base.KitchenKnife', 2, metadata),
+    'household stores multiple item instances with metadata')
+local detailed = NLHouseholds.copySummary(home, {host=true, guest=true})
+assert(#detailed.storageDetails == 2 and detailed.storageDetails[1].category == 'Weapon',
+    'household summary exposes persisted item metadata')
+local retrieved, _, restoredDetails = NLHouseholds.retrieve(home, 'Base.KitchenKnife', 1)
+assert(retrieved and #restoredDetails == 1 and restoredDetails[1].condition == 42,
+    'household returns the stored item metadata with the instance')
+assert(NLHouseholds.storageCount(home, 'Base.KitchenKnife') == 1,
+    'metadata retrieval decrements the compatible storage count')
 if NLHouseholds.transferOwner then
     assert(NLHouseholds.transferOwner(home, 'host', 'guest'))
     assert(home.owner == 'guest' and home.members.host.role == 'member'
