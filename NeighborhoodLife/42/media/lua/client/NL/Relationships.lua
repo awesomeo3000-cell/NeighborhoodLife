@@ -3,6 +3,43 @@ require "NL/SocialClient"
 NLRelationships=NLJournal:derive("NLRelationships")
 NLRelationships.instances={}
 
+local function displayName(item,itemType)
+    if item and item.getDisplayName then
+        local ok,label=pcall(item.getDisplayName,item)
+        if ok and type(label)=="string" and label~="" then return label end
+    end
+    return itemType
+end
+
+local function playerGiveChoice(index)
+    local player=getSpecificPlayer(index)
+    local inventory=player and player.getInventory and player:getInventory()
+    local items=inventory and inventory.getItems and inventory:getItems()
+    if not items then return nil end
+    local choices={}
+    for i=0,items:size()-1 do
+        local item=items:get(i)
+        local fullType=item and item.getFullType and item:getFullType()
+        local equipped=false
+        if item and player.isEquipped then
+            local ok,value=pcall(player.isEquipped,player,item)
+            equipped=ok and value==true
+        end
+        if fullType and not equipped and not choices[fullType] then
+            choices[fullType]={item=fullType,label=displayName(item,fullType)}
+        end
+    end
+    local result={}
+    for _,choice in pairs(choices) do result[#result+1]=choice end
+    table.sort(result,function(a,b) return a.item<b.item end)
+    return result[1]
+end
+
+local function setButtonText(button,text)
+    if button.setTitle then pcall(button.setTitle,button,text) end
+    button.title=text
+end
+
 function NLRelationships:new(index)
     local o=NLJournal.new(self,index)
     o.selected=1
@@ -17,8 +54,7 @@ function NLRelationships:initialise()
     self.actions={}
     local labels={{"Introduce","introduce"},{"Chat","chat"},{"Joke","joke"},
         {"Flirt","flirt"},{"Ask on a date","date"},{"Become partners","partner"},{"Break up","breakup"},
-        {"Give 1 sheet","give",{item="Base.RippedSheets",amount=1}},
-        {"Request 1 sheet","request",{item="Base.RippedSheets",amount=1}}}
+        {"Give item","give"},{"Request item","request"}}
     for i,v in ipairs(labels) do
         local col=(i-1)%3; local row=math.floor((i-1)/3)
         self.actions[i]=self:button(16+col*186,250+row*35,176,v[1],v[2],v[3])
@@ -70,11 +106,27 @@ function NLRelationships:prerender()
     end
     local location=npc.dead and "Deceased" or npc.available and ("Distance: "..math.floor(npc.distance or 0).." tiles") or "Away"
     self:drawText(location.." | Conversations require proximity and line of sight.",16,231,0.30,0.38,0.47,1,UIFont.Small)
-    local inventoryText="NPC inventory: empty"
-    for item,amount in pairs(npc.inventory or {}) do
-        inventoryText="NPC inventory: "..tostring(amount).." x "..tostring(item)
-        break
+    local giveChoice=playerGiveChoice(self.playerIndex)
+    local requestChoice=(npc.inventoryItems and npc.inventoryItems[1])
+    if not requestChoice then
+        for item,amount in pairs(npc.inventory or {}) do
+            requestChoice={item=item,amount=amount,label=item}; break
+        end
     end
+    local giveButton=self.actions[8]
+    local requestButton=self.actions[9]
+    giveButton.value=giveChoice and {item=giveChoice.item,amount=1} or nil
+    requestButton.value=requestChoice and {item=requestChoice.item,amount=1} or nil
+    setButtonText(giveButton,giveChoice and ("Give 1 "..giveChoice.label) or "Give item")
+    setButtonText(requestButton,requestChoice and ("Request 1 "..(requestChoice.label or requestChoice.item)) or "Request item")
+    giveButton:setEnable(nearby and giveChoice~=nil)
+    requestButton:setEnable(nearby and requestChoice~=nil)
+    local inventoryParts={}
+    for _,entry in ipairs(npc.inventoryItems or {}) do
+        inventoryParts[#inventoryParts+1]=tostring(entry.amount).." x "..tostring(entry.label or entry.item)
+        if #inventoryParts==2 then break end
+    end
+    local inventoryText=#inventoryParts>0 and ("NPC inventory: "..table.concat(inventoryParts,", ")) or "NPC inventory: empty"
     self:drawText(inventoryText,16,350,0.30,0.38,0.47,1,UIFont.Small)
     self:drawText(string.sub(data.message or "",1,78),16,373,0.12,0.38,0.63,1,UIFont.Small)
     local memories=npc.relation.memories

@@ -59,6 +59,19 @@ local function mainInventoryItems(player,itemType,amount)
     return chosen,inventory
 end
 
+local function itemLabel(item,itemType)
+    if item and item.getDisplayName then
+        local ok,label=pcall(item.getDisplayName,item)
+        if ok and type(label)=="string" and label~="" then return label end
+    end
+    return itemType
+end
+
+local function rememberItem(row,itemType,item)
+    row.inventoryMeta=row.inventoryMeta or {}
+    row.inventoryMeta[itemType]={label=itemLabel(item,itemType)}
+end
+
 local function inventoryExchange(world,player,npcId,args,mode)
     local itemType=args and args.item
     local amount=requestedAmount(args)
@@ -79,6 +92,7 @@ local function inventoryExchange(world,player,npcId,args,mode)
             end
         end
         row.inventory[itemType]=(row.inventory[itemType] or 0)+amount
+        rememberItem(row,itemType,chosen[1])
         row.revision=(row.revision or 0)+1
         return true,"Gave "..amount.." "..itemType.." to "..tostring(npcId).."."
     end
@@ -102,7 +116,10 @@ local function inventoryExchange(world,player,npcId,args,mode)
         end
     end
     row.inventory[itemType]=available-amount
-    if row.inventory[itemType]<=0 then row.inventory[itemType]=nil end
+    if row.inventory[itemType]<=0 then
+        row.inventory[itemType]=nil
+        if row.inventoryMeta then row.inventoryMeta[itemType]=nil end
+    end
     row.revision=(row.revision or 0)+1
     return true,"Received "..amount.." "..itemType.." from "..tostring(npcId).."."
 end
@@ -123,6 +140,7 @@ function NLSocialAuthority.snapshot(player,message)
             local row={id=id,name=NLSocial.people[id].name,personality=NLSocial.people[id].personality,
                 age=NLSocial.people[id].age,dead=npc.dead or npc.alive==false,available=body~=nil,canInteract=false,
                 inventory=NLDomain.copy(npc.inventory or {}),
+                inventoryItems=NLDomain.copy(NLNeighbors.inventoryEntries(world,id)),
                 relation=NLDomain.copy(NLSocial.relation(profile,id))}
             if body then
                 if body:isDead() then NLNeighbors.dead(world,id) end

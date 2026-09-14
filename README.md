@@ -499,6 +499,24 @@ garments at zero, and then logged replacement completion for both garments from
 `production-NLWardrobe.wear`. New clothing variants, original assets and
 unlock/reward integration remain breadth work.
 
+## v1.34 generalized NPC inventory selection and metadata
+
+The NPC inventory slice now normalizes legacy and malformed saved counts,
+retains a stable display label for each stored full item type, and sends a
+sorted `inventoryItems` list in every social snapshot. The Relationships panel
+chooses the first unequipped main-inventory item for `Give item` and the first
+stored NPC item for `Request item`, instead of hard-coding `Base.RippedSheets`.
+The server still validates the full type and amount and keeps the persisted
+count authoritative.
+
+Contract and installed-game Kahlua suites cover multi-item metadata,
+normalization and the dynamic UI callbacks. `evidence/v54/` records the fresh
+hands-free host-plus-guest run: the production snapshot returned
+`Base.RippedSheets/2/Rag` after the real give, while the host requested the
+item back and the guest retained three moving NPC replicas. This is actual
+snapshot/engine evidence, not a mock or VM claim. Crash-atomic persistence and
+broader container metadata remain open.
+
 ## v1.33 authoritative NPC inventory exchange
 
 Production NPC rows now carry a persistent `inventory` map. The server validates

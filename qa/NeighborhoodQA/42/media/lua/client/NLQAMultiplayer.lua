@@ -32,7 +32,7 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     wardrobeSnapshotLogged = false, wardrobeUiLogged = false,
     inventoryGiveSent = false, inventoryGiveObserved = false,
     inventoryRequestSent = false, inventoryRequestObserved = false,
-    inventoryExchangeDue = 0 }
+    inventoryExchangeDue = 0, inventoryMetadataLogged = false }
 NLQAMultiplayer.socialCooldownFrames = 3600
 
 local function emit(label, value)
@@ -528,6 +528,19 @@ Events.OnServerCommand.Add(function(module, command, args)
                 and string.find(args.message,"Received 1 Base.RippedSheets",1,true) then
             NLQAMultiplayer.inventoryRequestObserved=true
             emit("NPC INVENTORY REQUEST RESULT", tostring(args.message))
+        end
+        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                and not NLQAMultiplayer.inventoryMetadataLogged
+                and (args.message and (string.find(args.message,"Gave 1 ",1,true)
+                    or string.find(args.message,"Received 1 ",1,true))) then
+            local neighbor=args.neighbors and args.neighbors[1]
+            local entries={}
+            for _,entry in ipairs((neighbor and neighbor.inventoryItems) or {}) do
+                entries[#entries+1]=tostring(entry.item).."/"..tostring(entry.amount)
+                    .."/"..tostring(entry.label)
+            end
+            NLQAMultiplayer.inventoryMetadataLogged=true
+            emit("NPC INVENTORY ITEMS", #entries>0 and table.concat(entries,",") or "empty")
         end
         if qaIdentity().username == "nl-host" and args.username == "nl-host"
                 and NLQAMultiplayer.careerSeeded then

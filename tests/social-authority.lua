@@ -20,9 +20,10 @@ local function actor(name,x,y,z)
     function a:isDead() return self.dead end
     function a:CanSee() return self.visible end
     local function makeItem(itemType)
-        return {fullType=itemType,getFullType=function(self) return self.fullType end}
+        return {fullType=itemType,getFullType=function(self) return self.fullType end,
+            getDisplayName=function(self) return self.fullType=='Base.Hammer' and 'Hammer' or 'Ripped Sheets' end}
     end
-    local items={makeItem('Base.RippedSheets'),makeItem('Base.RippedSheets')}
+    local items={makeItem('Base.RippedSheets'),makeItem('Base.RippedSheets'),makeItem('Base.Hammer')}
     local inventory={}
     function inventory:getItems()
         return {size=function() return #items end,get=function(_,i) return items[i+1] end}
@@ -74,6 +75,20 @@ if NLSocialAuthority.inventoryExchange then
     check(p:itemCount('Base.RippedSheets')==sheetsBefore,'request returns the stored item to the player')
     check(world.neighbors.marisol.inventory['Base.RippedSheets']==nil,
         'request decrements the authoritative NPC inventory')
+    if last.args.neighbors[1].inventoryItems then
+        local hammerBefore=p:itemCount('Base.Hammer')
+        NLSocialAuthority.command('NeighborhoodSocial','give',p,{id='marisol',item='Base.Hammer',amount=1})
+        check(p:itemCount('Base.Hammer')==hammerBefore-1,'give accepts a second item type')
+        check(last.args.neighbors[1].inventoryItems[1].label=='Hammer',
+            'snapshot includes stable display metadata for stored items')
+        check(last.args.neighbors[1].inventoryItems[1].item=='Base.Hammer',
+            'snapshot includes the stored item full type')
+        NLSocialAuthority.command('NeighborhoodSocial','request',p,{id='marisol',item='Base.Hammer',amount=1})
+        check(p:itemCount('Base.Hammer')==hammerBefore,'request restores the selected item type')
+        world.neighbors.marisol.inventory['bad']=-3
+        NLNeighbors.get(world,'marisol')
+        check(world.neighbors.marisol.inventory['bad']==nil,'malformed saved inventory entries are normalized away')
+    end
 end
 before=r.friendship; p.dead=true; cmd(p,'chat'); check(r.friendship==before,'dead player rejected'); p.dead=false
 body.dead=true; cmd(p,'chat'); check(world.neighbors.marisol.dead and r.friendship==before,'dead NPC persisted and rejected')

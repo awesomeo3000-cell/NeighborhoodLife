@@ -50,6 +50,23 @@ NLSocialClient.snapshots[0].neighbors[1].distance=2
 NLSocialClient.snapshots[0].neighbors[1].canInteract=true
 NLSocialClient.snapshots[0].neighbors[1].dead=true
 panel:prerender(); assert(not panel.actions[1].enabled)
+NLSocialClient.snapshots[0].neighbors[1].dead=false
+NLSocialClient.snapshots[0].neighbors[1].inventoryItems={{item='Base.Hammer',amount=1,label='Hammer'}}
+local giveItem={getFullType=function() return 'Base.RippedSheets' end,
+    getDisplayName=function() return 'Ripped Sheets' end}
+local givePlayer={isDead=function() return false end,isEquipped=function() return false end,
+    getInventory=function() return {getItems=function() return {size=function() return 1 end,get=function() return giveItem end} end} end}
+function getSpecificPlayer() return givePlayer end
+panel:prerender()
+if panel.actions[9].value and panel.actions[9].value.item=='Base.Hammer' then
+    assert(panel.actions[8].enabled and panel.actions[8].value.item=='Base.RippedSheets')
+    assert(panel.actions[9].enabled)
+    panel.actions[8].callback(panel,panel.actions[8])
+    assert(requests[#requests].command=='give' and requests[#requests].args.item=='Base.RippedSheets')
+    panel.actions[9].callback(panel,panel.actions[9])
+    assert(requests[#requests].command=='request' and requests[#requests].args.item=='Base.Hammer')
+end
+function getSpecificPlayer() return nil end
 NLClient.profiles[0]=p; p.skill=0
 NLJournal.open(0); NLJournal.instances[0]:prerender()
 assert(NLJournal.instances[0].careerButtons.tailor.backgroundColor.g==0.88)
