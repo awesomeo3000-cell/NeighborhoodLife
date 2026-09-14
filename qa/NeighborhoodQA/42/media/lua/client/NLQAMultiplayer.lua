@@ -29,6 +29,9 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     householdFurnishingSent = false, householdFurnishingObserved = false,
     householdTransferSent = false, householdTransferObserved = false,
     householdTransferDue = 0, householdTaskDue = 0, householdResetSent = false,
+    -- Career seeding also clears the isolated household fixture. Wait for the
+    -- production work result before creating the household, otherwise the
+    -- delayed QA seed command can erase the newly-created home.
     householdDirectCreateDue = 180,
     householdFurnishingPrepared = false, householdFurnishingActionDue = 0,
     dangerProbeSent = false,
@@ -919,7 +922,6 @@ Events.OnServerCommand.Add(function(module, command, args)
         elseif qaIdentity().username=="nl-guest" and NLQAMultiplayer.householdRetrieveSent
                 and not NLQAMultiplayer.householdRetrieveObserved and args.message
                 and string.find(args.message,"used household storage",1,true) then
-            NLQAMultiplayer.householdRetrieveObserved=true
             emit("HOUSEHOLD FURNISHING RETRIEVE RESULT", tostring(args.message))
         end
         if qaIdentity().username=="nl-host" and home
@@ -1013,6 +1015,7 @@ Events.OnRenderTick.Add(function()
     -- persisted career restart while still using the production command path.
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdResetSent
             and NLQAMultiplayer.snapshots>0
+            and NLQAMultiplayer.careerWorkResultLogged
             and not NLQAMultiplayer.householdCreateSent
             and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.householdDirectCreateDue then
         NLQAMultiplayer.householdCreateSent=true
@@ -1426,6 +1429,20 @@ Events.OnRenderTick.Add(function()
         NLQAMultiplayer.householdTaskSent=true
         NLHouseholdClient.request(0,"task",{task="tidy"})
         emit("HOUSEHOLD TASK", "tidy")
+    end
+end)
+
+-- Confirm the guest received the item in its real main inventory, rather than
+-- treating the authoritative response text alone as an item-transfer proof.
+Events.OnTick.Add(function()
+    if qaIdentity().username ~= "nl-guest"
+            or not NLQAMultiplayer.householdRetrieveSent
+            or NLQAMultiplayer.householdRetrieveObserved then return end
+    local count = qaInventoryCount(getSpecificPlayer(0), "Base.RippedSheets")
+    if count > 0 then
+        NLQAMultiplayer.householdRetrieveObserved = true
+        emit("HOUSEHOLD GUEST INVENTORY", "item=Base.RippedSheets count=" .. tostring(count)
+            .. " source=server-retrieve")
     end
 end)
 

@@ -1,4 +1,4 @@
-# Neighborhood Life — full scope and evidence ledger (v1.62)
+# Neighborhood Life — full scope and evidence ledger (v1.63)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
@@ -58,7 +58,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 
 ## Next engineering gates
 
-1. Extend the actual two-client inventory slice beyond the fixed sheet exchange and verify broader global-data crash atomicity; the v1.62 career plus NPC-inventory restart gate is now proven.
+1. Extend the actual two-client inventory slice beyond the fixed sheet exchange, broaden household item/container metadata, and verify global-data crash atomicity; v1.63 now proves a guest main-inventory retrieve from the production furnishing.
 2. Resolve native NPC server-body reannouncement and test persistent movement under a naturally missing native peer; the current v1.62 run still reports `GameServer=nil`, `Java=nil`, and `onlineHints=0`.
 3. Expand the vertical slice into conversations, relationships, romance, neighborhood careers, households, aspirations and furnishings without reducing the host/invite multiplayer requirement.
 4. Integrate conversations, relationships, romance and neighborhood careers.
@@ -84,6 +84,24 @@ server still exposes `GameServer=nil`, `Java=nil`, and `onlineHints=0` to the
 mod Lua bridge. Shared household storage beyond the existing sheet exchange,
 broader global-data crash atomicity, and breadth across the remaining life
 systems remain open.
+
+## v1.63 actual co-op household furnishing transfer
+
+The isolated hands-free Build 42.20.4 capture in `evidence/v93/actual/`
+records a real host-plus-guest household path: the host created a home and
+invited the guest; the guest accepted and moved to the shared home; the host
+stored one `Base.RippedSheets` through the production world-object furnishing;
+the guest retrieved it through the same production callback and verified
+`Base.RippedSheets count=1` in its real main inventory. The server log records
+both authoritative furnishing operations. Ownership transfer and the tidy
+household activity also completed in this run.
+
+This is actual gameplay evidence, distinct from mock/unit Lua tests and the
+installed-game Kahlua engine-VM suites. It closes only the first co-op storage
+transfer assertion. The full scope remains host/invite multiplayer,
+persistent moving NPCs, careers, customization, clothing, relationships,
+households, and optional zombies; restart persistence for household storage,
+richer item metadata and broader home life remain open.
 
 ## v1.26 direct two-client social action
 

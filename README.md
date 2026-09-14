@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.62)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.63)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -924,3 +924,19 @@ The same capture still reports `GameServer=nil`, `Java=nil`, and
 `onlineHints=0`. Native dedicated-server NPC-body online-id reannouncement is
 therefore still open, as are broader shared household storage, richer global
 data crash atomicity, and the wider careers/relationships/households scope.
+
+## v1.63 actual co-op household furnishing transfer
+
+The QA-only guest assertion now waits for a real main-inventory count after a
+furnishing retrieve response, rather than treating response text as proof of
+an item transfer. In `evidence/v93/actual/`, the hands-free Build 42.20.4
+host created a Neighborhood Home, invited the guest, stored one
+`Base.RippedSheets` through the production world-object callback, and the
+guest retrieved it from the same production furnishing. The guest logged
+`HOUSEHOLD GUEST INVENTORY: item=Base.RippedSheets count=1 source=server-retrieve`.
+The same run exercised ownership transfer and the tidy household activity.
+
+This closes the first actual co-op household-storage transfer assertion. It
+does not close multi-item/container metadata, household persistence across a
+restart, global-data crash atomicity, or the native NPC server-body
+reannouncement blocker. QA remains outside the production mod package.
