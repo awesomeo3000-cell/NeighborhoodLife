@@ -32,7 +32,9 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     wardrobeSnapshotLogged = false, wardrobeUiLogged = false,
     inventoryGiveSent = false, inventoryGiveObserved = false,
     inventoryRequestSent = false, inventoryRequestObserved = false,
-    inventoryExchangeDue = 0, inventoryMetadataLogged = false }
+    inventoryExchangeDue = 0, inventoryMetadataLogged = false,
+    connectionCount = 0, inventoryRestartProbeSent = false,
+    inventoryRestartObserved = false, inventoryRestartDue = 0 }
 NLQAMultiplayer.socialCooldownFrames = 3600
 
 local function emit(label, value)
@@ -191,8 +193,15 @@ Events.OnRenderTick.Add(function()
 end)
 
 Events.OnConnected.Add(function()
+    NLQAMultiplayer.connectionCount=NLQAMultiplayer.connectionCount+1
     emit("CONNECTED", qaIdentity().username or "?")
     if isServer() then return end
+    if qaIdentity().username=="nl-host" then
+        NLQAMultiplayer.inventoryRestartDue=NLQAMultiplayer.socialFrame+120
+        NLQAMultiplayer.inventoryRestartProbeSent=false
+        NLQAMultiplayer.inventoryRestartObserved=false
+        emit("RESTART PROBE ARMED", "connection="..tostring(NLQAMultiplayer.connectionCount))
+    end
     if checkSavePlayerExists() then return end
     -- Vanilla would open spawn and character creation screens here and wait for
     -- clicks. Defer the QA default steps so the engine can finish its own connect
@@ -529,7 +538,7 @@ Events.OnServerCommand.Add(function(module, command, args)
             NLQAMultiplayer.inventoryRequestObserved=true
             emit("NPC INVENTORY REQUEST RESULT", tostring(args.message))
         end
-        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+    if qaIdentity().username == "nl-host" and args.username == "nl-host"
                 and not NLQAMultiplayer.inventoryMetadataLogged
                 and (args.message and (string.find(args.message,"Gave 1 ",1,true)
                     or string.find(args.message,"Received 1 ",1,true))) then
@@ -541,6 +550,20 @@ Events.OnServerCommand.Add(function(module, command, args)
             end
             NLQAMultiplayer.inventoryMetadataLogged=true
             emit("NPC INVENTORY ITEMS", #entries>0 and table.concat(entries,",") or "empty")
+        end
+        if qaIdentity().username=="nl-host" and args.username=="nl-host"
+                and NLQAMultiplayer.inventoryRestartProbeSent
+                and not NLQAMultiplayer.inventoryRestartObserved then
+            local neighbor=args.neighbors and args.neighbors[1]
+            local entries={}
+            for _,entry in ipairs((neighbor and neighbor.inventoryItems) or {}) do
+                entries[#entries+1]=tostring(entry.item).."/"..tostring(entry.amount)
+                    .."/"..tostring(entry.label)
+            end
+            if #entries>0 then
+                NLQAMultiplayer.inventoryRestartObserved=true
+                emit("NPC INVENTORY RESTART SNAPSHOT", table.concat(entries,","))
+            end
         end
         if qaIdentity().username == "nl-host" and args.username == "nl-host"
                 and NLQAMultiplayer.careerSeeded then
@@ -734,6 +757,13 @@ end)
 Events.OnRenderTick.Add(function()
     if not isClient() or not NLSocialClient then return end
     NLQAMultiplayer.socialFrame=NLQAMultiplayer.socialFrame+1
+    if qaIdentity().username=="nl-host"
+            and not NLQAMultiplayer.inventoryRestartProbeSent
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.inventoryRestartDue then
+        NLSocialClient.request(0,"refresh")
+        NLQAMultiplayer.inventoryRestartProbeSent=true
+        emit("NPC INVENTORY RESTART REFRESH", "connection="..tostring(NLQAMultiplayer.connectionCount))
+    end
     if NLQAMultiplayer.socialFrame>=840 and not NLQAMultiplayer.socialPositioned then
         if qaIdentity().username=="nl-host" then
             positionHostForSocial()

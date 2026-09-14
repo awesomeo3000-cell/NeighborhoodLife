@@ -499,6 +499,17 @@ garments at zero, and then logged replacement completion for both garments from
 `production-NLWardrobe.wear`. New clothing variants, original assets and
 unlock/reward integration remain breadth work.
 
+## v1.35 dedicated-server restart persistence probe
+
+The isolated hands-free QA runner now performs a real dedicated-server process
+restart after the production NPC inventory give/request exchange, forces the
+host client through an engine reconnect, and checks the post-restart social
+snapshot before completing a second exchange. The Build 42 run preserved
+`Base.RippedSheets/1/Rag` across the restart, then reported
+`Base.RippedSheets/2/Rag` after the next give and completed the request. This is
+actual host-plus-guest engine gameplay evidence, not a mock or engine-VM claim.
+The restart probe does not establish forced-crash atomicity; that remains open.
+
 ## v1.34 generalized NPC inventory selection and metadata
 
 The NPC inventory slice now normalizes legacy and malformed saved counts,
