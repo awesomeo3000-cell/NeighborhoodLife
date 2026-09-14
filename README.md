@@ -553,6 +553,14 @@ reconnect. The same run retained the NPC inventory snapshot and completed the
 post-restart exchange. This is actual Build 42 gameplay evidence; the Lua and
 Kahlua suites remain separate mock and engine-VM evidence.
 
+## v1.42 tiny plumbob placement
+
+The production marker is now an 8x11 source texture rendered through a 2x3
+runtime panel with a 10-pixel lift. The reduced source asset prevents Build 42
+from restoring the old large native-size gem, while the shorter lift keeps the
+marker close above the character model. This is a presentation change; it does
+not change NPC, multiplayer, or persistence behavior.
+
 ## v1.39 pin-sized plumbob placement
 
 The production marker is now a 3x5 runtime panel with a 20-pixel lift, down

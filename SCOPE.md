@@ -7,7 +7,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Requirement | Current implementation | Completion evidence still required |
 |---|---|---|
 | Sims-inspired HUD | Six live adverse-stat bars, fold control, career journal link | Actual host+guest independent values; resolution and accessibility polish |
-| Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.25 uses a compact 16x22 source texture, v1.36 reduces the runtime panel to 4x7, and v1.39 tightens it to a pin-sized 3x5 panel with a 20px lift so the gem stays small and close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
+| Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.25 uses a compact 16x22 source texture, v1.36 reduces the runtime panel to 4x7, v1.39 tightens it to a pin-sized 3x5 panel with a 20px lift, and v1.42 reduces the source to 8x11 with a 2x3 panel and 10px lift so the gem stays tiny and close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits; v1.40 adds named server-authoritative daily work shifts with duplicate-day guards and actual host evidence | Rank/restart tests, richer work beyond the daily shift, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; server-authoritative worn-garment capture and revisioned private snapshots in v1.28; v1.29 actual vanilla clothing acquisition, wear and reconnect snapshot persistence; v1.30 actual production saved-outfit replacement after vanilla unequip; light-themed wardrobe panel reachable from HUD | New garment variants, original assets, unlock/reward integration |
@@ -199,6 +199,15 @@ romance synchronization remain open.
 - This is actual Build 42 host-plus-guest gameplay evidence. Unit/Lua and
   installed-game Kahlua tests remain classified separately and do not claim
   multiplayer completion. Career rank progression and richer work remain open.
+
+## v1.42 tiny plumbob placement
+
+- The production marker now uses an 8x11 source texture, a 2x3 runtime panel,
+  and a 10-pixel lift. The source reduction protects the smaller appearance
+  when Build 42 draws the texture at native dimensions; the shorter lift keeps
+  the tip close above the player model.
+- The focused plumbob contract suite locks the tiny dimensions. This is a
+  presentation change and does not add multiplayer or NPC completion claims.
 
 ## v1.39 pin-sized plumbob placement
 

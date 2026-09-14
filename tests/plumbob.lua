@@ -38,9 +38,9 @@ assert(panel.y==300-panel.height-expectedLift)
 if NLPlumbob.baseWidth then
     assert(panel.width==NLPlumbob.baseWidth and panel.height==NLPlumbob.baseHeight,
         "plumbob panel uses its configured compact dimensions")
-    if NLPlumbob.baseWidth==3 then
-        assert(NLPlumbob.baseHeight==5 and NLPlumbob.baseLift==20,
-            "plumbob uses the pin-sized, close placement dimensions")
+    if NLPlumbob.baseWidth==2 then
+        assert(NLPlumbob.baseHeight==3 and NLPlumbob.baseLift==10,
+            "plumbob uses the tiny, close placement dimensions")
     end
     if NLPlumbob.baseWidth <= 12 then
         assert(NLPlumbob.baseHeight <= 16,
