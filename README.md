@@ -561,6 +561,15 @@ from restoring the old large native-size gem, while the shorter lift keeps the
 marker close above the character model. This is a presentation change; it does
 not change NPC, multiplayer, or persistence behavior.
 
+## v1.44 household ownership transfer
+
+The Neighborhood Home panel now exposes a server-authoritative `Transfer owner`
+action. Only the current owner can transfer to an existing member; both roles,
+the owner field, revision, and private snapshots update together. The actual
+hands-free host-plus-guest run in `evidence/v64/` transferred ownership from
+`nl-host` to `nl-guest`, then continued the shared household task. QA remains
+outside the production package.
+
 ## v1.43 multiplayer HUD identity
 
 The needs panel now labels each live instance with its local character name,

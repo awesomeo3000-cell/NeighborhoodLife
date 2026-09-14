@@ -20,7 +20,8 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     householdInviteDue = 0, householdMembersObserved = false,
     householdStoreSent = false, householdStoreObserved = false,
     householdRetrieveSent = false, householdRetrieveObserved = false,
-    householdTaskDue = 0, householdResetSent = false,
+    householdTransferSent = false, householdTransferObserved = false,
+    householdTransferDue = 0, householdTaskDue = 0, householdResetSent = false,
     wardrobeSeedSent = false, wardrobeSeeded = false, wardrobePickupAttempted = false,
     wardrobePickupObserved = false, wardrobePickupNextAttempt = 0,
     wardrobeItemTypes = {}, wardrobeWearSent = false, wardrobeWearObserved = false,
@@ -747,7 +748,8 @@ Events.OnServerCommand.Add(function(module, command, args)
                 and not NLQAMultiplayer.householdStoreObserved and args.message
                 and string.find(args.message,"updated shared storage",1,true) then
             NLQAMultiplayer.householdStoreObserved=true
-            NLQAMultiplayer.householdTaskDue=NLQAMultiplayer.socialFrame+30
+            NLQAMultiplayer.householdTransferDue=NLQAMultiplayer.socialFrame+30
+            NLQAMultiplayer.householdTaskDue=NLQAMultiplayer.socialFrame+60
             emit("HOUSEHOLD STORE RESULT", tostring(args.message))
         end
         if qaIdentity().username=="nl-guest" and home
@@ -761,6 +763,14 @@ Events.OnServerCommand.Add(function(module, command, args)
                 and string.find(args.message,"updated shared storage",1,true) then
             NLQAMultiplayer.householdRetrieveObserved=true
             emit("HOUSEHOLD RETRIEVE RESULT", tostring(args.message))
+        end
+        if qaIdentity().username=="nl-host" and home
+                and NLQAMultiplayer.householdTransferSent
+                and not NLQAMultiplayer.householdTransferObserved
+                and home.owner == "nl-guest" then
+            NLQAMultiplayer.householdTransferObserved=true
+            emit("HOUSEHOLD TRANSFER RESULT", "owner=" .. tostring(home.owner)
+                .. " members=" .. tostring(#members))
         end
         if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdTaskSent
                 and not NLQAMultiplayer.householdResultLogged and args.message
@@ -1086,6 +1096,13 @@ Events.OnRenderTick.Add(function()
         NLQAMultiplayer.householdStoreSent=true
         NLHouseholdClient.request(0,"store",{item="Base.RippedSheets",amount=1})
         emit("HOUSEHOLD STORE", "Base.RippedSheets x1")
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdStoreObserved
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.householdTransferDue
+            and not NLQAMultiplayer.householdTransferSent then
+        NLQAMultiplayer.householdTransferSent=true
+        NLHouseholdClient.request(0,"transfer",{target="nl-guest"})
+        emit("HOUSEHOLD TRANSFER", "target=nl-guest")
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdStoreObserved
             and not NLQAMultiplayer.householdTaskSent

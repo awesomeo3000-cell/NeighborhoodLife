@@ -34,6 +34,7 @@ function NLHouseholdPanel:initialise()
     self:button(274, 48, 105, "Invite guest", "invite")
     self:button(388, 48, 105, "Leave", "leave")
     self:button(500, 48, 74, "Refresh", "refresh")
+    self.transferButton = self:button(16, 82, 135, "Transfer owner", "transfer")
     self.storageButtons = {
         store = self:button(16, 350, 175, "Store 1 RippedSheet", "store",
             { item = "Base.RippedSheets", amount = 1 }),
@@ -56,11 +57,27 @@ function NLHouseholdPanel:inviteTarget()
     end
 end
 
+function NLHouseholdPanel:transferTarget()
+    local selfPlayer = getSpecificPlayer(self.playerIndex)
+    local selfName = selfPlayer and selfPlayer:getUsername()
+    local state = NLHouseholdClient.snapshots[self.playerIndex]
+    local household = state and state.household
+    if not household or household.owner ~= selfName then return nil end
+    for _, row in ipairs(household.members or {}) do
+        if row.username and row.username ~= selfName then return row.username end
+    end
+end
+
 function NLHouseholdPanel:onButton(button)
     if button.action == "close" then self:setVisible(false); return end
     if button.action == "invite" then
         local target = self:inviteTarget()
         if target then NLHouseholdClient.request(self.playerIndex, "invite", { target = target }) end
+        return
+    end
+    if button.action == "transfer" then
+        local target = self:transferTarget()
+        if target then NLHouseholdClient.request(self.playerIndex, "transfer", { target = target }) end
         return
     end
     local args = {}
@@ -118,6 +135,9 @@ function NLHouseholdPanel:prerender()
     end
     for _, button in pairs(self.storageButtons or {}) do
         button:setEnable(state.household ~= nil and p ~= nil)
+    end
+    if self.transferButton then
+        self.transferButton:setEnable(self:transferTarget() ~= nil)
     end
     self:drawText(state.message or "", 16, 464, 0.12, 0.38, 0.63, 1, UIFont.Small)
 end

@@ -159,7 +159,7 @@ function NLHouseholdAuthority.command(module, command, player, args)
     if module ~= NLHouseholdAuthority.module or not player or player:isDead() then return end
     if command ~= "refresh" and command ~= "create" and command ~= "invite"
             and command ~= "accept" and command ~= "leave" and command ~= "task"
-            and command ~= "store" and command ~= "retrieve" then return end
+            and command ~= "store" and command ~= "retrieve" and command ~= "transfer" then return end
     if type(args) ~= "table" then args = {} end
     local key, now = NLAuthority.key(player), getTimestampMs()
     if NLHouseholdAuthority.lastRequest[key] and now - NLHouseholdAuthority.lastRequest[key] < 200 then return end
@@ -198,6 +198,23 @@ function NLHouseholdAuthority.command(module, command, player, args)
                 })
                 snapshot(target, "Household invitation received")
                 message = "Invitation sent to " .. targetName
+            end
+        end
+    elseif command == "transfer" then
+        local targetName = type(args.target) == "string" and args.target or ""
+        if not household then
+            message = "Create or join a home first"
+        else
+            local ok
+            ok, message = NLHouseholds.transferOwner(household, key, targetName)
+            if ok then
+                notifyMembers(world, household, message)
+                if NLQAMultiplayerServer then
+                    print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key)
+                        .. " command=transfer owner=" .. tostring(household.owner)
+                        .. " message=" .. tostring(message))
+                end
+                return
             end
         end
     elseif command == "accept" then

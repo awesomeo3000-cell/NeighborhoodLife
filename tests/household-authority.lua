@@ -75,5 +75,12 @@ if NLHouseholds.storageCount then
 end
 command(players[1], 'task', {task='tidy'})
 assert(world.households[hostProfile.householdId].tasks.tidy == 1, 'daily replay rejected')
+if NLHouseholds.transferOwner then
+    command(players[1], 'transfer', {target='guest'})
+    assert(home.owner == 'guest' and home.members.host.role == 'member'
+        and home.members.guest.role == 'owner', 'owner can transfer household ownership')
+    command(players[1], 'transfer', {target='host'})
+    assert(home.owner == 'guest', 'former owner cannot reclaim ownership')
+end
 assert(#packets > 0 and packets[#packets].module == 'NeighborhoodHousehold', 'private household packets sent')
 print('PASS: household authority create/invite/accept, shared storage deposit/withdrawal when available, activity, reward, replay guard and private packets')

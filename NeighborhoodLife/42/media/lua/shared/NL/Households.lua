@@ -44,6 +44,23 @@ function NLHouseholds.removeMember(household, key)
     return true, "Left the household"
 end
 
+function NLHouseholds.transferOwner(household, from, target)
+    if not household or household.owner ~= from then
+        return false, "Only the household owner can transfer ownership"
+    end
+    if type(target) ~= "string" or target == "" or target == from then
+        return false, "Choose another household member"
+    end
+    local current = NLHouseholds.member(household, from)
+    local nextOwner = NLHouseholds.member(household, target)
+    if not nextOwner then return false, "Ownership can only go to a member" end
+    current.role = "member"
+    nextOwner.role = "owner"
+    household.owner = target
+    household.revision = (household.revision or 0) + 1
+    return true, "Household ownership transferred to " .. target
+end
+
 function NLHouseholds.completeTask(household, key, task, day)
     local definition = NLHouseholds.tasks[task]
     if not definition then return false, "Unknown household activity" end

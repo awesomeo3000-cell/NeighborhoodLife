@@ -42,4 +42,18 @@ for _, button in pairs(panel.taskButtons) do assert(button.enabled, 'home activi
 if panel.storageButtons then
     for _, button in pairs(panel.storageButtons) do assert(button.enabled, 'shared storage enabled for member') end
 end
+if panel.transferButton then
+    assert(not panel.transferButton.enabled, 'owner transfer waits for another member')
+    assert(NLHouseholds.addMember(home, 'guest'))
+    NLHouseholdClient.snapshots[0].household = NLHouseholds.copySummary(home, {host=true})
+    panel:prerender()
+    assert(panel.transferButton.enabled and panel:transferTarget() == 'guest',
+        'owner transfer targets a current household member')
+    local transferred
+    local originalRequest = NLHouseholdClient.request
+    NLHouseholdClient.request = function(_, command, args) transferred = command .. ':' .. args.target end
+    panel:onButton(panel.transferButton)
+    NLHouseholdClient.request = originalRequest
+    assert(transferred == 'transfer:guest', 'household panel routes ownership transfer')
+end
 print('PASS: household panel empty/shared states, member activity controls and client routing load')
