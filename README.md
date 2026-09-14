@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.66)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.67)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -30,6 +30,9 @@ the local survivor's native HumanVisual. Host and guest choices are independent.
 The HUD footer opens Careers, Social, Looks, Wardrobe and Home actions.
 Household storage now preserves tested Build 42 item-instance metadata, including
 weapon condition and fluid-container fill level, across a real host/guest exchange.
+Household store/retrieve operations also keep a recoverable world journal across
+the player save and household ModData writes; the isolated crash probe proves an
+interrupted transaction is repaired after a forced dedicated-server stop.
 Relationships use separate friendship, trust and attraction bars, with introductions,
 chat, jokes, flirting, dates, partnerships and breakups. They only operate on a neighbor
 registered with a real server-side body. In a new or loaded single-player world,
@@ -94,6 +97,9 @@ round trip for `nl-host` and `nl-guest`. The launcher uses
 identity fixtures intentionally differ; the release package contains neither
 those fixtures nor the launcher. This proves the host/guest command loop, not
 synchronized movement, inventory, reconnect, or full remote-character gameplay.
+The QA-only tools/run-household-crash-qa.ps1 helper separately verifies the
+household journal with disposable profiles; it is not part of the production
+package.
 
 ## v0.7 host/guest evidence
 

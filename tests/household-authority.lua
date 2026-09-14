@@ -79,6 +79,30 @@ if NLHouseholdFurnishings and NLHouseholdFurnishings.isNearby then
     assert(NLHouseholds.storageCount(home, 'Base.RippedSheets') == 1,
         'furnishing command stores through the native fixture')
 end
+local recoveryItem = players[1]:getInventory():AddItem('Base.RippedSheets')
+assert(recoveryItem and #players[1].items == 1, 'recovery fixture added to host inventory')
+NLQAHouseholdFaultMode = 'player-applied'
+command(players[1], 'furnishing', {action='store', item='Base.RippedSheets', amount=1})
+assert(world.householdJournal and world.householdJournal.state == 'player-applied',
+    'household journal remains after an interrupted player-side mutation')
+assert(#players[1].items == 0 and NLHouseholds.storageCount(home, 'Base.RippedSheets') == 1,
+    'fault leaves only the player-side half applied')
+NLQAHouseholdFaultMode = nil
+command(players[1], 'refresh')
+assert(not world.householdJournal and #players[1].items == 1
+    and NLHouseholds.storageCount(home, 'Base.RippedSheets') == 1,
+    'refresh repairs the interrupted household storage transaction')
+NLQAHouseholdFaultMode = 'player-applied'
+command(players[1], 'furnishing', {action='retrieve', item='Base.RippedSheets', amount=1})
+assert(world.householdJournal and world.householdJournal.mode == 'retrieve',
+    'retrieve interruption leaves a recoverable household journal')
+assert(#players[1].items == 2 and NLHouseholds.storageCount(home, 'Base.RippedSheets') == 1,
+    'retrieve fault leaves only the player-side half applied')
+NLQAHouseholdFaultMode = nil
+command(players[1], 'refresh')
+assert(not world.householdJournal and #players[1].items == 1
+    and NLHouseholds.storageCount(home, 'Base.RippedSheets') == 1,
+    'refresh removes the duplicate from an interrupted retrieve')
 command(players[1], 'task', {task='tidy'})
 assert(world.households[hostProfile.householdId].tasks.tidy == 1, 'daily replay rejected')
 if NLHouseholds.transferOwner then

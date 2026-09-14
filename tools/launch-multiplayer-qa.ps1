@@ -1,5 +1,6 @@
 param(
     [switch]$InventoryCrashProbe,
+    [switch]$HouseholdCrashProbe,
     [switch]$PreserveHousehold,
     [switch]$VerifyHouseholdMetadata,
     [string]$ProfileRoot = 'E:\pzmod\test-profile',
@@ -46,8 +47,14 @@ maps
 '@ | Set-Content "$profile\mods\default.txt"
 }
 
-if ($InventoryCrashProbe) {
-    "NLQAInventoryFaultMode = 'player-applied'" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQAFaultConfig.lua"
+if ($InventoryCrashProbe -or $HouseholdCrashProbe) {
+    $faultLines = @()
+    if ($InventoryCrashProbe) { $faultLines += "NLQAInventoryFaultMode = 'player-applied'" }
+    if ($HouseholdCrashProbe) {
+        $faultLines += "NLQAHouseholdFaultMode = 'player-applied'"
+        $faultLines += "NLQAPreserveHouseholdRestart = true"
+    }
+    $faultLines | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQAFaultConfig.lua"
 }
 
 # Per-client identity: the engine has no no-Steam username source at the main menu,

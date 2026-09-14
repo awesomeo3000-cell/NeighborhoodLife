@@ -941,6 +941,9 @@ Events.OnServerCommand.Add(function(module, command, args)
             ..","..tostring(home and home.furnishing and home.furnishing.y)
             ..","..tostring(home and home.furnishing and home.furnishing.z)
             .." message="..tostring(args.message))
+        if args.message and string.find(args.message, "Household storage recovery", 1, true) then
+            emit("HOUSEHOLD JOURNAL RECOVERY RESULT", tostring(args.message))
+        end
         if qaIdentity().metadataProbe == true and home and home.storageDetails then
             local rows = {}
             for _, entry in ipairs(home.storageDetails) do

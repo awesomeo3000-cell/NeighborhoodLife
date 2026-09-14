@@ -94,6 +94,25 @@ local function mainInventoryItems(player, itemType, amount)
     return chosen, inventory
 end
 
+local function mainInventoryCount(player, itemType)
+    local inventory = player and player.getInventory and player:getInventory()
+    local all = inventory and inventory.getItems and inventory:getItems()
+    if not all then return 0 end
+    local count = 0
+    for i = 0, all:size() - 1 do
+        local item = all:get(i)
+        local equipped = false
+        if item and player.isEquipped then
+            local equippedOk, equippedValue = pcall(player.isEquipped, player, item)
+            equipped = equippedOk and equippedValue == true
+        end
+        if item and item.getFullType and item:getFullType() == itemType and not equipped then
+            count = count + 1
+        end
+    end
+    return count
+end
+
 local function itemMethod(item, method)
     if not item then return nil end
     local ok, fn = pcall(function() return item[method] end)
@@ -162,6 +181,83 @@ local function applyStorageDetails(item, details)
     setItemValue(item, "setName", details.name)
 end
 
+local function beginStorageJournal(world, household, player, itemType, amount, mode, details)
+    world.householdJournal = {
+        version = 1, state = "prepared", mode = mode,
+        player = NLAuthority.key(player), householdId = household.id,
+        itemType = itemType, amount = amount,
+        playerBefore = mainInventoryCount(player, itemType),
+        storageBefore = NLHouseholds.storageCount(household, itemType),
+        householdRevisionBefore = household.revision or 0,
+        storageBeforeAll = NLDomain.copy(household.storage or {}),
+        storageEntriesBeforeAll = NLDomain.copy(household.storageEntries or {}),
+        details = NLDomain.copy(details),
+    }
+    return world.householdJournal
+end
+
+local function clearStorageJournal(world)
+    world.householdJournal = nil
+end
+
+local function restoreInventoryCount(player, itemType, target, details)
+    local current = mainInventoryCount(player, itemType)
+    local inventory = player and player.getInventory and player:getInventory()
+    if not inventory then return false end
+    if current > target then
+        local chosen = mainInventoryItems(player, itemType, current - target)
+        if not chosen or #chosen < current - target then return false end
+        for _, item in ipairs(chosen) do inventory:Remove(item) end
+    elseif current < target and inventory.AddItem then
+        for index = current + 1, target do
+            local ok, item = pcall(inventory.AddItem, inventory, itemType)
+            if not ok or not item then return false end
+            applyStorageDetails(item, details and details[index - current])
+        end
+    end
+    return mainInventoryCount(player, itemType) == target
+end
+
+local function restoreStorageState(household, journal)
+    household.storage = NLDomain.copy(journal.storageBeforeAll or {})
+    household.storageEntries = NLDomain.copy(journal.storageEntriesBeforeAll or {})
+    household.revision = journal.householdRevisionBefore or household.revision
+end
+
+-- Household storage crosses a vanilla player save and the world's ModData.
+-- Keep a recoverable journal until both sides reach their expected state; a
+-- server restart can then repair a mutation interrupted between those writes.
+local function recoverStorageJournal(world, player)
+    local journal = world and world.householdJournal
+    if type(journal) ~= "table" then return true, "none" end
+    local key = NLAuthority.key(player)
+    if journal.player ~= key then return false, "Household storage recovery belongs to another account" end
+    local household = journal.householdId and NLHouseholds.get(world, journal.householdId) or nil
+    if not household then return false, "Household storage recovery home is missing" end
+    local currentPlayer = mainInventoryCount(player, journal.itemType)
+    local currentStorage = NLHouseholds.storageCount(household, journal.itemType)
+    local delta = journal.mode == "store" and journal.amount or -journal.amount
+    local expectedPlayer = journal.playerBefore + (journal.mode == "store" and -journal.amount or journal.amount)
+    local expectedStorage = journal.storageBefore + delta
+    if currentPlayer == expectedPlayer and currentStorage == expectedStorage then
+        clearStorageJournal(world)
+        return true, "completed"
+    end
+    if currentPlayer == journal.playerBefore and currentStorage == journal.storageBefore then
+        clearStorageJournal(world)
+        return true, "rolled-back"
+    end
+    if not restoreInventoryCount(player, journal.itemType, journal.playerBefore,
+            journal.mode == "store" and journal.details or nil) then
+        return false, "Household storage recovery still needs repair"
+    end
+    restoreStorageState(household, journal)
+    clearStorageJournal(world)
+    return true, "repaired"
+end
+
+NLHouseholdAuthority.recoverStorageJournal = recoverStorageJournal
+
 local function storageCommand(world, household, player, key, args, mode)
     local itemType = args and args.item
     local amount = requestedAmount(args)
@@ -176,10 +272,22 @@ local function storageCommand(world, household, player, key, args, mode)
         local details = {}
         for _, item in ipairs(chosen) do
             details[#details + 1] = itemStorageDetails(item, itemType)
+        end
+        local journal = beginStorageJournal(world, household, player, itemType, amount, mode, details)
+        for _, item in ipairs(chosen) do
             inventoryOrMessage:Remove(item)
             if isServer() and sendRemoveItemFromContainer then
                 sendRemoveItemFromContainer(inventoryOrMessage, item)
             end
+        end
+        journal.state = "player-applied"
+        if NLQAHouseholdFaultMode == "player-applied" then
+            NLQAHouseholdFaultMode = nil
+            if NLQAMultiplayerServer then
+                print("NLQA HOUSEHOLD JOURNAL PARTIAL: phase=player-applied mode=store item="
+                    .. tostring(itemType) .. " amount=" .. tostring(amount))
+            end
+            return false, "QA forced partial household transaction"
         end
         local ok, message = NLHouseholds.store(household, itemType, amount, details)
         if not ok then
@@ -190,6 +298,10 @@ local function storageCommand(world, household, player, key, args, mode)
                     sendAddItemToContainer(inventoryOrMessage, restored)
                 end
             end
+            clearStorageJournal(world)
+        else
+            journal.state = "world-applied"
+            clearStorageJournal(world)
         end
         return ok, message
     end
@@ -203,6 +315,7 @@ local function storageCommand(world, household, player, key, args, mode)
         return false, "Main inventory unavailable"
     end
     local added = {}
+    local journal = beginStorageJournal(world, household, player, itemType, amount, mode)
     for _ = 1, amount do
         local addOk, item = pcall(inventory.AddItem, inventory, itemType)
         if not addOk or not item then
@@ -212,9 +325,19 @@ local function storageCommand(world, household, player, key, args, mode)
                     sendRemoveItemFromContainer(inventory, restored)
                 end
             end
+            clearStorageJournal(world)
             return false, "Main inventory could not accept " .. itemType
         end
         added[#added + 1] = item
+    end
+    journal.state = "player-applied"
+    if NLQAHouseholdFaultMode == "player-applied" then
+        NLQAHouseholdFaultMode = nil
+        if NLQAMultiplayerServer then
+            print("NLQA HOUSEHOLD JOURNAL PARTIAL: phase=player-applied mode=retrieve item="
+                .. tostring(itemType) .. " amount=" .. tostring(amount))
+        end
+        return false, "QA forced partial household transaction"
     end
     local ok, message, details = NLHouseholds.retrieve(household, itemType, amount)
     if not ok then
@@ -229,6 +352,10 @@ local function storageCommand(world, household, player, key, args, mode)
                 sendAddItemToContainer(inventory, item)
             end
         end
+        journal.state = "world-applied"
+        clearStorageJournal(world)
+    else
+        clearStorageJournal(world)
     end
     return ok, message
 end
@@ -261,8 +388,20 @@ function NLHouseholdAuthority.command(module, command, player, args)
     if NLHouseholdAuthority.lastRequest[key] and now - NLHouseholdAuthority.lastRequest[key] < 200 then return end
     NLHouseholdAuthority.lastRequest[key] = now
     local world, profile = NLAuthority.world(), NLDomain.profile(NLAuthority.world(), key)
+    local recovered, recoveryState = recoverStorageJournal(world, player)
+    if not recovered then
+        snapshot(player, "Household storage recovery pending: " .. tostring(recoveryState))
+        return
+    end
+    if recoveryState ~= "none" and NLQAMultiplayerServer then
+        print("NLQA HOUSEHOLD JOURNAL RECOVERY: state=" .. tostring(recoveryState)
+            .. " player=" .. tostring(key))
+    end
     NLDomain.day(profile, math.floor(getGameTime():getWorldAgeHours() / 24))
-    local message = "Updated"
+    local message = recoveryState == "repaired" and "Household storage recovery repaired"
+        or recoveryState == "completed" and "Household storage recovery completed"
+        or recoveryState == "rolled-back" and "Household storage recovery rolled back"
+        or "Updated"
     local household = profile.householdId and NLHouseholds.get(world, profile.householdId) or nil
 
     if command == "create" then
