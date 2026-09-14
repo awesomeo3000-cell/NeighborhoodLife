@@ -432,3 +432,27 @@ The original broad goal remains active. This ledger is not a reduced definition 
   client retry when a distant home becomes loaded, native server-body
   reannouncement, richer item metadata and offline household routines remain
   open gates.
+
+## v1.18 streamed-in household furnishing retry
+
+- Production clients now retain the latest furnishing snapshot when its square
+  is not loaded and retry it on every engine tick. Once Build 42 streams the home
+  square, the client creates exactly one native furnishing replica and clears the
+  pending entry; menu/disconnect cleanup clears both loaded and pending state.
+- The server now uses Build 42's `IsoObject.getNew` and
+  `IsoGridSquare.transmitAddObjectToSquare` path when available. This is the
+  correct native add path, but the isolated Build 42.20.4 clients still did not
+  expose the server object in their object list, so the snapshot replica remains
+  the production fallback rather than a false native-network claim.
+- `evidence/v37/` records the hands-free host/guest run after the real invite,
+  storage deposit/withdrawal and tidy sequence. The QA-only viewpoint fixture
+  loaded the shared home tile for the guest without mouse or keyboard input;
+  both clients logged `productionHouseholdFurnishingClient=1` and
+  `productionHouseholdFurnishingPending=0`, while both received
+  `furnishing=storage` and retained three native NPC replicas with native paths.
+  The viewpoint relocation is explicitly QA fixture evidence, not a claim that
+  normal guest walking has been completed.
+- Mock, engine-VM and actual gameplay evidence remain separate. Native
+  cross-client `IsoObject` replication, normal streamed-in walking without the
+  QA viewpoint fixture, native server-body reannouncement, richer item metadata
+  and offline household routines remain open gates.

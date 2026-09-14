@@ -18,7 +18,9 @@ IsoObject = {new=function(_, squareObject, sprite)
     function object:resetModelNextFrame() end
     return object
 end}
-Events = {OnMainMenuEnter={Add=function() end}, OnDisconnect={Add=function() end}}
+local tick
+Events = {OnMainMenuEnter={Add=function() end}, OnDisconnect={Add=function() end},
+    OnTick={Add=function(fn) tick=fn end}}
 dofile(arg[1] .. '/42/media/lua/client/NL/HouseholdFurnishingClient.lua')
 local household = {id='home:host', furnishing={kind='storage',x=10,y=20,z=0,sprite='furniture_storage_02_19'}}
 local first = NLHouseholdFurnishingClient.apply(household)
@@ -27,4 +29,16 @@ assert(first:getModData().NeighborhoodHouseholdId == household.id, 'client furni
 assert(NLHouseholdFurnishingClient.apply(household) == first and #objectList == 1, 'client furnishing reused')
 NLHouseholdFurnishingClient.clear()
 assert(#objectList == 0, 'client furnishing cleanup removes object')
+local loaded = true
+function cell:getGridSquare()
+    if loaded then return square end
+    return nil
+end
+loaded = false
+assert(NLHouseholdFurnishingClient.apply(household) == nil, 'unloaded furnishing is deferred')
+assert(NLHouseholdFurnishingClient.pending[household.id] == household, 'deferred furnishing is retained')
+loaded = true
+tick()
+assert(NLHouseholdFurnishingClient.objects[household.id], 'deferred furnishing retries after streaming')
+assert(not NLHouseholdFurnishingClient.pending[household.id], 'deferred furnishing clears after retry')
 print('PASS: client household furnishing replica, identity, reuse and cleanup')

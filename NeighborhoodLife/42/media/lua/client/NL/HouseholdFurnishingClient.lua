@@ -4,7 +4,7 @@
 -- object locally from the revisioned household snapshot.
 if not isClient or not isClient() then return end
 
-NLHouseholdFurnishingClient = { objects = {} }
+NLHouseholdFurnishingClient = { objects = {}, pending = {} }
 
 local function existing(square, householdId)
     if not square or not square.getObjects then return nil end
@@ -19,7 +19,7 @@ local function existing(square, householdId)
     end
 end
 
-function NLHouseholdFurnishingClient.apply(household)
+local function applyLoaded(household)
     if not household or not household.id or not household.furnishing then return nil end
     local furnishing = household.furnishing
     local cell = getCell and getCell()
@@ -40,7 +40,19 @@ function NLHouseholdFurnishingClient.apply(household)
             if object.resetModelNextFrame then object:resetModelNextFrame() end
         end
     end
-    if object then NLHouseholdFurnishingClient.objects[household.id] = object end
+    if object then
+        NLHouseholdFurnishingClient.objects[household.id] = object
+        NLHouseholdFurnishingClient.pending[household.id] = nil
+    end
+    return object
+end
+
+function NLHouseholdFurnishingClient.apply(household)
+    if not household or not household.id or not household.furnishing then return nil end
+    local object = applyLoaded(household)
+    if not object then
+        NLHouseholdFurnishingClient.pending[household.id] = household
+    end
     return object
 end
 
@@ -50,8 +62,16 @@ function NLHouseholdFurnishingClient.clear()
         if square and square.RemoveTileObject then square:RemoveTileObject(object) end
         NLHouseholdFurnishingClient.objects[id] = nil
     end
+    NLHouseholdFurnishingClient.pending = {}
 end
 
 Events.OnMainMenuEnter.Add(NLHouseholdFurnishingClient.clear)
 if Events.OnDisconnect then Events.OnDisconnect.Add(NLHouseholdFurnishingClient.clear) end
+if Events.OnTick then
+    Events.OnTick.Add(function()
+        for _, household in pairs(NLHouseholdFurnishingClient.pending) do
+            applyLoaded(household)
+        end
+    end)
+end
 return NLHouseholdFurnishingClient

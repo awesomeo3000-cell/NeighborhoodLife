@@ -304,3 +304,25 @@ The guest was not standing near the home tile, so its unloaded square produced n
 local tile object; this remains a streaming/replication gate rather than a hidden
 success claim. Mock and engine-VM tests remain separate from this gameplay
 evidence, and QA helpers stay outside the production package.
+
+## v1.18 streamed-in household furnishing retry
+
+The production client now keeps a revisioned furnishing snapshot pending when
+the home square is not loaded, then retries on engine ticks. The first successful
+load creates one native local tile replica and removes the pending entry. Menu
+and disconnect cleanup remove both the local object and deferred snapshot.
+
+The server also uses Build 42's native `IsoObject.getNew` plus
+`IsoGridSquare.transmitAddObjectToSquare` add path. The isolated 42.20.4 run
+still did not expose that server-created object in either client's object-list
+scan, so the snapshot replica is retained as the honest production fallback.
+
+`evidence/v37/` records the real host/guest invite, shared-storage withdrawal
+and tidy loop. A QA-only, hands-free viewpoint fixture loaded the shared home
+tile for the guest; both clients then logged
+`productionHouseholdFurnishingClient=1` and
+`productionHouseholdFurnishingPending=0`. This proves the streamed-in client
+retry path in the engine, while the viewpoint fixture is not presented as normal
+guest walking. Native cross-client furnishing packets, normal streamed-in
+walking, native server-body reannouncement, richer item metadata and offline
+household routines remain open.

@@ -1,0 +1,105 @@
+--- baseline/42/media/lua/client/NL/HouseholdFurnishingClient.lua
++++ modified/42/media/lua/client/NL/HouseholdFurnishingClient.lua
+@@ -4,7 +4,7 @@
+ -- object locally from the revisioned household snapshot.
+ if not isClient or not isClient() then return end
+ 
+-NLHouseholdFurnishingClient = { objects = {} }
++NLHouseholdFurnishingClient = { objects = {}, pending = {} }
+ 
+ local function existing(square, householdId)
+     if not square or not square.getObjects then return nil end
+@@ -19,7 +19,7 @@
+     end
+ end
+ 
+-function NLHouseholdFurnishingClient.apply(household)
++local function applyLoaded(household)
+     if not household or not household.id or not household.furnishing then return nil end
+     local furnishing = household.furnishing
+     local cell = getCell and getCell()
+@@ -40,7 +40,19 @@
+             if object.resetModelNextFrame then object:resetModelNextFrame() end
+         end
+     end
+-    if object then NLHouseholdFurnishingClient.objects[household.id] = object end
++    if object then
++        NLHouseholdFurnishingClient.objects[household.id] = object
++        NLHouseholdFurnishingClient.pending[household.id] = nil
++    end
++    return object
++end
++
++function NLHouseholdFurnishingClient.apply(household)
++    if not household or not household.id or not household.furnishing then return nil end
++    local object = applyLoaded(household)
++    if not object then
++        NLHouseholdFurnishingClient.pending[household.id] = household
++    end
+     return object
+ end
+ 
+@@ -50,8 +62,16 @@
+         if square and square.RemoveTileObject then square:RemoveTileObject(object) end
+         NLHouseholdFurnishingClient.objects[id] = nil
+     end
++    NLHouseholdFurnishingClient.pending = {}
+ end
+ 
+ Events.OnMainMenuEnter.Add(NLHouseholdFurnishingClient.clear)
+ if Events.OnDisconnect then Events.OnDisconnect.Add(NLHouseholdFurnishingClient.clear) end
++if Events.OnTick then
++    Events.OnTick.Add(function()
++        for _, household in pairs(NLHouseholdFurnishingClient.pending) do
++            applyLoaded(household)
++        end
++    end)
++end
+ return NLHouseholdFurnishingClient
+--- baseline/42/media/lua/server/NL/HouseholdFurnishings.lua
++++ modified/42/media/lua/server/NL/HouseholdFurnishings.lua
+@@ -76,8 +76,15 @@
+         return existing
+     end
+     local cell = getCell and getCell() or nil
+-    local ok, object = pcall(IsoObject.new, square, NLHouseholdFurnishings.sprite,
+-        NLHouseholdFurnishings.objectName)
++    local ok, object
++    if IsoObject.getNew then
++        ok, object = pcall(IsoObject.getNew, square, NLHouseholdFurnishings.sprite,
++            NLHouseholdFurnishings.objectName, false)
++    end
++    if not ok or not object then
++        ok, object = pcall(IsoObject.new, square, NLHouseholdFurnishings.sprite,
++            NLHouseholdFurnishings.objectName)
++    end
+     if (not ok or not object) and cell then
+         ok, object = pcall(IsoObject.new, cell, square, NLHouseholdFurnishings.sprite,
+             NLHouseholdFurnishings.objectName)
+@@ -90,8 +97,23 @@
+     record(household, square, object)
+     if object.setSpecialTooltip then object:setSpecialTooltip(true) end
+     if object.setName then pcall(object.setName, object, NLHouseholdFurnishings.objectName) end
+-    if square.AddTileObject then pcall(square.AddTileObject, square, object) end
+-    if object.transmitCompleteItemToClients then pcall(object.transmitCompleteItemToClients, object) end
++    -- This native API both adds the object and emits the Build 42 object packet.
++    -- Calling AddTileObject first makes transmitAddObjectToSquare return early.
++    local transmitted = false
++    if square.transmitAddObjectToSquare then
++        local index = 0
++        if square.getObjects then
++            local objects = square:getObjects()
++            if objects and objects.size then index = objects:size() - 1 end
++        end
++        pcall(square.transmitAddObjectToSquare, square, object, index)
++        transmitted = true
++    elseif square.AddTileObject then
++        pcall(square.AddTileObject, square, object)
++    end
++    if not transmitted and object.transmitCompleteItemToClients then
++        pcall(object.transmitCompleteItemToClients, object)
++    end
+     household.revision = (household.revision or 0) + 1
+     emit("CREATED household=" .. tostring(household.id) .. " kind=storage x="
+         .. tostring(square:getX()) .. " y=" .. tostring(square:getY()) .. " z="
+BINARY FILE CHANGED: baseline/42/media/textures/NL_Plumbob.png -> modified/42/media/textures/NL_Plumbob.png

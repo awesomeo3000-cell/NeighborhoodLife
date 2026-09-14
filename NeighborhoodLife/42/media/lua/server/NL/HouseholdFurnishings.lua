@@ -76,8 +76,15 @@ function NLHouseholdFurnishings.ensure(household)
         return existing
     end
     local cell = getCell and getCell() or nil
-    local ok, object = pcall(IsoObject.new, square, NLHouseholdFurnishings.sprite,
-        NLHouseholdFurnishings.objectName)
+    local ok, object
+    if IsoObject.getNew then
+        ok, object = pcall(IsoObject.getNew, square, NLHouseholdFurnishings.sprite,
+            NLHouseholdFurnishings.objectName, false)
+    end
+    if not ok or not object then
+        ok, object = pcall(IsoObject.new, square, NLHouseholdFurnishings.sprite,
+            NLHouseholdFurnishings.objectName)
+    end
     if (not ok or not object) and cell then
         ok, object = pcall(IsoObject.new, cell, square, NLHouseholdFurnishings.sprite,
             NLHouseholdFurnishings.objectName)
@@ -90,8 +97,23 @@ function NLHouseholdFurnishings.ensure(household)
     record(household, square, object)
     if object.setSpecialTooltip then object:setSpecialTooltip(true) end
     if object.setName then pcall(object.setName, object, NLHouseholdFurnishings.objectName) end
-    if square.AddTileObject then pcall(square.AddTileObject, square, object) end
-    if object.transmitCompleteItemToClients then pcall(object.transmitCompleteItemToClients, object) end
+    -- This native API both adds the object and emits the Build 42 object packet.
+    -- Calling AddTileObject first makes transmitAddObjectToSquare return early.
+    local transmitted = false
+    if square.transmitAddObjectToSquare then
+        local index = 0
+        if square.getObjects then
+            local objects = square:getObjects()
+            if objects and objects.size then index = objects:size() - 1 end
+        end
+        pcall(square.transmitAddObjectToSquare, square, object, index)
+        transmitted = true
+    elseif square.AddTileObject then
+        pcall(square.AddTileObject, square, object)
+    end
+    if not transmitted and object.transmitCompleteItemToClients then
+        pcall(object.transmitCompleteItemToClients, object)
+    end
     household.revision = (household.revision or 0) + 1
     emit("CREATED household=" .. tostring(household.id) .. " kind=storage x="
         .. tostring(square:getX()) .. " y=" .. tostring(square:getY()) .. " z="

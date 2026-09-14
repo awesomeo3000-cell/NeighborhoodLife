@@ -253,6 +253,26 @@ local function queueCareerWorldPickup(itemType, expected)
 end
 
 Events.OnServerCommand.Add(function(module, command, args)
+    if module == "NeighborhoodQA" and command == "household_viewpoint" and type(args) == "table"
+            and qaIdentity().username == "nl-guest" then
+        local player = getSpecificPlayer(0)
+        if player then
+            local x = (tonumber(args.x) or player:getX()) + 0.5
+            local y = (tonumber(args.y) or player:getY()) + 0.5
+            local z = tonumber(args.z) or player:getZ()
+            if player.teleportTo then player:teleportTo(x, y, z)
+            else
+                player:setX(x)
+                player:setY(y)
+                if player.setZ then player:setZ(z) end
+            end
+            local cell = getCell and getCell()
+            local square = cell and cell:getGridSquare(args.x, args.y, args.z)
+            if square and player.setCurrent then player:setCurrent(square) end
+            emit("HOUSEHOLD VIEWPOINT", "guest moved to shared home tile x="
+                .. tostring(args.x) .. " y=" .. tostring(args.y) .. " z=" .. tostring(args.z))
+        end
+    end
     if module == "NeighborhoodLife" and command == "snapshot" and type(args) == "table" then
         NLQAMultiplayer.snapshots = NLQAMultiplayer.snapshots + 1
         emit("SNAPSHOT", "username=" .. tostring(args.username) .. " revision=" .. tostring(args.revision)
@@ -607,6 +627,13 @@ local function scanRemoteObjects()
         end
         details[#details + 1] = "productionNpcReplicas=" .. tostring(npcReplicas)
         details[#details + 1] = "productionHouseholdFurnishings=" .. tostring(householdFurnishings)
+        local furnishingClientCount, furnishingPendingCount = 0, 0
+        if NLHouseholdFurnishingClient then
+            for _ in pairs(NLHouseholdFurnishingClient.objects or {}) do furnishingClientCount = furnishingClientCount + 1 end
+            for _ in pairs(NLHouseholdFurnishingClient.pending or {}) do furnishingPendingCount = furnishingPendingCount + 1 end
+        end
+        details[#details + 1] = "productionHouseholdFurnishingClient=" .. tostring(furnishingClientCount)
+            .. " productionHouseholdFurnishingPending=" .. tostring(furnishingPendingCount)
     end
     if type(getOnlinePlayers) == "function" then
         local onlineOk, online = pcall(getOnlinePlayers)

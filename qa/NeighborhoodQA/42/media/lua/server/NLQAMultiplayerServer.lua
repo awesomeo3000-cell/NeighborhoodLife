@@ -21,6 +21,40 @@ if type(getClass) == "function" then
 end
 local reannounced = false
 local careerSeeded = {}
+local householdViewpointMoved = false
+
+-- QA-only viewpoint setup: after the real invite/accept flow, place the guest
+-- at the shared home so the production client can exercise streamed-in tile
+-- retry without mouse or keyboard input. This does not enter the mod package.
+Events.OnTick.Add(function()
+    if householdViewpointMoved or type(getOnlinePlayers) ~= "function" then return end
+    if not careerSeeded["nl-host"] then return end
+    local world = NLAuthority and NLAuthority.world()
+    local household = world and world.households and world.households["home:nl-host"]
+    if not household or not household.members or not household.members["nl-guest"] then return end
+    local ok, players = pcall(getOnlinePlayers)
+    if not ok or not players then return end
+    for index = 0, players:size() - 1 do
+        local player = players:get(index)
+        if player and player:getUsername() == "nl-guest" then
+            local square = getCell():getGridSquare(household.home.x, household.home.y, household.home.z)
+            if square then
+                player:setX(household.home.x + 0.5)
+                player:setY(household.home.y + 0.5)
+                if player.setZ then player:setZ(household.home.z) end
+                player:setCurrent(square)
+                householdViewpointMoved = true
+                sendServerCommand(player, "NeighborhoodQA", "household_viewpoint", {
+                    x = household.home.x, y = household.home.y, z = household.home.z,
+                })
+                print("NLQA HOUSEHOLD VIEWPOINT: guest loaded shared home tile x="
+                    .. tostring(household.home.x) .. " y=" .. tostring(household.home.y)
+                    .. " z=" .. tostring(household.home.z))
+            end
+            return
+        end
+    end
+end)
 
 Events.OnClientCommand.Add(function(module, command, player)
     if module ~= "NeighborhoodQA" or command ~= "reset_household" or not player
@@ -30,6 +64,9 @@ Events.OnClientCommand.Add(function(module, command, player)
         local profile = NLDomain.profile(world, username)
         profile.householdId, profile.householdInvite = nil, nil
         profile.claimed = {}
+    end
+    for _, household in pairs(world.households or {}) do
+        if NLHouseholdFurnishings then NLHouseholdFurnishings.remove(household) end
     end
     world.households = {}
     print("NLQA HOUSEHOLD RESET: isolated host and guest household state cleared")
@@ -48,6 +85,9 @@ Events.OnClientCommand.Add(function(module, command, player, args)
         local profile = NLDomain.profile(world, qaUsername)
         profile.householdId, profile.householdInvite = nil, nil
         profile.claimed = {}
+    end
+    for _, household in pairs(world.households or {}) do
+        if NLHouseholdFurnishings then NLHouseholdFurnishings.remove(household) end
     end
     world.households = {}
     print("NLQA HOUSEHOLD RESET: career fixture cleared persisted household and claims")

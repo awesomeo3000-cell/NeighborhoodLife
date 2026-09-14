@@ -14,6 +14,11 @@ function square:RemoveTileObject(object)
     for i, value in ipairs(objectList) do if value == object then table.remove(objectList, i); return end end
 end
 function square:transmitRemoveItemFromSquare() end
+local transmitted = 0
+function square:transmitAddObjectToSquare(object, _)
+    transmitted = transmitted + 1
+    square:AddTileObject(object)
+end
 local cell = {getGridSquare=function(_, x, y, z) if x==10 and y==20 and z==0 then return square end end}
 function getCell() return cell end
 IsoObject = {new=function(squareObject, sprite, name)
@@ -23,13 +28,14 @@ IsoObject = {new=function(squareObject, sprite, name)
     function object:setSpecialTooltip() end
     function object:transmitCompleteItemToClients() end
     return object
-end}
+end, getNew=function(squareObject, sprite, name, _) return IsoObject.new(squareObject, sprite, name) end}
 require 'NL/Households'
 require 'NL/HouseholdFurnishings'
 local home = NLHouseholds.new('home:host', 'host', {x=10,y=20,z=0})
 local first = NLHouseholdFurnishings.ensure(home)
 assert(first and #objectList == 1, 'native storage furnishing created once')
 assert(first:getModData().NeighborhoodHouseholdId == 'home:host', 'furnishing carries household identity')
+assert(transmitted == 1, 'native furnishing transmitted through square object packet')
 local second = NLHouseholdFurnishings.ensure(home)
 assert(second == first and #objectList == 1, 'existing furnishing is reused')
 local summary = NLHouseholds.copySummary(home, {host=true})
