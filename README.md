@@ -499,6 +499,22 @@ garments at zero, and then logged replacement completion for both garments from
 `production-NLWardrobe.wear`. New clothing variants, original assets and
 unlock/reward integration remain breadth work.
 
+## v1.38 forced-crash NPC inventory recovery
+
+The isolated hands-free QA runner now arms a QA-only `player-applied` fault,
+waits until the production inventory journal is saved, forcibly stops the real
+dedicated `GameServer`, restarts it against the same save, and reconnects the
+host without mouse or keyboard control. Build 42 logged the partial journal,
+`SaveAll`, old PID `32700`, new PID `31648`, and
+`NLQA INVENTORY JOURNAL RECOVERY: state=repaired`; the host then received the
+repaired private snapshot. The fault config and orchestration remain outside
+the production package.
+
+`evidence/v58/` records the run as actual host-plus-guest engine gameplay
+evidence. Lua/Kahlua tests remain mock and engine-VM evidence, and this
+milestone proves the NPC inventory journal only; broader global-data crash
+atomicity, world actions and item/container breadth remain open.
+
 ## v1.37 transactional NPC inventory recovery
 
 NPC `give` and `request` now write a world-level transaction journal before
@@ -508,8 +524,8 @@ the server clears it only after both sides apply. On the next command for the
 same account, a complete transaction is finalized, an untouched transaction is
 discarded, and a partial transaction is repaired to its recorded pre-state.
 The Lua/Kahlua suites cover both player-side and world-side partial mutations.
-This is recovery groundwork, not a claim of forced-crash atomicity; the
-cross-save crash window still needs a controlled live crash probe.
+This recovery journal is the production mechanism exercised by the v1.38
+forced-crash probe above.
 
 ## v1.36 extra-small plumbob placement
 

@@ -1,3 +1,4 @@
+param([switch]$InventoryCrashProbe)
 $ErrorActionPreference = 'Stop'
 $root = 'E:\pzmod'
 $game = 'E:\SteamLibrary\steamapps\common\ProjectZomboid'
@@ -18,7 +19,7 @@ foreach ($profile in $profiles) {
     }
     Copy-Item "$root\NeighborhoodLife" "$profile\mods" -Recurse -Force
     Copy-Item "$root\qa\NeighborhoodQA" "$profile\mods" -Recurse -Force
-    @'
+@'
 VERSION = 1,
 mods
 {
@@ -29,6 +30,10 @@ maps
 {
 }
 '@ | Set-Content "$profile\mods\default.txt"
+}
+
+if ($InventoryCrashProbe) {
+    "NLQAInventoryFaultMode = 'player-applied'" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQAFaultConfig.lua"
 }
 
 # Per-client identity: the engine has no no-Steam username source at the main menu,

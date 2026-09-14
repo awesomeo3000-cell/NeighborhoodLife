@@ -12,13 +12,13 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; server-authoritative worn-garment capture and revisioned private snapshots in v1.28; v1.29 actual vanilla clothing acquisition, wear and reconnect snapshot persistence; v1.30 actual production saved-outfit replacement after vanilla unequip; light-themed wardrobe panel reachable from HUD | New garment variants, original assets, unlock/reward integration |
 | Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback, v1.27 adds a best-effort `GameServer` reannouncement adapter plus mock contract coverage, v1.31 makes the dedicated-server fallback collision-aware and reroutes a blocked waypoint instead of stepping through it, and v1.32 retires native deaths into persistent dead rows and schedules saved-tile recovery for missing streamed bodies | Build 42 native server-body reannouncement remains unproven because the real dedicated server exposes `GameServer=nil` to Lua; danger handling and natural streamed-cell behavior still need actual gameplay evidence |
-| NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot; v1.23 completes a real host `chat` -> `joke` sequence against Marisol during a connected host+guest run with cooldown and line-of-sight gates; v1.24 broadcasts successful social events to every connected client without sharing private relationship values; v1.26 drives a guest `introduce` against Kenji while the host remains connected and receives the guest event; v1.33 adds persistent per-NPC inventory, server-validated `give`/`request` exchange, revisioned snapshots and Relationships-panel actions, with actual host gameplay evidence; v1.34 adds normalized multi-item inventory entries, persisted display metadata and dynamic Relationships-panel selection from the player's main inventory; v1.35 proves a real dedicated-server process restart preserves the NPC inventory snapshot before a second host exchange; v1.37 adds recoverable cross-owner inventory transaction journaling and partial-state repair | Forced-crash proof, richer world actions and broader item/container metadata |
+| NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot; v1.23 completes a real host `chat` -> `joke` sequence against Marisol during a connected host+guest run with cooldown and line-of-sight gates; v1.24 broadcasts successful social events to every connected client without sharing private relationship values; v1.26 drives a guest `introduce` against Kenji while the host remains connected and receives the guest event; v1.33 adds persistent per-NPC inventory, server-validated `give`/`request` exchange, revisioned snapshots and Relationships-panel actions, with actual host gameplay evidence; v1.34 adds normalized multi-item inventory entries, persisted display metadata and dynamic Relationships-panel selection from the player's main inventory; v1.35 proves a real dedicated-server process restart preserves the NPC inventory snapshot before a second host exchange; v1.37 adds recoverable cross-owner inventory transaction journaling and partial-state repair; v1.38 proves journal repair after a forced real server crash and reconnect | Broader world actions and item/container metadata |
 | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence; v1.24 adds a bounded replicated social-event feed and Relationships-panel shared-event line; v1.26 proves the guest independently mutates Kenji to friendship 3/trust 2 while the host receives only the event | In-world UI/interaction checks, richer date activities and direct two-client romance synchronization |
 | Household life | v1.16 extends the v1.15 server-authoritative Neighborhood Home with persistent shared storage, exact item-type deposits from unequipped main inventory, member withdrawals, capacity and malformed-item guards, shared-storage UI actions, and real host-to-guest inventory transfer evidence | Home ownership transfer UX, functional furnishings, offline/co-op routines beyond the tested activity, richer item metadata/container transfer |
 | Aspirations and home activities | Delivery milestones already persist and render in the career journal; v1.15 adds three authoritative home routines (tidy, meal, social) with daily replay guards and rewards | Household-linked aspiration goals, hobbies, functional furnishings and broader home progression |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
 | Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host and guest social mutations with private relationship state, replicated social events, server-authoritative career delivery, server-authoritative wardrobe capture plus vanilla clothing acquisition/wear and same-client reconnect snapshot persistence in v1.29, actual production saved-outfit replacement in v1.30, vanilla client-acquisition inventory transfer, v1.33 actual host `give`/`request` exchange, v1.34 dynamic inventory metadata snapshots, server-authoritative household invite/accept/activity loop, shared-storage host deposit plus guest withdrawal, disconnect-clean local native NPC replicas, authoritative remote marker fallback and v1.21 local native remote-player fallback, v1.27 native reannouncement adapter probing, and v1.31 collision-aware native NPC fallback movement | Simultaneous gameplay beyond the tested delivery, mod distribution, successful native body reannouncement, stable two-way remote movement under a naturally missing native peer, and replicated-character UI |
-| Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile; v1.14 vanilla world-item pickup plus fresh production delivery; v1.31 hands-free host+guest movement, NPC replicas and runtime API probe; v1.33 hands-free host `give`/`request` exchange against Marisol; v1.34 hands-free snapshot metadata and dynamic item-selection regression; v1.35 hands-free dedicated-server restart and post-restart NPC inventory exchange | Broader world/inventory/NPC/host integration tests and regression suite |
+| Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile; v1.14 vanilla world-item pickup plus fresh production delivery; v1.31 hands-free host+guest movement, NPC replicas and runtime API probe; v1.33 hands-free host `give`/`request` exchange against Marisol; v1.34 hands-free snapshot metadata and dynamic item-selection regression; v1.35 hands-free dedicated-server restart and post-restart NPC inventory exchange; v1.38 forced-crash journal repair with reconnect | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
 
@@ -35,8 +35,9 @@ The original broad goal remains active. This ledger is not a reduced definition 
 - Player identity comes from the server callback, never from client-supplied usernames.
 - Supply requests consume only unequipped main-inventory items. No partial delivery.
 - Career claims are per career/day/slot; switching careers preserves prior claims.
-- Duplicate packets do not reward twice during a running server. Crash-atomic inventory
-  and global-data commits are NOT yet proven and must be investigated before release.
+- Duplicate packets do not reward twice during a running server. NPC inventory
+  journal repair after a forced crash is proven in v1.38; broader global-data
+  crash-atomic commits remain open and must be investigated before release.
 - Careers persist per account per world, including after a survivor dies.
 - Community credits are currently a ledger, not yet spendable currency.
 - Saved outfits currently add/equip layers; they do not remove unrelated worn layers.
@@ -54,7 +55,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 ## Next engineering gates
 
 1. Real-world career/wardrobe tests; preserve and reload the isolated save.
-2. Extend the actual two-client inventory slice beyond the fixed sheet exchange and verify restart/crash atomicity.
+2. Extend the actual two-client inventory slice beyond the fixed sheet exchange and verify broader global-data crash atomicity.
 3. NPC body/movement/network experiment in the isolated world, then persistent neighbors.
 4. Integrate conversations, relationships, romance and neighborhood careers.
 5. Expand appearance/clothing assets, households, aspirations, furnishings and UI polish.
@@ -141,6 +142,23 @@ romance synchronization remain open.
 - This closes the actual saved-outfit replacement probe. New clothing
   variants, original assets and unlock/reward integration remain breadth work.
 
+## v1.38 forced-crash NPC inventory recovery
+
+- The isolated hands-free runner arms a temporary QA-only fault after the
+  production `give` command removes the player's item and journals the pending
+  NPC-side mutation. It waits for the real dedicated server's `SaveAll`, stops
+  that process, restarts it with the same cachedir, and asks the host client to
+  reconnect.
+- The restarted production authority logged
+  `NLQA INVENTORY JOURNAL RECOVERY: state=repaired`, restoring the player's
+  pre-transaction count and NPC row. The host received `Inventory recovery
+  repaired` in its private snapshot.
+- `evidence/v58/` contains the baseline/modified/rollback tests and real
+  server/host/guest logs. This is actual Build 42 process and gameplay
+  evidence, not a mock or engine-VM claim. The QA fault config and runner are
+  not packaged into the production mod. Broader global-data crash atomicity,
+  world actions and item/container breadth remain open.
+
 ## v1.37 transactional NPC inventory recovery
 
 - Production `NLSocialAuthority` writes `world.inventoryJournal` before an NPC
@@ -152,8 +170,8 @@ romance synchronization remain open.
   discards an untouched journal. The focused authority suite covers both
   partial directions and the complete 31-assertion path passes in Lua 5.1 and
   the installed Kahlua VM.
-- This is recovery groundwork. Forced process-crash atomicity across the
-  player's save and world ModData files remains an explicit open gate.
+- The v1.38 forced-crash probe exercises this recovery path across a real
+  dedicated-server process restart.
 
 ## v1.36 extra-small plumbob placement
 

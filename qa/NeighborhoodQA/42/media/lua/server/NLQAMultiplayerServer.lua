@@ -23,6 +23,17 @@ local reannounced = false
 local careerSeeded = {}
 local wardrobeSeeded = {}
 local householdViewpointMoved = false
+local inventoryFaultArmed = false
+
+-- The crash probe supplies NLQAInventoryFaultMode through a temporary
+-- server-only QA config file. It never exists in the production package.
+Events.OnTick.Add(function()
+    if inventoryFaultArmed or type(NLQAInventoryFaultMode) ~= "string"
+            or not NLSocialAuthority then return end
+    NLSocialAuthority.testFaultPhase=NLQAInventoryFaultMode
+    inventoryFaultArmed=true
+    print("NLQA INVENTORY FAULT ARMED: phase="..tostring(NLQAInventoryFaultMode))
+end)
 
 -- QA-only engine bridge probe.  Build 42 does not publish GameServer as a Lua
 -- global on the dedicated server, but its native objects still carry a Java
@@ -178,6 +189,10 @@ Events.OnClientCommand.Add(function(module, command, player, args)
     local username = player:getUsername()
     if username ~= "nl-host" or careerSeeded[username] then return end
     local world = NLAuthority.world()
+    if type(NLQAInventoryFaultMode)=="string" and world.inventoryJournal then
+        print("NLQA INVENTORY FAULT: deferred career seed while journal is pending")
+        return
+    end
     for _, qaUsername in ipairs({"nl-host", "nl-guest"}) do
         local profile = NLDomain.profile(world, qaUsername)
         profile.householdId, profile.householdInvite = nil, nil

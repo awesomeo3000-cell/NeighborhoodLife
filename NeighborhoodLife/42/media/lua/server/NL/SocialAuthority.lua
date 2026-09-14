@@ -132,10 +132,12 @@ function NLSocialAuthority.recoverInventoryJournal(world,player)
         and journal.playerBefore-journal.amount or journal.playerBefore+journal.amount
     if currentNpc==npcExpected and currentPlayer==playerExpected then
         clearJournal(world)
+        NLSocialAuthority.lastRecoveryState="completed"
         return true,"completed"
     end
     if currentNpc==journal.npcBefore and currentPlayer==journal.playerBefore then
         clearJournal(world)
+        NLSocialAuthority.lastRecoveryState="rolled-back"
         return true,"rolled-back"
     end
     -- A partial exchange is restored to the recorded pre-transaction counts.
@@ -154,6 +156,7 @@ function NLSocialAuthority.recoverInventoryJournal(world,player)
     end
     row.revision=journal.npcRevisionBefore
     clearJournal(world)
+    NLSocialAuthority.lastRecoveryState="repaired"
     return true,"repaired"
 end
 
@@ -192,6 +195,15 @@ local function inventoryExchange(world,player,npcId,args,mode)
             end
         end
         journal.state="player-applied"
+        if NLSocialAuthority.testFaultPhase=="player-applied" then
+            NLSocialAuthority.testFaultPhase=nil
+            if NLQAMultiplayerServer then
+                print("NLQA INVENTORY JOURNAL PARTIAL: phase=player-applied npc="
+                    ..tostring(npcId).." item="..tostring(itemType)
+                    .." amount="..tostring(amount))
+            end
+            return false,"QA forced partial inventory transaction"
+        end
         row.inventory[itemType]=(row.inventory[itemType] or 0)+amount
         rememberItem(row,itemType,chosen[1])
         row.revision=(row.revision or 0)+1
@@ -285,7 +297,14 @@ function NLSocialAuthority.command(module,command,player,args)
         NLSocialAuthority.snapshot(player,"Inventory recovery pending: "..tostring(recoveryState))
         return
     end
+    if recoveryState=="repaired" or recoveryState=="completed" or recoveryState=="rolled-back" then
+        if NLQAMultiplayerServer then
+            print("NLQA INVENTORY JOURNAL RECOVERY: state="..tostring(recoveryState)
+                .." player="..tostring(key))
+        end
+    end
     local message="Updated"
+    if recoveryState=="repaired" then message="Inventory recovery repaired" end
     local completed=command~="interact"
     if command=="interact" then
         local npc=(NLAuthority.world().neighbors or {})[args.id]
