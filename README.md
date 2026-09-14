@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.56)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.57)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -514,6 +514,16 @@ records the extra layer changing from `before=1` to `after=0` while the saved
 shirt and trousers return to `1`. `evidence/v77/actual-gameplay-probes.txt`
 and the captured host/guest/server logs are actual gameplay evidence; the QA
 seed remains outside the production package.
+
+## v1.57 native NPC identity hint
+
+NPC presence packets now carry a valid Build 42 native `IsoPlayer` online id
+when the server exposes one. The client uses that hint while scanning the
+loaded cell, alongside the persistent `NeighborhoodNpcId`, so a server-native
+body can be promoted even when its replicated ModData or display name has not
+arrived yet. Lua and installed-game Kahlua tests cover both identity paths;
+actual native server-body reannouncement remains dependent on the dedicated
+server's unavailable `GameServer` bridge.
 
 ## v1.55 saved outfits replace unrelated layers
 

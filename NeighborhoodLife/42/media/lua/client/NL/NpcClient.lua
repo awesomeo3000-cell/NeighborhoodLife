@@ -32,7 +32,7 @@ end
 local cancelNativePath
 NLNpcClient.bodyPresent = bodyPresent
 
-local function nativeBody(id)
+local function nativeBody(id, onlineId)
     local cellOk, cell = pcall(getCell)
     if not cellOk or not cell then return nil end
     local listOk, list = pcall(cell.getObjectListForLua, cell)
@@ -45,6 +45,10 @@ local function nativeBody(id)
             local dataOk, data = pcall(object.getModData, object)
             if dataOk and data and data.NeighborhoodNpcId == id
                     and data.NeighborhoodNpcReplica ~= true then return object end
+        end
+        if onlineId ~= nil and object and object.getOnlineID then
+            local onlineOk, value = pcall(object.getOnlineID, object)
+            if onlineOk and tonumber(value) == tonumber(onlineId) then return object end
         end
     end
     return nil
@@ -120,7 +124,19 @@ local function reconcileNativeBodies()
         if objectOk and object and object.getModData then
             local dataOk, data = pcall(object.getModData, object)
             local id = dataOk and data and data.NeighborhoodNpcId
-            if id and data.NeighborhoodNpcReplica ~= true then
+            if not id and object.getOnlineID then
+                local onlineOk, onlineId = pcall(object.getOnlineID, object)
+                if onlineOk then
+                    for candidateId, state in pairs(NLNpcClient.states) do
+                        if state and state.onlineId ~= nil
+                                and tonumber(state.onlineId) == tonumber(onlineId) then
+                            id = candidateId
+                            break
+                        end
+                    end
+                end
+            end
+            if id and (not data or data.NeighborhoodNpcReplica ~= true) then
                 id = tostring(id)
                 local known = NLNpcClient.bodies[id]
                 local knownIsFallback = false
@@ -163,7 +179,7 @@ function NLNpcClient.apply(packet)
             -- A server-native body can arrive after the client has already
             -- created its compatibility replica. Promote to that body as
             -- soon as it appears instead of leaving the fallback in place.
-            local discovered = nativeBody(id)
+            local discovered = nativeBody(id, entry.onlineId)
             if discovered and discovered ~= body then
                 if body then forgetReplica(id, body) end
                 body = discovered

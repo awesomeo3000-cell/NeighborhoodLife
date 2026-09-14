@@ -44,12 +44,15 @@ assert(NLClient.presence.players[2].username=='guest','client stores replicated 
 local npcOk = pcall(require, 'NL/NpcAuthority')
 if npcOk and NLNpcAuthority and NLNpcAuthority.broadcastPresence and NLNpcAuthority.sendPresence then
     local npc={getX=function() return 10756.5 end,getY=function() return 10214.5 end,
-        getZ=function() return 0 end,isDead=function() return false end}
+        getZ=function() return 0 end,getOnlineID=function() return 12 end,
+        isDead=function() return false end}
     NLNpcAuthority.bodies={marisol=npc}
     NLNpcAuthority.broadcastPresence()
     local npcPacket
     for _,packet in ipairs(packets) do if packet.command=='npc_presence' then npcPacket=packet end end
     assert(npcPacket and npcPacket.args.npcs[1].id=='marisol','NPC state sent to each connected player')
+    assert(npcPacket.args.npcs[1].onlineId==12,
+        'NPC presence carries the native online identity hint when available')
     assert(NLNpcAuthority.sendPresence(host)==1,'NPC state can be sent immediately to a reconnecting player')
     NLClient.receive('NeighborhoodLife','npc_presence',npcPacket.args)
     assert(NLClient.npcPresence.npcs[1].x==10756.5,'client stores authoritative NPC state')

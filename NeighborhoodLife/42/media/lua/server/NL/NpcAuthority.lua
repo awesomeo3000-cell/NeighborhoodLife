@@ -37,6 +37,13 @@ local function presencePacket()
         if row and row.alive ~= false and body and not body:isDead() then
             local isFemale = true
             if definition and definition.female ~= nil then isFemale = definition.female end
+            local onlineId
+            if body.getOnlineID then
+                local onlineOk, value = pcall(body.getOnlineID, body)
+                if onlineOk and tonumber(value) and tonumber(value) >= 0 then
+                    onlineId = tonumber(value)
+                end
+            end
             entries[#entries + 1] = {
                 id=id, x=body:getX(), y=body:getY(), z=body:getZ(),
                 waypoint=row.waypoint or 1,
@@ -44,6 +51,7 @@ local function presencePacket()
                 name=definition and definition.name or id,
                 female=isFemale,
                 outfit=definition and definition.outfit or "Generic01",
+                onlineId=onlineId,
             }
         end
     end

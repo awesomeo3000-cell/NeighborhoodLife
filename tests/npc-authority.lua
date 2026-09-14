@@ -42,6 +42,7 @@ local function bodyAt(cell,desc,x,y,z)
     function b:getModData() return self.mod end; function b:dressInNamedOutfit() end
     function b:setX(v) self.x=v end; function b:setY(v) self.y=v end; function b:getX() return self.x end
     function b:getY() return self.y end; function b:getZ() return self.z end
+    function b:getOnlineID() return 44 end
     function b:setCurrent(v) self.current=v end; function b:setSceneCulled() end
     function b:setAlphaAndTarget() end; function b:resetModelNextFrame() end
     function b:isDead() return self.dead == true end; function b:hasPath() return false end
