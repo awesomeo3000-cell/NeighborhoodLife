@@ -112,5 +112,15 @@ before=r.friendship; p.dead=true; cmd(p,'chat'); check(r.friendship==before,'dea
 body.dead=true; cmd(p,'chat'); check(world.neighbors.marisol.dead and r.friendship==before,'dead NPC persisted and rejected')
 last.args.neighbors[1].relation.friendship=999
 check(r.friendship~=999,'snapshot cannot mutate authority')
+world.neighbors.marisol.partner='host'
+NLSocialAuthority.snapshot(p,'partner state')
+check(last.args.neighbors[1].exclusive==true and last.args.neighbors[1].isPartner==true,
+    'snapshot marks the current player as the exclusive partner')
+NLSocialAuthority.snapshot(q,'partner state')
+check(last.args.neighbors[1].exclusive==true and last.args.neighbors[1].isPartner==false,
+    'snapshot replicates exclusive availability without the other account key')
+check(last.args.neighbors[1].relation.status=='Unavailable',
+    'other client sees partnership availability status')
+world.neighbors.marisol.partner=nil
 NLSocialAuthority.bodies={}; cmd(p,'chat'); check(r.friendship==before,'unloaded body rejected')
 print('PASS: '..n..' social authority assertions (proximity, visibility, private snapshots, death and absent bodies)')

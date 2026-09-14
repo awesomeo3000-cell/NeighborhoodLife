@@ -254,17 +254,27 @@ NLSocialAuthority.inventoryExchange=inventoryExchange
 function NLSocialAuthority.snapshot(player,message)
     local world=NLAuthority.world()
     NLNeighbors.ensure(world)
-    local profile=NLDomain.profile(world,NLAuthority.key(player))
+    local key=NLAuthority.key(player)
+    local profile=NLDomain.profile(world,key)
     local result={username=NLAuthority.key(player),neighbors={},message=message or "Updated",revision=profile.revision}
     for _,id in ipairs(NLSocial.order) do
         local npc=NLNeighbors.get(world,id)
         if npc then
             local body=NLSocialAuthority.bodies[id]
+            local relation=NLDomain.copy(NLSocial.relation(profile,id))
+            local exclusive=npc.partner~=nil
+            if npc.partner==key then
+                relation.status="Partner"
+            elseif exclusive then
+                -- Replicate availability without exposing the other player's
+                -- account key through a private relationship snapshot.
+                relation.status="Unavailable"
+            end
             local row={id=id,name=NLSocial.people[id].name,personality=NLSocial.people[id].personality,
                 age=NLSocial.people[id].age,dead=npc.dead or npc.alive==false,available=body~=nil,canInteract=false,
                 inventory=NLDomain.copy(npc.inventory or {}),
                 inventoryItems=NLDomain.copy(NLNeighbors.inventoryEntries(world,id)),
-                relation=NLDomain.copy(NLSocial.relation(profile,id))}
+                relation=relation, exclusive=exclusive, isPartner=npc.partner==key}
             if body then
                 if body:isDead() then NLNeighbors.dead(world,id) end
                 row.dead=npc.dead or npc.alive==false

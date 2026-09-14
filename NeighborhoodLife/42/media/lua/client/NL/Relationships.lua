@@ -85,6 +85,9 @@ function NLRelationships:prerender()
     local npc=data and data.neighbors[self.selected]
     local nearby=npc and npc.available and not npc.dead and npc.canInteract==true
     for _,b in ipairs(self.actions) do b:setEnable(nearby==true) end
+    if self.actions[6] then
+        self.actions[6]:setEnable(nearby==true and (npc.exclusive~=true or npc.isPartner==true))
+    end
     if not npc then
         self.selected=1
         self:drawText("No neighbors registered in this world yet.",16,98,0.18,0.24,0.32,1,UIFont.Small)
@@ -104,7 +107,9 @@ function NLRelationships:prerender()
         self:drawRect(115,y+4,380*v[2],10,1,pink and 0.91 or 0.42,pink and 0.38 or 0.78,pink and 0.65 or 0.19)
         self:drawText(tostring(v[3]),512,y,0.18,0.24,0.32,1,UIFont.Small)
     end
+    local relationshipLocation=npc.exclusive and (npc.isPartner and "Your partner" or "In a partnership") or nil
     local location=npc.dead and "Deceased" or npc.available and ("Distance: "..math.floor(npc.distance or 0).." tiles") or "Away"
+    if relationshipLocation then location=location.." | "..relationshipLocation end
     self:drawText(location.." | Conversations require proximity and line of sight.",16,231,0.30,0.38,0.47,1,UIFont.Small)
     local giveChoice=playerGiveChoice(self.playerIndex)
     local requestChoice=(npc.inventoryItems and npc.inventoryItems[1])

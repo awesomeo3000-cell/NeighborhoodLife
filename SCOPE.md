@@ -1,4 +1,4 @@
-# Neighborhood Life — full scope and evidence ledger (v1.70)
+# Neighborhood Life — full scope and evidence ledger (v1.71)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
@@ -1117,3 +1117,17 @@ player body replication or completion of the remaining multiplayer gates.
   host-plus-guest engine evidence, separate from Lua mock/unit and installed
   Kahlua VM tests. The unexposed Build 42 connection/player-packet bridge
   remains the native NPC replication blocker.
+
+## v1.71 partnership visibility contract
+
+- `NLSocialAuthority.snapshot` now replicates `exclusive`, `isPartner`, and a
+  private `relation.status` of `Partner` or `Unavailable`; it never sends the
+  other player's account key.
+- The production Social panel disables the partner action for an NPC already
+  partnered to another player and labels the visible state. The server-side
+  partner command remains authoritative.
+- Mock/unit evidence: `tests/social-authority.lua` passes 34 assertions,
+  including host and guest partnership views. Engine-VM evidence: the full
+  consolidated Lua 5.1, syntax, and installed-game Kahlua suites pass. Actual
+  direct two-client romance synchronization remains an evidence gate, so this
+  milestone does not claim that gameplay gate complete.

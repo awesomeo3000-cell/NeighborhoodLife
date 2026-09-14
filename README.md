@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.70)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.71)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -1039,3 +1039,15 @@ active client path.
 This is actual host-plus-guest engine evidence, distinct from mock/unit and
 Kahlua VM tests. It narrows the native replication work to the unexposed Build
 42 connection/player-packet bridge rather than another Lua roster workaround.
+
+## v1.71 partnership visibility contract
+
+The production social snapshot now carries exclusive partnership availability
+without exposing another account key. The current player sees `Partner`, an
+already-partnered neighbor is marked `Unavailable`, and the Social panel
+disables the partner action while displaying the relationship state. The
+server remains authoritative for the actual partner command and the contract
+is covered by the social-authority mock suite plus the installed-game Kahlua
+suite. A direct two-client romance result still needs actual gameplay evidence;
+this milestone does not claim that gate complete. QA helpers remain outside
+the production package.
