@@ -405,6 +405,12 @@ local function spawnBody(id, row, player)
     desc:setFemale(definition.female ~= false)
     local body = IsoPlayer.new(cell, desc, square:getX(), square:getY(), square:getZ())
     body:setNpc(true)
+    -- IsoPlayer defaults every Lua-created body to online id 1. Assign the
+    -- stable authored slot before any presence packet is built so a future
+    -- native server reannouncement can identify each neighbor unambiguously.
+    if body.setOnlineID and definition.onlineId then
+        pcall(body.setOnlineID, body, definition.onlineId)
+    end
     body:setUsername((definition.name or id) .. " [Neighborhood Life]")
     body:setGodMod(true)
     body:getModData().NeighborhoodNpcId = id

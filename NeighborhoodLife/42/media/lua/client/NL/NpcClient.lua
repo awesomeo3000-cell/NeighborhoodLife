@@ -80,6 +80,9 @@ local function createReplica(entry)
         desc:setFemale(entry.female ~= false)
         body = IsoPlayer.new(cell, desc, math.floor(entry.x), math.floor(entry.y), math.floor(entry.z))
         body:setNpc(true)
+        if body.setOnlineID and tonumber(entry.onlineId) then
+            pcall(body.setOnlineID, body, tonumber(entry.onlineId))
+        end
         body:setUsername(name .. " [Neighborhood Life]")
         body:setGodMod(true)
         local replicaData = body:getModData()

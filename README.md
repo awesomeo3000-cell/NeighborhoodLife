@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.59)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.60)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -548,6 +548,16 @@ body. Persistent `NeighborhoodNpcId` ModData remains the preferred identity.
 Lua, Kahlua and actual v79 host/guest evidence cover the corrected contract;
 native server-body reannouncement remains open because `GameServer` is still
 unavailable to the dedicated-server Lua environment.
+
+## v1.60 stable authored native online-id slots
+
+The three authored vertical-slice neighbors now reserve stable online-id slots
+`30001`, `30002` and `30003` in persistent rows, and the client compatibility
+replica applies the packet hint when one is available. Lua and installed-game
+Kahlua coverage prove the assignment contract. The v81 real host+guest probe
+still recorded `onlineHints=0`: the dedicated server did not expose an effective
+runtime `IsoPlayer:setOnlineID(short)` path, so native server-body
+reannouncement remains open alongside the unavailable `GameServer` bridge.
 
 ## v1.55 saved outfits replace unrelated layers
 

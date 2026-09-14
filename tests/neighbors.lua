@@ -6,6 +6,8 @@ local world=NLDomain.newWorld()
 local rows=NLNeighbors.ensure(world)
 check(rows.marisol and rows.kenji and rows.amara,'all neighborhood identities initialized')
 check(rows.marisol.position.x==rows.marisol.home.x,'initial position is home')
+check(rows.marisol.onlineId==30001 and rows.kenji.onlineId==30002
+    and rows.amara.onlineId==30003,'authored native online identities persist with neighborhood rows')
 check(NLNeighbors.position(world,'marisol',11,12,0,2),'position update accepted')
 local copy=NLDomain.copy(world)
 check(copy.neighbors.marisol.position.x==11 and copy.neighbors.marisol.waypoint==2,'position serializes')

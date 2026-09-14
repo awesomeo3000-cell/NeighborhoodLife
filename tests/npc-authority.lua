@@ -42,7 +42,8 @@ local function bodyAt(cell,desc,x,y,z)
     function b:getModData() return self.mod end; function b:dressInNamedOutfit() end
     function b:setX(v) self.x=v end; function b:setY(v) self.y=v end; function b:getX() return self.x end
     function b:getY() return self.y end; function b:getZ() return self.z end
-    function b:getOnlineID() return 44 end
+    function b:getOnlineID() return self.onlineId or 44 end
+    function b:setOnlineID(value) self.onlineId=value end
     function b:setCurrent(v) self.current=v end; function b:setSceneCulled() end
     function b:setAlphaAndTarget() end; function b:resetModelNextFrame() end
     function b:isDead() return self.dead == true end; function b:hasPath() return false end
@@ -75,6 +76,7 @@ assert(NLNpcAuthority and type(NLNpcAuthority.start)=='function')
 NLNpcAuthority.start()
 local body=NLNpcAuthority.bodies.marisol
 assert(body and body:isNpc() and body:getModData().NeighborhoodNpcId=='marisol','production body created')
+assert(body:getOnlineID()==30001,'native NPC receives its stable authored online identity')
 if NLNpcAuthority.safeFallbackStep then
     local freeStepX,freeStepY=NLNpcAuthority.safeFallbackStep(body,{x=math.floor(body:getX())+2,y=math.floor(body:getY()),z=body:getZ()})
     assert(freeStepX and freeStepY,'stalled native path has a bounded free-tile fallback')

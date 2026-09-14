@@ -5,12 +5,15 @@ require "NL/Domain"
 NLNeighbors = {
     definitions = {
         marisol = { forename="Marisol", surname="Vega", name="Marisol Vega", female=true,
+            onlineId=30001,
             outfit="Generic01", home={x=10780,y=10268,z=0},
             waypoints={{x=10780,y=10268,z=0},{x=10784,y=10268,z=0}}, schedule="tailor" },
         kenji = { forename="Kenji", surname="Arakawa", name="Kenji Arakawa", female=false,
+            onlineId=30002,
             outfit="Generic01", home={x=10786,y=10270,z=0},
             waypoints={{x=10786,y=10270,z=0},{x=10790,y=10270,z=0}}, schedule="carpenter" },
         amara = { forename="Amara", surname="Okonkwo", name="Amara Okonkwo", female=true,
+            onlineId=30003,
             outfit="Generic01", home={x=10782,y=10274,z=0},
             waypoints={{x=10782,y=10274,z=0},{x=10786,y=10274,z=0}}, schedule="medic" }
     }
@@ -51,13 +54,14 @@ function NLNeighbors.ensure(world)
         local row = world.neighbors[id]
         if not row then
             row = { id=id, home=copy(def.home), position=copy(def.home), waypoint=1,
-                alive=true, inventory={}, inventoryMeta={}, revision=0 }
+                onlineId=def.onlineId, alive=true, inventory={}, inventoryMeta={}, revision=0 }
             world.neighbors[id] = row
         else
             row.id = id
             row.home = row.home or copy(def.home)
             row.position = row.position or copy(row.home)
             row.waypoint = row.waypoint or 1
+            row.onlineId = row.onlineId or def.onlineId
             if row.alive == nil then row.alive = not row.dead end
             row.revision = row.revision or 0
         end

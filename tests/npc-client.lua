@@ -34,6 +34,7 @@ SurvivorFactory={CreateSurvivor=desc}
 IsoPlayer={new=function(_,_,x,y,z)
     local b={x=x+0.5,y=y+0.5,z=z,data={}}
     function b:setNpc(v) self.npc=v end; function b:setUsername(v) self.username=v end
+    function b:setOnlineID(v) self.onlineId=v end; function b:getOnlineID() return self.onlineId or 1 end
     function b:setGodMod() end; function b:getModData() return self.data end
     function b:dressInNamedOutfit() end; function b:setSceneCulled() end
     function b:setAlphaAndTarget() end; function b:resetModelNextFrame() end
