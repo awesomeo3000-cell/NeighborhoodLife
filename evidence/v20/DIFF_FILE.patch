@@ -1,0 +1,110 @@
+--- baseline/42/media/lua/client/NL/Client.lua
++++ modified/42/media/lua/client/NL/Client.lua
+@@ -6,8 +6,10 @@
+     if module ~= "NeighborhoodLife" or type(args) ~= "table" then return end
+     if command == "npc_presence" then
+         local old = NLClient.npcPresence
+-        if not old or (args.revision or 0) >= (old.revision or 0) then NLClient.npcPresence = args end
+-        if NLNpcClient then NLNpcClient.apply(args) end
++        if not old or (args.revision or 0) >= (old.revision or 0) then
++            NLClient.npcPresence = args
++            if NLNpcClient then NLNpcClient.apply(args) end
++        end
+         return
+     end
+     if command == "presence" then
+--- baseline/42/media/lua/client/NL/NpcClient.lua
++++ modified/42/media/lua/client/NL/NpcClient.lua
+@@ -8,7 +8,7 @@
+ if not isClient or not isClient() then return end
+ 
+ require "NL/Plumbob"
+-NLNpcClient = { bodies={}, targets={}, states={} }
++NLNpcClient = { bodies={}, targets={}, states={}, revision=0 }
+ 
+ local function nativeBody(id)
+     local cellOk, cell = pcall(getCell)
+@@ -62,6 +62,9 @@
+ 
+ function NLNpcClient.apply(packet)
+     if type(packet) ~= "table" or type(packet.npcs) ~= "table" then return 0 end
++    local revision = tonumber(packet.revision or 0) or 0
++    if revision < NLNpcClient.revision then return 0 end
++    NLNpcClient.revision = revision
+     local seen = {}
+     for _, entry in ipairs(packet.npcs) do
+         if entry.id and entry.alive ~= false then
+@@ -112,7 +115,7 @@
+         local list = cell and cell:getObjectList()
+         if list and list.remove then list:remove(body) end
+     end
+-    NLNpcClient.bodies={}; NLNpcClient.targets={}; NLNpcClient.states={}
++    NLNpcClient.bodies={}; NLNpcClient.targets={}; NLNpcClient.states={}; NLNpcClient.revision=0
+ end
+ 
+ Events.OnTick.Add(NLNpcClient.update)
+--- baseline/42/media/lua/server/NL/Authority.lua
++++ modified/42/media/lua/server/NL/Authority.lua
+@@ -50,6 +50,9 @@
+     if isServer() then sendServerCommand(player, NLAuthority.module, "snapshot", result)
+     elseif NLClient then NLClient.receive(NLAuthority.module, "snapshot", result) end
+     NLAuthority.broadcastPresence()
++    if NLNpcAuthority and NLNpcAuthority.broadcastPresence then
++        NLNpcAuthority.broadcastPresence()
++    end
+     if NLQAMultiplayerServer then
+         print("NLQA PRODUCTION AUTHORITY SNAPSHOT: username=" .. tostring(result.username)
+             .. " revision=" .. tostring(result.revision))
+@@ -101,6 +104,9 @@
+     NLAuthority.lastRequest[key] = now
+     if command == "presence" then
+         NLAuthority.broadcastPresence()
++        if NLNpcAuthority and NLNpcAuthority.broadcastPresence then
++            NLNpcAuthority.broadcastPresence()
++        end
+         return
+     end
+     local profile = NLDomain.profile(NLAuthority.world(), key)
+--- baseline/42/media/lua/server/NL/NpcAuthority.lua
++++ modified/42/media/lua/server/NL/NpcAuthority.lua
+@@ -19,10 +19,7 @@
+     definitions = { "marisol" },
+ }
+ 
+-function NLNpcAuthority.broadcastPresence()
+-    if not isServer() or type(getOnlinePlayers) ~= "function" then return 0 end
+-    local ok, players = pcall(getOnlinePlayers)
+-    if not ok or not players then return 0 end
++local function presencePacket()
+     local world = NLAuthority.world()
+     local entries = {}
+     for id, body in pairs(NLNpcAuthority.bodies) do
+@@ -33,11 +30,25 @@
+             alive=not body:isDead(), revision=row and row.revision or 0,
+         }
+     end
+-    local packet = { revision=getTimestampMs(), npcs=entries }
++    return { revision=getTimestampMs(), npcs=entries }, #entries
++end
++
++function NLNpcAuthority.sendPresence(player)
++    if not isServer() or not player then return 0 end
++    local packet, count = presencePacket()
++    sendServerCommand(player, "NeighborhoodLife", "npc_presence", packet)
++    return count
++end
++
++function NLNpcAuthority.broadcastPresence()
++    if not isServer() or type(getOnlinePlayers) ~= "function" then return 0 end
++    local ok, players = pcall(getOnlinePlayers)
++    if not ok or not players then return 0 end
++    local packet, count = presencePacket()
+     for i=0,players:size()-1 do
+         sendServerCommand(players:get(i), "NeighborhoodLife", "npc_presence", packet)
+     end
+-    return #entries
++    return count
+ end
+ 
+ local function emit(message)
+BINARY FILE CHANGED: baseline/42/media/textures/NL_Plumbob.png -> modified/42/media/textures/NL_Plumbob.png

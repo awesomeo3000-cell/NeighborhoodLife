@@ -19,7 +19,10 @@ NLNpcAuthority = {
     definitions = { "marisol" },
 }
 
-local function presencePacket()
+function NLNpcAuthority.broadcastPresence()
+    if not isServer() or type(getOnlinePlayers) ~= "function" then return 0 end
+    local ok, players = pcall(getOnlinePlayers)
+    if not ok or not players then return 0 end
     local world = NLAuthority.world()
     local entries = {}
     for id, body in pairs(NLNpcAuthority.bodies) do
@@ -30,25 +33,11 @@ local function presencePacket()
             alive=not body:isDead(), revision=row and row.revision or 0,
         }
     end
-    return { revision=getTimestampMs(), npcs=entries }, #entries
-end
-
-function NLNpcAuthority.sendPresence(player)
-    if not isServer() or not player then return 0 end
-    local packet, count = presencePacket()
-    sendServerCommand(player, "NeighborhoodLife", "npc_presence", packet)
-    return count
-end
-
-function NLNpcAuthority.broadcastPresence()
-    if not isServer() or type(getOnlinePlayers) ~= "function" then return 0 end
-    local ok, players = pcall(getOnlinePlayers)
-    if not ok or not players then return 0 end
-    local packet, count = presencePacket()
+    local packet = { revision=getTimestampMs(), npcs=entries }
     for i=0,players:size()-1 do
         sendServerCommand(players:get(i), "NeighborhoodLife", "npc_presence", packet)
     end
-    return count
+    return #entries
 end
 
 local function emit(message)

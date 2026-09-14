@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, wardrobe and relationship prototype (v1.2)
+# Neighborhood Life: careers, wardrobe and relationship prototype (v1.3)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -28,9 +28,10 @@ registered with a real server-side body. In a new or loaded single-player world,
 Neighborhood Life now creates the persistent Marisol native body, gives her a small
 two-point route, and anchors a compact plumbob just above her model. The dedicated
 server now broadcasts authoritative NPC state, and each client creates a local native
-replica that interpolates only toward that state. Multiplayer NPC distribution is
-engine-proven at the mod-state/replica layer; native server-body reannouncement is
-still an open Build 42 API gate.
+replica that interpolates only toward that state. A refresh or presence request now
+pushes NPC state immediately, and clients reject stale revisions during reconnects.
+Multiplayer NPC distribution is engine-proven at the mod-state/replica layer; native
+server-body reannouncement is still an open Build 42 API gate.
 
 ## Required game checks (not yet performed)
 - Host and guest join: each sees one panel with their own six current stats.
@@ -142,3 +143,13 @@ received the same revisioned NPC positions and logged a native `Marisol Vega
 multiplayer evidence for the server-state/client-replica layer, distinct from the
 Lua mock and installed-game Kahlua suites. Build 42 did not expose `GameServer` as a
 Lua table in this run, so native server-body reannouncement remains open.
+
+## v1.3 reconnect-state evidence
+
+The current production build sends `npc_presence` during the same server refresh
+that returns a player's snapshot, instead of waiting for the periodic route tick.
+In the hands-free run recorded under `evidence/v20/`, the host received its NPC
+packet immediately after `SNAPSHOT`, and the guest received the same revisioned state
+on join. Both clients logged `productionNpcReplicas=1`. Client-side revision checks
+ignore delayed packets from before a reconnect, while an empty authoritative roster
+still removes the local replica and its plumbob.

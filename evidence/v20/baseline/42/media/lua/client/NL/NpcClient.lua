@@ -8,7 +8,7 @@
 if not isClient or not isClient() then return end
 
 require "NL/Plumbob"
-NLNpcClient = { bodies={}, targets={}, states={}, revision=0 }
+NLNpcClient = { bodies={}, targets={}, states={} }
 
 local function nativeBody(id)
     local cellOk, cell = pcall(getCell)
@@ -62,9 +62,6 @@ end
 
 function NLNpcClient.apply(packet)
     if type(packet) ~= "table" or type(packet.npcs) ~= "table" then return 0 end
-    local revision = tonumber(packet.revision or 0) or 0
-    if revision < NLNpcClient.revision then return 0 end
-    NLNpcClient.revision = revision
     local seen = {}
     for _, entry in ipairs(packet.npcs) do
         if entry.id and entry.alive ~= false then
@@ -115,7 +112,7 @@ function NLNpcClient.cleanup()
         local list = cell and cell:getObjectList()
         if list and list.remove then list:remove(body) end
     end
-    NLNpcClient.bodies={}; NLNpcClient.targets={}; NLNpcClient.states={}; NLNpcClient.revision=0
+    NLNpcClient.bodies={}; NLNpcClient.targets={}; NLNpcClient.states={}
 end
 
 Events.OnTick.Add(NLNpcClient.update)

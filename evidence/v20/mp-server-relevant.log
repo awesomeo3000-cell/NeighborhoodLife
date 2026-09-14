@@ -1,0 +1,8 @@
+LOG  : Network      f:261 st:196,460,175> Connected new client 824158928247616318 ID # 0
+LOG  : Network      f:305 st:196,464,492> Connected new client 725079736450116395 ID # 4
+LOG  : Lua          f:661 st:196,500,376> NLQA NPC PRODUCTION SPAWN id=marisol x=6815.50 y=5259.50 z=0
+LOG  : Lua          f:662 st:196,500,406> NLQA NPC PRODUCTION PATH id=marisol from=6815.50,5259.50 to=6817.00,5259.00 waypoint=1
+LOG  : Lua          f:678 st:196,502,036> NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-host revision=1
+LOG  : Lua          f:678 st:196,502,039> NLQA MP SERVER GAME-SERVER API: unavailable=attempted index: getPlayers of non-table: null java.lang.RuntimeException
+LOG  : Lua          f:716 st:196,505,892> NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-guest revision=1
+LOG  : Lua          f:716 st:196,505,894> NLQA MP SERVER GAME-SERVER API: unavailable=attempted index: getPlayers of non-table: null java.lang.RuntimeException

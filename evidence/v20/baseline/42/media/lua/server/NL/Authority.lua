@@ -50,9 +50,6 @@ function NLAuthority.snapshot(player, profile, message)
     if isServer() then sendServerCommand(player, NLAuthority.module, "snapshot", result)
     elseif NLClient then NLClient.receive(NLAuthority.module, "snapshot", result) end
     NLAuthority.broadcastPresence()
-    if NLNpcAuthority and NLNpcAuthority.broadcastPresence then
-        NLNpcAuthority.broadcastPresence()
-    end
     if NLQAMultiplayerServer then
         print("NLQA PRODUCTION AUTHORITY SNAPSHOT: username=" .. tostring(result.username)
             .. " revision=" .. tostring(result.revision))
@@ -104,9 +101,6 @@ function NLAuthority.command(module, command, player, args)
     NLAuthority.lastRequest[key] = now
     if command == "presence" then
         NLAuthority.broadcastPresence()
-        if NLNpcAuthority and NLNpcAuthority.broadcastPresence then
-            NLNpcAuthority.broadcastPresence()
-        end
         return
     end
     local profile = NLDomain.profile(NLAuthority.world(), key)

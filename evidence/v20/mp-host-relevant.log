@@ -1,0 +1,9 @@
+LOG  : Lua          f:122 st:196,502,060> NLQA MP SNAPSHOT: username=nl-host revision=1 snapshotCount=1
+LOG  : Lua          f:122 st:196,502,066> NLQA MP NPC PRESENCE: revision=1789344585983 count=1 entries=marisol@6815.50,5259.50,0/w1
+LOG  : Lua          f:299 st:196,505,115> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=31 [username=Marisol Vega [Neighborhood Life] x=6815.50 y=5259.50 z=0 | username=nl-guest x=10754.00 y=10214.00 z=0 | local=nl-host] productionNpcReplicas=1 OnlinePlayersCount=2 [local=nl-host | username=nl-guest x=10754.00 y=10214.00 z=0] productionRemoteMarkers=1
+LOG  : Lua          f:302 st:196,505,177> NLQA MP NPC PRESENCE: revision=1789344589097 count=1 entries=marisol@6815.58,5259.50,0/w1
+LOG  : Lua          f:347 st:196,505,927> NLQA MP NPC PRESENCE: revision=1789344589839 count=1 entries=marisol@6815.58,5259.50,0/w1
+LOG  : Lua          f:526 st:196,508,911> NLQA MP NPC PRESENCE: revision=1789344592840 count=1 entries=marisol@6815.66,5259.50,0/w1
+LOG  : Lua          f:599 st:196,510,115> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=30 [username=Marisol Vega [Neighborhood Life] x=6815.66 y=5259.50 z=0 | local=nl-host] productionNpcReplicas=1 OnlinePlayersCount=1 [local=nl-host] productionRemoteMarkers=0
+LOG  : Lua          f:602 st:196,510,177> NLQA MP NPC PRESENCE: revision=1789344594095 count=1 entries=marisol@6815.74,5259.50,0/w1
+LOG  : Lua          f:731 st:196,512,327> NLQA MP NPC PRESENCE: revision=1789344596244 count=1 entries=marisol@6815.74,5259.50,0/w1

@@ -11,13 +11,13 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence | Actual multiplayer inventory sync, rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
-| Persistent neighborhood NPCs | Production `NpcAuthority` creates Marisol as a native `IsoPlayer` body, persists the authoritative ModData position, follows two nearby waypoints, restores on save/reload, broadcasts `npc_presence` from a dedicated server, and production clients render local native replicas with compact plumbobs; QA remains the observer and launcher helper | Native Build 42 body reannouncement, reconnect/restart persistence, obstacle/danger handling, damage/death and offscreen behavior |
+| Persistent neighborhood NPCs | Production `NpcAuthority` creates Marisol as a native `IsoPlayer` body, persists the authoritative ModData position, follows two nearby waypoints, restores on save/reload, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render revision-checked local native replicas with compact plumbobs; QA remains the observer and launcher helper | Native Build 42 body reannouncement, reconnect/restart persistence across a server restart, obstacle/danger handling, damage/death and offscreen behavior |
 | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented; bodies supplied by adapter | Actual world-body integration and two-client conversations |
 | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel | In-world UI/interaction checks, richer date activities and two-client synchronization |
 | Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
 | Aspirations and home activities | Not implemented | Goals, progress/rewards, hobbies and functional furnishings |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, production client heartbeat, and local native NPC replicas; v0.7/v0.9/v1.0/v1.2 real host plus guest evidence | Reconnect, simultaneous gameplay/inventory delivery, restart, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
+| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection and local native NPC replicas; v0.7/v0.9/v1.0/v1.2/v1.3 real host plus guest evidence | Reconnect after a server restart, simultaneous gameplay/inventory delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -72,6 +72,17 @@ The original broad goal remains active. This ledger is not a reduced definition 
 - Build 42 did not expose `GameServer` as a Lua table in the run. Native server-body
   reannouncement, reconnect/restart, inventory/action delivery, danger, damage/death,
   obstacles and offscreen behavior remain open gates.
+
+## v1.3 reconnect-state evidence
+
+- `evidence/v20/` records the current production build in the hands-free dedicated
+  server plus two-client launcher.
+- The server returned the host snapshot and immediate `npc_presence` in the same
+  refresh cycle. The guest received the same revisioned NPC state on its refresh.
+- Both clients logged `productionNpcReplicas=1` and native Marisol object positions.
+- The client now ignores older NPC revisions, and an authoritative empty roster
+  removes the replica and plumbob. This improves reconnect state handling but does
+  not yet prove a server process restart or native Build 42 body reannouncement.
 
 ## v1.1 production NPC vertical-slice evidence
 

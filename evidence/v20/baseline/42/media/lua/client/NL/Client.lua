@@ -6,10 +6,8 @@ function NLClient.receive(module, command, args)
     if module ~= "NeighborhoodLife" or type(args) ~= "table" then return end
     if command == "npc_presence" then
         local old = NLClient.npcPresence
-        if not old or (args.revision or 0) >= (old.revision or 0) then
-            NLClient.npcPresence = args
-            if NLNpcClient then NLNpcClient.apply(args) end
-        end
+        if not old or (args.revision or 0) >= (old.revision or 0) then NLClient.npcPresence = args end
+        if NLNpcClient then NLNpcClient.apply(args) end
         return
     end
     if command == "presence" then

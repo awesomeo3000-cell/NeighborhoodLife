@@ -47,6 +47,13 @@ assert(body and body.npc and body:getModData().NeighborhoodNpcId=='marisol','nat
 assert(plumbobs['npc:marisol']==body,'replica plumbob registered')
 NLNpcClient.apply({revision=2,npcs={{id='marisol',x=11,y=11,z=0,alive=true}}})
 NLNpcClient.update(); assert(body:getX()>10 and body:getX()<11,'replica interpolates authoritative target')
+local xAfterNewer=body:getX()
+local targetAfterNewer=NLNpcClient.targets.marisol
+if NLNpcClient.revision then
+    NLNpcClient.apply({revision=1,npcs={}})
+    assert(NLNpcClient.targets.marisol==targetAfterNewer and NLNpcClient.bodies.marisol==body,
+        'stale NPC packet is ignored')
+end
 NLNpcClient.apply({revision=3,npcs={}})
 assert(NLNpcClient.bodies.marisol==nil and plumbobs['npc:marisol']==nil,'replica cleanup follows authoritative roster')
 print('PASS: client NPC native replica creation, authoritative interpolation, plumbob and cleanup')

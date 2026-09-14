@@ -42,7 +42,7 @@ require 'NL/Client'
 NLClient.receive('NeighborhoodLife','presence',a.args)
 assert(NLClient.presence.players[2].username=='guest','client stores replicated presence')
 local npcOk = pcall(require, 'NL/NpcAuthority')
-if npcOk and NLNpcAuthority and NLNpcAuthority.broadcastPresence then
+if npcOk and NLNpcAuthority and NLNpcAuthority.broadcastPresence and NLNpcAuthority.sendPresence then
     local npc={getX=function() return 10756.5 end,getY=function() return 10214.5 end,
         getZ=function() return 0 end,isDead=function() return false end}
     NLNpcAuthority.bodies={marisol=npc}
@@ -50,6 +50,7 @@ if npcOk and NLNpcAuthority and NLNpcAuthority.broadcastPresence then
     local npcPacket
     for _,packet in ipairs(packets) do if packet.command=='npc_presence' then npcPacket=packet end end
     assert(npcPacket and npcPacket.args.npcs[1].id=='marisol','NPC state sent to each connected player')
+    assert(NLNpcAuthority.sendPresence(host)==1,'NPC state can be sent immediately to a reconnecting player')
     NLClient.receive('NeighborhoodLife','npc_presence',npcPacket.args)
     assert(NLClient.npcPresence.npcs[1].x==10756.5,'client stores authoritative NPC state')
     print('PASS: authoritative player presence plus native-NPC state broadcast and client storage')

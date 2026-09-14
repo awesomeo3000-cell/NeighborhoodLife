@@ -1,0 +1,52 @@
+Neighborhood Life v1.3 immediate NPC refresh-state verification
+
+CHANGED BRANCH/FIELD: production `NLNpcAuthority` now builds one authoritative NPC packet, broadcasts it on periodic ticks and immediately during player snapshot/presence refreshes; `sendPresence(player)` is available for targeted reconnect delivery. Production `NLClient` applies NPC packets only when their revision is current, and `NLNpcClient` rejects stale revisions before changing native replicas or plumbobs. README/SCOPE retain the full Sims-inspired overhaul scope and identify native Build 42 body reannouncement as open. QA remains outside the production package.
+BASELINE SOURCE: E:\pzmod\evidence\v20\baseline extracted from commit 923ddae
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v20\baseline
+BASELINE INPUT: E:\pzmod\evidence\v20\baseline
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE RESULT: pre-change v1.2 production package passed the consolidated mock, syntax and Kahlua suites
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod\NeighborhoodLife
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED RESULT: production Lua 5.1, syntax, installed-game Kahlua, NPC authority, immediate presence, stale-packet and client-replica suites passed
+MODIFIED EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v20 --baseline evidence\v20\baseline
+PACKAGE INPUT: E:\pzmod\NeighborhoodLife compared with E:\pzmod\evidence\v20\baseline
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v20\MODIFIED_FILE.zip
+PACKAGE RESULT: production-only release package and text diff created
+PACKAGE EXIT: 0
+
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; z=zipfile.ZipFile('evidence/v20/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('NPC_AUTHORITY',any(n.endswith('server/NL/NpcAuthority.lua') for n in z.namelist())); print('NPC_CLIENT',any(n.endswith('client/NL/NpcClient.lua') for n in z.namelist())); print('NPC_TEST',any(n.endswith('tests/npc-client.lua') for n in z.namelist()))"
+PACKAGE VALIDATION INPUT: E:\pzmod
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; NPC_AUTHORITY True; NPC_CLIENT True; NPC_TEST False
+PACKAGE VALIDATION RESULT: valid production ZIP; QA helpers and test sources excluded
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v20/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' evidence/v20/ROLLBACK.sh
+ROLLBACK INPUT: copied final modified NeighborhoodLife into E:\pzmod\evidence\v20\rollback-target\NeighborhoodLife
+ROLLBACK LITERAL OUTPUT: ROLLBACK RESTORED: /e/pzmod/evidence/v20/rollback-target/NeighborhoodLife from /e/pzmod/evidence/v20/baseline
+ROLLBACK RESULT: rollback copy tree matched baseline tree SHA256 b2bb509195ebf05727aa9f39956c53d97915cf72a097ef87ca10ec5860897951; final source remained modified
+ROLLBACK EXIT: 0
+
+REAL ENGINE COMMAND: & .\tools\launch-multiplayer-qa.ps1
+REAL ENGINE INPUT: E:\pzmod\test-profile, isolated no-Steam B42.20.4 dedicated server plus two hands-free QA clients; no mouse or keyboard control
+REAL ENGINE LITERAL OUTPUT: QA multiplayer processes started: server=34920 host=29920 guest=30524
+REAL ENGINE RESULT: server logged two real client connections and production Marisol spawn/path. The host received `SNAPSHOT` followed immediately by `NPC PRESENCE` at frame 122 and logged `productionNpcReplicas=1`; the guest logged the same refresh-state sequence and `productionNpcReplicas=1`. Later packets carried changed authoritative positions and both clients retained native Marisol objects.
+REAL ENGINE EXIT: 0 for the launcher; processes were stopped after capture
+REAL ENGINE EVIDENCE: E:\pzmod\evidence\v20\mp-server-relevant.log; E:\pzmod\evidence\v20\mp-host-relevant.log; E:\pzmod\evidence\v20\mp-guest-relevant.log; E:\pzmod\evidence\v20\mp-run-command.txt
+
+CLASSIFICATION: `tests/npc-authority.lua`, `tests/npc-client.lua`, `tests/plumbob.lua` and `tests/replication.lua` are Lua mock tests. The consolidated Kahlua suites execute production Lua in the installed game VM with explicit mocks; they are engine-VM tests, not multiplayer or native gameplay evidence. The v20 logs are actual isolated Project Zomboid multiplayer gameplay evidence for immediate server refresh delivery and client-side native replicas. They do not prove a server-process restart, Build 42 native server-body reannouncement, inventory/action sync, obstacle/danger handling, damage/death, offscreen behavior, households or full overhaul completion. The real server still logged that `GameServer` was not exposed as a Lua table.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v20\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v20\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v20\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v20\ROLLBACK.sh
+SHA256 MODIFIED_FILE: 5D6BC69DBECC338E45F4824194C276AAE99D08655E4DECEB5451BF151E4DE345
+SHA256 DIFF_FILE: C075CF19E413753C07C964D9D7B6012A994E651C3698586FBDF440F7B559FD2D
+SHA256 ROLLBACK: DBB3C944D0D2B4A4951330B1E4920A5AA91DA5C7AB5D3EE6D6993A9C5FE08ADA
