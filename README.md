@@ -717,3 +717,8 @@ vanilla `addZombiesInOutfit` API. The dedicated server logged
 events for all three neighbors; the host and guest remained connected with
 three native NPC replicas. This is actual engine gameplay evidence for the
 danger probe, not a claim that the full optional-zombies loop is complete.
+The same session also has a no-threat phase before the first probe: the server
+logged zero production danger events while both clients already had three
+native NPC replicas and native paths. That establishes the no-nearby-zombie
+behavior in the same two-client run; a separate sandbox population-setting
+toggle remains untested.
