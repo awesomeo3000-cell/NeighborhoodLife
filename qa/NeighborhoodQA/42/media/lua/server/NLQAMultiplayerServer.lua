@@ -189,9 +189,10 @@ Events.OnClientCommand.Add(function(module, command, player, args)
     world.households = {}
     print("NLQA HOUSEHOLD RESET: career fixture cleared persisted household and claims")
     local item = "Base.RippedSheets"
-    -- Nine sheets leave one real client-acquired item for the household
-    -- storage deposit after the medic delivery consumes eight.
-    local amount = 9
+    -- Ten sheets leave one real client-acquired item for household storage
+    -- after the production NPC give probe consumes one and medic delivery
+    -- consumes eight.
+    local amount = 10
     local square = player:getCurrentSquare()
     if not square then
         print("NLQA CAREER SEED FAILED: username="..tostring(username).." reason=no-current-square")

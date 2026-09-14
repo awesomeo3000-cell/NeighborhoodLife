@@ -19,6 +19,26 @@ local function actor(name,x,y,z)
     function a:getZ() return self.z end
     function a:isDead() return self.dead end
     function a:CanSee() return self.visible end
+    local function makeItem(itemType)
+        return {fullType=itemType,getFullType=function(self) return self.fullType end}
+    end
+    local items={makeItem('Base.RippedSheets'),makeItem('Base.RippedSheets')}
+    local inventory={}
+    function inventory:getItems()
+        return {size=function() return #items end,get=function(_,i) return items[i+1] end}
+    end
+    function inventory:Remove(item)
+        for i,value in ipairs(items) do if value==item then table.remove(items,i); return end end
+    end
+    function inventory:AddItem(itemType)
+        local item=makeItem(itemType); items[#items+1]=item; return item
+    end
+    function a:getInventory() return inventory end
+    function a:isEquipped() return false end
+    function a:itemCount(itemType)
+        local count=0; for _,item in ipairs(items) do if item.fullType==itemType then count=count+1 end end
+        return count
+    end
     return a
 end
 local p=actor('host',0,0,0); local q=actor('guest',0,0,0); local body=actor('npc',1,0,0)
@@ -42,6 +62,19 @@ check(last.args.neighbors[1].canInteract==false,'different floor disables intera
 body.z=0; p.visible=false; cmd(p,'chat'); check(r.friendship==before,'line of sight gate')
 check(last.args.neighbors[1].canInteract==false,'occluded snapshot disables interaction')
 p.visible=true; cmd(p,'chat'); check(r.friendship>before,'near visible conversation')
+local sheetsBefore=p:itemCount('Base.RippedSheets')
+if NLSocialAuthority.inventoryExchange then
+    NLSocialAuthority.command('NeighborhoodSocial','give',p,{id='marisol',item='Base.RippedSheets',amount=1})
+    check(p:itemCount('Base.RippedSheets')==sheetsBefore-1,'give removes one unequipped item from player inventory')
+    check((world.neighbors.marisol.inventory['Base.RippedSheets'] or 0)==1,
+        'give persists one item in the NPC inventory')
+    check(last.args.neighbors[1].inventory['Base.RippedSheets']==1,
+        'snapshot exposes authoritative NPC inventory state')
+    NLSocialAuthority.command('NeighborhoodSocial','request',p,{id='marisol',item='Base.RippedSheets',amount=1})
+    check(p:itemCount('Base.RippedSheets')==sheetsBefore,'request returns the stored item to the player')
+    check(world.neighbors.marisol.inventory['Base.RippedSheets']==nil,
+        'request decrements the authoritative NPC inventory')
+end
 before=r.friendship; p.dead=true; cmd(p,'chat'); check(r.friendship==before,'dead player rejected'); p.dead=false
 body.dead=true; cmd(p,'chat'); check(world.neighbors.marisol.dead and r.friendship==before,'dead NPC persisted and rejected')
 last.args.neighbors[1].relation.friendship=999

@@ -16,10 +16,12 @@ function NLRelationships:initialise()
     self:button(209,48,95,"Refresh","refresh")
     self.actions={}
     local labels={{"Introduce","introduce"},{"Chat","chat"},{"Joke","joke"},
-        {"Flirt","flirt"},{"Ask on a date","date"},{"Become partners","partner"},{"Break up","breakup"}}
+        {"Flirt","flirt"},{"Ask on a date","date"},{"Become partners","partner"},{"Break up","breakup"},
+        {"Give 1 sheet","give",{item="Base.RippedSheets",amount=1}},
+        {"Request 1 sheet","request",{item="Base.RippedSheets",amount=1}}}
     for i,v in ipairs(labels) do
         local col=(i-1)%3; local row=math.floor((i-1)/3)
-        self.actions[i]=self:button(16+col*186,250+row*35,176,v[1],v[2])
+        self.actions[i]=self:button(16+col*186,250+row*35,176,v[1],v[2],v[3])
     end
 end
 function NLRelationships:onButton(button)
@@ -30,7 +32,15 @@ function NLRelationships:onButton(button)
     if button.action=="previous" then self.selected=math.max(1,self.selected-1); return end
     if button.action=="refresh" then NLSocialClient.request(self.playerIndex,"refresh"); return end
     local npc=data and data.neighbors[self.selected]
-    if npc then NLSocialClient.request(self.playerIndex,"interact",{id=npc.id,action=button.action}) end
+    if npc then
+        if button.action=="give" or button.action=="request" then
+            local args={id=npc.id,item=button.value and button.value.item or "Base.RippedSheets",
+                amount=button.value and button.value.amount or 1}
+            NLSocialClient.request(self.playerIndex,button.action,args)
+        else
+            NLSocialClient.request(self.playerIndex,"interact",{id=npc.id,action=button.action})
+        end
+    end
 end
 function NLRelationships:prerender()
     ISPanel.prerender(self)
@@ -60,14 +70,20 @@ function NLRelationships:prerender()
     end
     local location=npc.dead and "Deceased" or npc.available and ("Distance: "..math.floor(npc.distance or 0).." tiles") or "Away"
     self:drawText(location.." | Conversations require proximity and line of sight.",16,231,0.30,0.38,0.47,1,UIFont.Small)
-    self:drawText(string.sub(data.message or "",1,78),16,367,0.12,0.38,0.63,1,UIFont.Small)
+    local inventoryText="NPC inventory: empty"
+    for item,amount in pairs(npc.inventory or {}) do
+        inventoryText="NPC inventory: "..tostring(amount).." x "..tostring(item)
+        break
+    end
+    self:drawText(inventoryText,16,350,0.30,0.38,0.47,1,UIFont.Small)
+    self:drawText(string.sub(data.message or "",1,78),16,373,0.12,0.38,0.63,1,UIFont.Small)
     local memories=npc.relation.memories
     local latest=memories[#memories]
-    if latest then self:drawText("Memory: "..string.sub(latest.text,1,70),16,396,0.30,0.38,0.47,1,UIFont.Small) end
+    if latest then self:drawText("Memory: "..string.sub(latest.text,1,70),16,400,0.30,0.38,0.47,1,UIFont.Small) end
     local event=NLSocialClient.lastEvent
     if event then
         self:drawText("Shared event: "..tostring(event.actor).." "
-            ..tostring(event.action).." with "..tostring(event.npcName),16,423,
+            ..tostring(event.action).." with "..tostring(event.npcName),16,427,
             0.30,0.38,0.47,1,UIFont.Small)
     end
 end

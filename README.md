@@ -499,6 +499,27 @@ garments at zero, and then logged replacement completion for both garments from
 `production-NLWardrobe.wear`. New clothing variants, original assets and
 unlock/reward integration remain breadth work.
 
+## v1.33 authoritative NPC inventory exchange
+
+Production NPC rows now carry a persistent `inventory` map. The server validates
+item type, amount, same-floor proximity, line of sight and unequipped main
+inventory before accepting `give`; `request` restores stored items through the
+player's vanilla inventory and rolls back failed additions. Each successful
+exchange increments the NPC row revision and returns the inventory in the
+private social snapshot. The Relationships panel exposes the current vertical
+slice as `Give 1 sheet` and `Request 1 sheet` actions.
+
+The Lua contract suite and installed-game Kahlua VM both pass the exchange
+path. `evidence/v53/` records a real Build 42.20.4 host-plus-guest run: the
+host acquired ten real `Base.RippedSheets` through vanilla world-transfer
+actions, gave one to Marisol through the production command, received the
+authoritative `Gave 1 Base.RippedSheets to marisol.` snapshot, then requested
+and received the same item back. The server logged both commands while the
+guest remained connected and continued receiving the NPC presence stream.
+QA stimulus and seeded items remain outside the production package. General
+item selection, richer metadata, crash-atomic persistence and broader world
+actions remain open.
+
 ## v1.32 native NPC lifecycle retirement and offscreen recovery
 
 Production `NLNpcAuthority` now treats the native `IsoPlayer` as a transient

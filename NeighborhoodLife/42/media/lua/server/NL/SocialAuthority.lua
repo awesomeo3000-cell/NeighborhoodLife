@@ -28,6 +28,89 @@ function NLSocialAuthority.register(id,body,home)
     return true
 end
 
+local function validItemType(itemType)
+    return type(itemType)=="string" and #itemType<=100
+        and itemType:match("^[%w_%-]+%.[%w_%-]+$")~=nil
+end
+
+local function requestedAmount(args)
+    local amount=math.floor(tonumber(args and args.amount) or 0)
+    if amount<1 or amount>20 then return nil end
+    return amount
+end
+
+local function mainInventoryItems(player,itemType,amount)
+    local inventory=player:getInventory()
+    local all=inventory and inventory:getItems()
+    if not all then return nil,"Main inventory unavailable" end
+    local chosen={}
+    for i=0,all:size()-1 do
+        local item=all:get(i)
+        local equipped=false
+        if player.isEquipped then
+            local equippedOk,equippedValue=pcall(player.isEquipped,player,item)
+            equipped=equippedOk and equippedValue==true
+        end
+        if item and item:getFullType()==itemType and not equipped then
+            chosen[#chosen+1]=item
+            if #chosen==amount then break end
+        end
+    end
+    return chosen,inventory
+end
+
+local function inventoryExchange(world,player,npcId,args,mode)
+    local itemType=args and args.item
+    local amount=requestedAmount(args)
+    if not validItemType(itemType) then return false,"Use a valid item type such as Base.RippedSheets" end
+    if not amount then return false,"Exchange amount must be between 1 and 20" end
+    local row=NLNeighbors.get(world,npcId)
+    row.inventory=row.inventory or {}
+    if mode=="give" then
+        local chosen,inventoryOrMessage=mainInventoryItems(player,itemType,amount)
+        if not chosen then return false,inventoryOrMessage end
+        if #chosen<amount then
+            return false,"Need "..amount.." unequipped "..itemType.." in main inventory"
+        end
+        for _,item in ipairs(chosen) do
+            inventoryOrMessage:Remove(item)
+            if isServer() and sendRemoveItemFromContainer then
+                sendRemoveItemFromContainer(inventoryOrMessage,item)
+            end
+        end
+        row.inventory[itemType]=(row.inventory[itemType] or 0)+amount
+        row.revision=(row.revision or 0)+1
+        return true,"Gave "..amount.." "..itemType.." to "..tostring(npcId).."."
+    end
+
+    local available=tonumber(row.inventory[itemType] or 0) or 0
+    if available<amount then
+        return false,"They have only "..available.." "..itemType
+    end
+    local inventory=player:getInventory()
+    if not inventory or not inventory.AddItem then return false,"Main inventory unavailable" end
+    local added={}
+    for _=1,amount do
+        local addOk,item=pcall(inventory.AddItem,inventory,itemType)
+        if not addOk or not item then
+            for _,restored in ipairs(added) do inventory:Remove(restored) end
+            return false,"Main inventory could not accept "..itemType
+        end
+        added[#added+1]=item
+        if isServer() and sendAddItemToContainer then
+            sendAddItemToContainer(inventory,item)
+        end
+    end
+    row.inventory[itemType]=available-amount
+    if row.inventory[itemType]<=0 then row.inventory[itemType]=nil end
+    row.revision=(row.revision or 0)+1
+    return true,"Received "..amount.." "..itemType.." from "..tostring(npcId).."."
+end
+
+-- Exposed for the deterministic authority contract; clients still reach this
+-- path only through the server-gated give/request commands.
+NLSocialAuthority.inventoryExchange=inventoryExchange
+
 function NLSocialAuthority.snapshot(player,message)
     local world=NLAuthority.world()
     NLNeighbors.ensure(world)
@@ -39,6 +122,7 @@ function NLSocialAuthority.snapshot(player,message)
             local body=NLSocialAuthority.bodies[id]
             local row={id=id,name=NLSocial.people[id].name,personality=NLSocial.people[id].personality,
                 age=NLSocial.people[id].age,dead=npc.dead or npc.alive==false,available=body~=nil,canInteract=false,
+                inventory=NLDomain.copy(npc.inventory or {}),
                 relation=NLDomain.copy(NLSocial.relation(profile,id))}
             if body then
                 if body:isDead() then NLNeighbors.dead(world,id) end
@@ -58,7 +142,7 @@ end
 function NLSocialAuthority.command(module,command,player,args)
     if module~="NeighborhoodSocial" or not player or player:isDead() then return end
     if type(args)~="table" then args={} end
-    if command~="refresh" and command~="interact" then return end
+    if command~="refresh" and command~="interact" and command~="give" and command~="request" then return end
     local key=NLAuthority.key(player); local now=getTimestampMs()
     if NLQAMultiplayerServer then
         print("NLQA SOCIAL COMMAND: "..tostring(command).." username="..tostring(key)
@@ -84,10 +168,24 @@ function NLSocialAuthority.command(module,command,player,args)
             completed=ok==true
             if not completed then message="Not completed: "..message end
         end
+    elseif command=="give" or command=="request" then
+        local world=NLAuthority.world()
+        local npc=(world.neighbors or {})[args.id]
+        local body=NLSocialAuthority.bodies[args.id]
+        if not npc or not body then message="This neighbor is not nearby."
+        elseif body:isDead() then NLNeighbors.dead(world,args.id); message="This neighbor has died."
+        elseif math.floor(body:getZ())~=math.floor(player:getZ())
+            or (body:getX()-player:getX())^2+(body:getY()-player:getY())^2>16 then
+            message="Move within four tiles on the same floor."
+        elseif not player:CanSee(body) then message="You need a clear line of sight."
+        else
+            completed,message=inventoryExchange(world,player,args.id,args,command)
+            if not completed then message="Not completed: "..message end
+        end
     end
     NLSocialAuthority.snapshot(player,message)
-    if completed and command=="interact" then
-        NLSocialAuthority.broadcastEvent(player,args.id,args.action,message)
+    if completed and (command=="interact" or command=="give" or command=="request") then
+        NLSocialAuthority.broadcastEvent(player,args.id,command,message)
     end
     if NLQAMultiplayerServer and command=="interact" then
         print("NLQA SOCIAL RESULT: username="..tostring(key).." message="..tostring(message))

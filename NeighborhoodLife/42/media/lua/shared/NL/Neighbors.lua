@@ -26,7 +26,7 @@ function NLNeighbors.ensure(world)
         local row = world.neighbors[id]
         if not row then
             row = { id=id, home=copy(def.home), position=copy(def.home), waypoint=1,
-                alive=true, revision=0 }
+                alive=true, inventory={}, revision=0 }
             world.neighbors[id] = row
         else
             row.id = id
@@ -34,6 +34,7 @@ function NLNeighbors.ensure(world)
             row.position = row.position or copy(row.home)
             row.waypoint = row.waypoint or 1
             if row.alive == nil then row.alive = not row.dead end
+            row.inventory = row.inventory or {}
             row.revision = row.revision or 0
         end
     end

@@ -29,7 +29,10 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     wardrobeUnequipNextAttempt = 0, wardrobeUnequipSent = false,
     wardrobeUnequipObserved = false, wardrobeReplacementSent = false,
     wardrobeReplacementObserved = false,
-    wardrobeSnapshotLogged = false, wardrobeUiLogged = false }
+    wardrobeSnapshotLogged = false, wardrobeUiLogged = false,
+    inventoryGiveSent = false, inventoryGiveObserved = false,
+    inventoryRequestSent = false, inventoryRequestObserved = false,
+    inventoryExchangeDue = 0 }
 NLQAMultiplayer.socialCooldownFrames = 3600
 
 local function emit(label, value)
@@ -466,7 +469,8 @@ Events.OnServerCommand.Add(function(module, command, args)
                 .. tostring(args.x) .. " y=" .. tostring(args.y) .. " z=" .. tostring(args.z))
         end
     end
-    if module == "NeighborhoodLife" and command == "snapshot" and type(args) == "table" then
+    if (module == "NeighborhoodLife" or module == "NeighborhoodSocial")
+            and command == "snapshot" and type(args) == "table" then
         NLQAMultiplayer.snapshots = NLQAMultiplayer.snapshots + 1
         emit("SNAPSHOT", "username=" .. tostring(args.username) .. " revision=" .. tostring(args.revision)
             .. " snapshotCount=" .. tostring(NLQAMultiplayer.snapshots)
@@ -511,6 +515,19 @@ Events.OnServerCommand.Add(function(module, command, args)
                 and args.message and string.find(args.message,"Delivery complete",1,true) then
             NLQAMultiplayer.careerResultLogged=true
             emit("CAREER RESULT", "delivery complete message="..tostring(args.message))
+        end
+        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                and not NLQAMultiplayer.inventoryGiveObserved and args.message
+                and string.find(args.message,"Gave 1 Base.RippedSheets",1,true) then
+            NLQAMultiplayer.inventoryGiveObserved=true
+            NLQAMultiplayer.inventoryExchangeDue=NLQAMultiplayer.socialFrame+90
+            emit("NPC INVENTORY GIVE RESULT", tostring(args.message))
+        end
+        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                and not NLQAMultiplayer.inventoryRequestObserved and args.message
+                and string.find(args.message,"Received 1 Base.RippedSheets",1,true) then
+            NLQAMultiplayer.inventoryRequestObserved=true
+            emit("NPC INVENTORY REQUEST RESULT", tostring(args.message))
         end
         if qaIdentity().username == "nl-host" and args.username == "nl-host"
                 and NLQAMultiplayer.careerSeeded then
@@ -932,6 +949,22 @@ Events.OnRenderTick.Add(function()
                 .. " localInventory="..tostring(count)
                 .. " source=world-transfer-action")
         end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerPickupObserved
+            and NLQAMultiplayer.socialPositioned
+            and not NLQAMultiplayer.inventoryGiveSent then
+        NLSocialClient.request(0,"give",
+            {id="marisol",item="Base.RippedSheets",amount=1})
+        NLQAMultiplayer.inventoryGiveSent=true
+        emit("NPC INVENTORY GIVE", "id=marisol item=Base.RippedSheets amount=1")
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.inventoryGiveObserved
+            and not NLQAMultiplayer.inventoryRequestSent
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.inventoryExchangeDue then
+        NLSocialClient.request(0,"request",
+            {id="marisol",item="Base.RippedSheets",amount=1})
+        NLQAMultiplayer.inventoryRequestSent=true
+        emit("NPC INVENTORY REQUEST", "id=marisol item=Base.RippedSheets amount=1")
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerSeeded
             and NLQAMultiplayer.careerPickupObserved
