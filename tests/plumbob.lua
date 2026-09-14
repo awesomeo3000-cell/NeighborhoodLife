@@ -38,15 +38,15 @@ assert(panel.y==300-panel.height-expectedLift)
 if NLPlumbob.baseWidth then
     assert(panel.width==NLPlumbob.baseWidth and panel.height==NLPlumbob.baseHeight,
         "plumbob panel uses its configured compact dimensions")
-    if NLPlumbob.baseWidth==5 then
-        assert(NLPlumbob.baseHeight==8,
-            "plumbob uses the very small in-world marker dimensions")
+    if NLPlumbob.baseWidth==6 then
+        assert(NLPlumbob.baseHeight==10,
+            "plumbob uses the compact in-world marker dimensions")
     end
     if NLPlumbob.baseWidth <= 12 then
         assert(NLPlumbob.baseHeight <= 16,
             "plumbob remains smaller than the character model")
-        if NLPlumbob.baseWidth==5 then
-            assert(NLPlumbob.baseLift <= 42,
+        if NLPlumbob.baseWidth==6 then
+            assert(NLPlumbob.baseLift <= 30,
                 "plumbob tip stays close to the character")
         else
             assert(NLPlumbob.baseLift <= 80,

@@ -413,3 +413,12 @@ and `joke`, the dedicated server logged both commands, and the guest received
 both `SOCIAL EVENT` packets. The existing career delivery and household loop
 also completed in the same run. This is cross-client event replication, not a
 claim that private relationship values are shared.
+
+## v1.25 compact plumbob asset and placement
+
+The production marker now uses a 16x22 source texture, a 6x10 runtime panel
+and a 30-pixel world-to-screen lift. This keeps the faceted gem very small and
+close above the character model, including on Build 42 paths that draw a source
+texture at native size. `evidence/v44/` records the baseline and modified
+Lua/Kahlua checks, live QA marker-size logging and rollback verification; the
+QA logger remains outside the production package.

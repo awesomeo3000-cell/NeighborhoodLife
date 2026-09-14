@@ -2,6 +2,7 @@
 NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     presenceCount = 0, movementFrame = 0, movementSent = false,
     remoteScanFrame = 0, remoteScanCount = 0, remoteScanLogged = false,
+    plumbobSizeLogged = false,
     socialFrame = 0, socialRefreshSent = false, socialActionSent = false,
     socialActionScheduled = false, socialActionName = nil, socialTarget = nil,
     socialActionDue = 0, socialActionCount = 0, socialActionPrepared = false,
@@ -812,5 +813,32 @@ Events.OnRenderTick.Add(function()
         if NLQAMultiplayer.remoteScanCount >= 8 then
             NLQAMultiplayer.remoteScanLogged = true
         end
+    end
+end)
+
+-- QA-only visual contract: record the compact panel and source-texture sizes
+-- from the live production marker without adding diagnostics to the mod.
+Events.OnRenderTick.Add(function()
+    if not isClient() or NLQAMultiplayer.plumbobSizeLogged then return end
+    if not NLPlumbob or not NLPlumbob.instances then return end
+    local details = {}
+    for _, id in ipairs({"player:0", "npc:marisol"}) do
+        local panel = NLPlumbob.instances[id]
+        if panel then
+            local textureWidth, textureHeight = 0, 0
+            if panel.texture and panel.texture.getWidth then
+                local okWidth, valueWidth = pcall(panel.texture.getWidth, panel.texture)
+                local okHeight, valueHeight = pcall(panel.texture.getHeight, panel.texture)
+                if okWidth then textureWidth = valueWidth end
+                if okHeight then textureHeight = valueHeight end
+            end
+            details[#details + 1] = id .. "=" .. tostring(panel.width) .. "x"
+                .. tostring(panel.height) .. " texture=" .. tostring(textureWidth)
+                .. "x" .. tostring(textureHeight)
+        end
+    end
+    if #details > 0 then
+        NLQAMultiplayer.plumbobSizeLogged = true
+        emit("PLUMBOB SIZE", table.concat(details, " "))
     end
 end)

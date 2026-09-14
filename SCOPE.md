@@ -7,7 +7,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Requirement | Current implementation | Completion evidence still required |
 |---|---|---|
 | Sims-inspired HUD | Six live adverse-stat bars, fold control, career journal link | Actual host+guest independent values; resolution and accessibility polish |
-| Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.22 uses a 5x8 panel with a 42px lift so the gem is much smaller and remains close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
+| Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.25 uses a compact 16x22 source texture, a 6x10 panel and a 30px lift so the gem remains very small and close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits | Rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
@@ -58,6 +58,17 @@ The original broad goal remains active. This ledger is not a reduced definition 
 3. NPC body/movement/network experiment in the isolated world, then persistent neighbors.
 4. Integrate conversations, relationships, romance and neighborhood careers.
 5. Expand appearance/clothing assets, households, aspirations, furnishings and UI polish.
+
+## v1.25 compact plumbob asset and placement
+
+The production plumbob source texture is now 16x22 pixels, the runtime panel is
+6x10 pixels, and the world-to-screen lift is 30 pixels. The smaller source
+asset makes the reduction visible even if Build 42 draws the texture at native
+dimensions, while the panel anchor keeps the gem directly above the model.
+Lua and installed-game Kahlua tests passed, and the QA-only live marker logger
+records the panel and source-texture dimensions during a hands-free run.
+This is visual presentation evidence only; it does not claim native remote
+player body replication or completion of the remaining multiplayer gates.
 
 ## v1.14 client-acquisition inventory evidence
 

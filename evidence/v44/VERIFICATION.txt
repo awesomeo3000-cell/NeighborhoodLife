@@ -1,0 +1,79 @@
+Neighborhood Life v1.25 verification
+
+CHANGED BRANCH/FIELDS
+- Production presentation branch: NeighborhoodLife/42/media/lua/client/NL/Plumbob.lua now uses baseWidth=6, baseHeight=10 and baseLift=30.
+- Production asset branch: NeighborhoodLife/42/media/textures/NL_Plumbob.png is reduced from 64x88 to 16x22 with nearest-neighbor pixel preservation, so native-size texture paths stay compact.
+- QA branch: qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua records live production marker panel/source dimensions; this helper is excluded from the production package.
+- Contract/docs branch: tests/plumbob.lua, SCOPE.md and README.md record the compact marker placement.
+- Current production hashes: Plumbob.lua 2CF9C3A66D34B45780BA298768BEA8D3FCB38941F193FB5B131C2DE48B0CC374; NL_Plumbob.png 0F1C678667EB0BB8F39FB475372839E4F0C008EB6F7E8A88945D341B838C8493.
+- Preserved baseline hashes: Plumbob.lua 47733AA8FD87D7C22F1D9F53D1021C6A55AFDBA7D540EB88E04BC8AC4A75CF72; NL_Plumbob.png 47A9AB7DD21982ED44F766A2CACFDF3FA6A7BFBD76076247334603F520BE2771.
+
+ARTIFACTS
+- MODIFIED_FILE: E:\pzmod\evidence\v44\MODIFIED_FILE.zip
+- DIFF_FILE: E:\pzmod\evidence\v44\DIFF_FILE.patch
+- VERIFICATION.txt: E:\pzmod\evidence\v44\VERIFICATION.txt
+- ROLLBACK.sh: E:\pzmod\evidence\v44\ROLLBACK.sh
+- Actual host log: E:\pzmod\evidence\v44\mp-host-plumbob.log
+- Actual guest log: E:\pzmod\evidence\v44\mp-guest-plumbob.log
+- Actual server log: E:\pzmod\evidence\v44\mp-server.log
+- Launcher record: E:\pzmod\evidence\v44\mp-run-command.txt
+
+BASELINE
+COMMAND: python tools\pipeline.py test --target evidence\v44\baseline
+INPUT: E:\pzmod
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: pre-change production baseline passed
+EXIT: 0
+
+MODIFIED
+COMMAND: python tools\pipeline.py test
+INPUT: E:\pzmod
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: modified production and installed-game engine-VM suites passed
+EXIT: 0
+COMMAND: & 'C:\Program Files (x86)\Lua\5.1\lua.exe' tests\plumbob.lua NeighborhoodLife
+INPUT: E:\pzmod
+LITERAL OUTPUT: PASS: plumbob asset lookup, screen anchoring, dead-character hide, registration and cleanup
+RESULT: targeted plumbob contract passed
+EXIT: 0
+COMMAND: & 'C:\Program Files (x86)\Lua\5.1\luac.exe' -p qa\NeighborhoodQA\42\media\lua\client\NLQAMultiplayer.lua
+INPUT: E:\pzmod
+LITERAL OUTPUT: [empty]
+RESULT: QA-only logger syntax passed
+EXIT: 0
+COMMAND: python tools\pipeline.py package --version v44 --baseline evidence\v44\baseline
+INPUT: E:\pzmod
+LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v44\MODIFIED_FILE.zip
+RESULT: production package built
+EXIT: 0
+COMMAND: python -c "import zipfile; z=zipfile.ZipFile(r'evidence/v44/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('PRODUCTION_QA',any('qa/' in n for n in z.namelist())); print('PLUMBOB_LUA',b'baseWidth = 6' in z.read('NeighborhoodLife/42/media/lua/client/NL/Plumbob.lua')); print('TEXTURE_BYTES',len(z.read('NeighborhoodLife/42/media/textures/NL_Plumbob.png')))"
+INPUT: E:\pzmod
+LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; PRODUCTION_QA False; PLUMBOB_LUA True; TEXTURE_BYTES 601
+RESULT: readable package contains compact plumbob production files and excludes QA helpers
+EXIT: 0
+
+ROLLBACK
+COMMAND: & 'C:\Program Files\Git\bin\bash.exe' -lc 'TARGET_ROOT=/e/pzmod/evidence/v44/rollback-target bash /e/pzmod/evidence/v44/ROLLBACK.sh'; python tools\pipeline.py test --target evidence\v44\rollback-target
+INPUT: E:\pzmod\evidence\v44\rollback-target
+LITERAL OUTPUT: ROLLBACK RESTORED: baseline production and QA/test trees
+LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: rollback restored pre-v1.25 source and passed the suite
+RESTORED STATUS: rollback-target Plumbob.lua SHA-256 24F383838893789063A68EA904EC4CF5E71F332B17C22A65A52E88882102B123 matches rollback-baseline; NL_Plumbob.png SHA-256 47A9AB7DD21982ED44F766A2CACFDF3FA6A7BFBD76076247334603F520BE2771 matches rollback-baseline; restored marker values are the pre-change 5x8 panel and 42px lift.
+EXIT: 0
+
+ACTUAL MULTIPLAYER GAMEPLAY
+COMMAND: & .\tools\launch-multiplayer-qa.ps1
+INPUT: E:\pzmod\test-profile
+MODE: isolated hands-free QA launcher; no mouse or keyboard control
+LITERAL OUTPUT: host NLQA MP PLUMBOB SIZE: player:0=6x10 texture=16x22.
+LITERAL OUTPUT: guest NLQA MP PLUMBOB SIZE: player:0=6x10 texture=16x22.
+LITERAL OUTPUT: host NLQA MP NPC PRESENCE: revision=1789368683660 count=3 entries=marisol@10909.50,10037.50,0/w2,kenji@10911.50,10035.50,0/w2,amara@10911.50,10039.50,0/w1.
+LITERAL OUTPUT: guest NLQA MP NPC PRESENCE: revision=1789368688964 count=3 entries=marisol@10909.50,10037.58,0/w2,kenji@10911.50,10035.58,0/w2,amara@10911.58,10039.50,0/w1.
+RESULT: actual host and guest engine clients both loaded the compact production marker; the same run also showed the three moving NPC presence stream. This is gameplay evidence for marker sizing and existing NPC presence only, not completion of native two-way remote movement or the full overhaul.
+EXIT: 0 launcher/evidence capture; processes stopped after logs flushed
+
+TEST CLASSIFICATION
+- Mock/unit: tests/plumbob.lua, exit 0.
+- Engine-VM: consolidated Lua 5.1/Kahlua suite, exit 0.
+- Actual gameplay: v44 host/guest/server logs, marker dimensions 6x10 with 16x22 source texture on both clients.
+- QA helpers remain outside MODIFIED_FILE.zip.

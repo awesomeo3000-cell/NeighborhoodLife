@@ -1,0 +1,251 @@
+diff --git a/NeighborhoodLife/42/media/lua/client/NL/Plumbob.lua b/NeighborhoodLife/42/media/lua/client/NL/Plumbob.lua
+index 1ea31a6..16962d0 100644
+--- a/NeighborhoodLife/42/media/lua/client/NL/Plumbob.lua
++++ b/NeighborhoodLife/42/media/lua/client/NL/Plumbob.lua
+@@ -11,11 +11,12 @@ NLPlumbob.nativeRemoteIds = {}
+ NLPlumbob.texturePath = "media/textures/NL_Plumbob.png"
+ NLPlumbob.defaultColor = { r = 0.22, g = 0.88, b = 0.58 }
+ NLPlumbob.remoteColor = { r = 0.28, g = 0.86, b = 0.95 }
+--- Keep the player silhouette dominant. The marker is deliberately very small
+--- and its tip stays close to the head instead of floating over the street.
+-NLPlumbob.baseWidth = 5
+-NLPlumbob.baseHeight = 8
+-NLPlumbob.baseLift = 42
++-- Keep the player silhouette dominant. The marker is deliberately tiny and
++-- the compact source texture also protects the size if Build 42 draws a
++-- texture at native dimensions instead of honoring a scaled panel draw.
++NLPlumbob.baseWidth = 6
++NLPlumbob.baseHeight = 10
++NLPlumbob.baseLift = 30
+ 
+ function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, lift)
+     return math.floor(screenX - left - width / 2), math.floor(screenY - top - height - lift)
+diff --git a/NeighborhoodLife/42/media/textures/NL_Plumbob.png b/NeighborhoodLife/42/media/textures/NL_Plumbob.png
+index ee46c9a7e9871261f0570e05a1272ac1ade56628..f795a75da3bda1eb9855c07753ab5ff15b46729a 100644
+GIT binary patch
+literal 601
+zcmV-f0;c_mP)<h;3K|Lk000e1NJLTq000mG000&U1^@s6$*LTD0006YNkl<Zc$}S-
+z&1(}u7{;HOoqV-5wKZEsVzs@5qy|%|QhJF(5OUIjfgbElOX#8hf_U^VD0uc3uz2zy
+zwiS!kLu!I#u{k7Y!Gcz$>$;m{yEC$de43BO=dk;}^UnL@ooAK>y2uj^`_V(ROO2de
+zI=46fdh#a{38_E8L(t)SSBtzP;Ge6EAg|>60=QlU({gO|q8-QS&CQi9ZDJ@MymKPJ
+zU@Q<GPx>R(+)W)Op#%@s^tBTK&fFS%D~?1hC!m56YH|*Y+zw_D1#1sTKyqFWq@81~
+zp;qW!PyD6*UVN&D-6T|O3-J7y`ZS)rFx_rU1BO!&0V08{Z2a+iqQPV{AQW;sF1d7W
+z2?M0L`H=q}c&@L<zzLWe_>y7Yq+zmLt+V5&qL>w5kf~leU<0@*bU0Z4)U-FUZfwsz
+zd+bf0UntMO0tAI@X+*7iR8{oKY5AJ-SEGTY3KvsJjfjS+4&IQ1!t$>CuZcIZs`^gL
+zpjo8xNP<J`r<m5bf!3l&;M7f*h}2?2qd0`Ik(+1_0AP&fcC@Viu~UC0$v$`gkW#Q<
+zVHI^7YGQ+c`Cggq4gg^Ia!)GX&HdK(^dj4BGQAT3DOi=S<_n1W97F=#KF6%>V{ZU}
+z(x!4>aB)=43#(G`Fp{m^eNO-Yp?xs6j{^&$Tp$bfE%gIHc}s~BMq%s`Rn_F3PW!rR
+nCXn;YUY`HI=DIrm5AEV#hnl<$kmw?#00000NkvXXu0mjfrIZ}@
+
+literal 4835
+zcmV<95*+P`P)<h;3K|Lk000e1NJLTq002M$003AB1^@s6MeOk?000uINkl<Zc%0>2
+zYj7OZl|JX*?&<Cs&5Ry?$(Aj^Hbx4@5Z(@0#`Z3-Y$b%C{jsn~wu%L|Y9B?y)-K8J
+zf|IJi##L0M@?)0}r~*=fMYWr-KzN0Ra3BzHC@>b_V2r^pN%NLwx~Kczd$w-($WO_Z
+zMj9EMQ)Rbm9(V3NkMDfv+}jOs;shu7`;S0+d%3>E)^vZ__)_<6wO7N}PJX!^n6|jn
+zv$7+x{tK_CuQ+qJwYF>hp^BMJVYB>u2m^q<kM=S*@7;Cg#mNP?+_j`qEz%DbeRX9A
+z^!2Hlf=*He^Z<uGkdOc9-COuvb3^L<*2L0P%06|iIBm~I^n*tU7;Fsj08c&z^!9S-
+z2a#C6asvR})Vij{0h`4oNWSjYYE!aZt^3PMx^4jg87k_eQo!xNw0k>WUD*+g`rk{R
+zlT0R-#Z$^xN+?t<3&GxSn-`ZJyD5ED*9NVq*}?-hTX7GM_A)gT+!>o^El!=6ZdJba
+zcP1>xUDpLzzD72$yxNZ!ceC#;{N~cdvxNt2w&LFY&v(BC9M`n1Ye};hGeJ=p=?QQO
+zjF5sVV9!7JbLMra#e)O(owrj>aSg@;*2ux37s9xAHmv-zbkz;b7p7y@LMy4NiU1J=
+z2xC69796nMKoU49h^_zUY7!ZIY14-8?`p+08V^`w;~r%4s<W5N(cq5wvV@gdm7K3C
+zO8Y(lY1<OoU<K`b-ad>ea7R%sIa{VL{ky7F$>2BBf8KR<ga?gN0&CE?2m`&?(R-2O
+zkN7|2NuF-KBt7pacP0(_lAU5K+Q$M;j1zh;(An1p^H050z{nu`_c_;eEe}1RL3qF#
+z7x#TKn;p4L`D#^LPfOZtHXZV{>mO7C0#X2ixAEqYG^X;z6_P|?2Cxm^skYlGN{tNT
+z4?B809Iens-~nq`-2Z9U)xwq6rO!#S_-XMr<!aZ*qZU9wXn>&>8}s)PBR~e=yFe}N
+z<gEV}FBMeq?0i0Xn^tHe@PIWW?l*KTR~5KDHrEvC3sM~vgor<`^|TjMRbVV)?U`5*
+z^MNU39MBsD>e?XZp7k}KDp_`2)0K_E12)rf4;OVffy7NflxSVkGM`(VlOzp!6N&)A
+zT3D*w##%FqD*!?blo<E`t8er>nmd*67x9kdRW&@AK_#%6j(evmeVeSPvzjk%PB<NQ
+zT6r>D%<(3nKw&3u--n8k4h$VE!UsyUfqD7u)pjY+kuGk6o=zM3q8#$sQ9y4k?*F9w
+zTIs3l;-@-6@~ozI<&7WrM+yQX9|B_`o1b-*?P@R#U#*2g=h-rS;SIi1$>Ui`EAelk
+zzGesy*o-W`4`gD)ij`D_@3R=IwDvT2qF(qh9sh74P-rtNXgB8V(_pC4F`OWSFg0HI
+zb${`a3q`e(hrdc*(RF=@2R&e%Xa!*Cju$LTDaG%mKvCP8=618$w8*E!Qr__gLXx0Z
+zCtI|iNluz1)!qP7pi?8Pzt!)w(ohIo{Ek-mOn@Sr&X=L5NB_98ld+AWqE1VknXnRP
+zB-$d^pK6RE=rEY0IRS*6AOb`E4g=JwasE=}to=uCftP1M!0&FoVp(dsc);rYV(5PT
+z{lZ??bv^lXjWy47TP{j>s%kXn`UX{CfFZ{?!C@2SfR!>(_n*nRtNy~b+#D|TrMWS}
+zgU}GOsDR!G^b%`UtVF`^f~0)wCC!~YZg9{kug>LbFs#DioZ!fhC;_ng=IWB>#cHHl
+zX4fRvcVDLsQ7;~_X~n(4?-s72)Oo2n_7bNlVtdm|Pij0)F!sX?An<{bZD6duwc06t
+z$}56@HP_US2dwV6Z?f)?9xZhiThM%7dQp9GKfWBv2@abu2Xse)R$L;}7yNb5=4O~O
+zEq=E)2=sxPYWT5w;~u5@8naok_0pD850tkvAQN$d!zQg$qX%^U*ZqYZ7YOi2a9KQM
+z-4V`Wig>`LOm=$CxCjY1N>^oCR;L%o=3DkuQ(nEC;D8{2#sWJ5Y~4RqPh*^NN>Hz}
+zuIuIq4|<H5Rsaj#YyBB*!1*TSDz|B6Q)^RKqD@tfPj#m%6LNw>KciV<8L0hqWv{)p
+zy2LBs5F-1wHc+U9N#X&U)Qozg1=_^#B%v1ZW<xb!)Z7t9Ttj+x6LW&2@Sp;8)>p)w
+z6_<;&TYxH>d=s31Mq3RJ*z^_9(_?6=>#RHTCLp?!1mxP*wVY}sxIsbvDQ~izV39FD
+z3WJG+0962R*{xn@bBB_`qeV`V-+8Fv>Q_Loj{E*F?g8lAsw{_6Ura7=bjq7S)SpNK
+z2#n>%lD)RDJvy2b9F`hWbHM2NR<+X~!7L(O>GX8n6g5?kjR$N}anJZB<w@UOY{%2*
+zCELTUZi5!D0Z?BZaC`|0w*`MVMWSSIGz=V^XblgRuaW6<zv0iXWN{eH$>9N;;PtUz
+zBU`e&h^PZ&+;3geatay@Nz72rJ4AHPC`5m-0t2{uSA5X<O!ei}+i~Y|Niud!ZR<oq
+z0Dc*0^^N|b_Ej=o9i;#{-vk$Rw}zfD!CKk41NKI*JC}9;JtACAK4nwqCg+%QO-q-#
+zJkAlhF4J_Vl1@_7(uiJo3`}8xB|cVr=Kk7$<@|T({WB}zH8J1NZNsC#LqJLbkpj|{
+zqTK{&B>>|IU>D!u&*2ujq^QGj;6HSis`j;`1~SH-k#_y=Zj%5m2LcacXn1))=l>?Z
+z-<lIkSZOnDq>N_n@HlcrQUoNF#;t>jm?SUI#78eaqjISMxqaz=$h7N0SYSjfu$BVD
+zrW!>T?eeA#Xw+;_&O@+oz{n5n<i$_lGfN&v9!o1T$iWC2xY~A-^E`lEHG|Xf70|2W
+zf56B2-9G`qA1k3sR0`U8GS=$t^K$N|l_D~>m#0i4)@&rKHnY`87-=5U4Q&9DS|Jp9
+zN7N7+R~?8*0s`YT@%D;6YX1_&6|z8si%xlj+RCAY8K7YS7(5!qD}&1I;v;(pjO^e}
+zKAIUce32mAYNurL26;MuKyv>+zQbt3xj^)w`{H}M#u_)1_W%HNOU_ev(tQUxt_ZR+
+z6KjVBu@++?C|F2=Qql`XE1&p<@=n;zEcUUHG7Wofti??6X2a%9%;CClKd2C@DI`=!
+zxH$?R!ro=O*zP5UG=TY>BApR%6TpaRz60O~0HcFg&V9m*pKOigh6h>Im5dn+R64m-
+zcFeoDnzCEK&_io~*?lknkQf+*R3ats3)j>=ewZ2)cqT;}+Y;bq-S-0Gk5r&aK~4-?
+z3)s9c|1)4loTrQ?Oo5^$%2z^`s>P9PHAes+ahr>Y!Ud!zHend+sA1r96^%znyY)xB
+zxc3icspvAmG{xhmsJ8Sf(K<g(7PkRN0LUspPy)prz|r@iJTibK(}6Zn_@LMS!N=iR
+zHXdz#EfeR+F)wgS&pA$N7c!VDvLYXwYt9Qzr?sSOe{ET9R09n&X0!prHjo6;R~2uc
+zR~Ro`%!HA~7&ExZ%>*cJ$B6}H9M`Sw4oWp$D3>pu7o?0t$d5o(0hAvuoWcmx9)*C+
+z1kAq9^3n(3HU><}N8vbv$9%UIH_l~W_*($FO$9XQEVGxIbBvZ63q11sQ9jVGGd-i|
+z?J!(?H7b27kc2#Uc%W<+JH4wZamhJU-Tc;Gl^cvzT?vs}cgkjGo{HR>9ayaH4My#z
+zXu$`6lz_Me=<dPl2j4f|14Sud@S^wPz>T$!M5KKjF^;K#F)vWY!wv@517bSJ1R1l{
+zXqiBH2PdX8!`Oxh9uY2q5^6Lk4!t)rv^8eAg;reDyvlDm%B@EZEI1rl_XfwEr*4{B
+z0EIUo7ZgavTEp~lPxww`#JXz%3Nu3g+XZ0kA!a~Il+=hQ$<bP{9y|ZnTr(U<66wuR
+zePsq3%4Th+EQ>F__8aMit>=gZc8V-*X}<_0Dk1uZ&Cqbs$4aRLz+!;j5Qy9>JZm;V
+zGbwn<eSX^;H8wkL>`zt!aKH;Be*^$N0R^!j6Aag;G!;5LwvcGQKoSW-e#IxDEv*Zh
+z5KE4?;3Gtb1&;$1-o!#>H&ii(3K4!XGsVymUO))XF#}Vgpo+3Ay&A)=mj$AZ<?vs$
+z==ugR07VH@{#BMSEJ%`~ZEoAZmRj%fnAV?sKOoAXNP&0|bZ!k4h@8kDpu;CfNCI&O
+zV01f_N8iUXbI?YB`)eDhlUf^_)Guue!Gu*eZ{G<BzXStYG%-@15{)j2k0si3C;-U3
+z#D;)F69K*B4#Lwl>raUM_4Ne1BQH==-iHi|%2iV24|u_>`#~7{4nTPqR0>;o(TJmk
+z1oy(gfM2sd&8z}8MlGhQW>$ckkz-nW0g0Jyh)ziuK>k&hg@7zT+NDX`RIESsws>!J
+zK~fJP10_q+6-8N`R7#vd35kyl=<NYN)6X+Jfk{yKD7?1Yor?9Ru7Fx&!F}ny*9o8>
+z8Ki=&$TY4wI)P~7V*(U@k2x_yCK$BaCFAE)wSIj&L$%zB9RCYAlE{luQ5Np3d4VQA
+zCSXtmm3fh83<sNl*h3*%o1*pWQ^1%PJiqM?MA(9Wagmc_#HisC_6Hn*;#MrWdo?Yi
+ztc#+r9_vqMceqyN&?Cga3WjA)R+JA>!=j;Hpf^O63pD&J+s_P4BEi$}{QKE@tY5zZ
+z#^~`#{8z|eD+y(Zg2;u{AI(DQ+X3bB4h*<MWu@d#kJa#K)By<!HNIs_fB^Rb$9OO#
+zhE-L`MiL`Un{|;i^eo#)3X*{ESoL7TW6JJ7y%Qp}ttZXA5b<s0DnpiJp;5#rjC~8h
+z{S>{@R_1XBN=k&*$9k<l-7`XZE1HGO3+R7=L&6^tLtzh~5yU7$f5^UqL!u0EX22^E
+zDGTp2s>}M*KP1)PuQP()tACs^+^t5HlB2Rb<6cm!`KuX_g*RBqa8Qw;2M;A@C+e6S
+zg;?;~Kn@UpMgUFzpx9SiI?gEg*#NoU;*hr&EwpH}CS#Lncr^Z?WM7mKV#;_JIDIOM
+zDv+-9!hZG)c>&Wke;FwETUOvUDNu0FWE&pG9UG=E;jxrr|Jwyb_83Tt2g722Z9`=G
+zgUg8c6yCyI`6I@e4R5(G4E$~;tUq&Sh1d3nUO<d#FdPv%Syoj!BfWyK<`)3D%`AhA
+zOd$I2nX>-ODPXK&^8D71kiq{^pqwBlho=jMW5j24JB*ABAaDn^xyAUC_0rzP9+&T~
+zHB4gir+}dslt_@8Zc5Zxl6#G1r4I(i;9gC>>ZQGnRlr8=1--2L%m*JM$7fVonjt-|
+zvq~JR`OCY|&ArNeBLUmp)YRHtC*Yo;zUYGRKY%FwjL6sBD>$&(fmu-k6Jz+e-m$LT
+zCqSP~1@zTQWsTAdexphf#fT_P*$c*q&kzLJ&8))Xus7xy4~L5EpFZ+8`mQn57i4e`
+z5GsFIWT(1`a$vLLEzEj*z+^W5y!cps4UgGZK;I!=z~N<8kR&UrGL=n~vCWR`%dEm|
+z_%s%;uibUxZk+6`S=*$Cq#zaKf=O?p9N6sGfyL47$XFa753L`a0jAG~0{S9)?D>`7
+zF^=zvjI1h81(P90wapG1et{JjgJR5pUxe0=$kylP-eHRN6L)!N(0$TVAPO>fJYqCP
+zd@8%3TzFHTMuR6xPjA~1jx~*v_r%;i-dAgwwBl0?@tt5;cqB+3ml!c!^Rpre%*UF<
+zeba4toXF<~5cJeeo5k>FVpJ+o6om;>;@D=#UT`xnGr<$^O!4vUJ2km#l=U0`0EH-L
+zW6WkRAmHvGE6dT*xuZWy2RAzkas)gpLBBYRTzyU-p+P!+i%)LNGZP;c1xcc!M)hg2
+z!+by=XwjP;B@)9guz=aHx%A}BmAohR86thPhDn?~0t$ACVNpKP1GM!u_!Zw}#p*uv
+zcmnR7$&&X(KShQPcmc;p{H*kqM->?31={)yKzbmDe#JZj?027=9qZ5DbA-lDm{{-x
+z1e6syF&Z7A3(rb|?)X%8;Amwh2C<a-W%y~`ah?TXv+*Ni4HNI#ZJz?iCxW5CS5+B=
+zr-QUepuwkDSq1p^!mi-?sOSkh&L`2Mw7P4s=NR`(Ph~_wR`jj)XcBYxfH(3k3(O?l
+z|KX26tTv+PIq?eE7#&)yKJ)g+x@{H=3m*jqi~$V4#N1#6e($ac8y?Y}DktUB<hmoP
+zCYy{0R7nn#uRKv=)xw)tH7$GyHiiw4S+oA^E1-7HXz+=xJHb=0LRnPRupxs%*fIAs
+ze5nx)kI$a;Mx6oUywlI0`<1iaU-36z{KQz@b@QR`{V@pB{~4EbJ%AT<z0<Pc+;pvD
+zgeUtWHQ`W(XPNjwJdO9{f4!wR-u*l$zuXQC&OO&WQP$T}_<wt(uG!@*YKQ;;002ov
+JPDHLkV1mVI9r^$O
+
+diff --git a/README.md b/README.md
+index b69f1d2..87584c2 100644
+--- a/README.md
++++ b/README.md
+@@ -413,3 +413,12 @@ and `joke`, the dedicated server logged both commands, and the guest received
+ both `SOCIAL EVENT` packets. The existing career delivery and household loop
+ also completed in the same run. This is cross-client event replication, not a
+ claim that private relationship values are shared.
++
++## v1.25 compact plumbob asset and placement
++
++The production marker now uses a 16x22 source texture, a 6x10 runtime panel
++and a 30-pixel world-to-screen lift. This keeps the faceted gem very small and
++close above the character model, including on Build 42 paths that draw a source
++texture at native size. `evidence/v44/` records the baseline and modified
++Lua/Kahlua checks, live QA marker-size logging and rollback verification; the
++QA logger remains outside the production package.
+diff --git a/SCOPE.md b/SCOPE.md
+index 0661d78..e22389c 100644
+--- a/SCOPE.md
++++ b/SCOPE.md
+@@ -7,7 +7,7 @@ The original broad goal remains active. This ledger is not a reduced definition
+ | Requirement | Current implementation | Completion evidence still required |
+ |---|---|---|
+ | Sims-inspired HUD | Six live adverse-stat bars, fold control, career journal link | Actual host+guest independent values; resolution and accessibility polish |
+-| Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.22 uses a 5x8 panel with a 42px lift so the gem is much smaller and remains close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
++| Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.25 uses a compact 16x22 source texture, a 6x10 panel and a 30px lift so the gem remains very small and close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
+ | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits | Rank/restart tests, richer work beyond deliveries, rewards and balance |
+ | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
+ | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
+@@ -59,6 +59,17 @@ The original broad goal remains active. This ledger is not a reduced definition
+ 4. Integrate conversations, relationships, romance and neighborhood careers.
+ 5. Expand appearance/clothing assets, households, aspirations, furnishings and UI polish.
+ 
++## v1.25 compact plumbob asset and placement
++
++The production plumbob source texture is now 16x22 pixels, the runtime panel is
++6x10 pixels, and the world-to-screen lift is 30 pixels. The smaller source
++asset makes the reduction visible even if Build 42 draws the texture at native
++dimensions, while the panel anchor keeps the gem directly above the model.
++Lua and installed-game Kahlua tests passed, and the QA-only live marker logger
++records the panel and source-texture dimensions during a hands-free run.
++This is visual presentation evidence only; it does not claim native remote
++player body replication or completion of the remaining multiplayer gates.
++
+ ## v1.14 client-acquisition inventory evidence
+ 
+ - `evidence/v33/` records a fresh hands-free host plus guest run against the
+diff --git a/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua b/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
+index cdb5526..d800dd6 100644
+--- a/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
++++ b/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
+@@ -2,6 +2,7 @@
+ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
+     presenceCount = 0, movementFrame = 0, movementSent = false,
+     remoteScanFrame = 0, remoteScanCount = 0, remoteScanLogged = false,
++    plumbobSizeLogged = false,
+     socialFrame = 0, socialRefreshSent = false, socialActionSent = false,
+     socialActionScheduled = false, socialActionName = nil, socialTarget = nil,
+     socialActionDue = 0, socialActionCount = 0, socialActionPrepared = false,
+@@ -814,3 +815,30 @@ Events.OnRenderTick.Add(function()
+         end
+     end
+ end)
++
++-- QA-only visual contract: record the compact panel and source-texture sizes
++-- from the live production marker without adding diagnostics to the mod.
++Events.OnRenderTick.Add(function()
++    if not isClient() or NLQAMultiplayer.plumbobSizeLogged then return end
++    if not NLPlumbob or not NLPlumbob.instances then return end
++    local details = {}
++    for _, id in ipairs({"player:0", "npc:marisol"}) do
++        local panel = NLPlumbob.instances[id]
++        if panel then
++            local textureWidth, textureHeight = 0, 0
++            if panel.texture and panel.texture.getWidth then
++                local okWidth, valueWidth = pcall(panel.texture.getWidth, panel.texture)
++                local okHeight, valueHeight = pcall(panel.texture.getHeight, panel.texture)
++                if okWidth then textureWidth = valueWidth end
++                if okHeight then textureHeight = valueHeight end
++            end
++            details[#details + 1] = id .. "=" .. tostring(panel.width) .. "x"
++                .. tostring(panel.height) .. " texture=" .. tostring(textureWidth)
++                .. "x" .. tostring(textureHeight)
++        end
++    end
++    if #details > 0 then
++        NLQAMultiplayer.plumbobSizeLogged = true
++        emit("PLUMBOB SIZE", table.concat(details, " "))
++    end
++end)
+diff --git a/tests/plumbob.lua b/tests/plumbob.lua
+index e553008..e546410 100644
+--- a/tests/plumbob.lua
++++ b/tests/plumbob.lua
+@@ -38,15 +38,15 @@ assert(panel.y==300-panel.height-expectedLift)
+ if NLPlumbob.baseWidth then
+     assert(panel.width==NLPlumbob.baseWidth and panel.height==NLPlumbob.baseHeight,
+         "plumbob panel uses its configured compact dimensions")
+-    if NLPlumbob.baseWidth==5 then
+-        assert(NLPlumbob.baseHeight==8,
+-            "plumbob uses the very small in-world marker dimensions")
++    if NLPlumbob.baseWidth==6 then
++        assert(NLPlumbob.baseHeight==10,
++            "plumbob uses the compact in-world marker dimensions")
+     end
+     if NLPlumbob.baseWidth <= 12 then
+         assert(NLPlumbob.baseHeight <= 16,
+             "plumbob remains smaller than the character model")
+-        if NLPlumbob.baseWidth==5 then
+-            assert(NLPlumbob.baseLift <= 42,
++        if NLPlumbob.baseWidth==6 then
++            assert(NLPlumbob.baseLift <= 30,
+                 "plumbob tip stays close to the character")
+         else
+             assert(NLPlumbob.baseLift <= 80,
