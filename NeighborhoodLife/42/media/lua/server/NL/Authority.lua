@@ -41,11 +41,150 @@ function NLAuthority.broadcastPresence()
     return #entries
 end
 
-function NLAuthority.snapshot(player, profile, message)
+local function deliveryInventoryCount(player, itemType)
+    local inventory = player and player.getInventory and player:getInventory()
+    local all = inventory and inventory.getItems and inventory:getItems()
+    if not all then return 0 end
+    local count = 0
+    for i = 0, all:size() - 1 do
+        local item = all:get(i)
+        local equipped = false
+        if item and player.isEquipped then
+            local equippedOk, equippedValue = pcall(player.isEquipped, player, item)
+            equipped = equippedOk and equippedValue == true
+        end
+        if item and item.getFullType and item:getFullType() == itemType and not equipped then
+            count = count + 1
+        end
+    end
+    return count
+end
+
+local function deliveryValuesEqual(left, right)
+    if type(left) ~= type(right) then return false end
+    if type(left) ~= "table" then return left == right end
+    for key, value in pairs(left) do
+        if not deliveryValuesEqual(value, right[key]) then return false end
+    end
+    for key, value in pairs(right) do
+        if not deliveryValuesEqual(left[key], value) then return false end
+    end
+    return true
+end
+
+local function restoreDeliveryInventory(player, itemType, target)
+    local inventory = player and player.getInventory and player:getInventory()
+    local current = deliveryInventoryCount(player, itemType)
+    if not inventory then return false end
+    if current > target then
+        local all = inventory.getItems and inventory:getItems()
+        local chosen = {}
+        if not all then return false end
+        for i = 0, all:size() - 1 do
+            local item = all:get(i)
+            local equipped = false
+            if item and player.isEquipped then
+                local equippedOk, equippedValue = pcall(player.isEquipped, player, item)
+                equipped = equippedOk and equippedValue == true
+            end
+            if item and item.getFullType and item:getFullType() == itemType and not equipped then
+                chosen[#chosen + 1] = item
+                if #chosen == current - target then break end
+            end
+        end
+        if #chosen < current - target then return false end
+        for _, item in ipairs(chosen) do
+            inventory:Remove(item)
+            if isServer() and sendRemoveItemFromContainer then
+                sendRemoveItemFromContainer(inventory, item)
+            end
+        end
+    elseif current < target then
+        if not inventory.AddItem then return false end
+        for _ = current + 1, target do
+            local ok, item = pcall(inventory.AddItem, inventory, itemType)
+            if not ok or not item then return false end
+            if isServer() and sendAddItemToContainer then
+                sendAddItemToContainer(inventory, item)
+            end
+        end
+    end
+    return deliveryInventoryCount(player, itemType) == target
+end
+
+local function copyProfileInto(target, source)
+    for key in pairs(target) do target[key] = nil end
+    for key, value in pairs(source) do target[key] = NLDomain.copy(value) end
+end
+
+local function beginDeliveryJournal(world, player, profile, contract)
+    local before = NLDomain.copy(profile)
+    local expected = NLDomain.copy(before)
+    local completed = NLDomain.complete(expected, contract)
+    if not completed then return nil end
+    world.deliveryJournal = {
+        version = 1,
+        state = "prepared",
+        player = NLAuthority.key(player),
+        contractId = contract.id,
+        itemType = contract.item,
+        amount = contract.amount,
+        playerBefore = deliveryInventoryCount(player, contract.item),
+        profileBefore = before,
+        profileExpected = expected,
+    }
+    return world.deliveryJournal
+end
+
+local function clearDeliveryJournal(world)
+    world.deliveryJournal = nil
+end
+
+-- A delivery crosses the vanilla player save and world ModData. Keep the
+-- journal until both sides have reached the expected state so a dedicated
+-- server restart can repair a half-applied career reward.
+local function recoverDeliveryJournal(world, player)
+    local journal = world and world.deliveryJournal
+    if type(journal) ~= "table" then return true, "none" end
+    local key = NLAuthority.key(player)
+    if journal.player ~= key then
+        return false, "Career delivery recovery belongs to another account"
+    end
+    if type(journal.profileBefore) ~= "table"
+            or type(journal.profileExpected) ~= "table"
+            or type(journal.itemType) ~= "string" then
+        return false, "Career delivery recovery record is incomplete"
+    end
+    local profile = NLDomain.profile(world, key)
+    local current = deliveryInventoryCount(player, journal.itemType)
+    if current == journal.playerBefore - journal.amount
+            and deliveryValuesEqual(profile, journal.profileExpected) then
+        clearDeliveryJournal(world)
+        return true, "completed"
+    end
+    if current == journal.playerBefore
+            and deliveryValuesEqual(profile, journal.profileBefore) then
+        clearDeliveryJournal(world)
+        return true, "rolled-back"
+    end
+    if not restoreDeliveryInventory(player, journal.itemType, journal.playerBefore) then
+        return false, "Career delivery recovery still needs repair"
+    end
+    copyProfileInto(profile, journal.profileBefore)
+    clearDeliveryJournal(world)
+    return true, "repaired"
+end
+
+NLAuthority.recoverDeliveryJournal = recoverDeliveryJournal
+
+function NLAuthority.snapshot(player, profile, message, recoveryState)
     local result = NLDomain.copy(profile)
     result.playerNum = player:getPlayerNum()
     result.username = NLAuthority.key(player)
     result.message = message or "Updated"
+    if recoveryState and recoveryState ~= "none" then
+        result.recoveryState = recoveryState
+    end
     result.workedToday = profile.worked and profile.worked[profile.career] == profile.day or false
     result.skill = player:getPerkLevel(Perks[NLDefinitions.careers[profile.career].perk])
     if isServer() then sendServerCommand(player, NLAuthority.module, "snapshot", result)
@@ -80,11 +219,33 @@ function NLAuthority.delivery(player, profile, id)
     if #chosen < contract.amount then
         return false, "Need " .. contract.amount .. " " .. contract.item .. " in main inventory"
     end
+    local world = NLAuthority.world()
+    local journal = beginDeliveryJournal(world, player, profile, contract)
+    if not journal then return false, "Delivery transaction could not start" end
     for _, item in ipairs(chosen) do
         inv:Remove(item)
         if isServer() then sendRemoveItemFromContainer(inv, item) end
     end
-    return NLDomain.complete(profile, contract)
+    journal.state = "player-applied"
+    if NLQADeliveryFaultMode == "player-applied" then
+        NLQADeliveryFaultMode = nil
+        if NLQAMultiplayerServer then
+            print("NLQA DELIVERY JOURNAL PARTIAL: phase=player-applied item="
+                .. tostring(contract.item) .. " amount=" .. tostring(contract.amount))
+        end
+        return false, "QA forced partial career delivery"
+    end
+    local ok, message = NLDomain.complete(profile, contract)
+    if not ok then
+        if restoreDeliveryInventory(player, contract.item, journal.playerBefore) then
+            clearDeliveryJournal(world)
+        end
+        return false, message
+    end
+    journal.profileExpected = NLDomain.copy(profile)
+    journal.state = "world-applied"
+    clearDeliveryJournal(world)
+    return true, message
 end
 
 function NLAuthority.work(player, profile)
@@ -158,9 +319,32 @@ function NLAuthority.command(module, command, player, args)
         end
         return
     end
-    local profile = NLDomain.profile(NLAuthority.world(), key)
+    local world = NLAuthority.world()
+    local recoveryMessage = "Updated"
+    local recoveryState = "none"
+    if command ~= "presence" then
+        local recovered, state = recoverDeliveryJournal(world, player)
+        recoveryState = state
+        if not recovered then
+            NLAuthority.snapshot(player, NLDomain.profile(world, key),
+                "Career delivery recovery pending: " .. tostring(recoveryState))
+            return
+        end
+        if recoveryState ~= "none" and NLQAMultiplayerServer then
+            print("NLQA DELIVERY JOURNAL RECOVERY: state=" .. tostring(recoveryState)
+                .. " player=" .. tostring(key))
+        end
+        if recoveryState == "repaired" then
+            recoveryMessage = "Career delivery recovery repaired"
+        elseif recoveryState == "completed" then
+            recoveryMessage = "Career delivery recovery confirmed"
+        elseif recoveryState == "rolled-back" then
+            recoveryMessage = "Career delivery recovery rolled back"
+        end
+    end
+    local profile = NLDomain.profile(world, key)
     NLDomain.day(profile, math.floor(getGameTime():getWorldAgeHours() / 24))
-    local ok, message = true, "Updated"
+    local ok, message = true, recoveryMessage
     if command == "select" then ok, message = NLDomain.select(profile, args.career)
     elseif command == "deliver" then ok, message = NLAuthority.delivery(player, profile, args.id)
     elseif command == "promote" then
@@ -172,7 +356,7 @@ function NLAuthority.command(module, command, player, args)
         ok, message = NLAuthority.selectAppearance(profile, args.preset)
     end
     if not ok then message = "Not completed: " .. message end
-    NLAuthority.snapshot(player, profile, message)
+    NLAuthority.snapshot(player, profile, message, recoveryState)
 end
 
 Events.OnClientCommand.Add(NLAuthority.command)

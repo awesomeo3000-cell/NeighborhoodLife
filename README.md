@@ -980,3 +980,31 @@ The focused Lua 5.1 and installed-game Kahlua suites pass, including metadata
 round-trip and menu fallback coverage. This is a production code and contract
 test milestone, not actual multiplayer proof for arbitrary item/container
 transfers; a hands-free host+guest capture remains required.
+
+## v1.68 career delivery crash recovery
+
+Career delivery now uses a bounded server-side journal. Before removing the
+required unequipped main-inventory items, the server records the player's
+inventory count, the profile before-image, and the deterministic expected
+profile after the award. A normal delivery clears the journal only after both
+the player and profile changes are applied. If the server stops after the
+player-side removal, the next command restores the items and profile from the
+before-image, clears the journal, and includes the recovery state in the
+authoritative snapshot.
+
+The Lua 5.1 gameplay suite now exercises the forced player-applied half-state,
+and the installed-game Kahlua pipeline passes. The isolated Build 42.20.4
+hands-free probe in `evidence/v98/actual/delivery-crash-f/` forced a real
+dedicated-server stop after `NLQA DELIVERY JOURNAL PARTIAL`, restarted the
+server, reconnected fresh host and guest clients, observed
+`NLQA DELIVERY JOURNAL RECOVERY: state=repaired`, and verified nine real
+`Base.RippedSheets` in the host's inventory (eight restored by the journal,
+one pre-existing exchange item). This is actual crash-recovery evidence for
+career delivery, separate from mock/unit and engine-VM tests.
+
+QA crash helpers remain under `tools/` and write only to isolated profiles;
+they are not included in the production mod package. The full scope remains
+active: native NPC server-body reannouncement is still blocked by the real
+dedicated-server bridge (`GameServer=nil`, `Java=nil`, `onlineHints=0`), and
+broader global-data atomicity, the wider neighborhood vertical slice, and
+additional gameplay breadth remain open.

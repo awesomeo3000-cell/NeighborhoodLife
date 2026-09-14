@@ -29,6 +29,8 @@ local function player(name)
         local outer=self
         return {getItems=function() return list(outer.items) end,Remove=function(_,obj)
             for i,v in ipairs(outer.items) do if v==obj then table.remove(outer.items,i); return end end
+        end,AddItem=function(_,fullType)
+            local added=item(fullType); outer.items[#outer.items+1]=added; return added
         end}
     end
     return p
@@ -81,7 +83,7 @@ if NLDomain.work then
         'next world day unlocks another career shift')
 end
 local earnedCredits=profile(a).credits
-cmd(a,'deliver',{id=contract.id}); check(profile(a).credits==earnedCredits,'old day token rejected')
+    cmd(a,'deliver',{id=contract.id}); check(profile(a).credits==earnedCredits,'old day token rejected')
 local before=profile(a).credits
 a.dead=true; cmd(a,'select',{career='medic'}); check(profile(a).career=='tailor','dead player rejected'); a.dead=false
 NLAuthority.command('OtherMod','select',a,{career='medic'})
@@ -90,8 +92,29 @@ NLAuthority.command('NeighborhoodLife','select',a,nil)
 check(profile(a).career=='tailor','missing args ignored')
 local saved=NLDomain.copy(persisted)
 persisted=NLDomain.copy(saved); NLAuthority.lastRequest={}
-cmd(a,'refresh'); check(profile(a).careers.tailor.rank==2 and profile(a).credits==before,'reloaded world data preserved')
-local original=getTimestampMs
+    cmd(a,'refresh'); check(profile(a).careers.tailor.rank==2 and profile(a).credits==before,'reloaded world data preserved')
+    -- A forced server stop after the vanilla player inventory mutation leaves a
+    -- durable journal. The next authenticated command repairs the player side
+    -- and rolls the career profile back instead of losing the delivery.
+    day=2; NLAuthority.lastRequest={}; cmd(b,'refresh'); NLAuthority.lastRequest={}
+    local guestBeforeCredits=profile(b).credits
+    local guestContract=NLDomain.contracts(profile(b))[1]
+    for i=1,guestContract.amount do b.items[#b.items+1]=item(guestContract.item) end
+    NLQADeliveryFaultMode='player-applied'
+    cmd(b,'deliver',{id=guestContract.id})
+    local deliveryJournal=persisted.NeighborhoodLife_v2.deliveryJournal
+    check(deliveryJournal and deliveryJournal.state=='player-applied' and #b.items==0,
+        'delivery journal survives player-side partial state')
+    check(profile(b).credits==guestBeforeCredits and not profile(b).claimed[guestContract.id],
+        'partial delivery does not award before world apply')
+    NLAuthority.lastRequest={}
+    cmd(b,'refresh')
+    check(persisted.NeighborhoodLife_v2.deliveryJournal==nil and #b.items==guestContract.amount,
+        'delivery recovery restores the player inventory and clears the journal')
+    check(profile(b).credits==guestBeforeCredits and not profile(b).claimed[guestContract.id],
+        'delivery recovery rolls the career profile back')
+    NLAuthority.lastRequest={}; cmd(a,'refresh')
+    local original=getTimestampMs
 function getTimestampMs() return time end
 cmd(a,'select',{career='medic'}); check(profile(a).career=='tailor','rate limit blocks rapid requests')
 getTimestampMs=original

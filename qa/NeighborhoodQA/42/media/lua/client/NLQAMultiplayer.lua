@@ -63,6 +63,8 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
      inventoryPositioned = false,
     connectionCount = 0, inventoryRestartProbeSent = false,
     inventoryRestartObserved = false, inventoryRestartDue = 0 }
+NLQAMultiplayer.deliveryRecoverySnapshot = false
+NLQAMultiplayer.deliveryRecoveryObserved = false
 -- Keep the hands-free probe bounded while retaining one full render-loop delay
 -- between production social commands; this value is QA-only and never ships.
 NLQAMultiplayer.socialCooldownFrames = 300
@@ -719,6 +721,13 @@ Events.OnServerCommand.Add(function(module, command, args)
             NLQAMultiplayer.careerResultLogged=true
             NLQAMultiplayer.careerWorkDue=NLQAMultiplayer.socialFrame+30
             emit("CAREER RESULT", "delivery complete message="..tostring(args.message))
+        end
+        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                and qaIdentity().deliveryCrashProbe == true
+                and (args.message == "Career delivery recovery repaired"
+                    or args.recoveryState == "repaired") then
+            NLQAMultiplayer.deliveryRecoverySnapshot = true
+            emit("CAREER DELIVERY RECOVERY SNAPSHOT", tostring(args.message))
         end
         if qaIdentity().username == "nl-host" and args.username == "nl-host"
                 and NLQAMultiplayer.careerWorkSent
@@ -1444,6 +1453,8 @@ Events.OnRenderTick.Add(function()
     -- an authoritative profile snapshot, while the social pacing probe
     -- continues independently.
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.snapshots > 0
+            and not (qaIdentity().deliveryCrashProbe == true
+                and NLQAMultiplayer.deliveryRecoverySnapshot)
             and not NLQAMultiplayer.careerSeedSent then
         local player=getSpecificPlayer(0)
         if player then
@@ -1593,6 +1604,20 @@ Events.OnRenderTick.Add(function()
         NLQAMultiplayer.householdTaskSent=true
         NLHouseholdClient.request(0,"task",{task="tidy"})
         emit("HOUSEHOLD TASK", "tidy")
+    end
+end)
+
+-- The crash probe verifies the recovered item in the fresh client's actual
+-- main inventory, rather than treating the server snapshot text as proof.
+Events.OnTick.Add(function()
+    if qaIdentity().username ~= "nl-host"
+            or not NLQAMultiplayer.deliveryRecoverySnapshot
+            or NLQAMultiplayer.deliveryRecoveryObserved then return end
+    local count = qaInventoryCount(getSpecificPlayer(0), "Base.RippedSheets")
+    if count >= 8 then
+        NLQAMultiplayer.deliveryRecoveryObserved = true
+        emit("CAREER DELIVERY RECOVERY RESULT", "item=Base.RippedSheets count="
+            .. tostring(count) .. " source=server-repair")
     end
 end)
 

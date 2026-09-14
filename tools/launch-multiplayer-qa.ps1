@@ -1,6 +1,7 @@
 param(
     [switch]$InventoryCrashProbe,
     [switch]$HouseholdCrashProbe,
+    [switch]$DeliveryCrashProbe,
     [switch]$PreserveHousehold,
     [switch]$VerifyHouseholdMetadata,
     [string]$ProfileRoot = 'E:\pzmod\test-profile',
@@ -47,13 +48,14 @@ maps
 '@ | Set-Content "$profile\mods\default.txt"
 }
 
-if ($InventoryCrashProbe -or $HouseholdCrashProbe) {
+if ($InventoryCrashProbe -or $HouseholdCrashProbe -or $DeliveryCrashProbe) {
     $faultLines = @()
     if ($InventoryCrashProbe) { $faultLines += "NLQAInventoryFaultMode = 'player-applied'" }
     if ($HouseholdCrashProbe) {
         $faultLines += "NLQAHouseholdFaultMode = 'player-applied'"
         $faultLines += "NLQAPreserveHouseholdRestart = true"
     }
+    if ($DeliveryCrashProbe) { $faultLines += "NLQADeliveryFaultMode = 'player-applied'" }
     $faultLines | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQAFaultConfig.lua"
 }
 
@@ -61,8 +63,9 @@ if ($InventoryCrashProbe -or $HouseholdCrashProbe) {
 # so the isolated launcher writes one small identity file into each QA client copy.
 $preserveHouseholdValue = if ($PreserveHousehold) { 'true' } else { 'false' }
 $metadataProbeValue = if ($VerifyHouseholdMetadata) { 'true' } else { 'false' }
-"NLQAIdentity = { username = `"nl-host`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue }" | Set-Content "$hostProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
-"NLQAIdentity = { username = `"nl-guest`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue }" | Set-Content "$guestProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+$deliveryCrashProbeValue = if ($DeliveryCrashProbe) { 'true' } else { 'false' }
+"NLQAIdentity = { username = `"nl-host`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue }" | Set-Content "$hostProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+"NLQAIdentity = { username = `"nl-guest`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue }" | Set-Content "$guestProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
 
 # Keep both QA client windows windowed and silent; never leave a fullscreen QA window.
 function Set-WindowedOptions($path) {
