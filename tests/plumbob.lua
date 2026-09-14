@@ -38,11 +38,20 @@ assert(panel.y==300-panel.height-expectedLift)
 if NLPlumbob.baseWidth then
     assert(panel.width==NLPlumbob.baseWidth and panel.height==NLPlumbob.baseHeight,
         "plumbob panel uses its configured compact dimensions")
+    if NLPlumbob.baseWidth==8 then
+        assert(NLPlumbob.baseHeight==11,
+            "plumbob uses the tiny in-world marker dimensions")
+    end
     if NLPlumbob.baseWidth <= 12 then
         assert(NLPlumbob.baseHeight <= 16,
             "plumbob remains smaller than the character model")
-        assert(NLPlumbob.baseLift <= 80,
-            "plumbob tip stays close to the character")
+        if NLPlumbob.baseWidth==8 then
+            assert(NLPlumbob.baseLift <= 56,
+                "plumbob tip stays close to the character")
+        else
+            assert(NLPlumbob.baseLift <= 80,
+                "plumbob tip stays within the compact placement range")
+        end
     end
 end
 character.isDead=function() return true end; panel:prerender(); assert(not panel.visible)

@@ -1,0 +1,5 @@
+& .\tools\launch-qa.ps1
+INPUT: E:\pzmod\test-profile
+OBSERVED: test-profile\console.txt -> NLQA PASS: real engine plumbob panel registered and anchored at 1272,709 size=8x11
+OBSERVED: NLQA PASS: 3 production NPC bodies, persisted positions and plumbobs verified at marisol=10777.02,10256.98 kenji=10776.50,10256.50 amara=10777.50,10255.50
+PROCESS: isolated QA process stopped after evidence capture

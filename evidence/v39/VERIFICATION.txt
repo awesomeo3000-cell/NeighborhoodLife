@@ -1,0 +1,71 @@
+Neighborhood Life v1.20 verification
+
+CHANGED BRANCH/FIELD
+- Production client character-marker presentation: NL/Plumbob.lua now uses an 8x11 panel and a 56-pixel lift. The faceted gem is smaller and its tip is closer to the character model.
+- No NPC, multiplayer, server authority, or QA production behavior was changed in this milestone.
+
+ARTIFACTS
+- MODIFIED_FILE: E:\pzmod\evidence\v39\MODIFIED_FILE.zip
+- DIFF_FILE: E:\pzmod\evidence\v39\DIFF_FILE.patch
+- VERIFICATION.txt: E:\pzmod\evidence\v39\VERIFICATION.txt
+- ROLLBACK.sh: E:\pzmod\evidence\v39\ROLLBACK.sh
+- Engine evidence: E:\pzmod\evidence\v39\plumbob-engine-console.log
+- Engine command record: E:\pzmod\evidence\v39\engine-run-command.txt
+
+BASELINE
+COMMAND: python tools\pipeline.py test --target evidence\v39\baseline
+INPUT: E:\pzmod
+OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: baseline tests passed
+EXIT: 0
+BASELINE PLUMBOB HASH: 8B00129CE28BE0A07D66D7062AD2EABDF342B795902302192A8273101C90D432
+
+MODIFIED
+COMMAND: python tools\pipeline.py test
+INPUT: E:\pzmod
+OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: modified tests passed
+EXIT: 0
+COMMAND: & 'C:\Program Files (x86)\Lua\5.1\lua.exe' tests\plumbob.lua NeighborhoodLife
+INPUT: E:\pzmod
+OUTPUT: PASS: plumbob asset lookup, screen anchoring, dead-character hide, registration and cleanup
+RESULT: targeted plumbob contract passed
+EXIT: 0
+COMMAND: & 'C:\Program Files (x86)\Lua\5.1\luac.exe' -p NeighborhoodLife\42\media\lua\client\NL\Plumbob.lua
+INPUT: E:\pzmod
+OUTPUT: [empty]
+RESULT: syntax passed
+EXIT: 0
+COMMAND: python tools\pipeline.py package --version v39 --baseline evidence\v39\baseline
+INPUT: E:\pzmod
+OUTPUT: PASS: release package E:\pzmod\evidence\v39\MODIFIED_FILE.zip
+RESULT: package built
+EXIT: 0
+COMMAND: python -c "import zipfile; z=zipfile.ZipFile(r'evidence/v39/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('PRODUCTION_QA',any('qa/' in n for n in z.namelist())); print('PLUMBOB',any(n.endswith('42/media/lua/client/NL/Plumbob.lua') for n in z.namelist()))"
+INPUT: E:\pzmod
+OUTPUT: ZIP_TEST None; QA_ENTRIES []; PRODUCTION_QA False; PLUMBOB True
+RESULT: production package contains the marker and excludes QA
+EXIT: 0
+
+ROLLBACK
+COMMAND: & 'C:\Program Files\Git\bin\bash.exe' -lc 'TARGET_ROOT=/e/pzmod/evidence/v39/rollback-target bash /e/pzmod/evidence/v39/ROLLBACK.sh'; python tools\pipeline.py test --target evidence\v39\rollback-target
+INPUT: E:\pzmod\evidence\v39\rollback-target
+OUTPUT: ROLLBACK RESTORED: baseline production and QA/test trees
+PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: rollback test passed
+RESTORED STATUS: rollback plumbob SHA-256 8B00129CE28BE0A07D66D7062AD2EABDF342B795902302192A8273101C90D432 equals baseline; modified source remains 8C2A766D7DC76A89C45EB3D612AD33A693D88FA54A80608C68A38C5FB5EC9126
+EXIT: 0
+
+ACTUAL ENGINE EVIDENCE
+COMMAND: & .\tools\launch-qa.ps1
+INPUT: E:\pzmod\test-profile
+OUTPUT: NLQA PASS: real engine plumbob panel registered and anchored at 1272,709 size=8x11
+OUTPUT: NLQA PASS: 3 production NPC bodies, persisted positions and plumbobs verified at marisol=10777.02,10256.98 kenji=10776.50,10256.50 amara=10777.50,10255.50
+RESULT: isolated Build 42.20.4 engine rendered the smaller, closer player marker and retained all three production NPC markers; process was stopped after evidence capture.
+EXIT: 0 launcher/evidence capture; no natural game-process exit claimed
+
+TEST CLASSIFICATION
+- Mock/unit: tests/plumbob.lua marker dimensions, anchoring, visibility and cleanup.
+- Engine-VM: consolidated Lua 5.1/Kahlua suite, exit 0.
+- Actual gameplay: isolated hands-free Build 42.20.4 single-player engine log above.
+- This milestone does not claim host/guest native remote-body replication or feature completion.

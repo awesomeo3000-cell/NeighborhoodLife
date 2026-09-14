@@ -11,11 +11,11 @@ NLPlumbob.nativeRemoteIds = {}
 NLPlumbob.texturePath = "media/textures/NL_Plumbob.png"
 NLPlumbob.defaultColor = { r = 0.22, g = 0.88, b = 0.58 }
 NLPlumbob.remoteColor = { r = 0.28, g = 0.86, b = 0.95 }
--- Keep the player silhouette dominant.  The marker is deliberately compact
--- and its tip sits just above the model instead of floating over the street.
-NLPlumbob.baseWidth = 10
-NLPlumbob.baseHeight = 14
-NLPlumbob.baseLift = 72
+-- Keep the player silhouette dominant. The marker is deliberately tiny and
+-- its tip stays close to the head instead of floating over the street.
+NLPlumbob.baseWidth = 8
+NLPlumbob.baseHeight = 11
+NLPlumbob.baseLift = 56
 
 function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, lift)
     return math.floor(screenX - left - width / 2), math.floor(screenY - top - height - lift)

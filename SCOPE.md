@@ -474,3 +474,13 @@ The original broad goal remains active. This ledger is not a reduced definition 
   creation. Normal streamed-in walking without the QA viewpoint fixture, native
   server-body reannouncement, richer item metadata and offline household
   routines remain open gates.
+
+## v1.20 tiny plumbob placement
+
+- The production client marker is now an 8x11 panel with a 56-pixel lift. The
+  faceted gem remains above the character model while occupying much less
+  screen space and sitting closer to the model.
+- The isolated Build 42.20.4 engine logged `size=8x11` for the real player and
+  retained anchored plumbobs for Marisol, Kenji and Amara. This is actual
+  single-player engine evidence for presentation, not proof of native remote
+  player-body replication.

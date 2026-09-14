@@ -343,3 +343,13 @@ so that branch remains intentionally absent. QA helpers remain outside the
 production package. Normal streamed-in walking, native server-body
 reannouncement, richer item metadata and offline household routines remain
 open gates.
+
+## v1.20 tiny plumbob placement
+
+The production marker is now an 8x11 panel with a 56-pixel world-to-screen
+lift. This keeps the faceted gem small and places its tip close above the
+character model instead of leaving a large floating marker over the street.
+The isolated Build 42.20.4 engine logged `size=8x11` for the real player and
+continued to anchor all three production NPC markers. The change affects only
+the production marker presentation; it does not claim native remote-player
+body replication.
