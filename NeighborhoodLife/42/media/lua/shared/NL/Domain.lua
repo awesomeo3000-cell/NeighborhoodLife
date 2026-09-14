@@ -12,12 +12,17 @@ function NLDomain.profile(world, key)
     if not world.players[key] then
         world.players[key] = { career = "tailor", careers = {}, credits = 0,
             revision = 0, day = -1, claimed = {}, outfits = {},
-            worked = {}, householdId = nil, householdInvite = nil }
+            worked = {}, householdId = nil, householdInvite = nil,
+            appearance = { preset = "natural" } }
     end
     local p = world.players[key]
     p.householdId = p.householdId or nil
     p.householdInvite = p.householdInvite or nil
     p.worked = p.worked or {}
+    p.appearance = p.appearance or { preset = "natural" }
+    if not NLDefinitions.appearancePresets[p.appearance.preset] then
+        p.appearance = { preset = "natural" }
+    end
     for _, id in ipairs(NLDefinitions.careerOrder) do
         p.careers[id] = p.careers[id] or { rank = 1, xp = 0, delivered = 0, variety = {} }
     end

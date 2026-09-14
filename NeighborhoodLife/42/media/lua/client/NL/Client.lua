@@ -1,4 +1,5 @@
 require "NL/Domain"
+require "NL/Appearance"
 pcall(require, "NL/NpcClient")
 pcall(require, "NL/RemotePlayerClient")
 NLClient = { profiles = {}, presence = nil, npcPresence = nil, presenceFrame = 0 }
@@ -33,6 +34,9 @@ function NLClient.receive(module, command, args)
             local old = NLClient.profiles[i]
             if not old or args.revision >= old.revision then
                 NLClient.profiles[i] = args
+                if NLAppearance and NLAppearance.applyProfile then
+                    NLAppearance.applyProfile(player, args.appearance)
+                end
                 if NLWardrobe and NLWardrobe.applyProfile then
                     NLWardrobe.applyProfile(player, args.outfits)
                 end

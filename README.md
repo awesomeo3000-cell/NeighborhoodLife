@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, wardrobe and relationship prototype (v1.12)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.54)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -24,7 +24,10 @@ replacing delivery contracts.
 Right-click the world for Neighborhood wardrobe: three save/wear layer presets.
 Wear uses vanilla timed actions and requires the garments in main inventory.
 It does not remove unrelated worn layers or create missing clothes.
-The HUD footer opens Careers on the left and Relationships on the right.
+Click Looks in the HUD footer for four server-saved Build 42 hair presets. The
+selected preset is returned in the revisioned profile snapshot and applied to
+the local survivor's native HumanVisual. Host and guest choices are independent.
+The HUD footer opens Careers, Social, Looks, Wardrobe and Home actions.
 Relationships use separate friendship, trust and attraction bars, with introductions,
 chat, jokes, flirting, dates, partnerships and breakups. They only operate on a neighbor
 registered with a real server-side body. In a new or loaded single-player world,
@@ -804,3 +807,19 @@ The focused Lua 5.1 and installed-game Kahlua suites cover this packetless
 promotion path, with the full baseline and modified pipelines passing. This is
 engine-VM/contract evidence; native server-body reannouncement and natural NPC
 cell streaming remain open gameplay gates.
+
+## v1.54 appearance profile and two-client customization
+
+The production profile now stores a validated appearance preset id. The Looks
+panel offers Natural, Bob cut, Braided and Short, all mapped to hair styles
+already shipped by Build 42. The server accepts only those preset ids,
+increments the profile revision, and returns the choice in the private snapshot.
+Each client applies the gendered style through the native `HumanVisual` API and
+refreshes the model without inventing a model name.
+
+The focused Lua 5.1, panel and installed-game Kahlua suites pass. The actual
+hands-free Build 42.20.4 capture in `evidence/v75/` sent Bob to the host and
+Braided to the guest through the production command; the host logged `hair=Bob`
+and the guest logged `hair=Braids`. This closes the first multiplayer
+customization/profile slice, while a complete creator, richer preferences and
+original hair/assets remain open.

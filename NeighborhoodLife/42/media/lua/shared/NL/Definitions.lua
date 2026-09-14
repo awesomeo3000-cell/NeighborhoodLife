@@ -20,4 +20,15 @@ NLDefinitions.promotions = {
     { xp = 0, skill = 0, variety = 0 }, { xp = 60, skill = 1, variety = 2 },
     { xp = 180, skill = 3, variety = 3 }, { xp = 360, skill = 5, variety = 3 }
 }
+
+-- Appearance presets use only Build 42 hair styles already shipped by the
+-- game.  The server stores the preset id; clients apply the corresponding
+-- native HumanVisual style without inventing arbitrary model names.
+NLDefinitions.appearanceOrder = { "natural", "bob", "braided", "short" }
+NLDefinitions.appearancePresets = {
+    natural = { name = "Natural", femaleHair = "Long", maleHair = "Short" },
+    bob = { name = "Bob cut", femaleHair = "Bob", maleHair = "Picard" },
+    braided = { name = "Braided", femaleHair = "Braids", maleHair = "Cornrows" },
+    short = { name = "Short", femaleHair = "Short", maleHair = "CrewCut" },
+}
 return NLDefinitions

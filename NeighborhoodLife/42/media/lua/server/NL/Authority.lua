@@ -94,6 +94,18 @@ function NLAuthority.work(player, profile)
     return NLDomain.work(profile, skill)
 end
 
+function NLAuthority.selectAppearance(profile, presetId)
+    if type(presetId) ~= "string" or not NLDefinitions.appearancePresets[presetId] then
+        return false, "Unknown appearance preset"
+    end
+    profile.appearance = profile.appearance or { preset = "natural" }
+    if profile.appearance.preset ~= presetId then
+        profile.appearance = { preset = presetId }
+        profile.revision = profile.revision + 1
+    end
+    return true, NLDefinitions.appearancePresets[presetId].name .. " appearance selected"
+end
+
 -- Capture the authoritative player's currently worn garment identities. The
 -- client only requests a slot; the server reads the real worn-item list so a
 -- preset cannot contain client-invented item types or IDs.
@@ -126,7 +138,7 @@ function NLAuthority.command(module, command, player, args)
     if module ~= NLAuthority.module or not player or player:isDead() then return end
     if command ~= "refresh" and command ~= "presence" and command ~= "select"
             and command ~= "deliver" and command ~= "promote" and command ~= "work"
-            and command ~= "wardrobe_save" then return end
+            and command ~= "wardrobe_save" and command ~= "appearance_select" then return end
     -- Build 42's dedicated-server callback can omit the empty packet table for
     -- no-argument commands. Treat that as an empty request instead of dropping
     -- an otherwise valid refresh from a real client.
@@ -156,6 +168,8 @@ function NLAuthority.command(module, command, player, args)
     elseif command == "work" then ok, message = NLAuthority.work(player, profile)
     elseif command == "wardrobe_save" then
         ok, message = NLAuthority.captureOutfit(player, profile, args.slot)
+    elseif command == "appearance_select" then
+        ok, message = NLAuthority.selectAppearance(profile, args.preset)
     end
     if not ok then message = "Not completed: " .. message end
     NLAuthority.snapshot(player, profile, message)

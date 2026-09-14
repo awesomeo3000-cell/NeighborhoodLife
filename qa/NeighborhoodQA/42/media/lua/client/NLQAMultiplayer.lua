@@ -40,6 +40,7 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     wardrobeUnequipObserved = false, wardrobeReplacementSent = false,
     wardrobeReplacementObserved = false,
     wardrobeSnapshotLogged = false, wardrobeUiLogged = false,
+    appearanceSelectSent = false, appearanceSelected = false, appearanceDue = 0,
     inventoryGiveSent = false, inventoryGiveObserved = false,
     inventoryRequestSent = false, inventoryRequestObserved = false,
     inventoryExchangeDue = 0, inventoryMetadataLogged = false,
@@ -68,6 +69,10 @@ end
 local function qaIdentity()
     if NLQAIdentity then return NLQAIdentity end
     return {}
+end
+
+local function qaAppearancePreset()
+    return qaIdentity().username == "nl-host" and "bob" or "braided"
 end
 
 -- Consume the launcher-supplied +connect/+password immediately, before vanilla
@@ -870,6 +875,45 @@ Events.OnServerCommand.Add(function(module, command, args)
             emit("HOUSEHOLD TASK RESULT", tostring(args.message))
         end
     end
+end)
+
+-- QA-only appearance probe. It drives the production server command and then
+-- checks the returned profile against the local native HumanVisual state.
+-- This helper is never copied into the production package.
+Events.OnRenderTick.Add(function()
+    if not isClient() or NLQAMultiplayer.appearanceSelected
+            or NLQAMultiplayer.snapshots == 0 then return end
+    local expected = qaAppearancePreset()
+    if not NLQAMultiplayer.appearanceSelectSent then
+        if NLQAMultiplayer.appearanceDue == 0 then
+            NLQAMultiplayer.appearanceDue = NLQAMultiplayer.socialFrame + 30
+            emit("APPEARANCE SCHEDULED", "preset=" .. expected)
+        elseif NLQAMultiplayer.socialFrame >= NLQAMultiplayer.appearanceDue then
+            NLClient.request(0, "appearance_select", { preset = expected })
+            NLQAMultiplayer.appearanceSelectSent = true
+            emit("APPEARANCE SELECT", "preset=" .. expected .. " source=production-command")
+        end
+        return
+    end
+    local profile = NLClient.profiles and NLClient.profiles[0]
+    if not profile or not profile.appearance or profile.appearance.preset ~= expected then return end
+    local player = getSpecificPlayer(0)
+    local applied = false
+    local hair = "unavailable"
+    if player and player.getModData then
+        local data = player:getModData()
+        applied = data and data.NeighborhoodAppearance == expected
+    end
+    if player and player.getHumanVisual then
+        local visual = player:getHumanVisual()
+        if visual and visual.getHairModel then
+            local ok, value = pcall(visual.getHairModel, visual)
+            if ok and value then hair = tostring(value) end
+        end
+    end
+    NLQAMultiplayer.appearanceSelected = true
+    emit("APPEARANCE APPLIED", "preset=" .. expected
+        .. " localModData=" .. tostring(applied) .. " hair=" .. hair)
 end)
 
 -- QA-only world-body conversation probe. The host starts beside the persisted
