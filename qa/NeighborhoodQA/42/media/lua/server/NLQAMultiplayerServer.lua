@@ -3,6 +3,7 @@
 NLQAMultiplayerServer = true
 if isClient() then return end
 pcall(require, "NLQANativeRosterConfig")
+pcall(require, "NLQANpcMovementConfig")
 pcall(require, "NLQAPartnershipConfig")
 local ok,err=pcall(function() require "NL/Authority" end)
 print("NLQA MP SERVER BOOT: authority=" .. tostring(NLAuthority ~= nil) .. " requireOk=" .. tostring(ok)
@@ -33,6 +34,25 @@ local householdRestartProbeSent = false
 local nativeRosterProbeDone = false
 local partnershipProbeSeeded = false
 local partnershipSnapshotAttempts = 0
+local npcMovementSampleTick = 0
+
+-- QA-only observer for the production movement heartbeat. The coordinates
+-- come from the real server-native bodies; this observer never changes them.
+Events.OnTick.Add(function()
+    if NLQANpcMovementProbe ~= true or not NLNpcAuthority
+            or not NLNpcAuthority.started then return end
+    npcMovementSampleTick = npcMovementSampleTick + 1
+    if npcMovementSampleTick % 60 ~= 0 then return end
+    local rows = {}
+    for _, id in ipairs({"marisol", "kenji", "amara"}) do
+        local body = NLNpcAuthority.bodies[id]
+        if body then
+            rows[#rows + 1] = string.format("%s=%.2f,%.2f,%.0f", id,
+                body:getX(), body:getY(), body:getZ())
+        end
+    end
+    if #rows > 0 then print("NLQA NPC MOTION SAMPLE: " .. table.concat(rows, " ")) end
+end)
 
 -- QA-only relationship fixture. It gives the host the exact progression
 -- prerequisites for the production partner command, then leaves the command,
@@ -247,79 +267,15 @@ local function tryReflectiveNpcReannounce(players)
         print("NLQA MP REFLECTION: no-native-npc-body")
         return 0
     end
+    -- The dedicated server's `getClass()` result is a Kahlua class proxy, not
+    -- a reflection table. Calling Java reflection methods on that proxy emits
+    -- engine errors and cannot reach the static GameServer class. Keep this
+    -- probe diagnostic-only; the global bridge report above is authoritative.
     local classOk, bodyClass = pcall(function() return source:getClass() end)
-    local nameOk, className = false, nil
-    if classOk and bodyClass then nameOk, className = pcall(function() return bodyClass:getName() end) end
-    local loaderOk, loader = false, nil
-    if classOk and bodyClass then
-        loaderOk, loader = pcall(function() return bodyClass:getClassLoader() end)
-    end
-    local serverClassOk, serverClass = false, nil
-    if loaderOk and loader then
-        serverClassOk, serverClass = pcall(function()
-            return loader:loadClass("zombie.network.GameServer")
-        end)
-    end
-    local connectionClassOk, connectionClass = false, nil
-    if loaderOk and loader then
-        connectionClassOk, connectionClass = pcall(function()
-            return loader:loadClass("zombie.network.IConnection")
-        end)
-    end
-    if classOk and bodyClass and not serverClassOk then
-        serverClassOk, serverClass = pcall(function()
-            return bodyClass:forName("zombie.network.GameServer")
-        end)
-    end
-    if classOk and bodyClass and not connectionClassOk then
-        connectionClassOk, connectionClass = pcall(function()
-            return bodyClass:forName("zombie.network.IConnection")
-        end)
-    end
     print("NLQA MP REFLECTION: classOk=" .. tostring(classOk)
-        .. " nameOk=" .. tostring(nameOk) .. " className=" .. tostring(className)
-        .. " loaderOk=" .. tostring(loaderOk)
-        .. " serverClassOk=" .. tostring(serverClassOk)
-        .. " connectionClassOk=" .. tostring(connectionClassOk))
-    if not loaderOk then print("NLQA MP REFLECTION LOADER ERROR: " .. tostring(loader)) end
-    if not serverClassOk then print("NLQA MP REFLECTION SERVER CLASS ERROR: " .. tostring(serverClass)) end
-    if not connectionClassOk then print("NLQA MP REFLECTION CONNECTION CLASS ERROR: " .. tostring(connectionClass)) end
-    if not serverClassOk or not connectionClassOk or not serverClass or not connectionClass then
-        return 0
-    end
-    local getConnectionOk, getConnection = pcall(function()
-        return serverClass:getMethod("getConnectionFromPlayer", bodyClass)
-    end)
-    local sendConnectedOk, sendConnected = pcall(function()
-        return serverClass:getMethod("sendPlayerConnected", bodyClass, connectionClass)
-    end)
-    print("NLQA MP REFLECTION METHODS: getConnectionOk=" .. tostring(getConnectionOk)
-        .. " sendConnectedOk=" .. tostring(sendConnectedOk))
-    if not getConnectionOk or not sendConnectedOk or not getConnection or not sendConnected then
-        return 0
-    end
-    local sent = 0
-    for targetIndex = 0, players:size() - 1 do
-        local target = players:get(targetIndex)
-        local connectionOk, connection = pcall(function()
-            return getConnection:invoke(nil, target)
-        end)
-        if connectionOk and connection then
-            local sendOk = pcall(function()
-                return sendConnected:invoke(nil, source, connection)
-            end)
-            print("NLQA MP REFLECTION SEND: source=" .. tostring(source:getUsername())
-                .. " target=" .. tostring(target:getUsername())
-                .. " connectionOk=" .. tostring(connectionOk)
-                .. " sendOk=" .. tostring(sendOk))
-            if sendOk then sent = sent + 1 end
-        else
-            print("NLQA MP REFLECTION SEND: target=" .. tostring(target:getUsername())
-                .. " connectionOk=" .. tostring(connectionOk)
-                .. " connection=" .. tostring(connection))
-        end
-    end
-    return sent
+        .. " classProxy=" .. tostring(bodyClass)
+        .. " methods=unavailable")
+    return 0
 end
 
 -- QA-only viewpoint setup: after the real invite/accept flow, place the guest

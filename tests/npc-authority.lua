@@ -92,6 +92,18 @@ local body=NLNpcAuthority.bodies.marisol
 assert(body and body:isNpc() and body:getModData().NeighborhoodNpcId=='marisol','production body created')
 assert(body:getOnlineID()==30001,'native NPC receives its stable authored online identity')
 assert(NLNpcAuthority.assignNativeOnlineId(body,30001),'online identity assignment verifies through the native getter')
+if NLNpcAuthority.presencePacket then
+    NLNpcAuthority.targets.marisol={x=body:getX()+2,y=body:getY(),z=body:getZ(),waypoint=1}
+    local motionPacket=NLNpcAuthority.presencePacket()
+    local motionEntry
+    for _, entry in ipairs(motionPacket.npcs or {}) do
+        if entry.id == 'marisol' then motionEntry = entry; break end
+    end
+    assert(motionEntry and motionEntry.motion
+        and motionEntry.motion.targetX==body:getX()+2.5,
+        'presence heartbeat carries the active authoritative route target')
+    NLNpcAuthority.targets.marisol=nil
+end
 if NLNpcAuthority.safeFallbackStep then
     local freeStepX,freeStepY=NLNpcAuthority.safeFallbackStep(body,{x=math.floor(body:getX())+2,y=math.floor(body:getY()),z=body:getZ()})
     assert(freeStepX and freeStepY,'stalled native path has a bounded free-tile fallback')

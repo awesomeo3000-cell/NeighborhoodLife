@@ -19,6 +19,11 @@ NLNpcAuthority = {
     startAttempts = 0,
     danger = {},
     repairStacked = true,
+    -- Presence is a motion heartbeat as well as a lifecycle snapshot. Thirty
+    -- server ticks keeps client replicas moving toward the same native route
+    -- target without waiting for the older twelve-second refresh interval.
+    presenceInterval = 30,
+    motionSequence = 0,
     definitions = { "marisol", "kenji", "amara" },
 }
 
@@ -66,6 +71,7 @@ local function presencePacket()
                     onlineId = tonumber(value)
                 end
             end
+            local target = NLNpcAuthority.targets[id]
             entries[#entries + 1] = {
                 id=id, x=body:getX(), y=body:getY(), z=body:getZ(),
                 waypoint=row.waypoint or 1,
@@ -74,6 +80,16 @@ local function presencePacket()
                 female=isFemale,
                 outfit=definition and definition.outfit or "Generic01",
                 onlineId=onlineId,
+                -- The position is the authoritative sample; the motion
+                -- target lets a client continue the same route between
+                -- heartbeats instead of repeatedly stopping at each sample.
+                motion=target and {
+                    active=true, sequence=NLNpcAuthority.motionSequence,
+                    targetX=(target.x or body:getX()) + 0.5,
+                    targetY=(target.y or body:getY()) + 0.5,
+                    targetZ=target.z or body:getZ(),
+                    waypoint=target.waypoint or row.waypoint or 1,
+                } or nil,
             }
             if onlineId ~= nil then
                 onlineIdCounts[onlineId] = (onlineIdCounts[onlineId] or 0) + 1
@@ -90,6 +106,7 @@ local function presencePacket()
     end
     return { revision=getTimestampMs(), npcs=entries }, #entries
 end
+NLNpcAuthority.presencePacket = presencePacket
 
 function NLNpcAuthority.sendPresence(player)
     if not isServer() or not player then return 0 end
@@ -708,6 +725,7 @@ end
 function NLNpcAuthority.update()
     if not NLNpcAuthority.started then NLNpcAuthority.start(); return end
     NLNpcAuthority.tick = NLNpcAuthority.tick + 1
+    NLNpcAuthority.motionSequence = NLNpcAuthority.motionSequence + 1
     local lifecycleChanged = NLNpcAuthority.reconcileBodies()
     if NLNpcAuthority.recoverMissingBodies() > 0 then lifecycleChanged = true end
     if NLNpcAuthority.tick % 300 == 0 then
@@ -819,7 +837,7 @@ function NLNpcAuthority.update()
             end
         end
     end
-    if lifecycleChanged or NLNpcAuthority.tick % 120 == 0 then
+    if lifecycleChanged or NLNpcAuthority.tick % NLNpcAuthority.presenceInterval == 0 then
         NLNpcAuthority.broadcastPresence()
     end
 end
@@ -837,6 +855,7 @@ function NLNpcAuthority.reset()
     NLNpcAuthority.started = false
     NLNpcAuthority.startAttempts = 0
     NLNpcAuthority.tick = 0
+    NLNpcAuthority.motionSequence = 0
 end
 
 Events.OnGameStart.Add(NLNpcAuthority.start)

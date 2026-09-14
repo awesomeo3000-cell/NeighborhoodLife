@@ -68,6 +68,24 @@ local function positionBody(body, x, y, z)
     if square and body.setCurrent then body:setCurrent(square) end
 end
 
+-- A presence heartbeat contains both the authoritative sample and, while a
+-- server route is active, the next native waypoint. Following the motion
+-- target locally keeps the rendered replica in motion between heartbeats;
+-- each newer sample still replaces it and remains authoritative.
+local function movementTarget(entry)
+    local motion = entry and entry.motion
+    if type(motion) == "table" and motion.active ~= false
+            and tonumber(motion.targetX) and tonumber(motion.targetY) then
+        return {
+            x=tonumber(motion.targetX), y=tonumber(motion.targetY),
+            z=tonumber(motion.targetZ or entry.z or 0) or 0,
+        }
+    end
+    return entry
+end
+
+NLNpcClient.movementTarget = movementTarget
+
 local function assignReplicaOnlineId(body, onlineId)
     if not body or onlineId == nil then return false end
     local expected = tonumber(onlineId)
@@ -316,21 +334,22 @@ function NLNpcClient.update()
     for id, target in pairs(NLNpcClient.targets) do
         local body = NLNpcClient.bodies[id]
         if body and target then
+            local desired = movementTarget(target)
             local path = NLNpcClient.paths[id]
-            if path and (math.abs((target.x or 0)-path.targetX) >= 0.35
-                    or math.abs((target.y or 0)-path.targetY) >= 0.35
-                    or (target.z or 0) ~= path.targetZ) then
+            if path and (math.abs((desired.x or 0)-path.targetX) >= 0.35
+                    or math.abs((desired.y or 0)-path.targetY) >= 0.35
+                    or (desired.z or 0) ~= path.targetZ) then
                 cancelNativePath(id, body)
             end
-            if not advanceNativePath(id, body, target) then
-                local dx, dy = target.x-body:getX(), target.y-body:getY()
+            if not advanceNativePath(id, body, desired) then
+                local dx, dy = desired.x-body:getX(), desired.y-body:getY()
                 local distance = math.sqrt(dx*dx + dy*dy)
                 if distance > 0.02 then
                     local step = math.min(distance, 0.18)
                     positionBody(body, body:getX()+dx/distance*step,
-                        body:getY()+dy/distance*step, target.z)
+                        body:getY()+dy/distance*step, desired.z)
                 else
-                    positionBody(body, target.x, target.y, target.z)
+                    positionBody(body, desired.x, desired.y, desired.z)
                 end
                 NLNpcClient.modes[id] = "fallback"
             end

@@ -70,10 +70,13 @@ assert(NLNpcClient.assignReplicaOnlineId(NLNpcClient.bodies.marisol,30001)
     and NLNpcClient.bodies.marisol:getOnlineID()==30001,
     'compatibility replica verifies its stable online identity')
 NLNpcClient.apply({revision=2,npcs={
-    {id='marisol',x=11,y=11,z=0,alive=true},
+    {id='marisol',x=11,y=11,z=0,alive=true,
+        motion={active=true,sequence=2,targetX=12,targetY=11,targetZ=0}},
     {id='kenji',x=13,y=11,z=0,alive=true}
 }})
 NLNpcClient.update(); assert(body:getX()>10 and body:getX()<11,'replica interpolates authoritative target')
+assert(NLNpcClient.movementTarget(NLNpcClient.targets.marisol).x==12,
+    'replica follows the server motion target between heartbeats')
 if NLNpcClient.modes then
     assert(NLNpcClient.modes.marisol=='native','replica uses native path frame when available')
 end

@@ -72,6 +72,9 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     connectionCount = 0, inventoryRestartProbeSent = false,
     inventoryRestartObserved = false, inventoryRestartDue = 0,
     nativeRosterObserved = false, partnershipSeeded = false,
+    npcMovementFirstX = nil, npcMovementFirstY = nil,
+    npcMovementLastX = nil, npcMovementLastY = nil,
+    npcMovementSamples = 0, npcMovementLogged = false,
     partnershipPositioned = false, partnershipActionSent = false,
     partnershipHostObserved = false, partnershipGuestObserved = false,
     partnershipGuestRefreshDue = 0, partnershipGuestRefreshSent = false,
@@ -293,6 +296,36 @@ Events.OnConnectFailed.Add(function(message, detail)
         NLQAMultiplayer.connectAttempted=false
         NLQAMultiplayer.connectFrame=0
         emit("CONNECT RETRY ARMED", qaIdentity().username or "?")
+    end
+end)
+
+-- QA-only movement assertion. It observes successive production presence
+-- samples and the local rendered NPC replica on both isolated clients.
+Events.OnRenderTick.Add(function()
+    if not isClient() or qaIdentity().npcMovementProbe ~= true
+            or NLQAMultiplayer.npcMovementLogged
+            or not NLNpcClient or not NLNpcClient.states then return end
+    local state = NLNpcClient.states.marisol
+    if not state or not tonumber(state.x) or not tonumber(state.y) then return end
+    local x, y = tonumber(state.x), tonumber(state.y)
+    if not NLQAMultiplayer.npcMovementFirstX then
+        NLQAMultiplayer.npcMovementFirstX, NLQAMultiplayer.npcMovementFirstY = x, y
+        NLQAMultiplayer.npcMovementLastX, NLQAMultiplayer.npcMovementLastY = x, y
+        return
+    end
+    local dx = x - NLQAMultiplayer.npcMovementFirstX
+    local dy = y - NLQAMultiplayer.npcMovementFirstY
+    local delta = math.sqrt(dx * dx + dy * dy)
+    if delta >= 0.35 then
+        NLQAMultiplayer.npcMovementSamples = NLQAMultiplayer.npcMovementSamples + 1
+        NLQAMultiplayer.npcMovementLogged = true
+        local mode = NLNpcClient.modes and NLNpcClient.modes.marisol or "unknown"
+        emit("NPC MOTION OBSERVED", string.format(
+            "id=marisol start=%.2f,%.2f current=%.2f,%.2f delta=%.2f mode=%s",
+            NLQAMultiplayer.npcMovementFirstX, NLQAMultiplayer.npcMovementFirstY,
+            x, y, delta, tostring(mode)))
+    else
+        NLQAMultiplayer.npcMovementLastX, NLQAMultiplayer.npcMovementLastY = x, y
     end
 end)
 

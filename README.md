@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.74)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.75)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -1102,3 +1102,23 @@ close the full overhaul: native NPC server-body reannouncement remains open,
 and broader careers, conversations, relationships, clothing, aspirations,
 households, furnishings, and optional-zombie gameplay still need expansion.
 QA helpers remain outside the production package.
+
+## v1.75 NPC motion heartbeat
+
+The production NPC presence stream now carries the active server route target
+and a monotonic motion sequence. The server broadcasts that heartbeat every 30
+server ticks instead of waiting for the older 120-tick interval. Clients follow
+the route target between authoritative samples with the native path frame and
+retain the bounded interpolation fallback when the engine path stalls. The
+position sample remains authoritative, so a newer packet corrects drift.
+
+The QA-only `-NpcMovementProbe` records server-native coordinate samples and a
+rendered Marisol movement observation on both isolated clients. This improves
+the verified compatibility movement channel; it does not close the real Build
+42 native server-body reannouncement gate (`GameServer=nil`, `Java=nil`,
+`getClass=nil`). The actual capture in
+`evidence/v110/actual/npc-movement-c/` returned
+`PASS: actual host-plus-guest NPC movement heartbeat and rendered replica
+motion observed`; both clients observed a 1.68-tile Marisol displacement while
+the server recorded changing authoritative coordinates. QA helpers remain
+outside the production mod package.

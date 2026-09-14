@@ -4,6 +4,7 @@ param(
     [switch]$DeliveryCrashProbe,
     [switch]$PromotionProbe,
     [switch]$NativeRosterProbe,
+    [switch]$NpcMovementProbe,
     [switch]$PartnershipProbe,
     [switch]$VerticalSliceProbe,
     [switch]$PreserveHousehold,
@@ -70,6 +71,7 @@ $metadataProbeValue = if ($VerifyHouseholdMetadata) { 'true' } else { 'false' }
 $deliveryCrashProbeValue = if ($DeliveryCrashProbe) { 'true' } else { 'false' }
 $promotionProbeValue = if ($PromotionProbe) { 'true' } else { 'false' }
 $nativeRosterProbeValue = if ($NativeRosterProbe) { 'true' } else { 'false' }
+$npcMovementProbeValue = if ($NpcMovementProbe) { 'true' } else { 'false' }
 $partnershipProbeValue = if ($PartnershipProbe) { 'true' } else { 'false' }
 $verticalSliceProbeValue = if ($VerticalSliceProbe) { 'true' } else { 'false' }
 if ($NativeRosterProbe) {
@@ -78,8 +80,11 @@ if ($NativeRosterProbe) {
 if ($PartnershipProbe) {
     "NLQAPartnershipProbe = true" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQAPartnershipConfig.lua"
 }
-"NLQAIdentity = { username = `"nl-host`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, partnershipProbe = $partnershipProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$hostProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
-"NLQAIdentity = { username = `"nl-guest`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, partnershipProbe = $partnershipProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$guestProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+if ($NpcMovementProbe) {
+    "NLQANpcMovementProbe = true" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQANpcMovementConfig.lua"
+}
+"NLQAIdentity = { username = `"nl-host`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$hostProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+"NLQAIdentity = { username = `"nl-guest`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$guestProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
 
 # Keep both QA client windows windowed and silent; never leave a fullscreen QA window.
 function Set-WindowedOptions($path) {
