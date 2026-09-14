@@ -238,3 +238,13 @@ keeping the gem small and directly above the active character model. The
 fallback renderer is bounded to that panel instead of drawing an oversized
 shape outside its UI bounds. The isolated Build 42 smoke run logged
 `size=10x14`; this is engine UI evidence, not multiplayer completion.
+
+## v1.13 native client NPC movement
+
+Production NPC replicas now use Build 42's native `PathFindBehavior2` frame
+sequence (`preupdate`, `update`, behavior update, `postupdate`) for movement
+toward server-authoritative positions, with bounded interpolation only when
+the native behavior is unavailable or stalls. A fresh hands-free host/guest
+run logged `productionNpcNativePaths=3` on both clients while the three NPC
+positions advanced over repeated `npc_presence` packets. Native server-body
+reannouncement remains an open Build 42 Lua API gate.

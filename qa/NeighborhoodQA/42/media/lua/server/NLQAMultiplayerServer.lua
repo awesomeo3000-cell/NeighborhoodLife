@@ -5,6 +5,20 @@ if isClient() then return end
 local ok,err=pcall(function() require "NL/Authority" end)
 print("NLQA MP SERVER BOOT: authority=" .. tostring(NLAuthority ~= nil) .. " requireOk=" .. tostring(ok)
     .. " error=" .. tostring(err))
+for _, name in ipairs({"getClass", "importClass", "Java", "luautils", "GameServer", "GameClient"}) do
+    print("NLQA MP SERVER BRIDGE: " .. name .. "=" .. tostring(type(_G[name])))
+end
+if type(luautils) == "table" then
+    local names = {}
+    for name, _ in pairs(luautils) do names[#names + 1] = tostring(name) end
+    table.sort(names)
+    print("NLQA MP SERVER BRIDGE: luautilsKeys=" .. table.concat(names, ","))
+end
+if type(getClass) == "function" then
+    local classOk, classValue = pcall(getClass, "zombie.network.GameServer")
+    print("NLQA MP SERVER BRIDGE: getClass(GameServer) ok=" .. tostring(classOk)
+        .. " value=" .. tostring(classValue))
+end
 local reannounced = false
 local careerSeeded = {}
 

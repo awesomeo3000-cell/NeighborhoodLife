@@ -418,14 +418,27 @@ local function scanRemoteObjects()
     end
     local markerCount = 0
     local presenceMarkerCount = 0
+    local nativePathCount = 0
+    local fallbackReplicaCount = 0
     if NLPlumbob and NLPlumbob.instances then
         for id, _ in pairs(NLPlumbob.instances) do
             if string.sub(id, 1, 7) == "remote:" then markerCount = markerCount + 1 end
             if string.sub(id, 1, 9) == "presence:" then presenceMarkerCount = presenceMarkerCount + 1 end
         end
     end
+    if NLNpcClient and NLNpcClient.bodies then
+        for id, _ in pairs(NLNpcClient.bodies) do
+            if NLNpcClient.modes and NLNpcClient.modes[id] == "native" then
+                nativePathCount = nativePathCount + 1
+            elseif NLNpcClient.modes and NLNpcClient.modes[id] == "fallback" then
+                fallbackReplicaCount = fallbackReplicaCount + 1
+            end
+        end
+    end
     details[#details + 1] = "productionRemoteMarkers=" .. tostring(markerCount)
     details[#details + 1] = "productionPresenceMarkers=" .. tostring(presenceMarkerCount)
+    details[#details + 1] = "productionNpcNativePaths=" .. tostring(nativePathCount)
+    details[#details + 1] = "productionNpcFallbackReplicas=" .. tostring(fallbackReplicaCount)
     emit("REMOTE SCAN", table.concat(details, " "))
 end
 

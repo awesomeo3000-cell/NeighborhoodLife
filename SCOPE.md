@@ -11,13 +11,13 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits | Client-acquisition inventory sync, rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
-| Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts and v1.11 proves distinct native positions on both clients | Native Build 42 body reannouncement to the engine's native player list, obstacle/danger handling, damage/death and offscreen behavior |
+| Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, and v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback | Native Build 42 body reannouncement to the engine's native player list, obstacle/danger handling, damage/death and offscreen behavior |
 | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot | Multi-step two-client conversations, richer world actions and inventory exchange |
 | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence | In-world UI/interaction checks, richer date activities and two-client synchronization |
 | Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
 | Aspirations and home activities | Not implemented | Goals, progress/rewards, hobbies and functional furnishings |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host social mutation, guest isolation, server-authoritative career delivery, disconnect-clean local native NPC replicas and authoritative remote marker fallback; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6/v1.7/v1.8/v1.9/v1.10/v1.11 real host plus guest evidence | Client-acquisition inventory sync, simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
+| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host social mutation, guest isolation, server-authoritative career delivery, disconnect-clean local native NPC replicas and authoritative remote marker fallback; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6/v1.7/v1.8/v1.9/v1.10/v1.11/v1.13 real host plus guest evidence | Client-acquisition inventory sync, simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -337,3 +337,17 @@ The original broad goal remains active. This ledger is not a reduced definition 
   revisioned `npc_presence`. This proves same-client reconnect plus NPC
   persistence across the server restart. Native body reannouncement remains
   open.
+
+## v1.13 native client NPC movement evidence
+
+- Production `NLNpcClient` now starts a Build 42 `PathFindBehavior2` target for
+  each authoritative NPC replica and drives the native `preupdate`, `update`,
+  behavior and `postupdate` frame sequence. It only falls back to bounded
+  interpolation when that native behavior is unavailable or stalls.
+- `evidence/v32/` records a fresh hands-free B42.20.4 host plus
+  guest run. Both clients logged three production NPC replicas with
+  `productionNpcNativePaths=3`, while authoritative positions advanced over
+  multiple presence packets. This is actual client-engine movement evidence,
+  not a Lua-only or Kahlua claim.
+- Build 42 still does not expose the server's native `GameServer` class to Lua;
+  native server-body reannouncement to the engine player list remains open.

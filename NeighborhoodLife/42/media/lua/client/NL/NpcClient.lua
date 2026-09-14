@@ -8,7 +8,7 @@
 if not isClient or not isClient() then return end
 
 require "NL/Plumbob"
-NLNpcClient = { bodies={}, targets={}, states={}, revision=0 }
+NLNpcClient = { bodies={}, targets={}, states={}, paths={}, modes={}, revision=0 }
 
 local function nativeBody(id)
     local cellOk, cell = pcall(getCell)
@@ -75,7 +75,19 @@ function NLNpcClient.apply(packet)
             seen[id] = true
             NLNpcClient.states[id] = entry
             local body = NLNpcClient.bodies[id] or createReplica(entry)
-            if body then NLNpcClient.targets[id] = entry end
+            if body then
+                local old = NLNpcClient.targets[id]
+                NLNpcClient.targets[id] = entry
+                -- Do not restart a native path for every heartbeat. A restart
+                -- is only needed when the authoritative target has moved by
+                -- more than a small correction window.
+                local path = NLNpcClient.paths[id]
+                if path and old and math.abs((entry.x or 0) - (old.x or 0)) < 0.35
+                        and math.abs((entry.y or 0) - (old.y or 0)) < 0.35
+                        and (entry.z or 0) == (old.z or 0) then
+                    path.targetX, path.targetY, path.targetZ = entry.x, entry.y, entry.z
+                end
+            end
         end
     end
     for id, body in pairs(NLNpcClient.bodies) do
@@ -88,24 +100,98 @@ function NLNpcClient.apply(packet)
             end
             NLNpcClient.bodies[id] = nil
             NLNpcClient.targets[id] = nil
+            NLNpcClient.paths[id] = nil
+            NLNpcClient.modes[id] = nil
             NLNpcClient.states[id] = nil
         end
     end
     return #packet.npcs
 end
 
+local function cancelNativePath(id, body)
+    local path = NLNpcClient.paths[id]
+    if path and path.behavior and path.behavior.cancel then
+        pcall(path.behavior.cancel, path.behavior)
+    end
+    if body and body.setPath2 then pcall(body.setPath2, body, nil) end
+    NLNpcClient.paths[id] = nil
+end
+
+local function beginNativePath(id, body, target)
+    if not body or not body.getPathFindBehavior2 then return false end
+    local ok, behavior = pcall(body.getPathFindBehavior2, body)
+    if not ok or not behavior or not behavior.pathToLocation or not behavior.update then return false end
+    local started = pcall(behavior.pathToLocation, behavior, target.x, target.y, target.z)
+    if not started then return false end
+    NLNpcClient.paths[id] = {
+        behavior=behavior, targetX=target.x, targetY=target.y, targetZ=target.z,
+        lastX=body:getX(), lastY=body:getY(), stall=0,
+    }
+    NLNpcClient.modes[id] = "native"
+    return true
+end
+
+-- Build 42 only advances a non-local IsoPlayer's PathFindBehavior2 when the
+-- normal character frame is driven. Run the same native frame sequence used
+-- by WalkToTimedAction, then retain interpolation as a deterministic fallback
+-- for clients where the native behavior is unavailable or stalls.
+local function advanceNativePath(id, body, target)
+    local path = NLNpcClient.paths[id]
+    if not path then
+        if not beginNativePath(id, body, target) then return false end
+        path = NLNpcClient.paths[id]
+    end
+    path.targetX, path.targetY, path.targetZ = target.x, target.y, target.z
+    local beforeX, beforeY = body:getX(), body:getY()
+    local ok = pcall(function()
+        body:preupdate()
+        body:update()
+        path.behavior:update()
+        body:postupdate()
+    end)
+    if not ok then
+        cancelNativePath(id, body)
+        return false
+    end
+    local currentX, currentY = body:getX(), body:getY()
+    if math.abs(currentX-beforeX) < 0.001 and math.abs(currentY-beforeY) < 0.001 then
+        path.stall = path.stall + 1
+    else
+        path.stall = 0
+    end
+    local dx, dy = path.targetX-currentX, path.targetY-currentY
+    if math.sqrt(dx*dx + dy*dy) <= 0.08 then
+        positionBody(body, path.targetX, path.targetY, path.targetZ)
+        cancelNativePath(id, body)
+    elseif path.stall >= 20 then
+        cancelNativePath(id, body)
+        return false
+    end
+    path.lastX, path.lastY = currentX, currentY
+    return true
+end
+
 function NLNpcClient.update()
     for id, target in pairs(NLNpcClient.targets) do
         local body = NLNpcClient.bodies[id]
         if body and target then
-            local dx, dy = target.x-body:getX(), target.y-body:getY()
-            local distance = math.sqrt(dx*dx + dy*dy)
-            if distance > 0.02 then
-                local step = math.min(distance, 0.18)
-                positionBody(body, body:getX()+dx/distance*step,
-                    body:getY()+dy/distance*step, target.z)
-            else
-                positionBody(body, target.x, target.y, target.z)
+            local path = NLNpcClient.paths[id]
+            if path and (math.abs((target.x or 0)-path.targetX) >= 0.35
+                    or math.abs((target.y or 0)-path.targetY) >= 0.35
+                    or (target.z or 0) ~= path.targetZ) then
+                cancelNativePath(id, body)
+            end
+            if not advanceNativePath(id, body, target) then
+                local dx, dy = target.x-body:getX(), target.y-body:getY()
+                local distance = math.sqrt(dx*dx + dy*dy)
+                if distance > 0.02 then
+                    local step = math.min(distance, 0.18)
+                    positionBody(body, body:getX()+dx/distance*step,
+                        body:getY()+dy/distance*step, target.z)
+                else
+                    positionBody(body, target.x, target.y, target.z)
+                end
+                NLNpcClient.modes[id] = "fallback"
             end
         end
     end
@@ -118,7 +204,8 @@ function NLNpcClient.cleanup()
         local list = cell and cell:getObjectList()
         if list and list.remove then list:remove(body) end
     end
-    NLNpcClient.bodies={}; NLNpcClient.targets={}; NLNpcClient.states={}; NLNpcClient.revision=0
+    for id, body in pairs(NLNpcClient.bodies) do cancelNativePath(id, body) end
+    NLNpcClient.bodies={}; NLNpcClient.targets={}; NLNpcClient.states={}; NLNpcClient.paths={}; NLNpcClient.modes={}; NLNpcClient.revision=0
 end
 
 Events.OnTick.Add(NLNpcClient.update)

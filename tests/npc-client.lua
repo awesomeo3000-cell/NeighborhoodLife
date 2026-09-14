@@ -40,6 +40,19 @@ IsoPlayer={new=function(_,_,x,y,z)
     function b:setX(v) self.x=v end; function b:setY(v) self.y=v end; function b:setZ(v) self.z=v end
     function b:getX() return self.x end; function b:getY() return self.y end; function b:getZ() return self.z end
     function b:setCurrent(v) self.current=v end
+    function b:preupdate() end; function b:update() end; function b:postupdate() end
+    local behavior={}
+    function behavior:pathToLocation(x,y,z) self.pathTarget={x=x,y=y,z=z} end
+    function behavior:update()
+        if self.pathTarget then
+            local dx=self.pathTarget.x-self.owner:getX(); local dy=self.pathTarget.y-self.owner:getY()
+            self.owner:setX(self.owner:getX()+math.min(0.25,math.abs(dx))*(dx<0 and -1 or 1))
+            self.owner:setY(self.owner:getY()+math.min(0.25,math.abs(dy))*(dy<0 and -1 or 1))
+        end
+    end
+    function behavior:cancel() end
+    behavior.owner=b
+    function b:getPathFindBehavior2() return behavior end
     return b
 end}
 require 'NL/NpcClient'
@@ -57,6 +70,9 @@ NLNpcClient.apply({revision=2,npcs={
     {id='kenji',x=13,y=11,z=0,alive=true}
 }})
 NLNpcClient.update(); assert(body:getX()>10 and body:getX()<11,'replica interpolates authoritative target')
+if NLNpcClient.modes then
+    assert(NLNpcClient.modes.marisol=='native','replica uses native path frame when available')
+end
 local xAfterNewer=body:getX()
 local targetAfterNewer=NLNpcClient.targets.marisol
 if NLNpcClient.revision then

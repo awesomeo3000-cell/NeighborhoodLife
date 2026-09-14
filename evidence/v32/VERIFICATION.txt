@@ -1,0 +1,60 @@
+Neighborhood Life v1.13 native client NPC movement verification
+
+CHANGED BRANCH/FIELD: production client replica movement branch in E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\NpcClient.lua. Authoritative npc_presence targets now drive each local native IsoPlayer through Build 42's preupdate, update, PathFindBehavior2:update and postupdate frame sequence. The client restarts a native path only after a meaningful target correction, marks native/fallback mode separately, and uses bounded interpolation only when the native behavior is unavailable or stalls. tests/npc-client.lua adds a native-shaped frame contract. README.md and SCOPE.md record v1.13. QA movement-mode logging remains outside the production package.
+SOURCE NPC CLIENT SHA256: 1376996B185038C30B64B879179E3344D3E65C2A195DA5AB9929999BE16A1A33
+SOURCE TEST SHA256: 9C15462EC3231BF1A21E8872F0DDC22643CFEE17C7586F1362E0E4F43A1ED9B6
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v32\baseline
+BASELINE INPUT: E:\pzmod
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE RESULT: v1.12 production baseline and compatibility-gated client contract passed.
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED RESULT: current mock, syntax and installed-game Kahlua engine-VM suites passed, including native-path-shaped NPC client coverage.
+MODIFIED EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v32 --baseline evidence\v32\baseline
+PACKAGE INPUT: E:\pzmod
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v32\MODIFIED_FILE.zip
+PACKAGE RESULT: production-only package and baseline diff created.
+PACKAGE EXIT: 0
+
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; z=zipfile.ZipFile('evidence/v32/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('NPC_CLIENT',any(n.endswith('42/media/lua/client/NL/NpcClient.lua') for n in z.namelist()))"
+PACKAGE VALIDATION INPUT: E:\pzmod
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; NPC_CLIENT True
+PACKAGE VALIDATION RESULT: valid production ZIP; QA helpers are excluded.
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v32/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' 'E:\pzmod\evidence\v32\ROLLBACK.sh'
+ROLLBACK INPUT: modified-copy rollback target at E:\pzmod\evidence\v32\rollback-target
+ROLLBACK LITERAL OUTPUT: MODIFIED_TARGET 1376996b185038c30b64b879179e3344d3e65c2a195da5ab9929999be16a1a33 /.../NpcClient.lua; 9c15462ec3231bf1a21e8872f0ddc22643cfee17c7586f1362e0e4f43a1ed9b6 /.../tests-npc-client.lua; ROLLBACK RESTORED: NPC client movement source and contract test from /e/pzmod/evidence/v32/rollback-baseline; RESTORED_TARGET 3c13e322d3441ee39598ad9cc3734a87fbb7664d272739543e19cc28a06daa9e /.../NpcClient.lua; ff2fe7fd8e49d1851ca845c00414ac7de3d430a0fb5597d71bc9850c85fd8a8e /.../tests-npc-client.lua
+ROLLBACK RESULT: restored copy matches rollback baseline and differs from modified copy; production source remains native-path capable and changed.
+ROLLBACK EXIT: 0
+
+ACTUAL MULTIPLAYER COMMAND: & .\tools\launch-multiplayer-qa.ps1
+ACTUAL MULTIPLAYER INPUT: E:\pzmod\test-profile; isolated Build 42.20.4 dedicated server plus nl-host and nl-guest; no mouse or keyboard
+ACTUAL MULTIPLAYER LITERAL OUTPUT: QA multiplayer processes started: server=30240 host=21496 guest=7532; host and guest each logged productionNpcReplicas=3 and productionNpcNativePaths=3.
+ACTUAL MULTIPLAYER RESULT: actual two-client engine evidence shows the three local native NPC replicas advancing through repeated authoritative npc_presence updates. Host logged Marisol 8282.50,11717.50 to 8282.21,11716.95 and Kenji 8281.50,11720.26 to 8281.56,11720.44; guest logged native paths and three replicas as well. The server logged authoritative NPC TICK, PATH and MOVE records. This is actual gameplay evidence, not mock or engine-VM evidence.
+ACTUAL MULTIPLAYER CLASSIFICATION: real Build 42 host plus guest run. The QA logger reports movement mode only; it does not create bodies or supply positions.
+ACTUAL MULTIPLAYER EXIT: 0; PIDs 30240, 21496 and 7532 were stopped after capture.
+ACTUAL MULTIPLAYER EVIDENCE: E:\pzmod\evidence\v32\mp-server-full.log; E:\pzmod\evidence\v32\mp-host-full.log; E:\pzmod\evidence\v32\mp-guest-full.log
+
+API INVESTIGATION COMMAND: & .\tools\launch-multiplayer-qa.ps1
+API INVESTIGATION INPUT: same isolated Build 42.20.4 server; QA-only Lua bridge probe
+API INVESTIGATION LITERAL OUTPUT: GameServer=nil; GameClient=nil; getClass=nil; importClass=nil; Java=nil; luautilsKeys=concatenateArrays,countItemsRecursive,equipItems,exportGlobals,findRootInventory,getConditionRGB,getCorrectSquareForWall,getNextTiles,haveToBeTransfered,haveToBeTransferedWhileTrading,indexOf,isEquipped,isSquareAdjacentToSquare,lerp,okModal,packString,remove,roughlyEqual,round,split,splitJavaStyle,stringEnds,stringStarts,tableContains,trim,unpackString,updatePerksXp,walk,walkAdj,walkAdjAltTest,walkAdjFence,walkAdjObject,walkAdjSquares,walkAdjSquaresExcluded,walkAdjTest,walkAdjWall,walkAdjWindowOrDoor,walkToContainer,walkToObject,weaponLowerCondition
+API INVESTIGATION RESULT: Build 42's native GameServer class is not Lua-exposed in the dedicated server; native server-body reannouncement remains an API gate, while client-side native path movement is now proven.
+API INVESTIGATION EXIT: 0
+
+CLASSIFICATION: tests/npc-client.lua is a mock/native-shaped contract; pipeline Kahlua suites use explicit mocks and are not multiplayer evidence; v32 logs are actual two-client Build 42 evidence. Stable native server-body reannouncement, obstacle/danger handling, damage/death, offscreen behavior, client-acquisition inventory sync, households and aspirations remain open SCOPE.md gates.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v32\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v32\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v32\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v32\ROLLBACK.sh
+SHA256 MODIFIED_FILE: 279830780BAF219E5B8AF96C85E1B0F8888E89B2DFC9184F06DEA9DE1B514AAC
+SHA256 DIFF_FILE: 24A06FFF9610D015A18A7C64212BD7784B499B0E7EC5EEE3E5C72A8988F95E68
+SHA256 ROLLBACK: C49F7B205AE76ECB787CAA87282D45E6E93AE3A62644046750A97F2FD9B61DCE
