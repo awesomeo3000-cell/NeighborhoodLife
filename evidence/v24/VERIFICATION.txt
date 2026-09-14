@@ -1,0 +1,58 @@
+Neighborhood Life v1.7 actual social-interaction verification
+
+CHANGED BRANCH/FIELD: production world-body social interaction. `SocialAuthority` retains server-side proximity, floor, line-of-sight and dead-body gates; the QA-only client now waits for a replicated native body, walks the host beside the slice, refreshes the real relationship snapshot, and sends a delayed `introduce` command after the existing 200 ms duplicate-command throttle. QA-only server logging records the received command/result. The host mutation remains keyed by the server account; the guest receives an independent snapshot. The full Sims-inspired scope remains in SCOPE.md.
+BASELINE SOURCE: E:\pzmod\evidence\v24\baseline extracted from commit 0846b74
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v24\baseline
+BASELINE INPUT: E:\pzmod\evidence\v24\baseline
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE RESULT: v1.6 production package passed the consolidated mock, syntax and installed-game Kahlua suites
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod\NeighborhoodLife
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED RESULT: production social-authority, client, syntax and installed-game Kahlua suites passed
+MODIFIED EXIT: 0
+
+QA SYNTAX COMMAND: Get-ChildItem qa\NeighborhoodQA\42\media\lua -Recurse -Filter *.lua | ForEach-Object { & 'C:\Program Files (x86)\Lua\5.1\luac.exe' -p $_.FullName }
+QA SYNTAX INPUT: E:\pzmod
+QA SYNTAX LITERAL OUTPUT: QA_SYNTAX_EXIT=0
+QA SYNTAX RESULT: QA-only helpers remain syntactically valid and outside the production package
+QA SYNTAX EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v24 --baseline evidence\v24\baseline
+PACKAGE INPUT: E:\pzmod\NeighborhoodLife compared with E:\pzmod\evidence\v24\baseline
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v24\MODIFIED_FILE.zip
+PACKAGE RESULT: production-only ZIP and baseline diff created
+PACKAGE EXIT: 0
+
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; z=zipfile.ZipFile('evidence/v24/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('SOCIAL_AUTHORITY',any(n.endswith('server/NL/SocialAuthority.lua') for n in z.namelist())); print('NEIGHBORS',any(n.endswith('shared/NL/Neighbors.lua') for n in z.namelist())); print('SOCIAL_TEST',any(n.endswith('tests/social-authority.lua') for n in z.namelist()))"
+PACKAGE VALIDATION INPUT: E:\pzmod
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; SOCIAL_AUTHORITY True; NEIGHBORS True; SOCIAL_TEST False
+PACKAGE VALIDATION RESULT: valid production ZIP; QA helpers and tests are excluded
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v24/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' evidence/v24/ROLLBACK.sh
+ROLLBACK INPUT: copied final modified NeighborhoodLife into E:\pzmod\evidence\v24\rollback-target\NeighborhoodLife
+ROLLBACK LITERAL OUTPUT: ROLLBACK RESTORED: /e/pzmod/evidence/v24/rollback-target/NeighborhoodLife from /e/pzmod/evidence/v24/baseline
+ROLLBACK RESULT: restored tree matched baseline tree SHA256 58b755f6d0f28596a9910bd10488ec73ffb981cb2b588029c19e073c38984d86; final production source remained modified
+ROLLBACK EXIT: 0
+
+ACTUAL ENGINE COMMAND: & .\tools\launch-multiplayer-qa.ps1
+ACTUAL ENGINE INPUT: E:\pzmod\test-profile, isolated no-Steam B42.20.4 dedicated server plus two hands-free QA clients; no mouse or keyboard
+ACTUAL ENGINE LITERAL OUTPUT: QA multiplayer processes started: server=9972 host=33440 guest=21020
+ACTUAL ENGINE RESULT: the host queued a real walk from 6819.50,5259.50 to 6819,5260. Its production social snapshot reported Marisol and Kenji `canInteract=true`. The host sent `NeighborhoodSocial interact id=marisol action=introduce`; the server returned `I'm Marisol Vega. It's good to meet another survivor.` The host then received `met=true` and `friendship=6`. The distant guest snapshot reported all three `canInteract=false`, with Marisol `met=false` and friendship `0`.
+ACTUAL ENGINE EXIT: 0 for the launcher; server, host and guest were stopped after capture
+ACTUAL ENGINE EVIDENCE: E:\pzmod\evidence\v24\mp-server-relevant.log; E:\pzmod\evidence\v24\mp-host-relevant.log; E:\pzmod\evidence\v24\mp-guest-relevant.log; E:\pzmod\evidence\v24\mp-run-command.txt
+
+CLASSIFICATION: `tests/social-authority.lua` is a Lua mock test and the consolidated Kahlua suite uses explicit engine-shaped mocks. The v24 logs are actual isolated Project Zomboid multiplayer evidence for a production native-body social command, server-side validation, host relationship mutation and per-account guest isolation. Multi-step conversations, world actions, inventory exchange, native Build 42 body reannouncement and same-client reconnect remain open.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v24\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v24\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v24\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v24\ROLLBACK.sh
+SHA256 MODIFIED_FILE: DB7A67FA4BAADB7265F160857F9C5B37C6803A7900660832F9B5A190DA1746C9
+SHA256 DIFF_FILE: 2232A15F37AFDA58C783E182D3E5D365861D6BCD8209D1AC6F0192E0A6EEE7FA
+SHA256 ROLLBACK: 830B6958E53662E6A067FD7A07613D8414D8D486EFB35C0C990088A9C4C1B32D

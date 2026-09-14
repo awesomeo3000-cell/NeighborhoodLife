@@ -1,0 +1,26 @@
+LOG  : Lua          f:1 st:0> NLQA MP NPC PRESENCE: revision=1789348065213 count=0 entries=
+LOG  : Lua          f:11 st:199,982,348> NLQA MP NPC PRESENCE: revision=1789348066272 count=0 entries=
+LOG  : Lua          f:120 st:199,984,969> NLQA MP NPC PRESENCE: revision=1789348068892 count=3 entries=marisol@6760.50,5372.50,0/w1,kenji@6760.50,5372.50,0/w2,amara@6760.50,5372.50,0/w2
+LOG  : Lua          f:211 st:199,986,475> NLQA MP NPC PRESENCE: revision=1789348070412 count=3 entries=marisol@6760.54,5372.43,0/w1,kenji@6760.54,5372.43,0/w2,amara@6760.54,5372.43,0/w2
+LOG  : Lua          f:300 st:199,987,964> NLQA MP NPC PRESENCE: revision=1789348071897 count=3 entries=marisol@6760.54,5372.43,0/w1,kenji@6760.54,5372.43,0/w2,amara@6760.54,5372.43,0/w2
+LOG  : Lua          f:511 st:199,991,475> NLQA MP NPC PRESENCE: revision=1789348075412 count=3 entries=marisol@6760.57,5372.36,0/w1,kenji@6760.57,5372.36,0/w2,amara@6760.57,5372.36,0/w2
+LOG  : Lua          f:600 st:199,992,958> NLQA MP NPC PRESENCE: revision=1789348076900 count=3 entries=marisol@6760.61,5372.29,0/w1,kenji@6760.61,5372.29,0/w2,amara@6760.61,5372.29,0/w2
+LOG  : Lua          f:736 st:199,995,458> NLQA MP NPC PRESENCE: revision=1789348079391 count=3 entries=marisol@6760.61,5372.29,0/w1,kenji@6760.61,5372.29,0/w2,amara@6760.61,5372.29,0/w2
+LOG  : Lua          f:812 st:199,996,725> NLQA MP NPC PRESENCE: revision=1789348080658 count=3 entries=marisol@6760.64,5372.21,0/w1,kenji@6760.65,5372.21,0/w2,amara@6760.65,5372.22,0/w2
+LOG  : Lua          f:899 st:199,998,164> NLQA MP SOCIAL REFRESH: nl-guest
+LOG  : Lua          f:900 st:199,998,191> NLQA MP NPC PRESENCE: revision=1789348082127 count=3 entries=marisol@6760.64,5372.21,0/w1,kenji@6760.65,5372.21,0/w2,amara@6760.65,5372.22,0/w2
+LOG  : Lua          f:900 st:199,998,191> NLQA MP SOCIAL SNAPSHOT: message=Updated username=nl-guest entries=marisol/canInteract=false/met=false/friendship=0,kenji/canInteract=false/met=false/friendship=0,amara/canInteract=false/met=false/friendship=0
+LOG  : Lua          f:901 st:199,998,196> NLQA MP SOCIAL ACTION: guest refresh-only; no local interaction stimulus
+LOG  : Lua          f:1117 st:200,001,941> NLQA MP NPC PRESENCE: revision=1789348085866 count=3 entries=marisol@6760.68,5372.14,0/w1,kenji@6760.68,5372.14,0/w2,amara@6760.69,5372.15,0/w2
+LOG  : Lua          f:1200 st:200,003,808> NLQA MP NPC PRESENCE: revision=1789348087746 count=3 entries=marisol@6760.72,5372.07,0/w1,kenji@6760.72,5372.07,0/w2,amara@6760.72,5372.08,0/w2
+LOG  : Lua          f:1413 st:200,007,458> NLQA MP NPC PRESENCE: revision=1789348091388 count=3 entries=marisol@6760.75,5372.00,0/w1,kenji@6760.76,5372.00,0/w2,amara@6760.76,5372.00,0/w2
+LOG  : Lua          f:1429 st:200,007,725> NLQA MP NPC PRESENCE: revision=1789348091651 count=3 entries=marisol@6760.75,5372.00,0/w1,kenji@6760.76,5372.00,0/w2,amara@6760.76,5372.00,0/w2
+LOG  : Lua          f:1500 st:200,008,941> NLQA MP NPC PRESENCE: revision=1789348092881 count=3 entries=marisol@6760.79,5371.93,0/w1,kenji@6760.79,5371.93,0/w2,amara@6760.80,5371.93,0/w2
+LOG  : Lua          f:1729 st:200,012,758> NLQA MP NPC PRESENCE: revision=1789348096687 count=3 entries=marisol@6760.83,5371.86,0/w1,kenji@6760.83,5371.86,0/w2,amara@6760.83,5371.86,0/w2
+LOG  : Lua          f:1800 st:200,013,941> NLQA MP NPC PRESENCE: revision=1789348097874 count=3 entries=marisol@6760.83,5371.86,0/w1,kenji@6760.83,5371.86,0/w2,amara@6760.83,5371.86,0/w2
+LOG  : Lua          f:2029 st:200,017,758> NLQA MP NPC PRESENCE: revision=1789348101693 count=3 entries=marisol@6760.90,5371.72,0/w1,kenji@6760.90,5371.72,0/w2,amara@6760.91,5371.72,0/w2
+LOG  : Lua          f:2100 st:200,018,941> NLQA MP NPC PRESENCE: revision=1789348102879 count=3 entries=marisol@6760.90,5371.72,0/w1,kenji@6760.90,5371.72,0/w2,amara@6760.91,5371.72,0/w2
+LOG  : Lua          f:2131 st:200,019,458> NLQA MP NPC PRESENCE: revision=1789348103389 count=3 entries=marisol@6760.90,5371.72,0/w1,kenji@6760.90,5371.72,0/w2,amara@6760.91,5371.72,0/w2
+LOG  : Lua          f:2329 st:200,022,758> NLQA MP NPC PRESENCE: revision=1789348106697 count=3 entries=marisol@6760.93,5371.64,0/w1,kenji@6760.94,5371.64,0/w2,amara@6760.95,5371.65,0/w2
+LOG  : Lua          f:2400 st:200,023,941> NLQA MP NPC PRESENCE: revision=1789348107880 count=3 entries=marisol@6760.97,5371.57,0/w1,kenji@6760.98,5371.57,0/w2,amara@6760.98,5371.58,0/w2
+LOG  : Lua          f:2629 st:200,027,758> NLQA MP NPC PRESENCE: revision=1789348111689 count=3 entries=marisol@6761.01,5371.50,0/w1,kenji@6761.01,5371.50,0/w2,amara@6761.02,5371.51,0/w2

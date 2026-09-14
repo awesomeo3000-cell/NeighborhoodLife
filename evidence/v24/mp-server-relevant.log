@@ -1,0 +1,6 @@
+LOG  : Network      f:231 st:199,933,198> Connected new client 193654983890257346 ID # 0
+LOG  : Network      f:284 st:199,938,441> Connected new client 671036544396598909 ID # 4
+LOG  : Lua          f:801 st:199,991,465> NLQA SOCIAL COMMAND: refresh username=nl-host id=nil action=nil
+LOG  : Lua          f:806 st:199,991,994> NLQA SOCIAL COMMAND: interact username=nl-host id=marisol action=introduce
+LOG  : Lua          f:806 st:199,991,996> NLQA SOCIAL RESULT: username=nl-host message=I'm Marisol Vega. It's good to meet another survivor.
+LOG  : Lua          f:868 st:199,998,179> NLQA SOCIAL COMMAND: refresh username=nl-guest id=nil action=nil

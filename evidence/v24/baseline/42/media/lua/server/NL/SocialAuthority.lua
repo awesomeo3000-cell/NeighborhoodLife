@@ -44,10 +44,6 @@ function NLSocialAuthority.command(module,command,player,args)
     if type(args)~="table" then args={} end
     if command~="refresh" and command~="interact" then return end
     local key=NLAuthority.key(player); local now=getTimestampMs()
-    if NLQAMultiplayerServer then
-        print("NLQA SOCIAL COMMAND: "..tostring(command).." username="..tostring(key)
-            .." id="..tostring(args.id).." action="..tostring(args.action))
-    end
     if NLSocialAuthority.lastRequest[key] and now-NLSocialAuthority.lastRequest[key]<200 then return end
     NLSocialAuthority.lastRequest[key]=now
     local message="Updated"
@@ -68,9 +64,6 @@ function NLSocialAuthority.command(module,command,player,args)
         end
     end
     NLSocialAuthority.snapshot(player,message)
-    if NLQAMultiplayerServer and command=="interact" then
-        print("NLQA SOCIAL RESULT: username="..tostring(key).." message="..tostring(message))
-    end
 end
 Events.OnClientCommand.Add(NLSocialAuthority.command)
 Events.OnMainMenuEnter.Add(function() NLSocialAuthority.bodies={}; NLSocialAuthority.lastRequest={} end)

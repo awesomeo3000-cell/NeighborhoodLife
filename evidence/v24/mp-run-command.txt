@@ -1,0 +1,11 @@
+SOCIAL VERTICAL SLICE COMMAND: & .\tools\launch-multiplayer-qa.ps1
+SOCIAL VERTICAL SLICE INPUT: E:\pzmod\test-profile, isolated no-Steam B42.20.4 dedicated server plus two hands-free QA clients; no mouse or keyboard
+LAUNCHER LITERAL OUTPUT: QA multiplayer processes started: server=9972 host=33440 guest=21020
+HOST STIMULUS: waited for production NPC replicas, queued a real WalkToTimedAction from 6819.50,5259.50 to 6819,5260, then refreshed NeighborhoodSocial and delayed the introduce command beyond the server throttle window.
+HOST SNAPSHOT: Marisol canInteract=true, Kenji canInteract=true, Amara canInteract=true; all three initially met=false and friendship=0.
+HOST COMMAND: NeighborhoodSocial interact id=marisol action=introduce
+SERVER RESULT: username=nl-host message=I'm Marisol Vega. It's good to meet another survivor.
+HOST RESULT: Marisol met=true and friendship=6; NLQA logged SOCIAL RESULT: host introduction delivered.
+GUEST SNAPSHOT: all three canInteract=false; Marisol met=false and friendship=0; guest sent refresh-only and no interaction stimulus.
+PROCESS CLEANUP: server, host and guest processes were stopped after capture; no PZ/Java processes remained.
+CLASSIFICATION: actual isolated multiplayer engine evidence for a production world-body social command, server-side proximity validation, host relationship mutation and per-account guest isolation. It does not prove multi-step conversation, inventory exchange, native body reannouncement or same-client reconnect.

@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, wardrobe and relationship prototype (v1.6)
+# Neighborhood Life: careers, wardrobe and relationship prototype (v1.7)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -176,3 +176,7 @@ slice neighbors—Marisol Vega, Kenji Arakawa and Amara Okonkwo—with identity,
 outfit and gender data carried in the authoritative presence stream. Each body
 gets its own nearby persisted home/route, native movement cadence and client
 replica/plumbob rather than sharing Marisol-only construction logic.
+
+The isolated multiplayer probe now drives a real production social refresh from
+the host, introduces the nearest native neighbor through `NeighborhoodSocial`,
+and verifies the guest receives its own proximity-gated relationship snapshot.

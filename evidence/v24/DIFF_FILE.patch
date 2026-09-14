@@ -1,0 +1,32 @@
+--- baseline/42/media/lua/server/NL/SocialAuthority.lua
++++ modified/42/media/lua/server/NL/SocialAuthority.lua
+@@ -44,6 +44,10 @@
+     if type(args)~="table" then args={} end
+     if command~="refresh" and command~="interact" then return end
+     local key=NLAuthority.key(player); local now=getTimestampMs()
++    if NLQAMultiplayerServer then
++        print("NLQA SOCIAL COMMAND: "..tostring(command).." username="..tostring(key)
++            .." id="..tostring(args.id).." action="..tostring(args.action))
++    end
+     if NLSocialAuthority.lastRequest[key] and now-NLSocialAuthority.lastRequest[key]<200 then return end
+     NLSocialAuthority.lastRequest[key]=now
+     local message="Updated"
+@@ -64,6 +68,9 @@
+         end
+     end
+     NLSocialAuthority.snapshot(player,message)
++    if NLQAMultiplayerServer and command=="interact" then
++        print("NLQA SOCIAL RESULT: username="..tostring(key).." message="..tostring(message))
++    end
+ end
+ Events.OnClientCommand.Add(NLSocialAuthority.command)
+ Events.OnMainMenuEnter.Add(function() NLSocialAuthority.bodies={}; NLSocialAuthority.lastRequest={} end)
+BINARY FILE CHANGED: baseline/42/media/textures/NL_Plumbob.png -> modified/42/media/textures/NL_Plumbob.png
+--- baseline/42/mod.info
++++ modified/42/mod.info
+@@ -1,4 +1,4 @@
+ name=Neighborhood Life - Needs HUD
+ id=NeighborhoodLifeHUD
+-description=Life sim vertical slice: needs HUD, careers, outfit presets, relationships and a persistent native single-player neighbor. Hosted NPC replication and broader household systems remain in development.
++description=Life sim vertical slice: needs HUD, careers, outfit presets, relationships and three persistent native neighborhood neighbors. Hosted NPC replication and broader household systems remain in development.
+ versionMin=42.0

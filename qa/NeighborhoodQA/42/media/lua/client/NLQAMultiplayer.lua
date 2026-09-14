@@ -1,7 +1,10 @@
 -- Multiplayer evidence logger. Loaded only by NeighborhoodQA in isolated profiles.
 NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     presenceCount = 0, movementFrame = 0, movementSent = false,
-    remoteScanFrame = 0, remoteScanCount = 0, remoteScanLogged = false }
+    remoteScanFrame = 0, remoteScanCount = 0, remoteScanLogged = false,
+    socialFrame = 0, socialRefreshSent = false, socialActionSent = false,
+    socialActionScheduled = false, socialTarget = nil, socialActionDue = 0,
+    socialResultLogged = false }
 
 local function emit(label, value)
     print("NLQA MP " .. label .. ": " .. tostring(value))
@@ -75,7 +78,17 @@ local function queueHostWalk()
     local cell = getCell()
     if not player or not cell then return end
     local x, y, z = math.floor(player:getX()), math.floor(player:getY()), math.floor(player:getZ())
-    local target = cell:getGridSquare(x + 2, y, z)
+    local target
+    local npc = NLNpcClient and (NLNpcClient.bodies.kenji or NLNpcClient.bodies.marisol)
+    if npc then
+        local nx, ny = math.floor(npc:getX()), math.floor(npc:getY())
+        local candidates = {{nx+1,ny},{nx-1,ny},{nx,ny+1},{nx,ny-1}}
+        for _, point in ipairs(candidates) do
+            local square = cell:getGridSquare(point[1], point[2], z)
+            if square and square:isFree(false) then target=square; break end
+        end
+    end
+    target = target or cell:getGridSquare(x + 2, y, z)
     if not target or not target:isFree(false) then target = cell:getGridSquare(x + 1, y, z) end
     if not target then
         emit("MOVE FAILED", "no free target")
@@ -126,7 +139,7 @@ end)
 Events.OnRenderTick.Add(function()
     if not isClient() or NLQAMultiplayer.movementSent then return end
     NLQAMultiplayer.movementFrame = NLQAMultiplayer.movementFrame + 1
-    if NLQAMultiplayer.movementFrame >= 180 then
+    if NLQAMultiplayer.movementFrame >= 420 then
         NLQAMultiplayer.movementSent = true
         queueHostWalk()
     end
@@ -199,6 +212,62 @@ Events.OnServerCommand.Add(function(module, command, args)
         end
         emit("NPC PRESENCE", "revision="..tostring(args.revision)
             .." count="..tostring(#args.npcs).." entries="..table.concat(rows, ","))
+    end
+    if module == "NeighborhoodSocial" and command == "snapshot" and type(args) == "table" then
+        local rows={}
+        for _,entry in ipairs(args.neighbors or {}) do
+            rows[#rows+1]=string.format("%s/canInteract=%s/met=%s/friendship=%s",
+                tostring(entry.id),tostring(entry.canInteract),
+                tostring(entry.relation and entry.relation.met),
+                tostring(entry.relation and entry.relation.friendship))
+        end
+        emit("SOCIAL SNAPSHOT", "message="..tostring(args.message)
+            .." username="..tostring(args.username).." entries="..table.concat(rows, ","))
+        if qaIdentity().username == "nl-host" and args.message
+                and string.find(args.message, "I'm ", 1, true)
+                and not NLQAMultiplayer.socialResultLogged then
+            NLQAMultiplayer.socialResultLogged=true
+            emit("SOCIAL RESULT", "host introduction delivered")
+        end
+    end
+end)
+
+-- QA-only world-body conversation probe. The host starts beside the persisted
+-- neighborhood slice and introduces itself through the real production social
+-- command. The guest requests the same snapshot from its separate position;
+-- its result remains proximity-gated rather than being fabricated locally.
+Events.OnRenderTick.Add(function()
+    if not isClient() or not NLSocialClient then return end
+    NLQAMultiplayer.socialFrame=NLQAMultiplayer.socialFrame+1
+    if NLQAMultiplayer.socialFrame==900 then
+        NLSocialClient.request(0,"refresh")
+        NLQAMultiplayer.socialRefreshSent=true
+        emit("SOCIAL REFRESH", qaIdentity().username or "?")
+    end
+    if NLQAMultiplayer.socialRefreshSent and not NLQAMultiplayer.socialActionSent
+            and NLSocialClient.snapshots[0] then
+        local snapshot=NLSocialClient.snapshots[0]
+        if qaIdentity().username=="nl-host" then
+            if not NLQAMultiplayer.socialActionScheduled then
+                for _,entry in ipairs(snapshot.neighbors or {}) do
+                    if entry.canInteract then
+                        NLQAMultiplayer.socialTarget=entry.id
+                        NLQAMultiplayer.socialActionDue=NLQAMultiplayer.socialFrame+30
+                        NLQAMultiplayer.socialActionScheduled=true
+                        emit("SOCIAL ACTION SCHEDULED", "introduce id="..tostring(entry.id))
+                        break
+                    end
+                end
+            elseif NLQAMultiplayer.socialFrame>=NLQAMultiplayer.socialActionDue then
+                NLSocialClient.request(0,"interact",
+                    {id=NLQAMultiplayer.socialTarget,action="introduce"})
+                NLQAMultiplayer.socialActionSent=true
+                emit("SOCIAL ACTION", "introduce id="..tostring(NLQAMultiplayer.socialTarget))
+            end
+        else
+            NLQAMultiplayer.socialActionSent=true
+            emit("SOCIAL ACTION", "guest refresh-only; no local interaction stimulus")
+        end
     end
 end)
 
