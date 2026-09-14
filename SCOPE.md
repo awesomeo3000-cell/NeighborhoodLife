@@ -14,10 +14,10 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, and v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback | Native Build 42 body reannouncement to the engine's native player list, obstacle/danger handling, damage/death and offscreen behavior |
 | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot | Multi-step two-client conversations, richer world actions and inventory exchange |
 | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence | In-world UI/interaction checks, richer date activities and two-client synchronization |
-| Household life | v1.15 adds a server-authoritative Neighborhood Home at the creating player's tile, persistent membership, invite/accept/leave flow, online member summaries, daily household activity claims, shared contributions and credits, plus a client Home panel | Inventory-sharing rules, home ownership transfer UX, functional furnishings, offline/co-op routines beyond the tested activity |
+| Household life | v1.16 extends the v1.15 server-authoritative Neighborhood Home with persistent shared storage, exact item-type deposits from unequipped main inventory, member withdrawals, capacity and malformed-item guards, shared-storage UI actions, and real host-to-guest inventory transfer evidence | Home ownership transfer UX, functional furnishings, offline/co-op routines beyond the tested activity, richer item metadata/container transfer |
 | Aspirations and home activities | Delivery milestones already persist and render in the career journal; v1.15 adds three authoritative home routines (tidy, meal, social) with daily replay guards and rewards | Household-linked aspiration goals, hobbies, functional furnishings and broader home progression |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host social mutation, guest isolation, server-authoritative career delivery, vanilla client-acquisition inventory transfer, server-authoritative household invite/accept/activity loop, disconnect-clean local native NPC replicas and authoritative remote marker fallback; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6/v1.7/v1.8/v1.9/v1.10/v1.11/v1.13/v1.14/v1.15 real host plus guest evidence | Simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
+| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host social mutation, guest isolation, server-authoritative career delivery, vanilla client-acquisition inventory transfer, server-authoritative household invite/accept/activity loop, shared-storage host deposit plus guest withdrawal, disconnect-clean local native NPC replicas and authoritative remote marker fallback; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6/v1.7/v1.8/v1.9/v1.10/v1.11/v1.13/v1.14/v1.15/v1.16 real host plus guest evidence | Simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile; v1.14 vanilla world-item pickup plus fresh production delivery | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -388,3 +388,22 @@ The original broad goal remains active. This ledger is not a reduced definition 
   not a Lua-only or Kahlua claim.
 - Build 42 still does not expose the server's native `GameServer` class to Lua;
   native server-body reannouncement to the engine player list remains open.
+
+## v1.16 shared household storage evidence
+
+- Production household storage persists exact item-type counts in the authoritative
+  household record. Deposits require an online member at the home tile and consume
+  only unequipped matching items from that member's main inventory. Withdrawals are
+  member-authorized, restore vanilla inventory items, and cannot exceed the stored
+  count or the 500-item household capacity.
+- The Home panel exposes the first vertical-slice storage actions for
+  `Base.RippedSheets`; the server also validates arbitrary well-formed item types,
+  amount bounds, membership and malformed requests independently of the UI.
+- The v1.16 hands-free Build 42.20.4 run in `evidence/v35/` seeded nine real world
+  sheets through the QA-only server. The host acquired all nine through vanilla
+  transfer actions, delivered eight through the production medic contract, deposited
+  the remaining sheet into shared storage, and the guest withdrew it. The same run
+  then completed the shared tidy activity and retained three native NPC replicas with
+  native movement paths on both clients.
+- QA helpers remain outside the production package. Native server-body reannouncement,
+  furnishings, richer item metadata and offline household routines remain open.

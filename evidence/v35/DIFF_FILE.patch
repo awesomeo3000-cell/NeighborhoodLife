@@ -1,0 +1,278 @@
+--- baseline/42/media/lua/client/NL/HouseholdPanel.lua
++++ modified/42/media/lua/client/NL/HouseholdPanel.lua
+@@ -7,7 +7,7 @@
+ NLHouseholdPanel.instances = {}
+ 
+ function NLHouseholdPanel:new(index)
+-    local o = ISPanel.new(self, 330, 130, 590, 450)
++    local o = ISPanel.new(self, 330, 130, 590, 490)
+     o.playerIndex = index
+     o.backgroundColor = { r = 0.96, g = 0.98, b = 1, a = 0.98 }
+     o.borderColor = { r = 0.62, g = 0.76, b = 0.88, a = 1 }
+@@ -34,9 +34,15 @@
+     self:button(274, 48, 105, "Invite guest", "invite")
+     self:button(388, 48, 105, "Leave", "leave")
+     self:button(500, 48, 74, "Refresh", "refresh")
++    self.storageButtons = {
++        store = self:button(16, 350, 175, "Store 1 RippedSheet", "store",
++            { item = "Base.RippedSheets", amount = 1 }),
++        retrieve = self:button(200, 350, 175, "Take 1 RippedSheet", "retrieve",
++            { item = "Base.RippedSheets", amount = 1 }),
++    }
+     self.taskButtons = {}
+     for i, task in ipairs(NLHouseholds.taskOrder) do
+-        self.taskButtons[task] = self:button(16 + (i - 1) * 185, 350, 170,
++        self.taskButtons[task] = self:button(16 + (i - 1) * 185, 386, 170,
+             NLHouseholds.tasks[task].label, "task", task)
+     end
+ end
+@@ -57,8 +63,10 @@
+         if target then NLHouseholdClient.request(self.playerIndex, "invite", { target = target }) end
+         return
+     end
+-    NLHouseholdClient.request(self.playerIndex, button.action,
+-        button.action == "task" and { task = button.value } or {})
++    local args = {}
++    if button.action == "task" then args = { task = button.value }
++    elseif button.action == "store" or button.action == "retrieve" then args = button.value end
++    NLHouseholdClient.request(self.playerIndex, button.action, args)
+ end
+ 
+ function NLHouseholdPanel:prerender()
+@@ -94,6 +102,13 @@
+             .. " | meal " .. tostring(h.tasks.meal or 0)
+             .. " | social " .. tostring(h.tasks.social or 0), 16, 304,
+             0.30, 0.38, 0.47, 1, UIFont.Small)
++        local stored = {}
++        for itemType, amount in pairs(h.storage or {}) do
++            stored[#stored + 1] = itemType .. " x" .. tostring(amount)
++        end
++        table.sort(stored)
++        self:drawText("Shared storage: " .. (#stored > 0 and table.concat(stored, ", ") or "empty"),
++            16, 328, 0.30, 0.38, 0.47, 1, UIFont.Small)
+     else
+         self:drawText("No household yet. Create a home or accept an invitation.", 16, 112,
+             0.18, 0.24, 0.32, 1, UIFont.Small)
+@@ -101,7 +116,10 @@
+     for task, button in pairs(self.taskButtons) do
+         button:setEnable(state.household ~= nil and p ~= nil)
+     end
+-    self:drawText(state.message or "", 16, 414, 0.12, 0.38, 0.63, 1, UIFont.Small)
++    for _, button in pairs(self.storageButtons or {}) do
++        button:setEnable(state.household ~= nil and p ~= nil)
++    end
++    self:drawText(state.message or "", 16, 464, 0.12, 0.38, 0.63, 1, UIFont.Small)
+ end
+ 
+ function NLHouseholdPanel.open(index)
+--- baseline/42/media/lua/server/NL/HouseholdAuthority.lua
++++ modified/42/media/lua/server/NL/HouseholdAuthority.lua
+@@ -61,10 +61,103 @@
+     return dx * dx + dy * dy <= 36
+ end
+ 
++local function validItemType(itemType)
++    return type(itemType) == "string" and #itemType <= 100
++        and itemType:match("^[%w_%-]+%.[%w_%-]+$") ~= nil
++end
++
++local function requestedAmount(args)
++    local amount = math.floor(tonumber(args and args.amount) or 0)
++    if amount < 1 or amount > 50 then return nil end
++    return amount
++end
++
++local function mainInventoryItems(player, itemType, amount)
++    local inventory = player:getInventory()
++    local all = inventory and inventory:getItems()
++    if not all then return nil, "Main inventory unavailable" end
++    local chosen = {}
++    for i = 0, all:size() - 1 do
++        local item = all:get(i)
++        local equipped = false
++        if player.isEquipped then
++            local equippedOk, equippedValue = pcall(player.isEquipped, player, item)
++            equipped = equippedOk and equippedValue == true
++        end
++        if item and item:getFullType() == itemType and not equipped then
++            chosen[#chosen + 1] = item
++            if #chosen == amount then break end
++        end
++    end
++    return chosen, inventory
++end
++
++local function storageCommand(world, household, player, key, args, mode)
++    local itemType = args and args.item
++    local amount = requestedAmount(args)
++    if not validItemType(itemType) then return false, "Use a valid item type such as Base.RippedSheets" end
++    if not amount then return false, "Storage amount must be between 1 and 50" end
++    if mode == "store" then
++        local chosen, inventoryOrMessage = mainInventoryItems(player, itemType, amount)
++        if not chosen then return false, inventoryOrMessage end
++        if #chosen < amount then
++            return false, "Need " .. amount .. " unequipped " .. itemType .. " in main inventory"
++        end
++        for _, item in ipairs(chosen) do
++            inventoryOrMessage:Remove(item)
++            if isServer() and sendRemoveItemFromContainer then
++                sendRemoveItemFromContainer(inventoryOrMessage, item)
++            end
++        end
++        local ok, message = NLHouseholds.store(household, itemType, amount)
++        if not ok then
++            for _ = 1, amount do
++                local restored = inventoryOrMessage:AddItem(itemType)
++                if isServer() and sendAddItemToContainer and restored then
++                    sendAddItemToContainer(inventoryOrMessage, restored)
++                end
++            end
++        end
++        return ok, message
++    end
++
++    if NLHouseholds.storageCount(household, itemType) < amount then
++        return false, "Shared storage has only " .. NLHouseholds.storageCount(household, itemType)
++            .. " " .. itemType
++    end
++    local inventory = player:getInventory()
++    if not inventory or not inventory.AddItem then
++        return false, "Main inventory unavailable"
++    end
++    local added = {}
++    for _ = 1, amount do
++        local addOk, item = pcall(inventory.AddItem, inventory, itemType)
++        if not addOk or not item then
++            for _, restored in ipairs(added) do
++                inventory:Remove(restored)
++                if isServer() and sendRemoveItemFromContainer then
++                    sendRemoveItemFromContainer(inventory, restored)
++                end
++            end
++            return false, "Main inventory could not accept " .. itemType
++        end
++        added[#added + 1] = item
++        if isServer() and sendAddItemToContainer then
++            sendAddItemToContainer(inventory, item)
++        end
++    end
++    local ok, message = NLHouseholds.retrieve(household, itemType, amount)
++    if not ok then
++        for _, restored in ipairs(added) do inventory:Remove(restored) end
++    end
++    return ok, message
++end
++
+ function NLHouseholdAuthority.command(module, command, player, args)
+     if module ~= NLHouseholdAuthority.module or not player or player:isDead() then return end
+     if command ~= "refresh" and command ~= "create" and command ~= "invite"
+-            and command ~= "accept" and command ~= "leave" and command ~= "task" then return end
++            and command ~= "accept" and command ~= "leave" and command ~= "task"
++            and command ~= "store" and command ~= "retrieve" then return end
+     if type(args) ~= "table" then args = {} end
+     local key, now = NLAuthority.key(player), getTimestampMs()
+     if NLHouseholdAuthority.lastRequest[key] and now - NLHouseholdAuthority.lastRequest[key] < 200 then return end
+@@ -160,6 +253,22 @@
+                 return
+             end
+         end
++    elseif command == "store" or command == "retrieve" then
++        if not household then message = "Join a household first"
++        elseif command == "store" and not nearbyHome(player, household) then
++            message = "Deposits require you to be at home"
++        else
++            local ok
++            ok, message = storageCommand(world, household, player, key, args, command)
++            if ok then
++                notifyMembers(world, household, key .. " updated shared storage")
++                if NLQAMultiplayerServer then
++                    print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key)
++                        .. " command=" .. tostring(command) .. " message=" .. tostring(message))
++                end
++                return
++            end
++        end
+     end
+     snapshot(player, message)
+     if NLQAMultiplayerServer then
+--- baseline/42/media/lua/shared/NL/Households.lua
++++ modified/42/media/lua/shared/NL/Households.lua
+@@ -12,7 +12,7 @@
+         id = id, name = "Neighborhood Home", owner = owner,
+         home = home or { x = 0, y = 0, z = 0 }, members = {
+             [owner] = { role = "owner", contribution = 0 },
+-        }, tasks = {}, claims = {}, revision = 1,
++        }, tasks = {}, claims = {}, storage = {}, revision = 1,
+     }
+ end
+ 
+@@ -65,12 +65,67 @@
+     return count
+ end
+ 
++function NLHouseholds.storageCount(household, itemType)
++    if not household or type(itemType) ~= "string" then return 0 end
++    return math.max(0, math.floor(tonumber((household.storage or {})[itemType]) or 0))
++end
++
++function NLHouseholds.storageTotal(household)
++    local total = 0
++    for _, count in pairs((household and household.storage) or {}) do
++        total = total + math.max(0, math.floor(tonumber(count) or 0))
++    end
++    return total
++end
++
++function NLHouseholds.store(household, itemType, amount)
++    if not household or type(itemType) ~= "string" or itemType == "" then
++        return false, "Invalid storage item"
++    end
++    amount = math.floor(tonumber(amount) or 0)
++    if amount < 1 then return false, "Storage amount must be positive" end
++    if NLHouseholds.storageTotal(household) + amount > 500 then
++        return false, "Household storage is full"
++    end
++    household.storage = household.storage or {}
++    household.storage[itemType] = NLHouseholds.storageCount(household, itemType) + amount
++    household.revision = (household.revision or 0) + 1
++    return true, "Stored " .. amount .. " " .. itemType .. " in shared storage"
++end
++
++function NLHouseholds.retrieve(household, itemType, amount)
++    if not household or type(itemType) ~= "string" or itemType == "" then
++        return false, "Invalid storage item"
++    end
++    amount = math.floor(tonumber(amount) or 0)
++    local available = NLHouseholds.storageCount(household, itemType)
++    if amount < 1 then return false, "Storage amount must be positive" end
++    if available < amount then
++        return false, "Shared storage has only " .. available .. " " .. itemType
++    end
++    household.storage = household.storage or {}
++    household.storage[itemType] = available - amount
++    if household.storage[itemType] == 0 then household.storage[itemType] = nil end
++    household.revision = (household.revision or 0) + 1
++    return true, "Retrieved " .. amount .. " " .. itemType .. " from shared storage"
++end
++
++function NLHouseholds.copyStorage(household)
++    if not household then return nil end
++    local result = {}
++    for itemType, amount in pairs(household.storage or {}) do
++        local count = NLHouseholds.storageCount(household, itemType)
++        if count > 0 then result[itemType] = count end
++    end
++    return result
++end
++
+ function NLHouseholds.copySummary(household, online)
+     if not household then return nil end
+     local result = {
+         id = household.id, name = household.name, owner = household.owner,
+         home = { x = household.home.x, y = household.home.y, z = household.home.z },
+-        tasks = {}, members = {}, revision = household.revision,
++        tasks = {}, storage = NLHouseholds.copyStorage(household), members = {}, revision = household.revision,
+     }
+     for task, count in pairs(household.tasks or {}) do result.tasks[task] = count end
+     for key, member in pairs(household.members or {}) do
+BINARY FILE CHANGED: baseline/42/media/textures/NL_Plumbob.png -> modified/42/media/textures/NL_Plumbob.png

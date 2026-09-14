@@ -7,7 +7,7 @@ NLHouseholdPanel = ISPanel:derive("NLHouseholdPanel")
 NLHouseholdPanel.instances = {}
 
 function NLHouseholdPanel:new(index)
-    local o = ISPanel.new(self, 330, 130, 590, 450)
+    local o = ISPanel.new(self, 330, 130, 590, 490)
     o.playerIndex = index
     o.backgroundColor = { r = 0.96, g = 0.98, b = 1, a = 0.98 }
     o.borderColor = { r = 0.62, g = 0.76, b = 0.88, a = 1 }
@@ -34,9 +34,15 @@ function NLHouseholdPanel:initialise()
     self:button(274, 48, 105, "Invite guest", "invite")
     self:button(388, 48, 105, "Leave", "leave")
     self:button(500, 48, 74, "Refresh", "refresh")
+    self.storageButtons = {
+        store = self:button(16, 350, 175, "Store 1 RippedSheet", "store",
+            { item = "Base.RippedSheets", amount = 1 }),
+        retrieve = self:button(200, 350, 175, "Take 1 RippedSheet", "retrieve",
+            { item = "Base.RippedSheets", amount = 1 }),
+    }
     self.taskButtons = {}
     for i, task in ipairs(NLHouseholds.taskOrder) do
-        self.taskButtons[task] = self:button(16 + (i - 1) * 185, 350, 170,
+        self.taskButtons[task] = self:button(16 + (i - 1) * 185, 386, 170,
             NLHouseholds.tasks[task].label, "task", task)
     end
 end
@@ -57,8 +63,10 @@ function NLHouseholdPanel:onButton(button)
         if target then NLHouseholdClient.request(self.playerIndex, "invite", { target = target }) end
         return
     end
-    NLHouseholdClient.request(self.playerIndex, button.action,
-        button.action == "task" and { task = button.value } or {})
+    local args = {}
+    if button.action == "task" then args = { task = button.value }
+    elseif button.action == "store" or button.action == "retrieve" then args = button.value end
+    NLHouseholdClient.request(self.playerIndex, button.action, args)
 end
 
 function NLHouseholdPanel:prerender()
@@ -94,6 +102,13 @@ function NLHouseholdPanel:prerender()
             .. " | meal " .. tostring(h.tasks.meal or 0)
             .. " | social " .. tostring(h.tasks.social or 0), 16, 304,
             0.30, 0.38, 0.47, 1, UIFont.Small)
+        local stored = {}
+        for itemType, amount in pairs(h.storage or {}) do
+            stored[#stored + 1] = itemType .. " x" .. tostring(amount)
+        end
+        table.sort(stored)
+        self:drawText("Shared storage: " .. (#stored > 0 and table.concat(stored, ", ") or "empty"),
+            16, 328, 0.30, 0.38, 0.47, 1, UIFont.Small)
     else
         self:drawText("No household yet. Create a home or accept an invitation.", 16, 112,
             0.18, 0.24, 0.32, 1, UIFont.Small)
@@ -101,7 +116,10 @@ function NLHouseholdPanel:prerender()
     for task, button in pairs(self.taskButtons) do
         button:setEnable(state.household ~= nil and p ~= nil)
     end
-    self:drawText(state.message or "", 16, 414, 0.12, 0.38, 0.63, 1, UIFont.Small)
+    for _, button in pairs(self.storageButtons or {}) do
+        button:setEnable(state.household ~= nil and p ~= nil)
+    end
+    self:drawText(state.message or "", 16, 464, 0.12, 0.38, 0.63, 1, UIFont.Small)
 end
 
 function NLHouseholdPanel.open(index)

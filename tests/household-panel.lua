@@ -39,4 +39,7 @@ NLHouseholdClient.snapshots[0] = {
 }
 panel:prerender()
 for _, button in pairs(panel.taskButtons) do assert(button.enabled, 'home activity enabled for member') end
+if panel.storageButtons then
+    for _, button in pairs(panel.storageButtons) do assert(button.enabled, 'shared storage enabled for member') end
+end
 print('PASS: household panel empty/shared states, member activity controls and client routing load')

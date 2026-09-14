@@ -16,7 +16,20 @@ local function list(items)
     return {size=function() return #items end, get=function(_, index) return items[index+1] end}
 end
 local function player(name, x, y)
-    local p = {name=name, x=x, y=y, z=0, dead=false, skill=0}
+    local items = {}
+    local function item(fullType) return {getFullType=function() return fullType end} end
+    items[1], items[2] = item('Base.RippedSheets'), item('Base.RippedSheets')
+    local inventory = {}
+    function inventory:getItems() return list(items) end
+    function inventory:Remove(target)
+        for i, value in ipairs(items) do
+            if value == target then table.remove(items, i); return end
+        end
+    end
+    function inventory:AddItem(fullType)
+        local value = item(fullType); items[#items + 1] = value; return value
+    end
+    local p = {name=name, x=x, y=y, z=0, dead=false, skill=0, items=items}
     function p:getUsername() return self.name end
     function p:getPlayerNum() return 0 end
     function p:isDead() return self.dead end
@@ -25,6 +38,8 @@ local function player(name, x, y)
     function p:getZ() return self.z end
     function p:getPerkLevel() return self.skill end
     function p:getOnlineID() return 0 end
+    function p:isEquipped() return false end
+    function p:getInventory() return inventory end
     return p
 end
 players[1], players[2] = player('host', 10.5, 20.5), player('guest', 40.5, 50.5)
@@ -48,7 +63,17 @@ assert(guestProfile.householdId == hostProfile.householdId, 'guest joined shared
 command(players[1], 'task', {task='tidy'})
 assert(world.households[hostProfile.householdId].tasks.tidy == 1, 'home activity completed at home')
 assert(hostProfile.credits == 5, 'shared activity reward credited')
+local home = world.households[hostProfile.householdId]
+if NLHouseholds.storageCount then
+    command(players[1], 'store', {item='Base.RippedSheets', amount=1})
+    assert(NLHouseholds.storageCount(home, 'Base.RippedSheets') == 1, 'host stored an unequipped main-inventory item')
+    assert(#players[1].items == 1, 'stored item left host inventory')
+    players[2].x, players[2].y = 10.5, 20.5
+    command(players[2], 'retrieve', {item='Base.RippedSheets', amount=1})
+    assert(NLHouseholds.storageCount(home, 'Base.RippedSheets') == 0, 'guest consumed shared storage quantity')
+    assert(#players[2].items == 3, 'guest retrieved shared item into main inventory')
+end
 command(players[1], 'task', {task='tidy'})
 assert(world.households[hostProfile.householdId].tasks.tidy == 1, 'daily replay rejected')
 assert(#packets > 0 and packets[#packets].module == 'NeighborhoodHousehold', 'private household packets sent')
-print('PASS: household authority create/invite/accept, shared home activity, reward, replay guard and private packets')
+print('PASS: household authority create/invite/accept, shared storage deposit/withdrawal when available, activity, reward, replay guard and private packets')

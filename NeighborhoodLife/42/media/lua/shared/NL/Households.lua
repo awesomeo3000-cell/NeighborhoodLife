@@ -12,7 +12,7 @@ function NLHouseholds.new(id, owner, home)
         id = id, name = "Neighborhood Home", owner = owner,
         home = home or { x = 0, y = 0, z = 0 }, members = {
             [owner] = { role = "owner", contribution = 0 },
-        }, tasks = {}, claims = {}, revision = 1,
+        }, tasks = {}, claims = {}, storage = {}, revision = 1,
     }
 end
 
@@ -65,12 +65,67 @@ function NLHouseholds.memberCount(household)
     return count
 end
 
+function NLHouseholds.storageCount(household, itemType)
+    if not household or type(itemType) ~= "string" then return 0 end
+    return math.max(0, math.floor(tonumber((household.storage or {})[itemType]) or 0))
+end
+
+function NLHouseholds.storageTotal(household)
+    local total = 0
+    for _, count in pairs((household and household.storage) or {}) do
+        total = total + math.max(0, math.floor(tonumber(count) or 0))
+    end
+    return total
+end
+
+function NLHouseholds.store(household, itemType, amount)
+    if not household or type(itemType) ~= "string" or itemType == "" then
+        return false, "Invalid storage item"
+    end
+    amount = math.floor(tonumber(amount) or 0)
+    if amount < 1 then return false, "Storage amount must be positive" end
+    if NLHouseholds.storageTotal(household) + amount > 500 then
+        return false, "Household storage is full"
+    end
+    household.storage = household.storage or {}
+    household.storage[itemType] = NLHouseholds.storageCount(household, itemType) + amount
+    household.revision = (household.revision or 0) + 1
+    return true, "Stored " .. amount .. " " .. itemType .. " in shared storage"
+end
+
+function NLHouseholds.retrieve(household, itemType, amount)
+    if not household or type(itemType) ~= "string" or itemType == "" then
+        return false, "Invalid storage item"
+    end
+    amount = math.floor(tonumber(amount) or 0)
+    local available = NLHouseholds.storageCount(household, itemType)
+    if amount < 1 then return false, "Storage amount must be positive" end
+    if available < amount then
+        return false, "Shared storage has only " .. available .. " " .. itemType
+    end
+    household.storage = household.storage or {}
+    household.storage[itemType] = available - amount
+    if household.storage[itemType] == 0 then household.storage[itemType] = nil end
+    household.revision = (household.revision or 0) + 1
+    return true, "Retrieved " .. amount .. " " .. itemType .. " from shared storage"
+end
+
+function NLHouseholds.copyStorage(household)
+    if not household then return nil end
+    local result = {}
+    for itemType, amount in pairs(household.storage or {}) do
+        local count = NLHouseholds.storageCount(household, itemType)
+        if count > 0 then result[itemType] = count end
+    end
+    return result
+end
+
 function NLHouseholds.copySummary(household, online)
     if not household then return nil end
     local result = {
         id = household.id, name = household.name, owner = household.owner,
         home = { x = household.home.x, y = household.home.y, z = household.home.z },
-        tasks = {}, members = {}, revision = household.revision,
+        tasks = {}, storage = NLHouseholds.copyStorage(household), members = {}, revision = household.revision,
     }
     for task, count in pairs(household.tasks or {}) do result.tasks[task] = count end
     for key, member in pairs(household.members or {}) do

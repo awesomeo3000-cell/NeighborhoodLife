@@ -13,6 +13,8 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     householdTaskSent = false, householdResultLogged = false,
     householdJoinLogged = false, householdCreatedObserved = false,
     householdInviteDue = 0, householdMembersObserved = false,
+    householdStoreSent = false, householdStoreObserved = false,
+    householdRetrieveSent = false, householdRetrieveObserved = false,
     householdTaskDue = 0, householdResetSent = false }
 
 local function emit(label, value)
@@ -355,6 +357,25 @@ Events.OnServerCommand.Add(function(module, command, args)
             NLQAMultiplayer.householdMembersObserved=true
             NLQAMultiplayer.householdTaskDue=NLQAMultiplayer.socialFrame+60
         end
+        if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdStoreSent
+                and not NLQAMultiplayer.householdStoreObserved and args.message
+                and string.find(args.message,"updated shared storage",1,true) then
+            NLQAMultiplayer.householdStoreObserved=true
+            NLQAMultiplayer.householdTaskDue=NLQAMultiplayer.socialFrame+30
+            emit("HOUSEHOLD STORE RESULT", tostring(args.message))
+        end
+        if qaIdentity().username=="nl-guest" and home
+                and not NLQAMultiplayer.householdRetrieveSent
+                and (home.storage and (home.storage["Base.RippedSheets"] or 0) > 0) then
+            NLQAMultiplayer.householdRetrieveSent=true
+            NLHouseholdClient.request(0,"retrieve",{item="Base.RippedSheets",amount=1})
+            emit("HOUSEHOLD RETRIEVE", "Base.RippedSheets x1")
+        elseif qaIdentity().username=="nl-guest" and NLQAMultiplayer.householdRetrieveSent
+                and not NLQAMultiplayer.householdRetrieveObserved and args.message
+                and string.find(args.message,"updated shared storage",1,true) then
+            NLQAMultiplayer.householdRetrieveObserved=true
+            emit("HOUSEHOLD RETRIEVE RESULT", tostring(args.message))
+        end
         if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdTaskSent
                 and not NLQAMultiplayer.householdResultLogged and args.message
                 and string.find(args.message,"complete",1,true) then
@@ -482,6 +503,13 @@ Events.OnRenderTick.Add(function()
         end
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdMembersObserved
+            and not NLQAMultiplayer.householdStoreSent
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.householdTaskDue then
+        NLQAMultiplayer.householdStoreSent=true
+        NLHouseholdClient.request(0,"store",{item="Base.RippedSheets",amount=1})
+        emit("HOUSEHOLD STORE", "Base.RippedSheets x1")
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdStoreObserved
             and not NLQAMultiplayer.householdTaskSent
             and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.householdTaskDue then
         NLQAMultiplayer.householdTaskSent=true

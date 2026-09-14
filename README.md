@@ -267,3 +267,22 @@ completes the server-authoritative `tidy` routine at the persisted home tile;
 the daily replay guard and five-credit reward are visible to both clients.
 The Home panel exposes create, invite, accept, leave, refresh and three shared
 activities. QA helpers remain outside the production package.
+
+## v1.16 shared household storage
+
+`evidence/v35/` records the next household step in a real hands-free
+Build 42.20.4 host plus guest loop. The QA-only server seeded nine real
+`Base.RippedSheets`; the host acquired them through vanilla transfer actions,
+the production medic delivery consumed eight, and the host deposited the
+remaining sheet into the server-authoritative household storage. The guest then
+withdrew that stored item through the production household command and received
+the synchronized storage snapshot. The host completed the shared tidy routine
+afterward.
+
+Deposits are limited to unequipped matching items in main inventory and require
+the member to be at home. Withdrawals require household membership, restore
+vanilla inventory items, enforce exact counts and a 500-item capacity, and are
+validated independently of the Home panel. The first UI action pair is wired to
+the career slice's `Base.RippedSheets` item. QA helpers remain outside the
+production package; native server-body reannouncement, furnishings and richer
+offline household routines remain open gates.

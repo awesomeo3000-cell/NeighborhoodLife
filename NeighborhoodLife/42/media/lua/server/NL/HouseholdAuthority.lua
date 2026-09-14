@@ -61,10 +61,103 @@ local function nearbyHome(player, household)
     return dx * dx + dy * dy <= 36
 end
 
+local function validItemType(itemType)
+    return type(itemType) == "string" and #itemType <= 100
+        and itemType:match("^[%w_%-]+%.[%w_%-]+$") ~= nil
+end
+
+local function requestedAmount(args)
+    local amount = math.floor(tonumber(args and args.amount) or 0)
+    if amount < 1 or amount > 50 then return nil end
+    return amount
+end
+
+local function mainInventoryItems(player, itemType, amount)
+    local inventory = player:getInventory()
+    local all = inventory and inventory:getItems()
+    if not all then return nil, "Main inventory unavailable" end
+    local chosen = {}
+    for i = 0, all:size() - 1 do
+        local item = all:get(i)
+        local equipped = false
+        if player.isEquipped then
+            local equippedOk, equippedValue = pcall(player.isEquipped, player, item)
+            equipped = equippedOk and equippedValue == true
+        end
+        if item and item:getFullType() == itemType and not equipped then
+            chosen[#chosen + 1] = item
+            if #chosen == amount then break end
+        end
+    end
+    return chosen, inventory
+end
+
+local function storageCommand(world, household, player, key, args, mode)
+    local itemType = args and args.item
+    local amount = requestedAmount(args)
+    if not validItemType(itemType) then return false, "Use a valid item type such as Base.RippedSheets" end
+    if not amount then return false, "Storage amount must be between 1 and 50" end
+    if mode == "store" then
+        local chosen, inventoryOrMessage = mainInventoryItems(player, itemType, amount)
+        if not chosen then return false, inventoryOrMessage end
+        if #chosen < amount then
+            return false, "Need " .. amount .. " unequipped " .. itemType .. " in main inventory"
+        end
+        for _, item in ipairs(chosen) do
+            inventoryOrMessage:Remove(item)
+            if isServer() and sendRemoveItemFromContainer then
+                sendRemoveItemFromContainer(inventoryOrMessage, item)
+            end
+        end
+        local ok, message = NLHouseholds.store(household, itemType, amount)
+        if not ok then
+            for _ = 1, amount do
+                local restored = inventoryOrMessage:AddItem(itemType)
+                if isServer() and sendAddItemToContainer and restored then
+                    sendAddItemToContainer(inventoryOrMessage, restored)
+                end
+            end
+        end
+        return ok, message
+    end
+
+    if NLHouseholds.storageCount(household, itemType) < amount then
+        return false, "Shared storage has only " .. NLHouseholds.storageCount(household, itemType)
+            .. " " .. itemType
+    end
+    local inventory = player:getInventory()
+    if not inventory or not inventory.AddItem then
+        return false, "Main inventory unavailable"
+    end
+    local added = {}
+    for _ = 1, amount do
+        local addOk, item = pcall(inventory.AddItem, inventory, itemType)
+        if not addOk or not item then
+            for _, restored in ipairs(added) do
+                inventory:Remove(restored)
+                if isServer() and sendRemoveItemFromContainer then
+                    sendRemoveItemFromContainer(inventory, restored)
+                end
+            end
+            return false, "Main inventory could not accept " .. itemType
+        end
+        added[#added + 1] = item
+        if isServer() and sendAddItemToContainer then
+            sendAddItemToContainer(inventory, item)
+        end
+    end
+    local ok, message = NLHouseholds.retrieve(household, itemType, amount)
+    if not ok then
+        for _, restored in ipairs(added) do inventory:Remove(restored) end
+    end
+    return ok, message
+end
+
 function NLHouseholdAuthority.command(module, command, player, args)
     if module ~= NLHouseholdAuthority.module or not player or player:isDead() then return end
     if command ~= "refresh" and command ~= "create" and command ~= "invite"
-            and command ~= "accept" and command ~= "leave" and command ~= "task" then return end
+            and command ~= "accept" and command ~= "leave" and command ~= "task"
+            and command ~= "store" and command ~= "retrieve" then return end
     if type(args) ~= "table" then args = {} end
     local key, now = NLAuthority.key(player), getTimestampMs()
     if NLHouseholdAuthority.lastRequest[key] and now - NLHouseholdAuthority.lastRequest[key] < 200 then return end
@@ -156,6 +249,22 @@ function NLHouseholdAuthority.command(module, command, player, args)
                 if NLQAMultiplayerServer then
                     print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key)
                         .. " command=task message=" .. tostring(message))
+                end
+                return
+            end
+        end
+    elseif command == "store" or command == "retrieve" then
+        if not household then message = "Join a household first"
+        elseif command == "store" and not nearbyHome(player, household) then
+            message = "Deposits require you to be at home"
+        else
+            local ok
+            ok, message = storageCommand(world, household, player, key, args, command)
+            if ok then
+                notifyMembers(world, household, key .. " updated shared storage")
+                if NLQAMultiplayerServer then
+                    print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key)
+                        .. " command=" .. tostring(command) .. " message=" .. tostring(message))
                 end
                 return
             end
