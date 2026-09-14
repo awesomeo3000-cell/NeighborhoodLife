@@ -791,3 +791,16 @@ run: later scans show the moving host peer in the loaded cell with
 client online-player list, and both clients retain the three production NPCs.
 This is actual loaded-cell peer evidence; native server-body reannouncement and
 natural NPC cell streaming remain open.
+
+## v1.53 packetless loaded-cell NPC promotion
+
+The production NPC client now reconciles Build 42's loaded cell on every client
+tick. When an engine-owned NPC body appears before the next `npc_presence`
+packet, it replaces an older compatibility replica, keeps the authoritative
+target and plumbob attached, and resumes native movement mode. The client does
+not replace an already-present engine-owned body with another duplicate.
+
+The focused Lua 5.1 and installed-game Kahlua suites cover this packetless
+promotion path, with the full baseline and modified pipelines passing. This is
+engine-VM/contract evidence; native server-body reannouncement and natural NPC
+cell streaming remain open gameplay gates.

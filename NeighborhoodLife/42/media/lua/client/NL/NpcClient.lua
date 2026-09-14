@@ -102,6 +102,52 @@ local function forgetReplica(id, body)
     NLNpcClient.modes[id] = nil
 end
 
+-- A Build 42 server-native body can enter the loaded cell through the engine
+-- replication path without a fresh mod presence packet. Reconcile that cell
+-- view every client tick so a compatibility replica never wins merely because
+-- the network snapshot is older than the engine-owned object.
+local function reconcileNativeBodies()
+    if type(getCell) ~= "function" then return 0 end
+    local cellOk, cell = pcall(getCell)
+    if not cellOk or not cell or not cell.getObjectListForLua then return 0 end
+    local listOk, list = pcall(cell.getObjectListForLua, cell)
+    if not listOk or not list or not list.size or not list.get then return 0 end
+    local countOk, count = pcall(list.size, list)
+    if not countOk then return 0 end
+    local promoted = 0
+    for i=0,count-1 do
+        local objectOk, object = pcall(list.get, list, i)
+        if objectOk and object and object.getModData then
+            local dataOk, data = pcall(object.getModData, object)
+            local id = dataOk and data and data.NeighborhoodNpcId
+            if id and data.NeighborhoodNpcReplica ~= true then
+                id = tostring(id)
+                local known = NLNpcClient.bodies[id]
+                local knownIsFallback = false
+                if known and known.getModData then
+                    local knownDataOk, knownData = pcall(known.getModData, known)
+                    knownIsFallback = knownDataOk and knownData
+                        and knownData.NeighborhoodNpcReplica == true
+                end
+                if known ~= object and (not known or knownIsFallback or bodyPresent(known) == false) then
+                    if known then forgetReplica(id, known) end
+                    NLNpcClient.bodies[id] = object
+                    local target = NLNpcClient.targets[id] or NLNpcClient.states[id]
+                    if target and target.x and target.y then
+                        positionBody(object, target.x, target.y, target.z or 0)
+                    end
+                    NLNpcClient.modes[id] = "native"
+                    NLPlumbob.register("npc:" .. id, object, 0, NLPlumbob.remoteColor)
+                    promoted = promoted + 1
+                end
+            end
+        end
+    end
+    return promoted
+end
+
+NLNpcClient.reconcileNativeBodies = reconcileNativeBodies
+
 function NLNpcClient.apply(packet)
     if type(packet) ~= "table" or type(packet.npcs) ~= "table" then return 0 end
     local revision = tonumber(packet.revision or 0) or 0
@@ -218,6 +264,7 @@ local function advanceNativePath(id, body, target)
 end
 
 function NLNpcClient.update()
+    reconcileNativeBodies()
     for id, target in pairs(NLNpcClient.targets) do
         local body = NLNpcClient.bodies[id]
         if body and target then

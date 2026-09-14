@@ -84,6 +84,7 @@ if NLNpcClient.bodyPresent then
 end
 local promotionSupported=body:getModData().NeighborhoodNpcReplica==true
 local lateNative
+local expectedBody=body
 if promotionSupported then
     lateNative=IsoPlayer.new(nil,nil,20,20,0)
     lateNative:getModData().NeighborhoodNpcId='marisol'
@@ -93,12 +94,28 @@ if promotionSupported then
         'late server-native body promotes over an existing compatibility replica')
     assert(plumbobs['npc:marisol']==lateNative,
         'promoted native body receives the existing plumbob registration')
+    expectedBody=lateNative
+    if NLNpcClient.reconcileNativeBodies then
+        objects:remove(lateNative)
+        NLNpcClient.bodies.marisol=nil
+        NLNpcClient.modes.marisol=nil
+        NLPlumbob.unregister('npc:marisol')
+        NLNpcClient.apply({revision=5,npcs={{id='marisol',x=21,y=20,z=0,alive=true},{id='kenji',x=14,y=11,z=0,alive=true}}})
+        local packetlessNative=IsoPlayer.new(nil,nil,22,20,0)
+        packetlessNative:getModData().NeighborhoodNpcId='marisol'
+        objects:add(packetlessNative)
+        assert(NLNpcClient.reconcileNativeBodies()==1
+            and NLNpcClient.bodies.marisol==packetlessNative,
+            'loaded-cell native body promotes without a new presence packet')
+        assert(plumbobs['npc:marisol']==packetlessNative,
+            'packetless native promotion keeps the plumbob attached')
+        expectedBody=packetlessNative
+    end
 end
 local xAfterNewer=body:getX()
 local targetAfterNewer=NLNpcClient.targets.marisol
 if NLNpcClient.revision then
     NLNpcClient.apply({revision=1,npcs={}})
-    local expectedBody=promotionSupported and lateNative or body
     assert(NLNpcClient.targets.marisol==targetAfterNewer and NLNpcClient.bodies.marisol==expectedBody,
         'stale NPC packet is ignored')
 end
