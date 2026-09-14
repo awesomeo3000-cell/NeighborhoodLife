@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.61)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.62)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -898,3 +898,29 @@ Braided to the guest through the production command; the host logged `hair=Bob`
 and the guest logged `hair=Braids`. This closes the first multiplayer
 customization/profile slice, while a complete creator, richer preferences and
 original hair/assets remain open.
+
+## v1.62 actual restart-persistence gate and QA-tool consolidation
+
+The QA-only multiplayer client stimulus now re-arms a same-client reconnect,
+retries social refreshes until an authoritative target exists, and positions
+the host at Marisol before the inventory probe. The restart tool accepts an
+isolated `-ProfileRoot` and an explicit `-EvidenceRoot`, so the gate no longer
+depends on the default disposable profile or a hard-coded evidence directory.
+These helpers remain under `qa/` and `tools/`; they are not copied into the
+production mod package.
+
+`evidence/v84/actual-v89/` records the real hands-free Build 42.20.4 host-plus-
+guest run. Before and after a dedicated-server restart, the host reconnected,
+the guest saw two online players, and all three authored NPCs had production
+native paths. After restart the host logged
+`NPC INVENTORY RESTART SNAPSHOT: Base.RippedSheets/1/Rag`, received one sheet
+back from Marisol, and logged
+`CAREER WORK RESTART SNAPSHOT: career=medic shifts=1 xp=35 credits=15 workedToday=true`.
+This is actual gameplay evidence for the first career plus NPC-inventory
+restart slice; the Lua 5.1 and installed-game Kahlua runs remain separately
+classified as mock/unit and engine-VM evidence.
+
+The same capture still reports `GameServer=nil`, `Java=nil`, and
+`onlineHints=0`. Native dedicated-server NPC-body online-id reannouncement is
+therefore still open, as are broader shared household storage, richer global
+data crash atomicity, and the wider careers/relationships/households scope.

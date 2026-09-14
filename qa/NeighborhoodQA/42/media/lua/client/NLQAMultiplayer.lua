@@ -7,9 +7,11 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     streamProbeOld = nil, streamWalkSent = false, streamWalkObserved = false,
     streamWalkFrame = 0, streamWalkStep = 0, streamWalkCheckLogged = false,
     streamWalkOriginX = nil, streamWalkOriginY = nil,
-    socialFrame = 0, socialRefreshSent = false, socialActionSent = false,
+    socialFrame = 0, socialRefreshSent = false, socialRefreshFrame = 0,
+    socialActionSent = false,
     socialActionScheduled = false, socialActionName = nil, socialTarget = nil,
     socialActionDue = 0, socialActionCount = 0, socialActionPrepared = false,
+    socialActionSentFrame = 0, socialActionSnapshotRevision = nil,
     socialPositioned = false,
     socialConversationComplete = false,
     socialResultLogged = false, careerSeedSent = false, careerSeeded = false,
@@ -47,10 +49,13 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     appearanceSelectSent = false, appearanceSelected = false, appearanceDue = 0,
     inventoryGiveSent = false, inventoryGiveObserved = false,
     inventoryRequestSent = false, inventoryRequestObserved = false,
-    inventoryExchangeDue = 0, inventoryMetadataLogged = false,
+     inventoryExchangeDue = 0, inventoryMetadataLogged = false,
+     inventoryPositioned = false,
     connectionCount = 0, inventoryRestartProbeSent = false,
     inventoryRestartObserved = false, inventoryRestartDue = 0 }
-NLQAMultiplayer.socialCooldownFrames = 3600
+-- Keep the hands-free probe bounded while retaining one full render-loop delay
+-- between production social commands; this value is QA-only and never ships.
+NLQAMultiplayer.socialCooldownFrames = 300
 
 local function emit(label, value)
     print("NLQA MP " .. label .. ": " .. tostring(value))
@@ -247,6 +252,11 @@ end)
 
 Events.OnConnectFailed.Add(function(message, detail)
     emit("CONNECT FAILED", tostring(message) .. " detail=" .. tostring(detail))
+    if not isClient() and not isServer() then
+        NLQAMultiplayer.connectAttempted=false
+        NLQAMultiplayer.connectFrame=0
+        emit("CONNECT RETRY ARMED", qaIdentity().username or "?")
+    end
 end)
 
 Events.OnDisconnect.Add(function(message, detail)
@@ -761,6 +771,9 @@ Events.OnServerCommand.Add(function(module, command, args)
         end
         emit("SOCIAL SNAPSHOT", "message="..tostring(args.message)
             .." username="..tostring(args.username).." entries="..table.concat(rows, ","))
+        if args.username == qaIdentity().username and NLQAMultiplayer.socialActionSent then
+            NLQAMultiplayer.socialActionSnapshotRevision = tonumber(args.revision or 0) or 0
+        end
         local hostMet=false
         local hostEntry=nil
         for _,entry in ipairs(args.neighbors or {}) do
@@ -1007,9 +1020,14 @@ Events.OnRenderTick.Add(function()
         emit("HOUSEHOLD CREATE", "Neighborhood Home source=direct-vertical-slice")
     end
     if NLQAMultiplayer.socialFrame>=900 and NLQAMultiplayer.socialPositioned
-            and not NLQAMultiplayer.socialRefreshSent then
+            and not NLQAMultiplayer.socialConversationComplete
+            and not NLQAMultiplayer.socialActionScheduled
+            and not NLQAMultiplayer.socialActionSent
+            and (not NLQAMultiplayer.socialRefreshSent
+                or NLQAMultiplayer.socialFrame-NLQAMultiplayer.socialRefreshFrame>=600) then
         NLSocialClient.request(0,"refresh")
         NLQAMultiplayer.socialRefreshSent=true
+        NLQAMultiplayer.socialRefreshFrame=NLQAMultiplayer.socialFrame
         emit("SOCIAL REFRESH", qaIdentity().username or "?")
     end
     if NLQAMultiplayer.socialRefreshSent and not NLQAMultiplayer.socialActionSent
@@ -1041,6 +1059,9 @@ Events.OnRenderTick.Add(function()
                 NLSocialClient.request(0,"interact",
                     {id=NLQAMultiplayer.socialTarget,action=NLQAMultiplayer.socialActionName})
                 NLQAMultiplayer.socialActionSent=true
+                NLQAMultiplayer.socialActionSentFrame=NLQAMultiplayer.socialFrame
+                NLQAMultiplayer.socialActionSnapshotRevision=tonumber(
+                    snapshot.revision or 0) or 0
                 NLQAMultiplayer.socialActionScheduled=false
                 NLQAMultiplayer.socialActionCount=NLQAMultiplayer.socialActionCount+1
                 emit("SOCIAL ACTION", tostring(NLQAMultiplayer.socialActionName)
@@ -1076,12 +1097,35 @@ Events.OnRenderTick.Add(function()
                 NLSocialClient.request(0,"interact",
                     {id=NLQAMultiplayer.socialTarget,action=NLQAMultiplayer.socialActionName})
                 NLQAMultiplayer.socialActionSent=true
+                NLQAMultiplayer.socialActionSentFrame=NLQAMultiplayer.socialFrame
+                NLQAMultiplayer.socialActionSnapshotRevision=tonumber(
+                    snapshot.revision or 0) or 0
                 NLQAMultiplayer.socialActionScheduled=false
                 NLQAMultiplayer.socialActionCount=NLQAMultiplayer.socialActionCount+1
                 emit("GUEST SOCIAL ACTION", NLQAMultiplayer.socialActionName
                     .." id="..tostring(NLQAMultiplayer.socialTarget)
                     .." step="..tostring(NLQAMultiplayer.socialActionCount))
             end
+        end
+    end
+    -- Build 42 can drop a client command while a native moving-object packet is
+    -- being reconciled. Retry only when no newer social snapshot arrived, so a
+    -- delayed successful result is not duplicated by this QA fixture.
+    if isClient() and NLQAMultiplayer.socialActionSent
+            and NLQAMultiplayer.socialActionSentFrame > 0
+            and NLQAMultiplayer.socialFrame - NLQAMultiplayer.socialActionSentFrame >= 600 then
+        local retrySnapshot = NLSocialClient.snapshots[0]
+        local currentRevision = tonumber(retrySnapshot and retrySnapshot.revision or 0) or 0
+        local sentRevision = tonumber(NLQAMultiplayer.socialActionSnapshotRevision or 0) or 0
+        if currentRevision <= sentRevision then
+            NLSocialClient.request(0, "interact", {
+                id = NLQAMultiplayer.socialTarget,
+                action = NLQAMultiplayer.socialActionName,
+            })
+            NLQAMultiplayer.socialActionSentFrame = NLQAMultiplayer.socialFrame
+            emit("SOCIAL ACTION RETRY", tostring(NLQAMultiplayer.socialActionName)
+                .. " id=" .. tostring(NLQAMultiplayer.socialTarget)
+                .. " revision=" .. tostring(sentRevision))
         end
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.snapshots > 0
@@ -1252,13 +1296,17 @@ Events.OnRenderTick.Add(function()
             end
         end
     end
-    if qaIdentity().username=="nl-host" and NLQAMultiplayer.socialResultLogged
+    -- Career persistence does not depend on completing the optional three-step
+    -- conversation. Start the real production career path after the host has
+    -- an authoritative profile snapshot, while the social pacing probe
+    -- continues independently.
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.snapshots > 0
             and not NLQAMultiplayer.careerSeedSent then
         local player=getSpecificPlayer(0)
         if player then
             sendClientCommand(player,"NeighborhoodQA","seed_inventory",{career="medic"})
             NLQAMultiplayer.careerSeedSent=true
-            emit("CAREER SEED REQUEST", "medic")
+            emit("CAREER SEED REQUEST", "medic after-social-intro")
         end
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerSeeded
@@ -1283,12 +1331,16 @@ Events.OnRenderTick.Add(function()
         end
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerPickupObserved
-            and NLQAMultiplayer.socialPositioned
             and not NLQAMultiplayer.inventoryGiveSent then
-        NLSocialClient.request(0,"give",
-            {id="marisol",item="Base.RippedSheets",amount=1})
-        NLQAMultiplayer.inventoryGiveSent=true
-        emit("NPC INVENTORY GIVE", "id=marisol item=Base.RippedSheets amount=1")
+        if not NLQAMultiplayer.inventoryPositioned then
+            NLQAMultiplayer.inventoryPositioned=positionHostForSocial("marisol")
+        end
+        if NLQAMultiplayer.inventoryPositioned then
+            NLSocialClient.request(0,"give",
+                {id="marisol",item="Base.RippedSheets",amount=1})
+            NLQAMultiplayer.inventoryGiveSent=true
+            emit("NPC INVENTORY GIVE", "id=marisol item=Base.RippedSheets amount=1")
+        end
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.inventoryGiveObserved
             and not NLQAMultiplayer.inventoryRequestSent
@@ -1565,7 +1617,8 @@ end)
 -- probe below as a separate compatibility check rather than conflating them.
 Events.OnRenderTick.Add(function()
     if not isClient() or qaIdentity().username ~= "nl-host" or NLQAMultiplayer.streamWalkObserved
-            or NLQAMultiplayer.streamProbeObserved then return end
+            or NLQAMultiplayer.streamProbeObserved
+            or (NLQAMultiplayer.careerSeeded and not NLQAMultiplayer.careerPickupObserved) then return end
     if not NLQAMultiplayer.streamWalkSent then
         NLQAMultiplayer.streamWalkFrame = NLQAMultiplayer.streamWalkFrame + 1
         if NLQAMultiplayer.streamWalkFrame >= 600 then queueStreamWalk() end

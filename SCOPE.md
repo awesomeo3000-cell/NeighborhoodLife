@@ -1,4 +1,4 @@
-# Neighborhood Life — full scope and evidence ledger
+# Neighborhood Life — full scope and evidence ledger (v1.62)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
@@ -58,11 +58,32 @@ The original broad goal remains active. This ledger is not a reduced definition 
 
 ## Next engineering gates
 
-1. Real-world career/wardrobe tests; preserve and reload the isolated save.
-2. Extend the actual two-client inventory slice beyond the fixed sheet exchange and verify broader global-data crash atomicity.
-3. NPC body/movement/network experiment in the isolated world, then persistent neighbors.
+1. Extend the actual two-client inventory slice beyond the fixed sheet exchange and verify broader global-data crash atomicity; the v1.62 career plus NPC-inventory restart gate is now proven.
+2. Resolve native NPC server-body reannouncement and test persistent movement under a naturally missing native peer; the current v1.62 run still reports `GameServer=nil`, `Java=nil`, and `onlineHints=0`.
+3. Expand the vertical slice into conversations, relationships, romance, neighborhood careers, households, aspirations and furnishings without reducing the host/invite multiplayer requirement.
 4. Integrate conversations, relationships, romance and neighborhood careers.
 5. Expand appearance/clothing assets, households, aspirations, furnishings and UI polish.
+
+## v1.62 actual career and NPC-inventory restart gate
+
+The isolated hands-free Build 42.20.4 capture in `evidence/v84/actual-v89/`
+proves a real host-plus-guest session, two online players after a dedicated
+server restart, three persistent moving authored NPCs with production native
+paths, career work persistence (`career=medic shifts=1 xp=35 credits=15
+workedToday=true`), and NPC inventory persistence plus a post-restart request
+for `Base.RippedSheets`. This is actual gameplay evidence, separate from the
+mock/unit Lua suites and the installed-game Kahlua engine-VM suites.
+
+The restart-tool parameters and QA reconnect/retry behavior are test tooling
+only. The QA helper remains outside the production mod. The full scope remains
+host/invite multiplayer, persistent moving NPCs, careers, customization,
+clothing, relationships, households, and optional zombies.
+
+The gate does not close native server-body reannouncement: the real dedicated
+server still exposes `GameServer=nil`, `Java=nil`, and `onlineHints=0` to the
+mod Lua bridge. Shared household storage beyond the existing sheet exchange,
+broader global-data crash atomicity, and breadth across the remaining life
+systems remain open.
 
 ## v1.26 direct two-client social action
 

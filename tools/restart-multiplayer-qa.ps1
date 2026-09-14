@@ -1,8 +1,14 @@
+param(
+    [string]$ProfileRoot = 'E:\pzmod\test-profile',
+    [string]$EvidenceRoot = 'E:\pzmod\evidence\v55'
+)
 $ErrorActionPreference = 'Stop'
 $root = 'E:\pzmod'
 $game = 'E:\SteamLibrary\steamapps\common\ProjectZomboid'
-$serverProfile = Join-Path $root 'test-profile\mp-server'
-$hostProfile = Join-Path $root 'test-profile\mp-host'
+$serverProfile = Join-Path ([System.IO.Path]::GetFullPath($ProfileRoot)) 'mp-server'
+$hostProfile = Join-Path ([System.IO.Path]::GetFullPath($ProfileRoot)) 'mp-host'
+$evidence = [System.IO.Path]::GetFullPath($EvidenceRoot)
+New-Item -ItemType Directory -Force $evidence | Out-Null
 $serverLog = Join-Path $serverProfile 'server.stdout.log'
 $hostLog = Get-ChildItem (Join-Path $hostProfile 'Logs') -Filter '*_DebugLog.txt' -File |
     Sort-Object LastWriteTime -Descending | Select-Object -First 1
@@ -65,7 +71,7 @@ Set-Content $restartStdout ''
 Set-Content $restartStderr ''
 $server = Start-Process $java -ArgumentList $args -WorkingDirectory $game `
     -RedirectStandardOutput $restartStdout -RedirectStandardError $restartStderr -PassThru
-$server.Id | Set-Content (Join-Path $root 'evidence\v55\restart-server.pid')
+$server.Id | Set-Content (Join-Path $evidence 'restart-server.pid')
 if (-not (Wait-LogPattern $restartStdout '\*\*\* SERVER STARTED' 120)) {
     throw "Restarted dedicated server did not start; inspect $restartStdout"
 }
