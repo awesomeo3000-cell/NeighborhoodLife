@@ -201,6 +201,7 @@ Events.OnConnected.Add(function()
         NLQAMultiplayer.inventoryRestartDue=NLQAMultiplayer.socialFrame+120
         NLQAMultiplayer.inventoryRestartProbeSent=false
         NLQAMultiplayer.inventoryRestartObserved=false
+        NLQAMultiplayer.careerWorkPersistedLogged=false
         emit("RESTART PROBE ARMED", "connection="..tostring(NLQAMultiplayer.connectionCount))
     end
     if checkSavePlayerExists() then return end
@@ -533,6 +534,18 @@ Events.OnServerCommand.Add(function(module, command, args)
                 and args.message and string.find(args.message,"career XP",1,true) then
             NLQAMultiplayer.careerWorkResultLogged=true
             emit("CAREER WORK RESULT", tostring(args.message))
+        end
+        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                and not NLQAMultiplayer.careerWorkPersistedLogged
+                and args.workedToday == true and args.careers
+                and args.careers[args.career]
+                and (tonumber(args.careers[args.career].shifts or 0) or 0) >= 1 then
+            NLQAMultiplayer.careerWorkPersistedLogged=true
+            emit("CAREER WORK RESTART SNAPSHOT", "career="..tostring(args.career)
+                .." shifts="..tostring(args.careers[args.career].shifts)
+                .." xp="..tostring(args.careers[args.career].xp)
+                .." credits="..tostring(args.credits)
+                .." workedToday="..tostring(args.workedToday))
         end
         if qaIdentity().username == "nl-host" and args.username == "nl-host"
                 and not NLQAMultiplayer.inventoryGiveObserved and args.message

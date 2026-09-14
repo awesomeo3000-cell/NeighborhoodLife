@@ -79,4 +79,7 @@ if (-not (Wait-LogPatternAfter $hostLog.FullName 'NPC INVENTORY RESTART SNAPSHOT
 if (-not (Wait-LogPatternAfter $hostLog.FullName 'NPC INVENTORY REQUEST RESULT' $hostLogOffset 300)) {
     throw "Host did not complete post-restart inventory exchange; inspect $($hostLog.FullName)"
 }
-Write-Output 'PASS: host observed persisted NPC inventory after dedicated-server restart'
+if (-not (Wait-LogPatternAfter $hostLog.FullName 'CAREER WORK RESTART SNAPSHOT' $hostLogOffset 180)) {
+    throw "Host did not observe persisted career work after reconnect; inspect $($hostLog.FullName)"
+}
+Write-Output 'PASS: host observed persisted NPC inventory and career work after dedicated-server restart'

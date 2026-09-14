@@ -187,6 +187,19 @@ romance synchronization remain open.
   continued into the household sequence. Lua/Kahlua tests remain separate
   mock and engine-VM evidence.
 
+## v1.41 career work persistence
+
+- The hands-free runner now performs a real daily work shift, restarts the
+  dedicated server, reconnects the host, and checks the persisted career
+  snapshot before continuing the household sequence.
+- `evidence/v61/` records `CAREER WORK RESULT` before restart and
+  `CAREER WORK RESTART SNAPSHOT` afterward with `workedToday=true`,
+  `shifts=1`, `xp=615`, and `credits=450`; the NPC inventory snapshot also
+  survives and the post-restart exchange completes.
+- This is actual Build 42 host-plus-guest gameplay evidence. Unit/Lua and
+  installed-game Kahlua tests remain classified separately and do not claim
+  multiplayer completion. Career rank progression and richer work remain open.
+
 ## v1.39 pin-sized plumbob placement
 
 - The production runtime panel is now 3x5 pixels with a 20-pixel lift instead

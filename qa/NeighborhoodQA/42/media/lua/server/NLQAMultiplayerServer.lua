@@ -172,6 +172,7 @@ Events.OnClientCommand.Add(function(module, command, player)
         local profile = NLDomain.profile(world, username)
         profile.householdId, profile.householdInvite = nil, nil
         profile.claimed = {}
+        profile.worked = {}
     end
     for _, household in pairs(world.households or {}) do
         if NLHouseholdFurnishings then NLHouseholdFurnishings.remove(household) end
@@ -197,6 +198,7 @@ Events.OnClientCommand.Add(function(module, command, player, args)
         local profile = NLDomain.profile(world, qaUsername)
         profile.householdId, profile.householdInvite = nil, nil
         profile.claimed = {}
+        profile.worked = {}
     end
     for _, household in pairs(world.households or {}) do
         if NLHouseholdFurnishings then NLHouseholdFurnishings.remove(household) end
