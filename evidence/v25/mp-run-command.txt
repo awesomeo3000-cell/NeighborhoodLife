@@ -1,0 +1,11 @@
+CAREER MULTIPLAYER COMMAND: & .\tools\launch-multiplayer-qa.ps1
+CAREER MULTIPLAYER INPUT: E:\pzmod\test-profile, isolated no-Steam B42.20.4 dedicated server plus two hands-free QA clients; no mouse or keyboard
+LAUNCHER LITERAL OUTPUT: QA multiplayer processes started: server=23980 host=7092 guest=34952
+SOCIAL PRECONDITION: host relation to Marisol was already persisted from the prior v1.7 run; host snapshot reported Marisol met=true/friendship=6 and guest remained independent.
+CAREER SEED: QA-only server fixture added six authoritative Base.RippedSheets to nl-host and acknowledged career_seeded.
+CAREER COMMANDS: production client selected tailor, then submitted tailor:1:1 after the server throttle interval.
+SERVER RESULT: production server logged select and deliver for nl-host and returned snapshot revision=3.
+HOST RESULT: production client logged CAREER RESULT: Delivery complete: +20 career XP, +10 community credits.
+GUEST RESULT: guest remained refresh-only; no career command or inventory mutation was sent for nl-guest.
+PROCESS CLEANUP: server, host and guest processes were stopped after capture; no PZ/Java processes remained.
+CLASSIFICATION: actual isolated multiplayer engine evidence for the production career command consuming a real server-side inventory fixture and mutating the host account profile. The QA seed is not client-acquisition inventory replication; that path, rank/restart persistence, wardrobe exchange, reconnect and full scope remain open.

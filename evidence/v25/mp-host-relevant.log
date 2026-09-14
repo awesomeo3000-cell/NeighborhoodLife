@@ -1,0 +1,11 @@
+LOG  : Lua          f:899 st:200,810,627> NLQA MP SOCIAL REFRESH: nl-host
+LOG  : Lua          f:900 st:200,810,655> NLQA MP SOCIAL SNAPSHOT: message=Updated username=nl-host entries=marisol/canInteract=true/met=true/friendship=6,kenji/canInteract=true/met=false/friendship=0,amara/canInteract=true/met=false/friendship=0
+LOG  : Lua          f:900 st:200,810,655> NLQA MP SOCIAL RESULT: host introduction already persisted
+LOG  : Lua          f:901 st:200,810,661> NLQA MP SOCIAL ACTION SCHEDULED: introduce id=marisol
+LOG  : Lua          f:901 st:200,810,661> NLQA MP CAREER SEED REQUEST: tailor
+LOG  : Lua          f:902 st:200,810,687> NLQA MP CAREER SEED ACK: item=Base.RippedSheets amount=6
+LOG  : Lua          f:931 st:200,811,159> NLQA MP SOCIAL ACTION: introduce id=marisol
+LOG  : Lua          f:932 st:200,811,175> NLQA MP CAREER SELECT: tailor
+LOG  : Lua          f:932 st:200,811,188> NLQA MP SOCIAL SNAPSHOT: message=Not completed: You already know each other. username=nl-host entries=marisol/canInteract=true/met=true/friendship=6,kenji/canInteract=true/met=false/friendship=0,amara/canInteract=true/met=false/friendship=0
+LOG  : Lua          f:963 st:200,811,692> NLQA MP CAREER DELIVERY: id=tailor:1:1
+LOG  : Lua          f:964 st:200,811,721> NLQA MP CAREER RESULT: delivery complete message=Delivery complete: +20 career XP, +10 community credits

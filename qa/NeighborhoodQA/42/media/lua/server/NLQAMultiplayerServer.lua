@@ -6,6 +6,23 @@ local ok,err=pcall(function() require "NL/Authority" end)
 print("NLQA MP SERVER BOOT: authority=" .. tostring(NLAuthority ~= nil) .. " requireOk=" .. tostring(ok)
     .. " error=" .. tostring(err))
 local reannounced = false
+local careerSeeded = {}
+
+-- QA-only server fixture: seed real authoritative inventory on the host, then
+-- let the production career command consume it. This does not modify the
+-- production mod or fake the delivery response; it only provides deterministic
+-- world inventory without mouse/keyboard control.
+Events.OnClientCommand.Add(function(module, command, player, args)
+    if module ~= "NeighborhoodQA" or command ~= "seed_inventory" or not player then return end
+    local username = player:getUsername()
+    if username ~= "nl-host" or careerSeeded[username] then return end
+    local item = "Base.RippedSheets"
+    local amount = 6
+    for _=1,amount do player:getInventory():AddItem(item) end
+    careerSeeded[username] = true
+    print("NLQA CAREER SEED: username="..tostring(username).." item="..item.." amount="..amount)
+    sendServerCommand(player,"NeighborhoodQA","career_seeded",{item=item,amount=amount})
+end)
 
 local function tryReannounce()
     if reannounced then return end

@@ -4,7 +4,9 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     remoteScanFrame = 0, remoteScanCount = 0, remoteScanLogged = false,
     socialFrame = 0, socialRefreshSent = false, socialActionSent = false,
     socialActionScheduled = false, socialTarget = nil, socialActionDue = 0,
-    socialResultLogged = false }
+    socialResultLogged = false, careerSeedSent = false, careerSeeded = false,
+    careerSelectSent = false, careerDeliverSent = false, careerResultLogged = false,
+    careerDue = 0, careerStage = 0 }
 
 local function emit(label, value)
     print("NLQA MP " .. label .. ": " .. tostring(value))
@@ -189,6 +191,20 @@ Events.OnServerCommand.Add(function(module, command, args)
         NLQAMultiplayer.snapshots = NLQAMultiplayer.snapshots + 1
         emit("SNAPSHOT", "username=" .. tostring(args.username) .. " revision=" .. tostring(args.revision)
             .. " snapshotCount=" .. tostring(NLQAMultiplayer.snapshots))
+        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                and NLQAMultiplayer.careerDeliverSent and not NLQAMultiplayer.careerResultLogged
+                and args.message and string.find(args.message,"Delivery complete",1,true) then
+            NLQAMultiplayer.careerResultLogged=true
+            emit("CAREER RESULT", "delivery complete message="..tostring(args.message))
+        end
+        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                and NLQAMultiplayer.careerSeeded then
+            if not NLQAMultiplayer.careerSelectSent then
+                NLQAMultiplayer.careerDue=NLQAMultiplayer.socialFrame+30
+            elseif not NLQAMultiplayer.careerDeliverSent and NLQAMultiplayer.careerStage==1 then
+                NLQAMultiplayer.careerDue=NLQAMultiplayer.socialFrame+30
+            end
+        end
     end
     if module == "NeighborhoodLife" and command == "presence" and type(args) == "table"
             and type(args.players) == "table" then
@@ -223,12 +239,23 @@ Events.OnServerCommand.Add(function(module, command, args)
         end
         emit("SOCIAL SNAPSHOT", "message="..tostring(args.message)
             .." username="..tostring(args.username).." entries="..table.concat(rows, ","))
+        local hostMet=false
+        for _,entry in ipairs(args.neighbors or {}) do
+            if entry.id=="marisol" and entry.relation and entry.relation.met then hostMet=true end
+        end
         if qaIdentity().username == "nl-host" and args.message
-                and string.find(args.message, "I'm ", 1, true)
+                and (string.find(args.message, "I'm ", 1, true) or hostMet)
                 and not NLQAMultiplayer.socialResultLogged then
             NLQAMultiplayer.socialResultLogged=true
-            emit("SOCIAL RESULT", "host introduction delivered")
+            emit("SOCIAL RESULT", hostMet and "host introduction already persisted"
+                or "host introduction delivered")
         end
+    end
+    if module == "NeighborhoodQA" and command == "career_seeded" and type(args) == "table"
+            and qaIdentity().username == "nl-host" then
+        NLQAMultiplayer.careerSeeded=true
+        NLQAMultiplayer.careerDue=NLQAMultiplayer.socialFrame+30
+        emit("CAREER SEED ACK", "item="..tostring(args.item).." amount="..tostring(args.amount))
     end
 end)
 
@@ -267,6 +294,37 @@ Events.OnRenderTick.Add(function()
         else
             NLQAMultiplayer.socialActionSent=true
             emit("SOCIAL ACTION", "guest refresh-only; no local interaction stimulus")
+        end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.socialResultLogged
+            and not NLQAMultiplayer.careerSeedSent then
+        local player=getSpecificPlayer(0)
+        if player then
+            sendClientCommand(player,"NeighborhoodQA","seed_inventory",{career="tailor"})
+            NLQAMultiplayer.careerSeedSent=true
+            emit("CAREER SEED REQUEST", "tailor")
+        end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerSeeded
+            and not NLQAMultiplayer.careerSelectSent
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.careerDue then
+        NLClient.request(0,"select",{career="tailor"})
+        NLQAMultiplayer.careerSelectSent=true
+        NLQAMultiplayer.careerStage=1
+        NLQAMultiplayer.careerDue=NLQAMultiplayer.socialFrame+30
+        emit("CAREER SELECT", "tailor")
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerSelectSent
+            and not NLQAMultiplayer.careerDeliverSent
+            and NLQAMultiplayer.careerStage==1
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.careerDue then
+        local profile=NLClient.profiles[0]
+        local contract=profile and NLDomain.contracts(profile)[1]
+        if contract then
+            NLClient.request(0,"deliver",{id=contract.id})
+            NLQAMultiplayer.careerDeliverSent=true
+            NLQAMultiplayer.careerStage=2
+            emit("CAREER DELIVERY", "id="..tostring(contract.id))
         end
     end
 end)

@@ -8,7 +8,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 |---|---|---|
 | Sims-inspired HUD | Six live adverse-stat bars, fold control, career journal link | Actual host+guest independent values; resolution and accessibility polish |
 | Character markers | Production client plumbob asset and world-to-screen panel for active characters; native remote-player discovery now attaches markers when Build 42 exposes a body | Stable two-way remote-character markers and NPC marker after replicated bodies exist |
-| Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence | Actual multiplayer inventory sync, rank/restart tests, richer work beyond deliveries, rewards and balance |
+| Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits | Client-acquisition inventory sync, rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
 | Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; QA remains the observer and launcher helper | Native Build 42 body reannouncement to the engine's native player list, verified same-client reconnect, obstacle/danger handling, damage/death and offscreen behavior |
@@ -17,7 +17,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
 | Aspirations and home activities | Not implemented | Goals, progress/rewards, hobbies and functional furnishings |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, three named NPC replicas, host social mutation, guest isolation and disconnect-clean local native NPC replicas; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6/v1.7 real host plus guest evidence | Verified same-client reconnect after a server restart, simultaneous gameplay/inventory delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
+| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, three named NPC replicas, host social mutation, guest isolation, server-authoritative career delivery and disconnect-clean local native NPC replicas; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6/v1.7/v1.8 real host plus guest evidence | Verified same-client reconnect after a server restart, client-acquisition inventory sync, simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -131,6 +131,20 @@ The original broad goal remains active. This ledger is not a reduced definition 
   logs, not Lua-only or Kahlua evidence.
 - Multi-step conversations, richer world actions, inventory exchange, native
   reannouncement and same-client reconnect remain open.
+
+## v1.8 multiplayer career delivery evidence
+
+- The QA-only server observer seeded six `Base.RippedSheets` into the real host
+  inventory, then returned a `career_seeded` acknowledgement. The production
+  client selected `tailor` and submitted `tailor:1:1` through the normal
+  `NeighborhoodLife` command path.
+- The actual dedicated server logged the production `select` and `deliver`
+  commands, removed the required authoritative items, advanced the host profile
+  and returned `Delivery complete: +20 career XP, +10 community credits`.
+- This proves the production multiplayer delivery path against a real server
+  inventory and real account profile. It does not yet prove a client-acquired
+  item's inventory replication path, career rank persistence after restart or
+  multiplayer wardrobe exchange; those remain open.
 
 ## v1.3 reconnect-state evidence
 

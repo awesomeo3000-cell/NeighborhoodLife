@@ -1,0 +1,3 @@
+LOG  : Lua          f:899 st:200,814,647> NLQA MP SOCIAL REFRESH: nl-guest
+LOG  : Lua          f:900 st:200,814,676> NLQA MP SOCIAL SNAPSHOT: message=Updated username=nl-guest entries=marisol/canInteract=false/met=false/friendship=0,kenji/canInteract=false/met=false/friendship=0,amara/canInteract=false/met=false/friendship=0
+LOG  : Lua          f:901 st:200,814,682> NLQA MP SOCIAL ACTION: guest refresh-only; no local interaction stimulus

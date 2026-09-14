@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, wardrobe and relationship prototype (v1.7)
+# Neighborhood Life: careers, wardrobe and relationship prototype (v1.8)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -180,3 +180,8 @@ replica/plumbob rather than sharing Marisol-only construction logic.
 The isolated multiplayer probe now drives a real production social refresh from
 the host, introduces the nearest native neighbor through `NeighborhoodSocial`,
 and verifies the guest receives its own proximity-gated relationship snapshot.
+
+The same isolated host now receives a QA-seeded authoritative inventory fixture,
+selects the Tailor career through the production command, and completes a real
+server-side delivery for `+20 career XP, +10 community credits`; the seed remains
+QA-only and does not alter the production economy.

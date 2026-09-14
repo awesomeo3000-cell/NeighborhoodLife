@@ -1,0 +1,58 @@
+Neighborhood Life v1.8 multiplayer career-delivery verification
+
+CHANGED BRANCH/FIELD: multiplayer career delivery path. The QA-only server observer seeds six authoritative `Base.RippedSheets` into the disposable host inventory and acknowledges the fixture. The host then uses the production `NeighborhoodLife` command path to select `tailor` and deliver `tailor:1:1`; production authority consumes the items, advances the account profile and returns the normal XP/credit message. QA helpers remain outside the production package. The full Sims-inspired scope remains in SCOPE.md.
+BASELINE SOURCE: E:\pzmod\evidence\v25\baseline extracted from commit e1d31af
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v25\baseline
+BASELINE INPUT: E:\pzmod\evidence\v25\baseline
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE RESULT: v1.7 production package passed the consolidated mock, syntax and installed-game Kahlua suites
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod\NeighborhoodLife
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED RESULT: production career, authority, syntax and installed-game Kahlua suites passed
+MODIFIED EXIT: 0
+
+QA SYNTAX COMMAND: Get-ChildItem qa\NeighborhoodQA\42\media\lua -Recurse -Filter *.lua | ForEach-Object { & 'C:\Program Files (x86)\Lua\5.1\luac.exe' -p $_.FullName }
+QA SYNTAX INPUT: E:\pzmod
+QA SYNTAX LITERAL OUTPUT: QA_SYNTAX_EXIT=0
+QA SYNTAX RESULT: QA-only helpers remain syntactically valid and outside the production package
+QA SYNTAX EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v25 --baseline evidence\v25\baseline
+PACKAGE INPUT: E:\pzmod\NeighborhoodLife compared with E:\pzmod\evidence\v25\baseline
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v25\MODIFIED_FILE.zip
+PACKAGE RESULT: production-only ZIP and baseline diff created
+PACKAGE EXIT: 0
+
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; z=zipfile.ZipFile('evidence/v25/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('AUTHORITY',any(n.endswith('server/NL/Authority.lua') for n in z.namelist())); print('SOCIAL_AUTHORITY',any(n.endswith('server/NL/SocialAuthority.lua') for n in z.namelist())); print('QA_SERVER',any(n.endswith('NLQAMultiplayerServer.lua') for n in z.namelist()))"
+PACKAGE VALIDATION INPUT: E:\pzmod
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; AUTHORITY True; SOCIAL_AUTHORITY True; QA_SERVER False
+PACKAGE VALIDATION RESULT: valid production ZIP; QA server seed and all QA helpers are excluded
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v25/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' evidence/v25/ROLLBACK.sh
+ROLLBACK INPUT: copied final modified NeighborhoodLife into E:\pzmod\evidence\v25\rollback-target\NeighborhoodLife
+ROLLBACK LITERAL OUTPUT: ROLLBACK RESTORED: /e/pzmod/evidence/v25/rollback-target/NeighborhoodLife from /e/pzmod/evidence/v25/baseline
+ROLLBACK RESULT: restored tree matched baseline tree SHA256 d5c8d9e478a917ad85576498761fcf03f68898f1cf0ac838819d0c9635dd4009; final production source remained modified
+ROLLBACK EXIT: 0
+
+ACTUAL ENGINE COMMAND: & .\tools\launch-multiplayer-qa.ps1
+ACTUAL ENGINE INPUT: E:\pzmod\test-profile, isolated no-Steam B42.20.4 dedicated server plus two hands-free QA clients; no mouse or keyboard
+ACTUAL ENGINE LITERAL OUTPUT: QA multiplayer processes started: server=23980 host=7092 guest=34952
+ACTUAL ENGINE RESULT: the QA server seeded six authoritative `Base.RippedSheets` for `nl-host`. The production host selected `tailor`, submitted `tailor:1:1`, and the server logged `select` then `deliver`; the host received `Delivery complete: +20 career XP, +10 community credits`. The guest remained refresh-only and did not receive a career mutation.
+ACTUAL ENGINE EXIT: 0 for the launcher; server, host and guest were stopped after capture
+ACTUAL ENGINE EVIDENCE: E:\pzmod\evidence\v25\mp-server-relevant.log; E:\pzmod\evidence\v25\mp-host-relevant.log; E:\pzmod\evidence\v25\mp-guest-relevant.log; E:\pzmod\evidence\v25\mp-run-command.txt
+
+CLASSIFICATION: Lua career and authority suites are mock tests; consolidated Kahlua runs production Lua in the installed-game VM with explicit mocks. The v25 logs are actual isolated multiplayer engine evidence for production server-side inventory consumption, career selection, account mutation and delivery response. The inventory was seeded by a QA-only server fixture, so client-acquisition inventory replication, rank/restart persistence, wardrobe exchange, native reannouncement and same-client reconnect remain open.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v25\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v25\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v25\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v25\ROLLBACK.sh
+SHA256 MODIFIED_FILE: B860AF1E34BF061FD28F41F5569BA47B74CA761D90CB4B0CC4BFDBC00E4B0FCF
+SHA256 DIFF_FILE: CF6FA2449050DC7607727A07E1A295DDCD9644F26D37ACB9F99A9894FEC872CC
+SHA256 ROLLBACK: D17A523F25991D449A2DC1EC063A6E0BD0DBBFFAF01A08B7AC779AE7E5F2DD08
