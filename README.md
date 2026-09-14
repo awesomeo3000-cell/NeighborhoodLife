@@ -479,6 +479,19 @@ garments were acquired and worn, slot 1 returned `pieces=2` at revision 73,
 and a stable hands-free same-client reconnect returned the same `pieces=2` at
 revision 74. The run also retained the compact 6x10 plumbob and the guest's
 three moving NPC replicas plus Kenji social event. Production saved-outfit
-replacement after removing currently worn layers remains the next clothing
-gameplay probe; the unit and Kahlua contracts already cover exact identity and
-fallback behavior.
+replacement after removing currently worn layers is recorded in v1.30 below;
+the unit and Kahlua contracts continue to cover exact identity and fallback
+behavior.
+
+## v1.30 actual saved-outfit replacement
+
+The QA-only isolated client now waits for the real saved slot, removes the
+captured garments with vanilla `ISUnequipAction`, verifies both body locations
+are empty, and invokes the production `NLWardrobe.wear(player, 1)` function.
+QA does not implement the production wardrobe action.
+
+`evidence/v49/` records the actual Build 42.20.4 result: the host acquired and
+wore both garments, saved revision 75, completed vanilla unequip with both
+garments at zero, and then logged replacement completion for both garments from
+`production-NLWardrobe.wear`. New clothing variants, original assets and
+unlock/reward integration remain breadth work.

@@ -1,0 +1,137 @@
+# Neighborhood Life v1.30 verification
+
+## Changed branch and fields
+
+- Branch: QA-only saved-outfit replacement probe.
+- Changed fields: `wardrobeUnequipAttempted`, `wardrobeUnequipObserved`, `wardrobeReplacementSent`, `wardrobeReplacementObserved`, and the captured garment identity list in `qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua`.
+- Production behavior exercised: vanilla `ISUnequipAction` removes the saved garments, then production `NL/Wardrobe.wear(player, 1)` restores the saved outfit.
+- Production source package remains unchanged from v1.29; QA helpers remain outside the release package.
+
+## Required artifacts
+
+- MODIFIED_FILE: `E:\pzmod\evidence\v49\MODIFIED_FILE.zip`
+- DIFF_FILE: `E:\pzmod\evidence\v49\DIFF_FILE.patch`
+- VERIFICATION.txt: `E:\pzmod\evidence\v49\VERIFICATION.txt`
+- ROLLBACK.sh: `E:\pzmod\evidence\v49\ROLLBACK.sh`
+
+## Baseline test
+
+Command:
+`cmd /c "python tools\pipeline.py test --target evidence\v49\baseline > evidence\v49\baseline-test.log 2>&1"`
+
+Input: copied baseline `evidence\v49\baseline\42` and `common` tree.
+
+Literal output:
+`PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites`
+
+Exit status: `0`.
+
+## Modified test
+
+Command:
+`cmd /c "python tools\pipeline.py test > evidence\v49\modified-test.log 2>&1"`
+
+Input: current modified workspace.
+
+Literal output:
+`PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites`
+
+Exit status: `0`.
+
+## Wardrobe contract test
+
+Command:
+`C:\Program Files (x86)\Lua\5.1\lua.exe tests\wardrobe.lua NeighborhoodLife`
+
+Literal output:
+`PASS: exact garment identity, replacement fallback, legacy presets and duplicate exclusion`
+`PASS: wardrobe save, vanilla wear action queue, missing pieces and empty slot`
+
+Exit status: `0`.
+
+## QA syntax tests
+
+Commands:
+- `C:\Program Files (x86)\Lua\5.1\luac.exe -p qa\NeighborhoodQA\42\media\lua\client\NLQAMultiplayer.lua`
+- `C:\Program Files (x86)\Lua\5.1\luac.exe -p qa\NeighborhoodQA\42\media\lua\server\NLQAMultiplayerServer.lua`
+
+Literal output: empty for both commands.
+
+Exit status: `0` for both.
+
+## Rollback test
+
+Command:
+`chmod +x /e/pzmod/evidence/v49/ROLLBACK.sh && TARGET_ROOT=/e/pzmod/evidence/v49/rollback-target bash /e/pzmod/evidence/v49/ROLLBACK.sh`
+
+Input: `TARGET_ROOT=/e/pzmod/evidence/v49/rollback-target`.
+
+Literal output:
+`ROLLBACK RESTORED: baseline production and QA/test trees`
+
+Exit status: `0`.
+
+Rollback test command:
+`cmd /c "python tools\pipeline.py test --target evidence\v49\rollback-target\NeighborhoodLife > evidence\v49\rollback-test.log 2>&1"`
+
+Literal output:
+`PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites`
+
+Exit status: `0`. Restored status: baseline production, QA, tests and tooling passed the consolidated suite.
+
+## Packaging test
+
+Command:
+`cmd /c "python tools\pipeline.py package --version v49 --baseline evidence\v49\baseline > evidence\v49\package.log 2>&1"`
+
+Literal output:
+`PASS: release package E:\pzmod\evidence\v49\MODIFIED_FILE.zip`
+
+Exit status: `0`.
+
+Package reopening result: `ZIP_TEST None`, `ENTRY_COUNT 28`, `QA_ENTRIES 0`, `AUTHORITY True`.
+
+## Actual Build 42 gameplay evidence
+
+Command:
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\launch-multiplayer-qa.ps1`
+
+Input: isolated test profile, hands-free QA launcher, Build 42.20.4, one host and one guest.
+
+Classification: actual gameplay evidence, separate from mock/unit and engine-VM tests.
+
+Host log `evidence\v49\mp-host-replacement.log` recorded:
+- `NLQA MP CLIENT START: username=nl-host isClient=true isServer=false`
+- `NLQA MP PLUMBOB SIZE: player:0=6x10 texture=16x22`
+- `NLQA MP WARDROBE PICKUP COMPLETE: Base.Shirt_FormalWhite=1,Base.Trousers_Denim=1 source=world-transfer-action`
+- `NLQA MP WARDROBE WORN COMPLETE: Base.Shirt_FormalWhite=1,Base.Trousers_Denim=1 source=vanilla-wear-action`
+- `NLQA MP WARDROBE SAVE: slot=1 source=server-authoritative-worn-items`
+- `NLQA MP WARDROBE SNAPSHOT: slot=1 pieces=2 revision=75`
+- `NLQA MP WARDROBE UNEQUIP COMPLETE: Base.Shirt_FormalWhite=0,Base.Trousers_Denim=0 source=vanilla-unequip-action`
+- `NLQA MP WARDROBE REPLACEMENT REQUEST: slot=1 source=production-NLWardrobe.wear`
+- `NLQA MP WARDROBE REPLACEMENT COMPLETE: Base.Shirt_FormalWhite=1,Base.Trousers_Denim=1 source=production-NLWardrobe.wear`
+
+Server log `evidence\v49\mp-server-replacement.log` recorded the authoritative snapshot at revisions 74 and 75 and the real world seed at square `11913,7071,0`.
+
+Guest log `evidence\v49\mp-guest-replacement.log` recorded:
+- `NLQA MP CLIENT START: username=nl-guest isClient=true isServer=false`
+- `NLQA MP PLUMBOB SIZE: player:0=6x10 texture=16x22`
+- `NLQA MP NPC PRESENCE: ... count=3 ...`
+- moving positions for Marisol Vega, Kenji Arakawa and Amara Okonkwo across successive presence snapshots
+- `NLQA MP SOCIAL EVENT: actor=nl-guest action=chat npc=kenji ...`
+- `NLQA MP GUEST SOCIAL COMPLETE: target=kenji friendship=12 trust=11`
+
+No `ISUnequipAction` error was present in the captured v49 run.
+
+## Hashes
+
+- Baseline `NeighborhoodLife/42/media/lua/client/NL/Wardrobe.lua`: `46ABD81D2803DD9380E76F4C98F237E4ECDCE3495D6D467227A9E5E4465F81F5`
+- Modified production `NeighborhoodLife/42/media/lua/client/NL/Wardrobe.lua`: `46ABD81D2803DD9380E76F4C98F237E4ECDCE3495D6D467227A9E5E4465F81F5`
+- QA client: `C7C10307FE43B2EFD0A09D913C04EAAD59C50FBB409A15F9219E0AB76AC5B8FE`
+- QA server: `49FF68B8EC9326E85C262C38EA27BA802A973C075CA589EC7487B6C8DD23B71C`
+- DIFF_FILE.patch: `7200374159CBFA73BFC090E2A094BE5847EDADDF0447EFCDFEA47AE6825F60BD`
+- MODIFIED_FILE.zip: `049F10B81091035F100F8ADC513571CBA6B45C4B7A4CA00A80A94910D7170DD0`
+
+## Remaining scope
+
+New clothing variants, original assets, unlock/reward integration, and the broader neighborhood scope remain. Native `GameServer` reannouncement is still open because the runtime reports `GameServer=nil`. The full host/invite, NPC, careers, customization, clothing, relationships, households and optional-zombie scope is not complete.

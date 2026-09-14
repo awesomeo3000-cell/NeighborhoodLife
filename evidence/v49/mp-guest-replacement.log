@@ -1,0 +1,1039 @@
+LOG  : General      f:0> 14-09-2026 04:20:53
+LOG  : General      f:0> SLF4J(I): Attempting to load provider "zombie.core.logger.Slf4jBridge" specified via "slf4j.provider" system property
+LOG  : General      f:0> ===== System specs =====
+LOG  : General      f:0> CPU: AMD Ryzen 7 7800X3D 8-Core Processor           , vendor: AuthenticAMD, cores: 8, threads: 16
+LOG  : General      f:0> RAM: 31905 Mb
+LOG  : General      f:0> Base board: MAG B650 TOMAHAWK WIFI (MS-7D75), vendor: Micro-Star International Co., Ltd.
+LOG  : General      f:0> GPU: AMD Radeon(TM) Graphics, vendor: Advanced Micro Devices, Inc., video memory: 512 Mb, driver: 31.0.24002.92
+LOG  : General      f:0> GPU: NVIDIA GeForce RTX 4070, vendor: NVIDIA, video memory: 12282 Mb, driver: 32.0.15.9186
+LOG  : General      f:0> Disk info: 1863.00 Gb, free space: 241.44 Gb, usable space: 241.44 Gb
+LOG  : General      f:0> OS: Windows 11, version: 10.0, arch: amd64, build: 26200
+LOG  : General      f:0> JVM (free: 474 Mb, max: 2048 Mb, total available: 502 Mb)
+LOG  : General      f:0> ========================
+LOG  : General      f:0> java.specification.version=25
+LOG  : General      f:0> sun.cpu.isalist=amd64
+LOG  : General      f:0> sun.jnu.encoding=Cp1252
+LOG  : General      f:0> java.vm.vendor=Azul Systems, Inc.
+LOG  : General      f:0> sun.arch.data.model=64
+LOG  : General      f:0> java.vendor.url=http://www.azul.com/
+LOG  : General      f:0> zomboid.steam=0
+LOG  : General      f:0> java.vm.specification.version=25
+LOG  : General      f:0> os.name=Windows 11
+LOG  : General      f:0> sun.java.launcher=SUN_STANDARD
+LOG  : General      f:0> sun.java.command=zombie.gameStates.MainScreenState -ca...
+LOG  : General      f:0> slf4j.provider=zombie.core.logger.Slf4jBridge
+LOG  : General      f:0> jdk.debug=release
+LOG  : General      f:0> sun.cpu.endian=little
+LOG  : General      f:0> java.specification.vendor=Oracle Corporation
+LOG  : General      f:0> java.version.date=2025-10-21
+LOG  : General      f:0> java.home=E:\SteamLibrary\steamapps\common\Proj...
+LOG  : General      f:0> file.separator=\
+LOG  : General      f:0> java.vm.compressedOopsMode=32-bit
+LOG  : General      f:0> line.separator=
+
+LOG  : General      f:0> java.vm.specification.vendor=Oracle Corporation
+LOG  : General      f:0> java.specification.name=Java Platform API Specification
+LOG  : General      f:0> java.awt.headless=true
+LOG  : General      f:0> sun.management.compiler=HotSpot 64-Bit Tiered Compilers
+LOG  : General      f:0> java.runtime.version=25.0.1+8-LTS
+LOG  : General      f:0> stdout.encoding=Cp1252
+LOG  : General      f:0> os.version=10.0
+LOG  : General      f:0> jna.nosys=false
+LOG  : General      f:0> java.runtime.name=OpenJDK Runtime Environment
+LOG  : General      f:0> file.encoding=UTF-8
+LOG  : General      f:0> java.vm.name=OpenJDK 64-Bit Server VM
+LOG  : General      f:0> java.vendor.version=Zulu25.30+17-CA
+LOG  : General      f:0> jna.loaded=true
+LOG  : General      f:0> java.vendor.url.bug=http://www.azul.com/support/
+LOG  : General      f:0> java.version=25.0.1
+LOG  : General      f:0> os.arch=amd64
+LOG  : General      f:0> java.vm.specification.name=Java Virtual Machine Specification
+LOG  : General      f:0> sun.os.patch.level=
+LOG  : General      f:0> native.encoding=Cp1252
+LOG  : General      f:0> java.vm.info=mixed mode, sharing
+LOG  : General      f:0> stderr.encoding=Cp1252
+LOG  : General      f:0> java.vendor=Azul Systems, Inc.
+LOG  : General      f:0> java.vm.version=25.0.1+8-LTS
+LOG  : General      f:0> stdin.encoding=Cp1252
+LOG  : General      f:0> sun.io.unicode.encoding=UnicodeLittle
+LOG  : General      f:0> java.class.version=69.0
+LOG  : General      f:0> -----
+LOG  : General      f:0> version=42.20.4 b0bbce05d5 demo=false
+LOG  : General      f:0> revision=b0bbce05d5 pzbullet=1.0.0.28
+LOG  : General      f:0> Logs configuration:
+LOG  : General      f:0>      General: General
+LOG  : General      f:0>      Network: General
+LOG  : General      f:0>          Lua: General
+LOG  : General      f:0>          Mod: General
+LOG  : General      f:0>  Multiplayer: General
+LOG  : General      f:0>      Default: Off
+LOG  : General      f:0> LightingFPS set to 15
+LOG  : General      f:0> Display mode changed to 1280x720 freq=0 fullScreen=false
+LOG  : General      f:0> GraphicsCard: NVIDIA Corporation NVIDIA GeForce RTX 4070/PCIe/SSE2
+LOG  : General      f:0> OpenGL version: 4.6.0 NVIDIA 591.86
+LOG  : General      f:0> Desktop resolution 2560x1440
+LOG  : General      f:0> Initial resolution 1280x720 fullScreen=false
+LOG  : General      f:0> OpenGL 1.5 buffer objects supported
+LOG  : General      f:0> VSync: OFF
+LOG  : Mod          f:0> refusing to list examplemod
+LOG  : General      f:0> Loading networking libraries...
+LOG  : General      f:0> Loading RakNet64...
+LOG  : General      f:0> Loading ZNetNoSteam64...
+LOG  : General      f:0> SteamUtils started without Steam
+LOG  : General      f:0> Loading Mods
+LOG  : Mod          f:0> refusing to list examplemod
+LOG  : Mod          f:0> loading NeighborhoodLifeHUD
+LOG  : Mod          f:0> loading NeighborhoodQA
+LOG  : General      f:0> Loading Translations
+LOG  : General      f:0> texturepack: loading UI
+LOG  : General      f:0> Loading UI texture pack
+LOG  : General      f:0> texturepack: loading UI2
+LOG  : General      f:0> Loading UI2 texture pack
+LOG  : General      f:0> texturepack: loading IconsMoveables
+LOG  : General      f:0> Loading IconsMoveables texture pack
+LOG  : General      f:0> texturepack: loading RadioIcons
+LOG  : General      f:0> Loading RadioIcons texture pack
+LOG  : General      f:0> texturepack: loading ApComUI
+LOG  : General      f:0> Loading ApComUI texture pack
+LOG  : General      f:0> texturepack: loading Mechanics
+LOG  : General      f:0> Loading Mechanics texture pack
+LOG  : General      f:0> texturepack: loading WeatherFx
+LOG  : General      f:0> Loading WeatherFx texture pack
+LOG  : General      f:0> Loading Scripts
+ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+WARN : General      f:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil
+WARN : General      f:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone
+WARN : General      f:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil
+WARN : General      f:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone
+WARN : General      f:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil
+WARN : General      f:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone
+WARN : General      f:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil
+WARN : General      f:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone
+WARN : General      f:0 at TaggedObjectManager.createTagBits   > manager-> new tag discovered that was not preprocessed, tag: keyduplicator
+WARN : General      f:0 at TaggedObjectManager.createTagBits   > manager-> new tag discovered that was not preprocessed, tag: choppingblock
+LOG  : General      f:0> Loading Clothing
+LOG  : General      f:0> 
+LOG  : General      f:0> Loading Lua
+WARN : Lua          f:0 at Lua(Vanilla).corpseStorageCheck     > require("ISUI/ISInventoryPaneContextMenu") failed
+WARN : Lua          f:0 at Lua(Vanilla).corpseStorageCheck     > require("ISUI/ISVehicleMenu") failed
+WARN : Lua          f:0 at Lua(Vanilla).corpseStorageCheck     > require("ISUI/ISContextMenu") failed
+WARN : Lua          f:0 at Lua(Vanilla).ISCampingMenu          > require("Camping/CCampfireSystem") failed
+WARN : Lua          f:0 at Lua(Vanilla).ISInventoryTransferUtil> require("TimedActions/ISInventoryTransferAction") failed
+WARN : Lua          f:0 at Lua(Vanilla).ISInventoryTransferUtil> require("ISUI/PlayerData/ISPlayerData") failed
+WARN : Lua          f:0 at Lua(Vanilla).ISAnimalContextMenu    > require("BuildingObjects/ISAnimalPickMateCursor") failed
+WARN : Lua          f:0 at Lua(Vanilla).TakeSameType           > require("ISUI/InventoryWindow/ISLootWindowControlHandler") failed
+WARN : Lua          f:0 at Lua(Vanilla).FloorTakeSameType      > require("ISUI/InventoryWindow/ISLootWindowControlHandler") failed
+WARN : Lua          f:0 at Lua(Vanilla).testUI                 > require("pzapi/ui/ui") failed
+LOG  : Lua          f:0> OnLoadSoundbanks
+LOG  : General      f:0> texturepack: loading Tiles2x
+LOG  : General      f:0> Loading Tiles2x texture pack
+LOG  : General      f:0> texturepack: loading Overlays2x
+LOG  : General      f:0> Loading Overlays2x texture pack
+LOG  : General      f:0> texturepack: loading JumboTrees2x
+LOG  : General      f:0> Loading JumboTrees2x texture pack
+LOG  : General      f:0> texturepack: loading JumboTreesBigs2x
+LOG  : General      f:0> Loading JumboTreesBigs2x texture pack
+LOG  : General      f:0> texturepack: loading Tiles2x.floor
+LOG  : General      f:0> Loading Tiles2x.floor texture pack
+LOG  : General      f:0> texturepack: loading B42ChunkCaching2x
+LOG  : General      f:0> Loading B42ChunkCaching2x texture pack
+LOG  : General      f:0> texturepack: loading B42ChunkCaching2x.floor
+LOG  : General      f:0> Loading B42ChunkCaching2x.floor texture pack
+LOG  : General      f:0> texturepack: loading Clock2x
+LOG  : General      f:0> Loading Clock2x texture pack
+LOG  : General      f:0> Loading models and animations
+LOG  : General      f:0> Game booting
+LOG  : General      f:0> STATE: exit zombie.gameStates.TISLogoState
+LOG  : General      f:0> STATE: exit zombie.gameStates.TermsOfServiceState
+LOG  : General      f:0> binkId: 1
+WARN : Lua          f:0 at Lua(Vanilla).namedColorToTable      > env.lua-> namedColorToTable color not found: ProgressYellow
+LOG  : Lua          f:0> NLQA MP CONNECT ARMED: 127.0.0.1:16261
+LOG  : Lua          f:0> NLQA STAT HUNGER 0..1
+LOG  : Lua          f:0> NLQA STAT THIRST 0..1
+LOG  : Lua          f:0> NLQA STAT FATIGUE 0..1
+LOG  : Lua          f:0> NLQA STAT BOREDOM 0..100
+LOG  : Lua          f:0> NLQA STAT STRESS 0..1
+LOG  : Lua          f:0> NLQA STAT UNHAPPINESS 0..100
+LOG  : Lua          f:0> NLQA PASS: actual item/perk/stat APIs and real ISPanel journal construction
+LOG  : General      f:0> binkId: 2
+LOG  : Lua          f:0> NLQA MP CONNECT REQUEST: nl-guest -> 127.0.0.1:16261 accountPassword=true
+LOG  : Network      f:0 st:0> Initialising RakNet...
+LOG  : General      f:0 st:0> LOGGED INTO : 60 millisecond
+LOG  : General      f:0 st:0> ConnectToServerState: Start
+LOG  : General      f:0 st:0> ConnectToServerState: TestTCP
+LOG  : Lua          f:0 st:0> NLQA MP CONNECTION STATE: Connected message=nil arg=nil
+LOG  : Mod          f:0 st:0> refusing to list examplemod
+LOG  : Mod          f:0 st:0> loading NeighborhoodLifeHUD
+LOG  : Mod          f:0 st:0> loading NeighborhoodQA
+ERROR: General      f:0 st:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+ERROR: General      f:0 st:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+WARN : General      f:0 st:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil
+WARN : General      f:0 st:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone
+WARN : General      f:0 st:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil
+WARN : General      f:0 st:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone
+WARN : General      f:0 st:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil
+WARN : General      f:0 st:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone
+WARN : General      f:0 st:0 at XuiSkin$EntityUiStyle.Load          > Could not find icon: Build_AnvilStone, script = Stone Anvil
+WARN : General      f:0 st:0 at XuiSkin$EntityUiStyle.LoadComponentInfo> Could not find icon: Build_AnvilStone
+WARN : General      f:0 st:0 at TaggedObjectManager.createTagBits   > manager-> new tag discovered that was not preprocessed, tag: keyduplicator
+WARN : General      f:0 st:0 at TaggedObjectManager.createTagBits   > manager-> new tag discovered that was not preprocessed, tag: choppingblock
+ERROR: General      f:0 st:0> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-guest\mods\NeighborhoodLife\common\media\AnimSets at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:868)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:888)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.core.Core.ResetLua(Core.java:4193)
+		zombie.gameStates.ConnectToServerState.receiveServerOptions(ConnectToServerState.java:135)
+		zombie.gameStates.ConnectToServerState.Finish(ConnectToServerState.java:696)
+		zombie.gameStates.ConnectToServerState.update(ConnectToServerState.java:104)
+		zombie.gameStates.MainScreenState.update(MainScreenState.java:778)
+		zombie.gameStates.GameStateMachine.update(GameStateMachine.java:65)
+		zombie.GameWindow.logic(GameWindow.java:390)
+		zombie.GameWindow.frameStep(GameWindow.java:790)
+		zombie.GameWindow.mainThreadStep(GameWindow.java:567)
+		zombie.MainThread.mainLoop(MainThread.java:69)
+		java.base/java.lang.Thread.run(Unknown Source)
+ERROR: General      f:0 st:0> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-guest\mods\NeighborhoodLife\common\media\actiongroups at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:869)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:888)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.core.Core.ResetLua(Core.java:4193)
+		zombie.gameStates.ConnectToServerState.receiveServerOptions(ConnectToServerState.java:135)
+		zombie.gameStates.ConnectToServerState.Finish(ConnectToServerState.java:696)
+		zombie.gameStates.ConnectToServerState.update(ConnectToServerState.java:104)
+		zombie.gameStates.MainScreenState.update(MainScreenState.java:778)
+		zombie.gameStates.GameStateMachine.update(GameStateMachine.java:65)
+		zombie.GameWindow.logic(GameWindow.java:390)
+		zombie.GameWindow.frameStep(GameWindow.java:790)
+		zombie.GameWindow.mainThreadStep(GameWindow.java:567)
+		zombie.MainThread.mainLoop(MainThread.java:69)
+		java.base/java.lang.Thread.run(Unknown Source)
+ERROR: General      f:0 st:0> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-guest\mods\NeighborhoodLife\42\media\AnimSets at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:868)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:889)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.core.Core.ResetLua(Core.java:4193)
+		zombie.gameStates.ConnectToServerState.receiveServerOptions(ConnectToServerState.java:135)
+		zombie.gameStates.ConnectToServerState.Finish(ConnectToServerState.java:696)
+		zombie.gameStates.ConnectToServerState.update(ConnectToServerState.java:104)
+		zombie.gameStates.MainScreenState.update(MainScreenState.java:778)
+		zombie.gameStates.GameStateMachine.update(GameStateMachine.java:65)
+		zombie.GameWindow.logic(GameWindow.java:390)
+		zombie.GameWindow.frameStep(GameWindow.java:790)
+		zombie.GameWindow.mainThreadStep(GameWindow.java:567)
+		zombie.MainThread.mainLoop(MainThread.java:69)
+		java.base/java.lang.Thread.run(Unknown Source)
+ERROR: General      f:0 st:0> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-guest\mods\NeighborhoodLife\42\media\actiongroups at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:869)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:889)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.core.Core.ResetLua(Core.java:4193)
+		zombie.gameStates.ConnectToServerState.receiveServerOptions(ConnectToServerState.java:135)
+		zombie.gameStates.ConnectToServerState.Finish(ConnectToServerState.java:696)
+		zombie.gameStates.ConnectToServerState.update(ConnectToServerState.java:104)
+		zombie.gameStates.MainScreenState.update(MainScreenState.java:778)
+		zombie.gameStates.GameStateMachine.update(GameStateMachine.java:65)
+		zombie.GameWindow.logic(GameWindow.java:390)
+		zombie.GameWindow.frameStep(GameWindow.java:790)
+		zombie.GameWindow.mainThreadStep(GameWindow.java:567)
+		zombie.MainThread.mainLoop(MainThread.java:69)
+		java.base/java.lang.Thread.run(Unknown Source)
+ERROR: General      f:0 st:0> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-guest\mods\NeighborhoodQA\common\media\AnimSets at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:868)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:888)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.core.Core.ResetLua(Core.java:4193)
+		zombie.gameStates.ConnectToServerState.receiveServerOptions(ConnectToServerState.java:135)
+		zombie.gameStates.ConnectToServerState.Finish(ConnectToServerState.java:696)
+		zombie.gameStates.ConnectToServerState.update(ConnectToServerState.java:104)
+		zombie.gameStates.MainScreenState.update(MainScreenState.java:778)
+		zombie.gameStates.GameStateMachine.update(GameStateMachine.java:65)
+		zombie.GameWindow.logic(GameWindow.java:390)
+		zombie.GameWindow.frameStep(GameWindow.java:790)
+		zombie.GameWindow.mainThreadStep(GameWindow.java:567)
+		zombie.MainThread.mainLoop(MainThread.java:69)
+		java.base/java.lang.Thread.run(Unknown Source)
+ERROR: General      f:0 st:0> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-guest\mods\NeighborhoodQA\common\media\actiongroups at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:869)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:888)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.core.Core.ResetLua(Core.java:4193)
+		zombie.gameStates.ConnectToServerState.receiveServerOptions(ConnectToServerState.java:135)
+		zombie.gameStates.ConnectToServerState.Finish(ConnectToServerState.java:696)
+		zombie.gameStates.ConnectToServerState.update(ConnectToServerState.java:104)
+		zombie.gameStates.MainScreenState.update(MainScreenState.java:778)
+		zombie.gameStates.GameStateMachine.update(GameStateMachine.java:65)
+		zombie.GameWindow.logic(GameWindow.java:390)
+		zombie.GameWindow.frameStep(GameWindow.java:790)
+		zombie.GameWindow.mainThreadStep(GameWindow.java:567)
+		zombie.MainThread.mainLoop(MainThread.java:69)
+		java.base/java.lang.Thread.run(Unknown Source)
+ERROR: General      f:0 st:0> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-guest\mods\NeighborhoodQA\42\media\AnimSets at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:868)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:889)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.core.Core.ResetLua(Core.java:4193)
+		zombie.gameStates.ConnectToServerState.receiveServerOptions(ConnectToServerState.java:135)
+		zombie.gameStates.ConnectToServerState.Finish(ConnectToServerState.java:696)
+		zombie.gameStates.ConnectToServerState.update(ConnectToServerState.java:104)
+		zombie.gameStates.MainScreenState.update(MainScreenState.java:778)
+		zombie.gameStates.GameStateMachine.update(GameStateMachine.java:65)
+		zombie.GameWindow.logic(GameWindow.java:390)
+		zombie.GameWindow.frameStep(GameWindow.java:790)
+		zombie.GameWindow.mainThreadStep(GameWindow.java:567)
+		zombie.MainThread.mainLoop(MainThread.java:69)
+		java.base/java.lang.Thread.run(Unknown Source)
+ERROR: General      f:0 st:0> AdvancedAnimator$1.visitFileFailed> Exception thrown
+	java.nio.file.NoSuchFileException: E:\pzmod\test-profile\mp-guest\mods\NeighborhoodQA\42\media\actiongroups at WindowsException.translateToIOException(null:-1).
+	Stack trace:
+		java.base/sun.nio.fs.WindowsException.translateToIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsException.rethrowAsIOException(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(Unknown Source)
+		java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(Unknown Source)
+		java.base/java.nio.file.Files.readAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.getAttributes(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.visit(Unknown Source)
+		java.base/java.nio.file.FileTreeWalker.walk(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		java.base/java.nio.file.Files.walkFileTree(Unknown Source)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.searchFolders(AdvancedAnimator.java:805)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.loadModMedia(AdvancedAnimator.java:869)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.collectModFiles(AdvancedAnimator.java:889)
+		zombie.core.skinnedmodel.advancedanimation.AdvancedAnimator.load(AdvancedAnimator.java:928)
+		zombie.core.Core.ResetLua(Core.java:4193)
+		zombie.gameStates.ConnectToServerState.receiveServerOptions(ConnectToServerState.java:135)
+		zombie.gameStates.ConnectToServerState.Finish(ConnectToServerState.java:696)
+		zombie.gameStates.ConnectToServerState.update(ConnectToServerState.java:104)
+		zombie.gameStates.MainScreenState.update(MainScreenState.java:778)
+		zombie.gameStates.GameStateMachine.update(GameStateMachine.java:65)
+		zombie.GameWindow.logic(GameWindow.java:390)
+		zombie.GameWindow.frameStep(GameWindow.java:790)
+		zombie.GameWindow.mainThreadStep(GameWindow.java:567)
+		zombie.MainThread.mainLoop(MainThread.java:69)
+		java.base/java.lang.Thread.run(Unknown Source)
+WARN : Lua          f:0 st:0 at Lua(Vanilla).corpseStorageCheck     > require("ISUI/ISInventoryPaneContextMenu") failed
+WARN : Lua          f:0 st:0 at Lua(Vanilla).corpseStorageCheck     > require("ISUI/ISVehicleMenu") failed
+WARN : Lua          f:0 st:0 at Lua(Vanilla).corpseStorageCheck     > require("ISUI/ISContextMenu") failed
+WARN : Lua          f:0 st:0 at Lua(Vanilla).ISCampingMenu          > require("Camping/CCampfireSystem") failed
+WARN : Lua          f:0 st:0 at Lua(Vanilla).ISInventoryTransferUtil> require("TimedActions/ISInventoryTransferAction") failed
+WARN : Lua          f:0 st:0 at Lua(Vanilla).ISInventoryTransferUtil> require("ISUI/PlayerData/ISPlayerData") failed
+WARN : Lua          f:0 st:0 at Lua(Vanilla).ISAnimalContextMenu    > require("BuildingObjects/ISAnimalPickMateCursor") failed
+WARN : Lua          f:0 st:0 at Lua(Vanilla).TakeSameType           > require("ISUI/InventoryWindow/ISLootWindowControlHandler") failed
+WARN : Lua          f:0 st:0 at Lua(Vanilla).FloorTakeSameType      > require("ISUI/InventoryWindow/ISLootWindowControlHandler") failed
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: PVPLogToolChat
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: PVPLogToolFile
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: ChatStreams
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: SwitchZombiesOwnershipEachUpdate
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: SpawnPoint
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: SafetyDisconnectDelay
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: Mods
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: Map
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: DenyLoginOnOverloadedServer
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: MaxSafezoneSize
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: WebhookAddress
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: KnockedDownAllowed
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: SneakModeHideFromOtherPlayers
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: UltraSpeedDoesnotAffectToAnimals
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: WorkshopItems
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: SteamVAC
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: LoginQueueEnabled
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: LoginQueueConnectTimeout
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: server_browser_announced_ip
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: BanKickGlobalSound
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: CarEngineAttractionModifier
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: DisableVehicleTowing
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: DisableTrailerTowing
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: DisableBurntTowing
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: BadWordListFile
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: GoodWordListFile
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: BadWordPolicy
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: BadWordReplacement
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: AntiCheatSafety
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: AntiCheatSpeed
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: AntiCheatNoClip
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: AntiCheatHit
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: AntiCheatPacketException
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: AntiCheatPermission
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: AntiCheatXP
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: AntiCheatSafeHouse
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: AntiCheatPlayer
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: AntiCheatChecksum
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: MultiplayerStatisticsPeriod
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: DisableScoreboard
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: HideAdminsInPlayerList
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: MaxPacketsPerSecond
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: ShowCoordinates
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: Seed
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: UsePhysicsHitReaction
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: StartYear
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: AlarmDecayModifier
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: InsaneLootFactor
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: ExtremeLootFactor
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: RareLootFactor
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: NormalLootFactor
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: CommonLootFactor
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: AbundantLootFactor
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: Farming
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: PlantAbundance
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: NightLength
+LOG  : Lua          f:0 st:0> WARN:MISSING in SettingsTable: AnimalMetaStatsModifier
+WARN : Lua          f:0 st:0 at Lua(Vanilla).testUI                 > require("pzapi/ui/ui") failed
+WARN : Lua          f:0 st:0 at Lua(Vanilla).namedColorToTable      > env.lua-> namedColorToTable color not found: ProgressYellow
+LOG  : Lua          f:0 st:0> NLQA STAT HUNGER 0..1
+LOG  : Lua          f:0 st:0> NLQA STAT THIRST 0..1
+LOG  : Lua          f:0 st:0> NLQA STAT FATIGUE 0..1
+LOG  : Lua          f:0 st:0> NLQA STAT BOREDOM 0..100
+LOG  : Lua          f:0 st:0> NLQA STAT STRESS 0..1
+LOG  : Lua          f:0 st:0> NLQA STAT UNHAPPINESS 0..100
+LOG  : Lua          f:0 st:0> NLQA PASS: actual item/perk/stat APIs and real ISPanel journal construction
+LOG  : Lua          f:0 st:0> NLQA MP CONNECTED: nl-guest
+LOG  : General      f:0 st:0> STATE: exit zombie.gameStates.MainScreenState
+LOG  : General      f:0 st:0> LOADED UP A TOTAL OF 613 TEXTURES
+LOG  : General      f:0 st:0> STATE: exit zombie.gameStates.LoadingQueueState
+LOG  : Lua          f:0 st:0> Initializing Randomized World Tabletop Clutter Tables
+WARN : Lua          f:0 st:0 at Lua(Vanilla).Features               > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua
+WARN : Lua          f:0 st:0 at Lua(Vanilla).Biomes                 > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua
+WARN : Lua          f:0 st:0 at Lua(Vanilla).Selection              > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua
+WARN : Lua          f:0 st:0 at Lua(Vanilla).Veins                  > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua
+WARN : Lua          f:0 st:0 at Lua(Vanilla).Roads                  > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/WorldGen.lua
+WARN : Lua          f:0 st:0 at Lua(Vanilla).WorldGen               > recursive require(): E:/SteamLibrary/steamapps/common/ProjectZomboid/media/lua/server/WorldGen/attachments/Priorities.lua
+ERROR: General      f:0 st:0 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first world object face for recipe icon.
+LOG  : General      f:0 st:0> SafeMode is off
+LOG  : General      f:0 st:0> IsoMetaGrid.Create: begin scanning directories
+LOG  : General      f:0 st:0> Looking in these map folders:
+LOG  : General      f:0 st:0> <End of map-folders list>
+LOG  : General      f:0 st:0> IsoMetaGrid.Create: X: [ -250 250 ], Y: [ -250 250 ]
+LOG  : General      f:0 st:0> World seed: SvIGHANkgpNjwNjm -159385546
+LOG  : General      f:0 st:0> IsoMetaGrid.Create: finished scanning directories in 0.065 seconds
+LOG  : General      f:0 st:0> IsoMetaGrid.Create: begin loading
+LOG  : General      f:0 st:0> VehiclesDB2.init() start
+LOG  : General      f:0 st:0> VehiclesDB2.init() end
+LOG  : General      f:0 st:0> triggerEvent OnInitWorld
+LOG  : General      f:0 st:0> ItemPickerJava.Parse() start
+LOG  : General      f:0 st:0> ItemPickerJava.Parse() end
+LOG  : General      f:0 st:0> LoadTileDefinitions start
+LOG  : General      f:0 st:0> LoadTileDefinitions end
+LOG  : General      f:0 st:0> triggerEvent OnLoadedTileDefinitions
+LOG  : General      f:0 st:0> loadAnimalDefinitions start
+LOG  : General      f:0 st:0> loadAnimalDefinitions end
+LOG  : General      f:0 st:0> GameTime.init() and load() start
+LOG  : General      f:0 st:0> GameTime.init() and load() end
+LOG  : General      f:0 st:0> ZomboidRadio.Init() start
+LOG  : General      f:0 st:0> ZomboidRadio.Init() end
+LOG  : General      f:0 st:0> GlobalModData.init() start
+LOG  : General      f:0 st:0> GlobalModData.init() end
+LOG  : General      f:0 st:0> InstanceTracker.load() start
+LOG  : General      f:0 st:0> InstanceTracker.load() end
+LOG  : General      f:0 st:0> ErosionGlobals.Boot() start
+LOG  : General      f:0 st:0> ErosionGlobals.Boot() end
+LOG  : General      f:0 st:0> WorldDictionary.init() start
+LOG  : General      f:0 st:0> WorldDictionary: Checking dictionary...
+LOG  : General      f:0 st:0> WorldDictionary.init() end
+LOG  : General      f:0 st:0> GameEntityManager.Init() start
+LOG  : General      f:0 st:0> GameEntityManager.Init() end
+LOG  : General      f:0 st:0> PersistentOutfits.init() start
+LOG  : General      f:0 st:0> PersistentOutfits.init() end
+LOG  : General      f:0 st:0> IsoMetaGrid.Create: finished loading in 3.437 seconds
+ERROR: Lua          f:0 st:0 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0
+ERROR: General      f:0 st:0 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0
+LOG  : General      f:0 st:0> triggerEvent OnLoadedMapZones
+LOG  : General      f:0 st:0> ItemConfigurator.Preprocess() start
+LOG  : General      f:0 st:0> ItemConfigurator.Preprocess() end
+LOG  : General      f:0 st:0> MapCollisionData.init() start
+LOG  : General      f:0 st:0> MapCollisionData.init() end
+LOG  : General      f:0 st:0> AnimalPopulationManager.init() start
+LOG  : General      f:0 st:0> AnimalPopulationManager.init() end
+LOG  : General      f:0 st:0> ZombiePopulationManager.init() start
+LOG  : General      f:0 st:0> ZombiePopulationManager.init() end
+LOG  : General      f:0 st:0> Pathfind init() start
+LOG  : General      f:0 st:0> Pathfind init() end
+LOG  : General      f:0 st:0> WorldStreamer.create() start
+LOG  : General      f:0 st:0> WorldStreamer.create() end
+LOG  : General      f:0 st:0> CellLoader.LoadCellBinaryChunk start
+LOG  : General      f:0 st:0> CellLoader.LoadCellBinaryChunk start
+LOG  : General      f:0 st:0> MapItem.LoadWorldMap() start
+LOG  : General      f:0 st:0> MapItem.LoadWorldMap() start
+LOG  : General      f:0 st:0> WorldStreamer.isBusy() loop start
+WARN : General      f:0 st:0 at SpriteConfig.initObjectInfo         > Invalid SpriteConfig object! scripted object = Wooden_Windows
+LOG  : General      f:0 st:0> WorldStreamer.isBusy() loop end
+LOG  : General      f:0 st:0> MetaTracker.load() start
+LOG  : General      f:0 st:0> MetaTracker.load() end
+LOG  : General      f:0 st:0> triggerEvent OnGameTimeLoaded
+LOG  : Lua          f:0 st:0> LuaNet: Loading...
+LOG  : Lua          f:0 st:0> LuaNet: Registering client listener...
+LOG  : Lua          f:0 st:0> LuaNet: Initialization [DONE], triggering events for 'LuaNet.onInitAdd'.
+LOG  : General      f:0 st:0> GlobalObjects.initSystems() start
+LOG  : General      f:0 st:0> GlobalObjects.initSystems() end
+LOG  : General      f:0 st:0> GameWindow.save() start
+LOG  : General      f:0 st:0> GameWindow.save() end
+LOG  : General      f:0 st:0> bWaitForAssetLoadingToFinish2 start
+LOG  : General      f:0 st:0> bWaitForAssetLoadingToFinish2 end
+LOG  : General      f:0 st:0> FBORenderChunkManager.gameLoaded() start
+LOG  : General      f:0 st:0> FBORenderChunkManager.gameLoaded() end
+LOG  : General      f:0 st:0> Bullet.initPhysicsMeshes() start
+LOG  : General      f:0 st:0> Bullet.initPhysicsMeshes() end
+LOG  : General      f:0 st:0> game loading took 24 seconds
+LOG  : General      f:0 st:0> STATE: exit zombie.gameStates.GameLoadingState
+LOG  : Lua          f:0 st:0> 1 players found
+LOG  : Lua          f:0 st:0> player 0 is mouse
+LOG  : General      f:0 st:0> Game Mode: Multiplayer
+LOG  : General      f:0 st:0> Sandbox Options:
+LOG  : General      f:0 st:0> Zombies 4
+LOG  : General      f:0 st:0> Distribution 1
+LOG  : General      f:0 st:0> ZombieVoronoiNoise true
+LOG  : General      f:0 st:0> ZombieRespawn 4
+LOG  : General      f:0 st:0> ZombieMigrate true
+LOG  : General      f:0 st:0> DayLength 4
+LOG  : General      f:0 st:0> StartYear 1
+LOG  : General      f:0 st:0> StartMonth 7
+LOG  : General      f:0 st:0> StartDay 9
+LOG  : General      f:0 st:0> StartTime 2
+LOG  : General      f:0 st:0> DayNightCycle 1
+LOG  : General      f:0 st:0> ClimateCycle 1
+LOG  : General      f:0 st:0> FogCycle 1
+LOG  : General      f:0 st:0> WaterShut 2
+LOG  : General      f:0 st:0> ElecShut 2
+LOG  : General      f:0 st:0> AlarmDecay 2
+LOG  : General      f:0 st:0> WaterShutModifier 14
+LOG  : General      f:0 st:0> ElecShutModifier 14
+LOG  : General      f:0 st:0> AlarmDecayModifier 14
+LOG  : General      f:0 st:0> FoodLootNew 0.8
+LOG  : General      f:0 st:0> LiteratureLootNew 0.6
+LOG  : General      f:0 st:0> SkillBookLoot 0.6
+LOG  : General      f:0 st:0> RecipeResourceLoot 0.6
+LOG  : General      f:0 st:0> MedicalLootNew 0.6
+LOG  : General      f:0 st:0> SurvivalGearsLootNew 0.6
+LOG  : General      f:0 st:0> CannedFoodLootNew 0.6
+LOG  : General      f:0 st:0> WeaponLootNew 0.6
+LOG  : General      f:0 st:0> RangedWeaponLootNew 1.2
+LOG  : General      f:0 st:0> AmmoLootNew 0.6
+LOG  : General      f:0 st:0> MechanicsLootNew 0.6
+LOG  : General      f:0 st:0> OtherLootNew 0.8
+LOG  : General      f:0 st:0> ClothingLootNew 0.6
+LOG  : General      f:0 st:0> ContainerLootNew 0.6
+LOG  : General      f:0 st:0> KeyLootNew 0.4
+LOG  : General      f:0 st:0> MediaLootNew 0.6
+LOG  : General      f:0 st:0> MementoLootNew 0.6
+LOG  : General      f:0 st:0> CookwareLootNew 0.6
+LOG  : General      f:0 st:0> MaterialLootNew 0.6
+LOG  : General      f:0 st:0> FarmingLootNew 0.6
+LOG  : General      f:0 st:0> ToolLootNew 0.6
+LOG  : General      f:0 st:0> RollsMultiplier 1.0
+LOG  : General      f:0 st:0> LootItemRemovalList 
+LOG  : General      f:0 st:0> RemoveStoryLoot false
+LOG  : General      f:0 st:0> RemoveZombieLoot false
+LOG  : General      f:0 st:0> ZombiePopLootEffect 0
+LOG  : General      f:0 st:0> InsaneLootFactor 0.05
+LOG  : General      f:0 st:0> ExtremeLootFactor 0.2
+LOG  : General      f:0 st:0> RareLootFactor 0.6
+LOG  : General      f:0 st:0> NormalLootFactor 1.0
+LOG  : General      f:0 st:0> CommonLootFactor 2.0
+LOG  : General      f:0 st:0> AbundantLootFactor 3.0
+LOG  : General      f:0 st:0> Temperature 3
+LOG  : General      f:0 st:0> Rain 3
+LOG  : General      f:0 st:0> ErosionSpeed 4
+LOG  : General      f:0 st:0> ErosionDays 0
+LOG  : General      f:0 st:0> Farming 3
+LOG  : General      f:0 st:0> CompostTime 2
+LOG  : General      f:0 st:0> StatsDecrease 3
+LOG  : General      f:0 st:0> NatureAbundance 3
+LOG  : General      f:0 st:0> Alarm 4
+LOG  : General      f:0 st:0> LockedHouses 6
+LOG  : General      f:0 st:0> StarterKit false
+LOG  : General      f:0 st:0> Nutrition true
+LOG  : General      f:0 st:0> FoodRotSpeed 3
+LOG  : General      f:0 st:0> FridgeFactor 3
+LOG  : General      f:0 st:0> SeenHoursPreventLootRespawn 0
+LOG  : General      f:0 st:0> HoursForLootRespawn 0
+LOG  : General      f:0 st:0> MaxItemsForLootRespawn 5
+LOG  : General      f:0 st:0> ConstructionPreventsLootRespawn true
+LOG  : General      f:0 st:0> WorldItemRemovalList Base.Hat, Base.Glasses, Base.Maggots, Base.Slug, Base.Slug2, Base.Snail, Base.Worm, Base.Dung_Mouse, Base.Dung_Rat
+LOG  : General      f:0 st:0> HoursForWorldItemRemoval 24.0
+LOG  : General      f:0 st:0> ItemRemovalListBlacklistToggle false
+LOG  : General      f:0 st:0> TimeSinceApo 1
+LOG  : General      f:0 st:0> PlantResilience 3
+LOG  : General      f:0 st:0> PlantAbundance 3
+LOG  : General      f:0 st:0> EndRegen 3
+LOG  : General      f:0 st:0> Helicopter 2
+LOG  : General      f:0 st:0> MetaEvent 2
+LOG  : General      f:0 st:0> SleepingEvent 1
+LOG  : General      f:0 st:0> GeneratorFuelConsumption 0.1
+LOG  : General      f:0 st:0> GeneratorSpawning 4
+LOG  : General      f:0 st:0> AnnotatedMapChance 4
+LOG  : General      f:0 st:0> CharacterFreePoints 0
+LOG  : General      f:0 st:0> ConstructionBonusPoints 3
+LOG  : General      f:0 st:0> NightDarkness 3
+LOG  : General      f:0 st:0> NightLength 3
+LOG  : General      f:0 st:0> BoneFracture true
+LOG  : General      f:0 st:0> InjurySeverity 2
+LOG  : General      f:0 st:0> HoursForCorpseRemoval 216.0
+LOG  : General      f:0 st:0> DecayingCorpseHealthImpact 3
+LOG  : General      f:0 st:0> ZombieHealthImpact false
+LOG  : General      f:0 st:0> BloodLevel 3
+LOG  : General      f:0 st:0> ClothingDegradation 3
+LOG  : General      f:0 st:0> FireSpread true
+LOG  : General      f:0 st:0> DaysForRottenFoodRemoval -1
+LOG  : General      f:0 st:0> AllowExteriorGenerator true
+LOG  : General      f:0 st:0> MaxFogIntensity 1
+LOG  : General      f:0 st:0> MaxRainFxIntensity 1
+LOG  : General      f:0 st:0> EnableSnowOnGround true
+LOG  : General      f:0 st:0> AttackBlockMovements true
+LOG  : General      f:0 st:0> SurvivorHouseChance 3
+LOG  : General      f:0 st:0> VehicleStoryChance 3
+LOG  : General      f:0 st:0> ZoneStoryChance 3
+LOG  : General      f:0 st:0> AllClothesUnlocked false
+LOG  : General      f:0 st:0> EnableTaintedWaterText true
+LOG  : General      f:0 st:0> EnableVehicles true
+LOG  : General      f:0 st:0> CarSpawnRate 3
+LOG  : General      f:0 st:0> ZombieAttractionMultiplier 1.0
+LOG  : General      f:0 st:0> VehicleEasyUse false
+LOG  : General      f:0 st:0> InitialGas 2
+LOG  : General      f:0 st:0> FuelStationGasInfinite false
+LOG  : General      f:0 st:0> FuelStationGasMin 0.0
+LOG  : General      f:0 st:0> FuelStationGasMax 0.8
+LOG  : General      f:0 st:0> FuelStationGasEmptyChance 20
+LOG  : General      f:0 st:0> LockedCar 4
+LOG  : General      f:0 st:0> CarGasConsumption 1.0
+LOG  : General      f:0 st:0> CarGeneralCondition 3
+LOG  : General      f:0 st:0> CarDamageOnImpact 3
+LOG  : General      f:0 st:0> DamageToPlayerFromHitByACar 1
+LOG  : General      f:0 st:0> TrafficJam true
+LOG  : General      f:0 st:0> CarAlarm 3
+LOG  : General      f:0 st:0> PlayerDamageFromCrash true
+LOG  : General      f:0 st:0> SirenShutoffHours 0.0
+LOG  : General      f:0 st:0> ChanceHasGas 2
+LOG  : General      f:0 st:0> RecentlySurvivorVehicles 2
+LOG  : General      f:0 st:0> MultiHitZombies false
+LOG  : General      f:0 st:0> RearVulnerability 3
+LOG  : General      f:0 st:0> SirenEffectsZombies true
+LOG  : General      f:0 st:0> AnimalStatsModifier 4
+LOG  : General      f:0 st:0> AnimalMetaStatsModifier 4
+LOG  : General      f:0 st:0> AnimalPregnancyTime 4
+LOG  : General      f:0 st:0> AnimalAgeModifier 4
+LOG  : General      f:0 st:0> AnimalMilkIncModifier 4
+LOG  : General      f:0 st:0> AnimalWoolIncModifier 4
+LOG  : General      f:0 st:0> AnimalRanchChance 5
+LOG  : General      f:0 st:0> AnimalGrassRegrowTime 240
+LOG  : General      f:0 st:0> AnimalMetaPredator false
+LOG  : General      f:0 st:0> AnimalMatingSeason true
+LOG  : General      f:0 st:0> AnimalEggHatch 4
+LOG  : General      f:0 st:0> AnimalSoundAttractZombies true
+LOG  : General      f:0 st:0> AnimalTrackChance 4
+LOG  : General      f:0 st:0> AnimalPathChance 4
+LOG  : General      f:0 st:0> MaximumRatIndex 25
+LOG  : General      f:0 st:0> DaysUntilMaximumRatIndex 90
+LOG  : General      f:0 st:0> MetaKnowledge 3
+LOG  : General      f:0 st:0> SeeNotLearntRecipe true
+LOG  : General      f:0 st:0> MaximumLootedBuildingRooms 50
+LOG  : General      f:0 st:0> EnablePoisoning 1
+LOG  : General      f:0 st:0> MaggotSpawn 1
+LOG  : General      f:0 st:0> LightBulbLifespan 2.0
+LOG  : General      f:0 st:0> FishAbundance 2
+LOG  : General      f:0 st:0> LevelForMediaXPCutoff 3
+LOG  : General      f:0 st:0> LevelForDismantleXPCutoff 0
+LOG  : General      f:0 st:0> BloodSplatLifespanDays 0
+LOG  : General      f:0 st:0> LiteratureCooldown 45
+LOG  : General      f:0 st:0> NegativeTraitsPenalty 1
+LOG  : General      f:0 st:0> MinutesPerPage 2.0
+LOG  : General      f:0 st:0> KillInsideCrops true
+LOG  : General      f:0 st:0> PlantGrowingSeasons true
+LOG  : General      f:0 st:0> PlaceDirtAboveground false
+LOG  : General      f:0 st:0> FarmingSpeedNew 1.0
+LOG  : General      f:0 st:0> FarmingAmountNew 1.0
+LOG  : General      f:0 st:0> MaximumLooted 25
+LOG  : General      f:0 st:0> DaysUntilMaximumLooted 90
+LOG  : General      f:0 st:0> RuralLooted 0.5
+LOG  : General      f:0 st:0> MaximumDiminishedLoot 20
+LOG  : General      f:0 st:0> DaysUntilMaximumDiminishedLoot 3650
+LOG  : General      f:0 st:0> MuscleStrainFactor 0.7
+LOG  : General      f:0 st:0> DiscomfortFactor 0.8
+LOG  : General      f:0 st:0> WoundInfectionFactor 1.0
+LOG  : General      f:0 st:0> NoBlackClothes true
+LOG  : General      f:0 st:0> EasyClimbing false
+LOG  : General      f:0 st:0> MaximumFireFuelHours 8
+LOG  : General      f:0 st:0> FirearmUseDamageChance 2
+LOG  : General      f:0 st:0> FirearmNoiseMultiplier 1.0
+LOG  : General      f:0 st:0> FirearmJamMultiplier 1.0
+LOG  : General      f:0 st:0> FirearmMoodleMultiplier 1.0
+LOG  : General      f:0 st:0> FirearmWeatherMultiplier 1.0
+LOG  : General      f:0 st:0> FirearmHeadGearEffect true
+LOG  : General      f:0 st:0> ClayLakeChance 0.05
+LOG  : General      f:0 st:0> ClayRiverChance 0.05
+LOG  : General      f:0 st:0> GeneratorTileRange 20
+LOG  : General      f:0 st:0> GeneratorVerticalPowerRange 3
+LOG  : General      f:0 st:0> SpawnFrequency 4
+LOG  : General      f:0 st:0> AllowMiniMap false
+LOG  : General      f:0 st:0> AllowWorldMap true
+LOG  : General      f:0 st:0> MapAllKnown false
+LOG  : General      f:0 st:0> MapNeedsLight true
+LOG  : General      f:0 st:0> Speed 4
+LOG  : General      f:0 st:0> SprinterPercentage 0
+LOG  : General      f:0 st:0> Strength 2
+LOG  : General      f:0 st:0> Toughness 4
+LOG  : General      f:0 st:0> Transmission 1
+LOG  : General      f:0 st:0> Mortality 5
+LOG  : General      f:0 st:0> Reanimate 3
+LOG  : General      f:0 st:0> Cognition 3
+LOG  : General      f:0 st:0> DoorOpeningPercentage 0
+LOG  : General      f:0 st:0> CrawlUnderVehicle 5
+LOG  : General      f:0 st:0> Memory 2
+LOG  : General      f:0 st:0> Sight 5
+LOG  : General      f:0 st:0> Hearing 5
+LOG  : General      f:0 st:0> SpottedLogic true
+LOG  : General      f:0 st:0> ThumpNoChasing false
+LOG  : General      f:0 st:0> ThumpOnConstruction true
+LOG  : General      f:0 st:0> ActiveOnly 1
+LOG  : General      f:0 st:0> TriggerHouseAlarm true
+LOG  : General      f:0 st:0> ZombiesDragDown true
+LOG  : General      f:0 st:0> ZombiesCrawlersDragDown false
+LOG  : General      f:0 st:0> ZombiesFenceLunge true
+LOG  : General      f:0 st:0> ZombiesArmorFactor 2.0
+LOG  : General      f:0 st:0> ZombiesMaxDefense 85
+LOG  : General      f:0 st:0> ChanceOfAttachedWeapon 6
+LOG  : General      f:0 st:0> ZombiesFallDamage 1.0
+LOG  : General      f:0 st:0> DisableFakeDead 1
+LOG  : General      f:0 st:0> PlayerSpawnZombieRemoval 1
+LOG  : General      f:0 st:0> FenceThumpersRequired 25
+LOG  : General      f:0 st:0> FenceDamageMultiplier 1.0
+LOG  : General      f:0 st:0> PopulationMultiplier 0.65
+LOG  : General      f:0 st:0> PopulationStartMultiplier 1.0
+LOG  : General      f:0 st:0> PopulationPeakMultiplier 1.5
+LOG  : General      f:0 st:0> PopulationPeakDay 28
+LOG  : General      f:0 st:0> RespawnHours 0.0
+LOG  : General      f:0 st:0> RespawnUnseenHours 0.0
+LOG  : General      f:0 st:0> RespawnMultiplier 0.0
+LOG  : General      f:0 st:0> RedistributeHours 12.0
+LOG  : General      f:0 st:0> FollowSoundDistance 100
+LOG  : General      f:0 st:0> RallyGroupSize 20
+LOG  : General      f:0 st:0> RallyGroupSizeVariance 50
+LOG  : General      f:0 st:0> RallyTravelDistance 20
+LOG  : General      f:0 st:0> RallyGroupSeparation 15
+LOG  : General      f:0 st:0> RallyGroupRadius 3
+LOG  : General      f:0 st:0> ZombiesCountBeforeDelete 300
+LOG  : General      f:0 st:0> Global 1.0
+LOG  : General      f:0 st:0> GlobalToggle true
+LOG  : General      f:0 st:0> Fitness 1.0
+LOG  : General      f:0 st:0> Strength 1.0
+LOG  : General      f:0 st:0> Sprinting 1.0
+LOG  : General      f:0 st:0> Lightfoot 1.0
+LOG  : General      f:0 st:0> Nimble 1.0
+LOG  : General      f:0 st:0> Sneak 1.0
+LOG  : General      f:0 st:0> Axe 1.0
+LOG  : General      f:0 st:0> Blunt 1.0
+LOG  : General      f:0 st:0> SmallBlunt 1.0
+LOG  : General      f:0 st:0> LongBlade 1.0
+LOG  : General      f:0 st:0> SmallBlade 1.0
+LOG  : General      f:0 st:0> Spear 1.0
+LOG  : General      f:0 st:0> Maintenance 1.0
+LOG  : General      f:0 st:0> Woodwork 1.0
+LOG  : General      f:0 st:0> Cooking 1.0
+LOG  : General      f:0 st:0> Farming 1.0
+LOG  : General      f:0 st:0> Doctor 1.0
+LOG  : General      f:0 st:0> Electricity 1.0
+LOG  : General      f:0 st:0> MetalWelding 1.0
+LOG  : General      f:0 st:0> Mechanics 1.0
+LOG  : General      f:0 st:0> Tailoring 1.0
+LOG  : General      f:0 st:0> Aiming 1.0
+LOG  : General      f:0 st:0> Reloading 1.0
+LOG  : General      f:0 st:0> Fishing 1.0
+LOG  : General      f:0 st:0> Trapping 1.0
+LOG  : General      f:0 st:0> PlantScavenging 1.0
+LOG  : General      f:0 st:0> FlintKnapping 1.0
+LOG  : General      f:0 st:0> Masonry 1.0
+LOG  : General      f:0 st:0> Pottery 1.0
+LOG  : General      f:0 st:0> Carving 1.0
+LOG  : General      f:0 st:0> Husbandry 1.0
+LOG  : General      f:0 st:0> Tracking 1.0
+LOG  : General      f:0 st:0> Blacksmith 1.0
+LOG  : General      f:0 st:0> Butchering 1.0
+LOG  : General      f:0 st:0> Glassmaking 1.0
+LOG  : General      f:0 st:0> binkId: 3
+LOG  : Lua          f:0 st:0> NLQA MP CLIENT START: username=nl-guest isClient=true isServer=false
+LOG  : General      f:0 st:0> Waiting for player-connect response from server
+LOG  : Network      f:0 st:0> Processing delayed packets...
+LOG  : Lua          f:0 st:0> LuaNet: Loading...
+WARN : General      f:0 st:0 at ConnectedPacket.parse               > ReceivePlayerConnect: guid=279223402837214478 mtu=1492
+LOG  : Lua          f:0 st:0> NLQA MP PLUMBOB SIZE: player:0=6x10 texture=16x22
+LOG  : Lua          f:119 st:226,034,677> NLQA MP REFRESH SENT: attempt=1 player=nl-guest
+LOG  : Lua          f:120 st:226,034,702> NLQA MP SNAPSHOT: username=nl-guest revision=45 snapshotCount=1 message=Updated
+LOG  : Lua          f:120 st:226,034,702> NLQA MP PRESENCE: revision=1789374118642 players=2 names=nl-host@11913.11,7070.89,0,nl-guest@11915.00,7069.00,0
+LOG  : Lua          f:120 st:226,034,712> NLQA MP NPC PRESENCE: revision=1789374118642 count=3 entries=marisol@11912.92,7071.08,0/w1,kenji@11914.92,7069.08,0/w1,amara@11914.08,7073.92,0/w2
+LOG  : Lua          f:132 st:226,034,902> NLQA MP PRESENCE: revision=1789374118839 players=2 names=nl-host@11913.27,7070.73,0,nl-guest@11915.00,7069.00,0
+LOG  : Lua          f:132 st:226,034,902> NLQA MP NPC PRESENCE: revision=1789374118839 count=3 entries=marisol@11912.92,7071.08,0/w1,kenji@11914.92,7069.08,0/w1,amara@11914.08,7073.92,0/w2
+LOG  : Lua          f:226 st:226,036,468> NLQA MP PRESENCE: revision=1789374120404 players=2 names=nl-host@11914.38,7069.62,0,nl-guest@11915.00,7069.00,0
+LOG  : Lua          f:226 st:226,036,469> NLQA MP NPC PRESENCE: revision=1789374120404 count=3 entries=marisol@11912.97,7071.03,0/w1,kenji@11914.97,7069.03,0/w1,amara@11914.03,7073.97,0/w2
+LOG  : Lua          f:299 st:226,037,675> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=48 [username=Kenji Arakawa [Neighborhood Life] x=11914.50 y=7069.50 z=0 | username=nl-host x=11914.50 y=7069.50 z=0 | username=Amara Okonkwo [Neighborhood Life] x=11914.50 y=7073.50 z=0 | username=Marisol Vega [Neighborhood Life] x=11912.50 y=7071.50 z=0 | local=nl-guest] productionNpcReplicas=3 productionRemoteReplicas=0 productionHouseholdFurnishings=0 productionHouseholdFurnishingClient=0 productionHouseholdFurnishingPending=0 OnlinePlayersCount=2 [username=nl-host x=11914.50 y=7069.50 z=0 | local=nl-guest] productionRemoteMarkers=1 productionPresenceMarkers=0 productionNpcNativePaths=3 productionNpcFallbackReplicas=0
+LOG  : Lua          f:300 st:226,037,702> NLQA MP PRESENCE: revision=1789374121634 players=2 names=nl-host@11914.36,7069.64,0,nl-guest@11915.00,7069.00,0
+LOG  : Lua          f:300 st:226,037,702> NLQA MP NPC PRESENCE: revision=1789374121634 count=3 entries=marisol@11912.97,7071.03,0/w1,kenji@11914.97,7069.03,0/w1,amara@11914.03,7073.97,0/w2
+LOG  : Lua          f:526 st:226,041,468> NLQA MP PRESENCE: revision=1789374125398 players=2 names=nl-host@11914.26,7069.74,0,nl-guest@11915.00,7069.00,0
+LOG  : Lua          f:526 st:226,041,469> NLQA MP NPC PRESENCE: revision=1789374125398 count=3 entries=marisol@11913.03,7070.97,0/w1,kenji@11915.03,7068.97,0/w1,amara@11913.97,7074.03,0/w2
+LOG  : Lua          f:543 st:226,041,752> NLQA MP NPC PRESENCE: revision=1789374125687 count=3 entries=marisol@11913.03,7070.97,0/w1,kenji@11915.03,7068.97,0/w1,amara@11913.97,7074.03,0/w2
+LOG  : Lua          f:599 st:226,042,674> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=48 [username=Kenji Arakawa [Neighborhood Life] x=11915.03 y=7068.97 z=0 | username=nl-host x=11915.35 y=7069.53 z=0 | username=Amara Okonkwo [Neighborhood Life] x=11913.97 y=7074.03 z=0 | username=Marisol Vega [Neighborhood Life] x=11913.03 y=7070.97 z=0 | local=nl-guest] productionNpcReplicas=3 productionRemoteReplicas=0 productionHouseholdFurnishings=0 productionHouseholdFurnishingClient=0 productionHouseholdFurnishingPending=0 OnlinePlayersCount=2 [username=nl-host x=11915.35 y=7069.53 z=0 | local=nl-guest] productionRemoteMarkers=1 productionPresenceMarkers=0 productionNpcNativePaths=3 productionNpcFallbackReplicas=0
+LOG  : Lua          f:600 st:226,042,702> NLQA MP PRESENCE: revision=1789374126640 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11915.00,7069.00,0
+LOG  : Lua          f:600 st:226,042,702> NLQA MP NPC PRESENCE: revision=1789374126640 count=3 entries=marisol@11913.09,7070.91,0/w1,kenji@11915.09,7068.91,0/w1,amara@11913.91,7074.09,0/w2
+WARN : Multiplayer  f:616 st:226,042,969 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11854, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:616 st:226,042,970 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11854, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:616 st:226,042,970 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11854, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:616 st:226,042,970 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11854, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:616 st:226,042,970 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11855, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:616 st:226,042,970 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11855, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:616 st:226,042,970 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11855, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:616 st:226,042,971 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11855, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,985 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 2, "squareX" : 11851, "squareY" : 7026, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,985 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11851, "squareY" : 7027, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,985 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11851, "squareY" : 7029, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,985 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11851, "squareY" : 7030, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,986 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 2, "squareX" : 11852, "squareY" : 7026, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,986 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11852, "squareY" : 7027, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,986 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11852, "squareY" : 7029, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,986 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11852, "squareY" : 7030, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,986 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11856, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,986 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11856, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,986 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11856, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,986 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11856, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,987 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11857, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,987 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11857, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,987 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11857, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,987 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11857, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,987 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11858, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,987 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11858, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,988 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11858, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,988 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11858, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,988 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11859, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,988 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11859, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,988 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11859, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,988 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11859, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,989 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11860, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,989 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11860, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,989 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11860, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,989 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11860, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,989 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11861, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,989 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11861, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,989 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11861, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,990 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11861, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,990 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11862, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,990 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11862, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,990 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11862, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:617 st:226,042,990 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11862, "squareY" : 7023, "squareZ" : 0 }  })
+LOG  : Lua          f:826 st:226,046,468> NLQA MP PRESENCE: revision=1789374130402 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11915.00,7069.00,0
+LOG  : Lua          f:826 st:226,046,469> NLQA MP NPC PRESENCE: revision=1789374130402 count=3 entries=marisol@11913.14,7070.86,0/w1,kenji@11915.14,7068.86,0/w1,amara@11913.86,7074.14,0/w2
+LOG  : Lua          f:839 st:226,046,675> NLQA MP SOCIAL VIEWPOINT CHECK: target=kenji square=11916,7068,0 canSee=true
+LOG  : Lua          f:839 st:226,046,675> NLQA MP SOCIAL VIEWPOINT: nl-guest beside kenji at 11916,7068,0
+LOG  : Lua          f:899 st:226,047,674> NLQA MP SOCIAL REFRESH: nl-guest
+LOG  : Lua          f:899 st:226,047,674> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=50 [username=Kenji Arakawa [Neighborhood Life] x=11915.14 y=7068.86 z=0 | username=Amara Okonkwo [Neighborhood Life] x=11913.86 y=7074.14 z=0 | username=Marisol Vega [Neighborhood Life] x=11913.14 y=7070.86 z=0 | username=nl-host x=11915.43 y=7069.52 z=0 | local=nl-guest] productionNpcReplicas=3 productionRemoteReplicas=0 productionHouseholdFurnishings=0 productionHouseholdFurnishingClient=0 productionHouseholdFurnishingPending=0 OnlinePlayersCount=2 [username=nl-host x=11915.43 y=7069.52 z=0 | local=nl-guest] productionRemoteMarkers=1 productionPresenceMarkers=0 productionNpcNativePaths=3 productionNpcFallbackReplicas=0
+LOG  : Lua          f:900 st:226,047,702> NLQA MP PRESENCE: revision=1789374131640 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:900 st:226,047,702> NLQA MP NPC PRESENCE: revision=1789374131640 count=3 entries=marisol@11913.14,7070.86,0/w1,kenji@11915.14,7068.86,0/w1,amara@11913.86,7074.14,0/w2
+LOG  : Lua          f:900 st:226,047,702> NLQA MP SOCIAL SNAPSHOT: message=Updated username=nl-guest entries=marisol/canInteract=false/met=false/friendship=0,kenji/canInteract=true/met=true/friendship=9,amara/canInteract=false/met=false/friendship=0
+LOG  : Lua          f:901 st:226,047,709> NLQA MP GUEST SOCIAL ACTION SCHEDULED: chat id=kenji
+LOG  : Lua          f:1126 st:226,051,468> NLQA MP PRESENCE: revision=1789374135398 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:1126 st:226,051,469> NLQA MP NPC PRESENCE: revision=1789374135398 count=3 entries=marisol@11913.26,7070.74,0/w1,kenji@11915.26,7068.74,0/w1,amara@11913.74,7074.26,0/w2
+LOG  : Lua          f:1199 st:226,052,673> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=50 [username=Kenji Arakawa [Neighborhood Life] x=11915.26 y=7068.74 z=0 | username=Amara Okonkwo [Neighborhood Life] x=11913.74 y=7074.26 z=0 | username=Marisol Vega [Neighborhood Life] x=11913.26 y=7070.74 z=0 | username=nl-host x=11915.43 y=7069.52 z=0 | local=nl-guest] productionNpcReplicas=3 productionRemoteReplicas=0 productionHouseholdFurnishings=0 productionHouseholdFurnishingClient=0 productionHouseholdFurnishingPending=0 OnlinePlayersCount=2 [username=nl-host x=11915.43 y=7069.52 z=0 | local=nl-guest] productionRemoteMarkers=1 productionPresenceMarkers=0 productionNpcNativePaths=3 productionNpcFallbackReplicas=0
+LOG  : Lua          f:1200 st:226,052,702> NLQA MP PRESENCE: revision=1789374136638 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:1200 st:226,052,702> NLQA MP NPC PRESENCE: revision=1789374136638 count=3 entries=marisol@11913.26,7070.74,0/w1,kenji@11915.26,7068.74,0/w1,amara@11913.74,7074.26,0/w2
+LOG  : Lua          f:1263 st:226,053,752> NLQA MP NPC PRESENCE: revision=1789374137686 count=3 entries=marisol@11913.26,7070.74,0/w1,kenji@11915.26,7068.74,0/w1,amara@11913.74,7074.26,0/w2
+LOG  : Lua          f:1426 st:226,056,468> NLQA MP PRESENCE: revision=1789374140408 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:1426 st:226,056,469> NLQA MP NPC PRESENCE: revision=1789374140408 count=3 entries=marisol@11913.31,7070.69,0/w1,kenji@11915.31,7068.69,0/w1,amara@11913.69,7074.31,0/w2
+LOG  : Lua          f:1499 st:226,057,674> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=50 [username=Kenji Arakawa [Neighborhood Life] x=11915.31 y=7068.69 z=0 | username=Amara Okonkwo [Neighborhood Life] x=11913.69 y=7074.31 z=0 | username=Marisol Vega [Neighborhood Life] x=11913.31 y=7070.69 z=0 | username=nl-host x=11915.43 y=7069.52 z=0 | local=nl-guest] productionNpcReplicas=3 productionRemoteReplicas=0 productionHouseholdFurnishings=0 productionHouseholdFurnishingClient=0 productionHouseholdFurnishingPending=0 OnlinePlayersCount=2 [username=nl-host x=11915.43 y=7069.52 z=0 | local=nl-guest] productionRemoteMarkers=1 productionPresenceMarkers=0 productionNpcNativePaths=3 productionNpcFallbackReplicas=0
+LOG  : Lua          f:1500 st:226,057,702> NLQA MP PRESENCE: revision=1789374141641 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:1500 st:226,057,702> NLQA MP NPC PRESENCE: revision=1789374141641 count=3 entries=marisol@11913.37,7070.63,0/w1,kenji@11915.37,7068.63,0/w1,amara@11913.63,7074.37,0/w2
+LOG  : Lua          f:1726 st:226,061,468> NLQA MP PRESENCE: revision=1789374145403 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:1726 st:226,061,469> NLQA MP NPC PRESENCE: revision=1789374145403 count=3 entries=marisol@11913.43,7070.57,0/w1,kenji@11915.43,7068.57,0/w1,amara@11913.57,7074.43,0/w2
+LOG  : Lua          f:1799 st:226,062,673> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=50 [username=Kenji Arakawa [Neighborhood Life] x=11915.43 y=7068.57 z=0 | username=Amara Okonkwo [Neighborhood Life] x=11913.57 y=7074.43 z=0 | username=Marisol Vega [Neighborhood Life] x=11913.43 y=7070.57 z=0 | username=nl-host x=11915.43 y=7069.52 z=0 | local=nl-guest] productionNpcReplicas=3 productionRemoteReplicas=0 productionHouseholdFurnishings=0 productionHouseholdFurnishingClient=0 productionHouseholdFurnishingPending=0 OnlinePlayersCount=2 [username=nl-host x=11915.43 y=7069.52 z=0 | local=nl-guest] productionRemoteMarkers=1 productionPresenceMarkers=0 productionNpcNativePaths=3 productionNpcFallbackReplicas=0
+LOG  : Lua          f:1800 st:226,062,702> NLQA MP PRESENCE: revision=1789374146642 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:1800 st:226,062,702> NLQA MP NPC PRESENCE: revision=1789374146642 count=3 entries=marisol@11913.43,7070.57,0/w1,kenji@11915.43,7068.57,0/w1,amara@11913.57,7074.43,0/w2
+LOG  : Lua          f:1983 st:226,065,752> NLQA MP NPC PRESENCE: revision=1789374149687 count=3 entries=marisol@11913.48,7070.52,0/w2,kenji@11915.48,7068.52,0/w2,amara@11913.52,7074.48,0/w1
+LOG  : Lua          f:2026 st:226,066,468> NLQA MP PRESENCE: revision=1789374150406 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:2026 st:226,066,468> NLQA MP NPC PRESENCE: revision=1789374150406 count=3 entries=marisol@11913.48,7070.52,0/w2,kenji@11915.48,7068.52,0/w2,amara@11913.52,7074.48,0/w1
+LOG  : Lua          f:2099 st:226,067,673> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=50 [username=Kenji Arakawa [Neighborhood Life] x=11915.48 y=7068.52 z=0 | username=Amara Okonkwo [Neighborhood Life] x=11913.52 y=7074.48 z=0 | username=Marisol Vega [Neighborhood Life] x=11913.48 y=7070.52 z=0 | username=nl-host x=11915.43 y=7069.52 z=0 | local=nl-guest] productionNpcReplicas=3 productionRemoteReplicas=0 productionHouseholdFurnishings=0 productionHouseholdFurnishingClient=0 productionHouseholdFurnishingPending=0 OnlinePlayersCount=2 [username=nl-host x=11915.43 y=7069.52 z=0 | local=nl-guest] productionRemoteMarkers=1 productionPresenceMarkers=0 productionNpcNativePaths=3 productionNpcFallbackReplicas=0
+LOG  : Lua          f:2100 st:226,067,702> NLQA MP PRESENCE: revision=1789374151634 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:2100 st:226,067,702> NLQA MP NPC PRESENCE: revision=1789374151634 count=3 entries=marisol@11913.43,7070.57,0/w2,kenji@11915.43,7068.57,0/w2,amara@11913.57,7074.43,0/w1
+LOG  : Lua          f:2326 st:226,071,468> NLQA MP PRESENCE: revision=1789374155403 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:2326 st:226,071,469> NLQA MP NPC PRESENCE: revision=1789374155403 count=3 entries=marisol@11913.37,7070.63,0/w2,kenji@11915.37,7068.63,0/w2,amara@11913.63,7074.37,0/w1
+LOG  : Lua          f:2399 st:226,072,673> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-guest] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=50 [username=Kenji Arakawa [Neighborhood Life] x=11915.37 y=7068.63 z=0 | username=Amara Okonkwo [Neighborhood Life] x=11913.63 y=7074.37 z=0 | username=Marisol Vega [Neighborhood Life] x=11913.37 y=7070.63 z=0 | username=nl-host x=11915.43 y=7069.52 z=0 | local=nl-guest] productionNpcReplicas=3 productionRemoteReplicas=0 productionHouseholdFurnishings=0 productionHouseholdFurnishingClient=0 productionHouseholdFurnishingPending=0 OnlinePlayersCount=2 [username=nl-host x=11915.43 y=7069.52 z=0 | local=nl-guest] productionRemoteMarkers=1 productionPresenceMarkers=0 productionNpcNativePaths=3 productionNpcFallbackReplicas=0
+LOG  : Lua          f:2400 st:226,072,702> NLQA MP PRESENCE: revision=1789374156642 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:2400 st:226,072,702> NLQA MP NPC PRESENCE: revision=1789374156642 count=3 entries=marisol@11913.37,7070.63,0/w2,kenji@11915.37,7068.63,0/w2,amara@11913.63,7074.37,0/w1
+LOG  : Lua          f:2626 st:226,076,468> NLQA MP PRESENCE: revision=1789374160404 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:2626 st:226,076,469> NLQA MP NPC PRESENCE: revision=1789374160404 count=3 entries=marisol@11913.26,7070.74,0/w2,kenji@11915.26,7068.74,0/w2,amara@11913.74,7074.26,0/w1
+LOG  : Lua          f:2700 st:226,077,702> NLQA MP PRESENCE: revision=1789374161637 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:2700 st:226,077,702> NLQA MP NPC PRESENCE: revision=1789374161637 count=3 entries=marisol@11913.26,7070.74,0/w2,kenji@11915.26,7068.74,0/w2,amara@11913.74,7074.26,0/w1
+LOG  : Lua          f:2703 st:226,077,752> NLQA MP NPC PRESENCE: revision=1789374161685 count=3 entries=marisol@11913.26,7070.74,0/w2,kenji@11915.26,7068.74,0/w2,amara@11913.74,7074.26,0/w1
+WARN : Multiplayer  f:2872 st:226,080,568 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11854, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,569 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11854, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,569 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11854, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,569 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11854, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,569 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11855, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,569 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11855, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,569 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11855, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,569 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11855, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,569 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 2, "squareX" : 11852, "squareY" : 7026, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,569 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11852, "squareY" : 7027, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,570 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11852, "squareY" : 7029, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,570 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11852, "squareY" : 7030, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,570 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11856, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,570 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11856, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,570 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11856, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,570 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11856, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,570 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11857, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,570 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11857, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,570 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11857, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,570 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11857, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,571 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11858, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,571 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11858, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,571 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11858, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,571 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11858, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,571 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11859, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,571 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11859, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,571 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11859, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,571 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11859, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,571 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11860, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,572 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11860, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,572 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11860, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,572 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11860, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,572 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11861, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,572 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11861, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,572 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11861, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,572 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11861, "squareY" : 7023, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,572 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11862, "squareY" : 7017, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,572 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11862, "squareY" : 7019, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,572 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11862, "squareY" : 7021, "squareZ" : 0 }  })
+WARN : Multiplayer  f:2872 st:226,080,572 at ObjectModDataPacket.parse           > ObjectModDataPacket.parse: object is null ({ "MovingObject": { "objectType" : 1, "objectId" : 1, "squareX" : 11862, "squareY" : 7023, "squareZ" : 0 }  })
+LOG  : Lua          f:2926 st:226,081,468> NLQA MP PRESENCE: revision=1789374165404 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:2926 st:226,081,469> NLQA MP NPC PRESENCE: revision=1789374165404 count=3 entries=marisol@11913.20,7070.80,0/w2,kenji@11915.20,7068.80,0/w2,amara@11913.80,7074.20,0/w1
+LOG  : Lua          f:3000 st:226,082,702> NLQA MP PRESENCE: revision=1789374166635 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:3000 st:226,082,702> NLQA MP NPC PRESENCE: revision=1789374166635 count=3 entries=marisol@11913.14,7070.86,0/w2,kenji@11915.14,7068.86,0/w2,amara@11913.86,7074.14,0/w1
+LOG  : Lua          f:3226 st:226,086,468> NLQA MP PRESENCE: revision=1789374170407 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:3226 st:226,086,469> NLQA MP NPC PRESENCE: revision=1789374170407 count=3 entries=marisol@11913.09,7070.91,0/w2,kenji@11915.09,7068.91,0/w2,amara@11913.91,7074.09,0/w1
+LOG  : Lua          f:3300 st:226,087,702> NLQA MP PRESENCE: revision=1789374171634 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:3300 st:226,087,702> NLQA MP NPC PRESENCE: revision=1789374171634 count=3 entries=marisol@11913.09,7070.91,0/w2,kenji@11915.09,7068.91,0/w2,amara@11913.91,7074.09,0/w1
+LOG  : Lua          f:3424 st:226,089,768> NLQA MP NPC PRESENCE: revision=1789374173690 count=3 entries=marisol@11913.03,7070.97,0/w2,kenji@11915.03,7068.97,0/w2,amara@11913.97,7074.03,0/w1
+LOG  : Lua          f:3526 st:226,091,468> NLQA MP PRESENCE: revision=1789374175405 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:3526 st:226,091,469> NLQA MP NPC PRESENCE: revision=1789374175405 count=3 entries=marisol@11913.03,7070.97,0/w2,kenji@11915.03,7068.97,0/w2,amara@11913.97,7074.03,0/w1
+LOG  : Lua          f:3600 st:226,092,702> NLQA MP PRESENCE: revision=1789374176633 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:3600 st:226,092,702> NLQA MP NPC PRESENCE: revision=1789374176633 count=3 entries=marisol@11912.97,7071.03,0/w2,kenji@11914.97,7069.03,0/w2,amara@11914.03,7073.97,0/w1
+LOG  : Lua          f:3826 st:226,096,468> NLQA MP PRESENCE: revision=1789374180401 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:3826 st:226,096,469> NLQA MP NPC PRESENCE: revision=1789374180401 count=3 entries=marisol@11912.92,7071.08,0/w2,kenji@11914.92,7069.08,0/w2,amara@11914.08,7073.92,0/w1
+LOG  : Lua          f:3900 st:226,097,702> NLQA MP PRESENCE: revision=1789374181638 players=2 names=nl-host@11915.50,7069.50,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:3900 st:226,097,702> NLQA MP NPC PRESENCE: revision=1789374181638 count=3 entries=marisol@11912.92,7071.08,0/w2,kenji@11914.92,7069.08,0/w2,amara@11914.08,7073.92,0/w1
+LOG  : Lua          f:4126 st:226,101,468> NLQA MP PRESENCE: revision=1789374185397 players=2 names=nl-host@11913.00,7071.00,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:4126 st:226,101,468> NLQA MP NPC PRESENCE: revision=1789374185397 count=3 entries=marisol@11912.80,7071.20,0/w2,kenji@11914.80,7069.20,0/w2,amara@11914.20,7073.80,0/w1
+LOG  : Lua          f:4128 st:226,101,502> NLQA MP SOCIAL EVENT: actor=nl-host action=chat npc=marisol message=I'd like to hear how you've been getting on.
+LOG  : Lua          f:4143 st:226,101,752> NLQA MP NPC PRESENCE: revision=1789374185685 count=3 entries=marisol@11912.80,7071.20,0/w2,kenji@11914.80,7069.20,0/w2,amara@11914.20,7073.80,0/w1
+LOG  : Lua          f:4200 st:226,102,702> NLQA MP PRESENCE: revision=1789374186632 players=2 names=nl-host@11913.00,7071.00,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:4200 st:226,102,702> NLQA MP NPC PRESENCE: revision=1789374186632 count=3 entries=marisol@11912.80,7071.20,0/w2,kenji@11914.80,7069.20,0/w2,amara@11914.20,7073.80,0/w1
+LOG  : Lua          f:4426 st:226,106,468> NLQA MP PRESENCE: revision=1789374190398 players=2 names=nl-host@11913.00,7071.00,0,nl-guest@11916.00,7068.00,0
+LOG  : Lua          f:4426 st:226,106,468> NLQA MP NPC PRESENCE: revision=1789374190398 count=3 entries=marisol@11912.75,7071.25,0/w2,kenji@11914.75,7069.25,0/w2,amara@11914.25,7073.75,0/w1
+LOG  : Lua          f:4441 st:226,106,707> NLQA MP SOCIAL VIEWPOINT CHECK: target=kenji square=11915,7069,0 canSee=true
+LOG  : Lua          f:4441 st:226,106,707> NLQA MP SOCIAL VIEWPOINT: nl-guest beside kenji at 11915,7069,0
+LOG  : Lua          f:4500 st:226,107,702> NLQA MP PRESENCE: revision=1789374191637 players=2 names=nl-host@11913.00,7071.00,0,nl-guest@11915.00,7069.00,0
+LOG  : Lua          f:4500 st:226,107,702> NLQA MP NPC PRESENCE: revision=1789374191637 count=3 entries=marisol@11912.69,7071.31,0/w2,kenji@11914.69,7069.31,0/w2,amara@11914.31,7073.69,0/w1
+LOG  : Lua          f:4501 st:226,107,707> NLQA MP GUEST SOCIAL ACTION: chat id=kenji step=1
+LOG  : Lua          f:4502 st:226,107,735> NLQA MP SOCIAL SNAPSHOT: message=I'd like to hear how you've been getting on. username=nl-guest entries=marisol/canInteract=false/met=false/friendship=0,kenji/canInteract=true/met=true/friendship=12,amara/canInteract=false/met=false/friendship=0
+LOG  : Lua          f:4502 st:226,107,735> NLQA MP GUEST SOCIAL COMPLETE: target=kenji friendship=12 trust=11
+LOG  : Lua          f:4502 st:226,107,735> NLQA MP SOCIAL EVENT: actor=nl-guest action=chat npc=kenji message=I'd like to hear how you've been getting on.

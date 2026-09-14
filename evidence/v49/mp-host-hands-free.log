@@ -1,0 +1,12 @@
+
+STATE: null
+STATE: zombie.gameStates.TISLogoState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: none
+PASS: main menu reached; QA Lua owns the no-Steam server connect
+CONNECT STATE: Finish
+CONNECT STATE: Exit
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+PASS: ready loading screen acknowledged without OS input
+STATE: zombie.gameStates.IngameState

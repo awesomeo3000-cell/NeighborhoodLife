@@ -24,7 +24,11 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     wardrobePickupObserved = false, wardrobePickupNextAttempt = 0,
     wardrobeItemTypes = {}, wardrobeWearSent = false, wardrobeWearObserved = false,
     wardrobeWearDue = 0, wardrobeSaveSent = false, wardrobeSaveDue = 0,
-    wardrobePersisted = false, wardrobeSnapshotRevision = nil,
+    wardrobePersisted = false, wardrobeSnapshotRevision = nil, wardrobeOutfits = nil,
+    wardrobeReplacementDue = 0, wardrobeUnequipAttempted = false,
+    wardrobeUnequipNextAttempt = 0, wardrobeUnequipSent = false,
+    wardrobeUnequipObserved = false, wardrobeReplacementSent = false,
+    wardrobeReplacementObserved = false,
     wardrobeSnapshotLogged = false, wardrobeUiLogged = false }
 NLQAMultiplayer.socialCooldownFrames = 3600
 
@@ -411,6 +415,36 @@ local function queueWardrobeWear(itemTypes)
     return queued
 end
 
+local function queueWardrobeUnequip(itemTypes)
+    local player = getSpecificPlayer(0)
+    if not player or not player.getWornItems then return 0 end
+    local ok, err = pcall(function() require "TimedActions/ISUnequipAction" end)
+    if not ok or not ISTimedActionQueue or not ISUnequipAction then
+        emit("WARDROBE UNEQUIP FAILED", "vanilla unequip API unavailable error=" .. tostring(err))
+        return 0
+    end
+    local wanted = {}
+    for _, fullType in ipairs(itemTypes or {}) do wanted[fullType] = true end
+    local worn = player:getWornItems()
+    local queued = 0
+    if worn and worn.size and worn.get then
+        for index = 0, worn:size() - 1 do
+            local wornItem = worn:get(index)
+            local item = wornItem and wornItem.getItem and wornItem:getItem()
+            if item and item.getFullType and wanted[item:getFullType()] then
+                ISTimedActionQueue.add(ISUnequipAction:new(player, item, 50))
+                queued = queued + 1
+            end
+        end
+    end
+    NLQAMultiplayer.wardrobeUnequipAttempted = true
+    NLQAMultiplayer.wardrobeUnequipNextAttempt = NLQAMultiplayer.socialFrame + 60
+    if queued > 0 then NLQAMultiplayer.wardrobeUnequipSent = true end
+    emit("WARDROBE UNEQUIP QUEUED", "expected=" .. tostring(#(itemTypes or {}))
+        .. " queued=" .. tostring(queued))
+    return queued
+end
+
 Events.OnServerCommand.Add(function(module, command, args)
     if module == "NeighborhoodQA" and command == "household_viewpoint" and type(args) == "table"
             and qaIdentity().username == "nl-guest" then
@@ -442,6 +476,21 @@ Events.OnServerCommand.Add(function(module, command, args)
             local pieces = outfits[1] and #outfits[1] or 0
             if pieces > 0 then
                 NLQAMultiplayer.wardrobePersisted = true
+                NLQAMultiplayer.wardrobeOutfits = outfits
+                pcall(require, "NL/Wardrobe")
+                local player = getSpecificPlayer(0)
+                if NLWardrobe and NLWardrobe.applyProfile and player then
+                    NLWardrobe.applyProfile(player, outfits)
+                end
+                if #NLQAMultiplayer.wardrobeItemTypes == 0 and outfits[1] then
+                    for _, entry in ipairs(outfits[1]) do
+                        local fullType = type(entry) == "table" and entry.fullType or entry
+                        if fullType then NLQAMultiplayer.wardrobeItemTypes[#NLQAMultiplayer.wardrobeItemTypes + 1] = fullType end
+                    end
+                end
+                if NLQAMultiplayer.wardrobeReplacementDue == 0 then
+                    NLQAMultiplayer.wardrobeReplacementDue = NLQAMultiplayer.socialFrame + 90
+                end
                 if NLQAMultiplayer.wardrobeSnapshotRevision ~= args.revision then
                     NLQAMultiplayer.wardrobeSnapshotRevision = args.revision
                     NLQAMultiplayer.wardrobeSnapshotLogged = true
@@ -749,7 +798,6 @@ Events.OnRenderTick.Add(function()
         end
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.snapshots > 0
-            and not NLQAMultiplayer.wardrobePersisted
             and not NLQAMultiplayer.wardrobeSeedSent then
         local player=getSpecificPlayer(0)
         if player then
@@ -802,6 +850,57 @@ Events.OnRenderTick.Add(function()
             NLQAMultiplayer.wardrobeSaveDue=NLQAMultiplayer.socialFrame+30
             emit("WARDROBE WORN COMPLETE", table.concat(counts, ",")
                 .. " source=vanilla-wear-action")
+        end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.wardrobeReplacementDue > 0
+            and not NLQAMultiplayer.wardrobeUnequipObserved
+            and (not NLQAMultiplayer.wardrobeUnequipAttempted
+                or NLQAMultiplayer.socialFrame>=NLQAMultiplayer.wardrobeUnequipNextAttempt) then
+        NLQAMultiplayer.wardrobeUnequipAttempted=false
+        queueWardrobeUnequip(NLQAMultiplayer.wardrobeItemTypes)
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.wardrobeUnequipSent
+            and not NLQAMultiplayer.wardrobeUnequipObserved then
+        local player=getSpecificPlayer(0)
+        local complete=true
+        local counts={}
+        for _, fullType in ipairs(NLQAMultiplayer.wardrobeItemTypes) do
+            local count=qaWornCount(player, fullType)
+            counts[#counts+1]=fullType.."="..tostring(count)
+            if count > 0 then complete=false end
+        end
+        if complete and #NLQAMultiplayer.wardrobeItemTypes > 0 then
+            NLQAMultiplayer.wardrobeUnequipObserved=true
+            NLQAMultiplayer.wardrobeReplacementDue=NLQAMultiplayer.socialFrame+30
+            emit("WARDROBE UNEQUIP COMPLETE", table.concat(counts, ",")
+                .. " source=vanilla-unequip-action")
+        end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.wardrobeUnequipObserved
+            and not NLQAMultiplayer.wardrobeReplacementSent
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.wardrobeReplacementDue then
+        pcall(require, "NL/Wardrobe")
+        local player=getSpecificPlayer(0)
+        if NLWardrobe and NLWardrobe.wear and player then
+            NLWardrobe.wear(player, 1)
+            NLQAMultiplayer.wardrobeReplacementSent=true
+            emit("WARDROBE REPLACEMENT REQUEST", "slot=1 source=production-NLWardrobe.wear")
+        end
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.wardrobeReplacementSent
+            and not NLQAMultiplayer.wardrobeReplacementObserved then
+        local player=getSpecificPlayer(0)
+        local complete=true
+        local counts={}
+        for _, fullType in ipairs(NLQAMultiplayer.wardrobeItemTypes) do
+            local count=qaWornCount(player, fullType)
+            counts[#counts+1]=fullType.."="..tostring(count)
+            if count < 1 then complete=false end
+        end
+        if complete and #NLQAMultiplayer.wardrobeItemTypes > 0 then
+            NLQAMultiplayer.wardrobeReplacementObserved=true
+            emit("WARDROBE REPLACEMENT COMPLETE", table.concat(counts, ",")
+                .. " source=production-NLWardrobe.wear")
         end
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.socialResultLogged

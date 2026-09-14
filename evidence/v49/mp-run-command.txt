@@ -1,0 +1,2 @@
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\launch-multiplayer-qa.ps1
+QA-only host sequence: seed real garments, vanilla acquire/wear, production wardrobe_save, vanilla unequip, production NLWardrobe.wear replacement.
