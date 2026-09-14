@@ -28,6 +28,27 @@ local function emit(message)
     end
 end
 
+local function hasOnlineId(body, onlineId)
+    if not body or not body.getOnlineID or onlineId == nil then return false end
+    local ok, value = pcall(body.getOnlineID, body)
+    return ok and tonumber(value) == tonumber(onlineId)
+end
+
+-- Some Build 42 server Lua environments publish IsoPlayer getters but omit
+-- the public setter from their Kahlua method table. Try the public method and
+-- then the public field, but only treat the slot as assigned after a getter
+-- round-trip verifies it.
+local function assignNativeOnlineId(body, onlineId)
+    if not body or onlineId == nil then return false end
+    local methodOk, setter = pcall(function() return body.setOnlineID end)
+    if methodOk and setter then pcall(setter, body, onlineId) end
+    if hasOnlineId(body, onlineId) then return true end
+    local fieldOk = pcall(function() body.onlineId = onlineId end)
+    return fieldOk and hasOnlineId(body, onlineId)
+end
+
+NLNpcAuthority.assignNativeOnlineId = assignNativeOnlineId
+
 local function presencePacket()
     local world = NLAuthority.world()
     local entries = {}
@@ -408,9 +429,7 @@ local function spawnBody(id, row, player)
     -- IsoPlayer defaults every Lua-created body to online id 1. Assign the
     -- stable authored slot before any presence packet is built so a future
     -- native server reannouncement can identify each neighbor unambiguously.
-    if body.setOnlineID and definition.onlineId then
-        pcall(body.setOnlineID, body, definition.onlineId)
-    end
+    local onlineAssigned = assignNativeOnlineId(body, definition.onlineId)
     body:setUsername((definition.name or id) .. " [Neighborhood Life]")
     body:setGodMod(true)
     body:getModData().NeighborhoodNpcId = id
@@ -430,7 +449,9 @@ local function spawnBody(id, row, player)
     if NLPlumbob then
         NLPlumbob.register("npc:" .. id, body, 0, NLPlumbob.remoteColor)
     end
-    emit(string.format("SPAWN id=%s x=%.2f y=%.2f z=%.0f", id, body:getX(), body:getY(), body:getZ()))
+    emit(string.format("SPAWN id=%s x=%.2f y=%.2f z=%.0f onlineId=%s assigned=%s",
+        id, body:getX(), body:getY(), body:getZ(), tostring(body.getOnlineID and body:getOnlineID() or nil),
+        tostring(onlineAssigned)))
     return body
 end
 

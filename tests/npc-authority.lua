@@ -77,6 +77,7 @@ NLNpcAuthority.start()
 local body=NLNpcAuthority.bodies.marisol
 assert(body and body:isNpc() and body:getModData().NeighborhoodNpcId=='marisol','production body created')
 assert(body:getOnlineID()==30001,'native NPC receives its stable authored online identity')
+assert(NLNpcAuthority.assignNativeOnlineId(body,30001),'online identity assignment verifies through the native getter')
 if NLNpcAuthority.safeFallbackStep then
     local freeStepX,freeStepY=NLNpcAuthority.safeFallbackStep(body,{x=math.floor(body:getX())+2,y=math.floor(body:getY()),z=body:getZ()})
     assert(freeStepX and freeStepY,'stalled native path has a bounded free-tile fallback')

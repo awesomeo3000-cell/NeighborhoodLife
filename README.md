@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.60)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.61)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -558,6 +558,16 @@ Kahlua coverage prove the assignment contract. The v81 real host+guest probe
 still recorded `onlineHints=0`: the dedicated server did not expose an effective
 runtime `IsoPlayer:setOnlineID(short)` path, so native server-body
 reannouncement remains open alongside the unavailable `GameServer` bridge.
+
+## v1.61 runtime online-id setter probe
+
+The server adapter now tries both the public `IsoPlayer:setOnlineID(short)`
+method and the public `onlineId` field, then accepts the identity only after a
+getter round-trip. The v82 real host+guest run logged `onlineId=1 assigned=false`
+for all three native bodies and `onlineHints=0`; the dedicated server's Kahlua
+environment exposes neither an effective setter route nor the `GameServer`
+bridge. The compatibility NPC path remains live, while native server-body
+reannouncement is still an engine-bridge blocker rather than a unit-test claim.
 
 ## v1.55 saved outfits replace unrelated layers
 

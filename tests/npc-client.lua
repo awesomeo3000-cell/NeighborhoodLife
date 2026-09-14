@@ -66,6 +66,9 @@ assert(body and body.npc and body:getModData().NeighborhoodNpcId=='marisol','nat
 assert(plumbobs['npc:marisol']==body,'replica plumbob registered')
 assert(NLNpcClient.bodies.kenji and plumbobs['npc:kenji']==NLNpcClient.bodies.kenji,
     'second authored replica and plumbob registered')
+assert(NLNpcClient.assignReplicaOnlineId(NLNpcClient.bodies.marisol,30001)
+    and NLNpcClient.bodies.marisol:getOnlineID()==30001,
+    'compatibility replica verifies its stable online identity')
 NLNpcClient.apply({revision=2,npcs={
     {id='marisol',x=11,y=11,z=0,alive=true},
     {id='kenji',x=13,y=11,z=0,alive=true}

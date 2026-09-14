@@ -68,6 +68,22 @@ local function positionBody(body, x, y, z)
     if square and body.setCurrent then body:setCurrent(square) end
 end
 
+local function assignReplicaOnlineId(body, onlineId)
+    if not body or onlineId == nil then return false end
+    local expected = tonumber(onlineId)
+    local methodOk, setter = pcall(function() return body.setOnlineID end)
+    if methodOk and setter then pcall(setter, body, expected) end
+    local getterOk, value = false, nil
+    if body.getOnlineID then getterOk, value = pcall(body.getOnlineID, body) end
+    if getterOk and tonumber(value) == expected then return true end
+    local fieldOk = pcall(function() body.onlineId = expected end)
+    if not fieldOk or not body.getOnlineID then return false end
+    local verifyOk, verify = pcall(body.getOnlineID, body)
+    return verifyOk and tonumber(verify) == expected
+end
+
+NLNpcClient.assignReplicaOnlineId = assignReplicaOnlineId
+
 local function createReplica(entry)
     local id = tostring(entry.id)
     local body = nativeBody(id)
@@ -80,9 +96,7 @@ local function createReplica(entry)
         desc:setFemale(entry.female ~= false)
         body = IsoPlayer.new(cell, desc, math.floor(entry.x), math.floor(entry.y), math.floor(entry.z))
         body:setNpc(true)
-        if body.setOnlineID and tonumber(entry.onlineId) then
-            pcall(body.setOnlineID, body, tonumber(entry.onlineId))
-        end
+        assignReplicaOnlineId(body, entry.onlineId)
         body:setUsername(name .. " [Neighborhood Life]")
         body:setGodMod(true)
         local replicaData = body:getModData()
