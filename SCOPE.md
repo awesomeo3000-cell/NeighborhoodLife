@@ -11,13 +11,13 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence | Actual multiplayer inventory sync, rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
-| Persistent neighborhood NPCs | Production `NpcAuthority` creates Marisol as a native `IsoPlayer` body, persists the authoritative ModData position, follows two nearby waypoints, restores on save/reload, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render revision-checked local native replicas with compact plumbobs; QA remains the observer and launcher helper | Native Build 42 body reannouncement, reconnect/restart persistence across a server restart, obstacle/danger handling, damage/death and offscreen behavior |
+| Persistent neighborhood NPCs | Production `NpcAuthority` creates Marisol as a native `IsoPlayer` body, persists the authoritative ModData position through periodic checkpoints and `OnSave`, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render revision-checked local native replicas with compact plumbobs; QA remains the observer and launcher helper | Native Build 42 body reannouncement to the engine's native player list, in-session reconnect behavior, obstacle/danger handling, damage/death and offscreen behavior |
 | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented; bodies supplied by adapter | Actual world-body integration and two-client conversations |
 | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel | In-world UI/interaction checks, richer date activities and two-client synchronization |
 | Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
 | Aspirations and home activities | Not implemented | Goals, progress/rewards, hobbies and functional furnishings |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection and local native NPC replicas; v0.7/v0.9/v1.0/v1.2/v1.3 real host plus guest evidence | Reconnect after a server restart, simultaneous gameplay/inventory delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
+| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence and local native NPC replicas; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4 real host plus guest evidence | In-session reconnect after a server restart, simultaneous gameplay/inventory delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -72,6 +72,20 @@ The original broad goal remains active. This ledger is not a reduced definition 
 - Build 42 did not expose `GameServer` as a Lua table in the run. Native server-body
   reannouncement, reconnect/restart, inventory/action delivery, danger, damage/death,
   obstacles and offscreen behavior remain open gates.
+
+## v1.4 dedicated-server restart evidence
+
+- `evidence/v21/` records a real isolated server save followed by a new dedicated
+  server process using the same world profile and newly joined host/guest clients.
+- The seed run moved Marisol to `6816.70,5259.50` with the QA-only one-minute save
+  interval. The next server logged `RESTORE id=marisol ... revision=5` and
+  `SPAWN id=marisol x=6816.70 y=5259.50`, preserving the fractional position.
+- The host and guest then received `npc_presence` for the restored position and
+  created local native replicas. This is actual gameplay evidence for ModData
+  persistence across a dedicated-server restart.
+- Native Build 42 body reannouncement, same-client reconnect, inventory/action
+  delivery, obstacle/danger handling, damage/death, offscreen behavior and
+  households remain open gates.
 
 ## v1.3 reconnect-state evidence
 

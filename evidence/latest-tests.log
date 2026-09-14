@@ -149,10 +149,10 @@ LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\npc-authority.lua E:\pzmod\NeighborhoodLife
 LUA INPUT: E:\pzmod
 LUA OUTPUT: NLQA NPC PRODUCTION SPAWN id=marisol x=98.50 y=100.50 z=0
-NLQA NPC PRODUCTION PATH id=marisol from=98.50,100.50 to=100.00,100.00 waypoint=1
-NLQA NPC PRODUCTION MOVE id=marisol x=98.50 y=100.50 waypoint=2
-NLQA NPC PRODUCTION RESTORE id=marisol x=98.50 y=100.50 revision=2
-NLQA NPC PRODUCTION SPAWN id=marisol x=98.50 y=100.50 z=0
+NLQA NPC PRODUCTION PATH id=marisol from=98.87,100.73 to=100.00,100.00 waypoint=1
+NLQA NPC PRODUCTION MOVE id=marisol x=98.87 y=100.73 waypoint=2
+NLQA NPC PRODUCTION RESTORE id=marisol x=98.87 y=100.73 revision=3
+NLQA NPC PRODUCTION SPAWN id=marisol x=98.87 y=100.73 z=0
 PASS: production NPC identity, native body adapter, route tick and save/reload position restoration
 LUA STDERR: 
 LUA EXIT: 0
@@ -231,10 +231,10 @@ KAHLUA EXIT: 0
 KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\npc-authority.lua
 KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
 KAHLUA OUTPUT: NLQA NPC PRODUCTION SPAWN id=marisol x=98.50 y=100.50 z=0
-NLQA NPC PRODUCTION PATH id=marisol from=98.50,100.50 to=100.00,100.00 waypoint=1
-NLQA NPC PRODUCTION MOVE id=marisol x=98.50 y=100.50 waypoint=2
-NLQA NPC PRODUCTION RESTORE id=marisol x=98.50 y=100.50 revision=2
-NLQA NPC PRODUCTION SPAWN id=marisol x=98.50 y=100.50 z=0
+NLQA NPC PRODUCTION PATH id=marisol from=98.87,100.73 to=100.00,100.00 waypoint=1
+NLQA NPC PRODUCTION MOVE id=marisol x=98.87 y=100.73 waypoint=2
+NLQA NPC PRODUCTION RESTORE id=marisol x=98.87 y=100.73 revision=3
+NLQA NPC PRODUCTION SPAWN id=marisol x=98.87 y=100.73 z=0
 PASS: production NPC identity, native body adapter, route tick and save/reload position restoration
 PASS: installed Project Zomboid Kahlua VM execution
 KAHLUA STDERR: 

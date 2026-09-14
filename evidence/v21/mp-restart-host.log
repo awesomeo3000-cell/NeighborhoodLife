@@ -1,0 +1,5 @@
+LOG  : Lua          f:121 st:197,353,174> NLQA MP SNAPSHOT: username=nl-host revision=1 snapshotCount=1
+LOG  : Lua          f:121 st:197,353,174> NLQA MP NPC PRESENCE: revision=1789345437100 count=0 entries=
+LOG  : Lua          f:299 st:197,356,197> NLQA MP REMOTE SCAN: IsoPlayerCount=4 [local=nl-host] GameClient=unavailable RemoteSurvivorsCount=0 [] ObjectListForLuaCount=30 [local=nl-host | username=nl-guest x=10754.00 y=10214.00 z=0] productionNpcReplicas=0 OnlinePlayersCount=2 [local=nl-host | username=nl-guest x=10754.00 y=10214.00 z=0] productionRemoteMarkers=1
+LOG  : Lua          f:300 st:197,356,229> NLQA MP NPC PRESENCE: revision=1789345440159 count=1 entries=marisol@6816.70,5259.50,0/w1
+LOG  : Lua          f:355 st:197,357,141> NLQA MP NPC PRESENCE: revision=1789345441065 count=1 entries=marisol@6816.70,5259.50,0/w1

@@ -1,0 +1,6 @@
+SEED COMMAND: & .\tools\launch-multiplayer-qa.ps1
+SEED PROCESS: server=26376 host=35788 guest=35684
+SEED CONFIG: isolated servertest.ini SaveWorldEveryMinutes=1
+SEED OBSERVED: server spawned Marisol at 6815.50,5259.50; later server tick reached 6816.22 and client presence reached 6816.70 before the saved-world restart.
+RESTART COMMAND: & .\tools\launch-multiplayer-qa.ps1
+RESTART PROCESS: server=11324 host=26816 guest=26472

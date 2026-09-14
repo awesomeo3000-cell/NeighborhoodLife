@@ -1,0 +1,93 @@
+--- baseline/42/media/lua/server/NL/NpcAuthority.lua
++++ modified/42/media/lua/server/NL/NpcAuthority.lua
+@@ -51,6 +51,22 @@
+     return count
+ end
+ 
++-- Save the authoritative position before Build 42 serializes world ModData.
++-- The periodic checkpoint remains useful during a live server, while this
++-- hook closes the short window between checkpoints and a normal save/restart.
++function NLNpcAuthority.persist()
++    local world = NLAuthority.world()
++    local count = 0
++    for id, body in pairs(NLNpcAuthority.bodies) do
++        local row = NLNeighbors.get(world, id)
++        if row and body and not body:isDead() then
++            NLNeighbors.position(world, id, body:getX(), body:getY(), body:getZ(), row.waypoint)
++            count = count + 1
++        end
++    end
++    return count
++end
++
+ local function emit(message)
+     if NLQANpc or NLQAMultiplayerServer then
+         print("NLQA NPC PRODUCTION " .. message)
+@@ -74,9 +90,10 @@
+     return best
+ end
+ 
+-local function setBodyPosition(body, square)
+-    body:setX(square:getX() + 0.5)
+-    body:setY(square:getY() + 0.5)
++local function setBodyPosition(body, square, x, y, z)
++    body:setX(x or square:getX() + 0.5)
++    body:setY(y or square:getY() + 0.5)
++    if z and body.setZ then body:setZ(z) end
+     body:setCurrent(square)
+     body:setSceneCulled(false)
+     body:setAlphaAndTarget(1, 1)
+@@ -107,7 +124,16 @@
+     if not cell then return nil, "cell unavailable" end
+     local x, y, z = math.floor(row.position.x), math.floor(row.position.y), math.floor(row.position.z)
+     local square = cell:getGridSquare(x, y, z)
+-    if (not square or not square:isFree(false)) and player then
++    if not square or not square:isFree(false) then
++        -- A saved tile can be occupied after a restart by a player, a corpse,
++        -- or a streamed map object. Search around the persisted tile first so
++        -- the neighbor stays in the same home area before falling back to the
++        -- current player's area.
++        if row.revision > 0 then
++            square = freeSquareNear(cell, x, y, z, 0, 4)
++        end
++    end
++    if not square and player then
+         square = freeSquareNear(cell, math.floor(player:getX()), math.floor(player:getY()),
+             math.floor(player:getZ()), 2, 4)
+     end
+@@ -123,7 +149,14 @@
+     body:setGodMod(true)
+     body:getModData().NeighborhoodNpcId = id
+     body:dressInNamedOutfit("Generic01")
+-    setBodyPosition(body, square)
++    local exactX, exactY, exactZ
++    if row.revision > 0 and row.position
++            and math.floor(row.position.x) == square:getX()
++            and math.floor(row.position.y) == square:getY()
++            and math.floor(row.position.z) == square:getZ() then
++        exactX, exactY, exactZ = row.position.x, row.position.y, row.position.z
++    end
++    setBodyPosition(body, square, exactX, exactY, exactZ)
+     if not cell:getObjectList():contains(body) then cell:getObjectList():add(body) end
+     NLNpcAuthority.bodies[id] = body
+     NLSocialAuthority.register(id, body, row.home)
+@@ -265,7 +298,7 @@
+                 end
+             end
+             if NLNpcAuthority.tick % 120 == 0 then
+-                NLNeighbors.position(world, id, body:getX(), body:getY(), body:getZ(), row.waypoint)
++                NLNpcAuthority.persist()
+             end
+         end
+     end
+@@ -281,6 +314,9 @@
+ end
+ 
+ Events.OnGameStart.Add(NLNpcAuthority.start)
++if Events.OnSave then
++    Events.OnSave.Add(NLNpcAuthority.persist)
++end
+ -- Dedicated servers own their simulation cadence.  In single-player the
+ -- client-side HUD bridge owns the cadence because Build 42 keeps server and
+ -- client event queues separate even though the world body is shared.
+BINARY FILE CHANGED: baseline/42/media/textures/NL_Plumbob.png -> modified/42/media/textures/NL_Plumbob.png

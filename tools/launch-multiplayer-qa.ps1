@@ -68,7 +68,9 @@ Map=Muldraugh, KY
 PVP=false
 SleepAllowed=false
 PlayerSafehouse=false
-SaveWorldEveryMinutes=5
+# QA-only profile: save frequently so restart/persistence probes do not wait for
+# the normal production interval. This file never enters NeighborhoodLife.zip.
+SaveWorldEveryMinutes=1
 '@ | Set-Content "$serverConfig\servertest.ini"
 $java = "$game\jre64\bin\java.exe"
 $common = @('-Djava.awt.headless=true','--enable-native-access=ALL-UNNAMED',

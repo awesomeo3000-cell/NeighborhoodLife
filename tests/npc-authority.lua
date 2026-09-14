@@ -2,7 +2,9 @@
 -- fixtures here; this is not real engine movement evidence.
 package.path = arg[1] .. '/42/media/lua/shared/?.lua;' .. arg[1] .. '/42/media/lua/server/?.lua;' .. package.path
 local function hook() return {Add=function(f) return f end} end
-Events={OnClientCommand=hook(),OnRenderTick=hook(),OnMainMenuEnter=hook(),OnGameStart=hook(),OnTick=hook()}
+local saveHook
+Events={OnClientCommand=hook(),OnRenderTick=hook(),OnMainMenuEnter=hook(),OnGameStart=hook(),OnTick=hook(),
+    OnSave={Add=function(f) saveHook=f end}}
 function isClient() return false end
 function isServer() return false end
 local worldStore={}
@@ -57,6 +59,13 @@ assert(body and body:isNpc() and body:getModData().NeighborhoodNpcId=='marisol',
 local row=NLAuthority.world().neighbors.marisol
 assert(row and row.spawned and row.position.x==body:getX(),'body position persisted')
 local savedX,savedY=row.position.x,row.position.y
+body:setX(savedX+0.37); body:setY(savedY+0.23)
+if saveHook then
+    assert(saveHook()==1,'save hook persists the latest native body position')
+    assert(math.abs(row.position.x-body:getX())<0.001 and math.abs(row.position.y-body:getY())<0.001,
+        'save hook writes the current authoritative position')
+    savedX,savedY=row.position.x,row.position.y
+end
 NLNpcAuthority.update()
 assert(row.position.x==body:getX() and row.position.y==body:getY(),'route tick keeps registry authoritative')
 NLNpcAuthority.reset()

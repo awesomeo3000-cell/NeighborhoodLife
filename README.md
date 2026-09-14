@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, wardrobe and relationship prototype (v1.3)
+# Neighborhood Life: careers, wardrobe and relationship prototype (v1.4)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -31,7 +31,9 @@ server now broadcasts authoritative NPC state, and each client creates a local n
 replica that interpolates only toward that state. A refresh or presence request now
 pushes NPC state immediately, and clients reject stale revisions during reconnects.
 Multiplayer NPC distribution is engine-proven at the mod-state/replica layer; native
-server-body reannouncement is still an open Build 42 API gate.
+server-body reannouncement is still an open Build 42 API gate. The server now saves
+the latest NPC position through `OnSave`, and a restart restores the fractional tile
+position instead of snapping to the tile center.
 
 ## Required game checks (not yet performed)
 - Host and guest join: each sees one panel with their own six current stats.
@@ -153,3 +155,14 @@ packet immediately after `SNAPSHOT`, and the guest received the same revisioned 
 on join. Both clients logged `productionNpcReplicas=1`. Client-side revision checks
 ignore delayed packets from before a reconnect, while an empty authoritative roster
 still removes the local replica and its plumbob.
+
+## v1.4 dedicated-server restart evidence
+
+`evidence/v21/` records the isolated server save/restart probe. The first run used
+the QA-only one-minute save interval and moved Marisol to `6816.70,5259.50`; the
+next dedicated-server process logged `RESTORE ... revision=5` and spawned her at
+the same fractional position, then delivered that state to the newly joined host
+and guest. The production adapter now also registers `OnSave` so the final position
+is persisted before a normal world save. This proves NPC ModData persistence across
+a dedicated-server restart, not native body reannouncement or a reconnect inside
+the same client process.
