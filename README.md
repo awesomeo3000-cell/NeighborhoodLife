@@ -757,3 +757,13 @@ created a fresh native replica. The logs also retain the real danger probe,
 independent social actions and HUD/plumbob checks. This closes the live QA
 recovery probe without claiming native server-body reannouncement or natural
 engine-driven cell streaming.
+
+## v1.50 natural-walk streaming attempt
+
+The QA-only client stimulus now queues repeated short vanilla walk actions in
+one real host session before the explicit stale-body compatibility probe. The
+host moved eight tiles while Build 42 retained Kenji in the client object list,
+so the natural stream check correctly recorded `bodyPresent=true`; no natural
+stream-out claim is made. The same run still reached the explicit production
+stale-handle recovery probe afterward. Logs and the separate mock/engine-VM
+classification are in `evidence/v71/`.

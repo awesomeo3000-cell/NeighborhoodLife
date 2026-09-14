@@ -4,7 +4,9 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     remoteScanFrame = 0, remoteScanCount = 0, remoteScanLogged = false,
     plumbobSizeLogged = false, hudProbeLogged = false,
     streamProbeSent = false, streamProbeObserved = false, streamProbeFrame = 0,
-    streamProbeOld = nil,
+    streamProbeOld = nil, streamWalkSent = false, streamWalkObserved = false,
+    streamWalkFrame = 0, streamWalkStep = 0, streamWalkCheckLogged = false,
+    streamWalkOriginX = nil, streamWalkOriginY = nil,
     socialFrame = 0, socialRefreshSent = false, socialActionSent = false,
     socialActionScheduled = false, socialActionName = nil, socialTarget = nil,
     socialActionDue = 0, socialActionCount = 0, socialActionPrepared = false,
@@ -324,6 +326,43 @@ local function positionClientForSocial(username, targetId)
         emit("SOCIAL VIEWPOINT WAIT", "no visible adjacent square yet")
     end
     return false
+end
+
+-- QA-only natural streaming stimulus. Walk the host far enough through the
+-- loaded world that Build 42 can unload the NPC square; production remains the
+-- only owner of the authoritative row and the client recovery decision.
+local function queueStreamWalk()
+    if qaIdentity().username ~= "nl-host" then return false end
+    local player = getSpecificPlayer(0)
+    local cell = getCell()
+    if not player or not cell then return false end
+    local x, y, z = math.floor(player:getX()), math.floor(player:getY()), math.floor(player:getZ())
+    local target
+    for _, point in ipairs({{x + 4, y}, {x - 4, y}, {x, y + 4}, {x, y - 4}}) do
+        local candidate = cell:getGridSquare(point[1], point[2], z)
+        if candidate and candidate:isFree(false) then target = candidate; break end
+    end
+    if not target then
+        emit("STREAM WALK FAILED", "no loaded free target")
+        return false
+    end
+    local ok, err = pcall(function()
+        require "TimedActions/WalkToTimedAction"
+        assert(ISTimedActionQueue, "ISTimedActionQueue unavailable")
+        ISTimedActionQueue.add(ISWalkToTimedAction:new(player, target))
+    end)
+    if not ok then
+        emit("STREAM WALK FAILED", tostring(err))
+        return false
+    end
+    if not NLQAMultiplayer.streamWalkSent then
+        NLQAMultiplayer.streamWalkOriginX, NLQAMultiplayer.streamWalkOriginY = player:getX(), player:getY()
+    end
+    NLQAMultiplayer.streamWalkStep = NLQAMultiplayer.streamWalkStep + 1
+    NLQAMultiplayer.streamWalkSent = true
+    emit("STREAM WALK QUEUED", string.format("step=%d from=%.2f,%.2f to=%d,%d",
+        NLQAMultiplayer.streamWalkStep, player:getX(), player:getY(), target:getX(), target:getY()))
+    return true
 end
 
 local function positionHostForSocial(targetId)
@@ -1366,6 +1405,40 @@ Events.OnRenderTick.Add(function()
     emit("DANGER PROBE SENT", "target=marisol source=server-zombie")
 end)
 
+-- Prefer a real player walk to exercise Build 42 streaming. If the engine does
+-- not unload the NPC body after the walk, retain the explicit local-removal
+-- probe below as a separate compatibility check rather than conflating them.
+Events.OnRenderTick.Add(function()
+    if not isClient() or qaIdentity().username ~= "nl-host" or NLQAMultiplayer.streamWalkObserved
+            or NLQAMultiplayer.streamProbeObserved then return end
+    if not NLQAMultiplayer.streamWalkSent then
+        NLQAMultiplayer.streamWalkFrame = NLQAMultiplayer.streamWalkFrame + 1
+        if NLQAMultiplayer.streamWalkFrame >= 600 then queueStreamWalk() end
+        return
+    end
+    NLQAMultiplayer.streamWalkFrame = NLQAMultiplayer.streamWalkFrame + 1
+    if NLQAMultiplayer.streamWalkFrame % 240 == 0 and NLQAMultiplayer.streamWalkStep < 12 then
+        queueStreamWalk()
+    end
+    local player = getSpecificPlayer(0)
+    local body = NLNpcClient and NLNpcClient.bodies and NLNpcClient.bodies.kenji
+    local originX = NLQAMultiplayer.streamWalkOriginX
+    if not player or not originX or math.abs(player:getX() - originX) < 8 then return end
+    local present = body and NLNpcClient.bodyPresent and NLNpcClient.bodyPresent(body) or false
+    if not NLQAMultiplayer.streamWalkCheckLogged or NLQAMultiplayer.streamWalkFrame % 120 == 0 then
+        NLQAMultiplayer.streamWalkCheckLogged = true
+        emit("NATURAL STREAM CHECK", "playerDelta=" .. string.format("%.2f", math.abs(player:getX() - originX))
+            .. " bodyPresent=" .. tostring(present))
+    end
+    if present == false and NLClient and NLClient.npcPresence then
+        local old = body
+        NLNpcClient.apply(NLClient.npcPresence)
+        local fresh = NLNpcClient.bodies.kenji
+        NLQAMultiplayer.streamWalkObserved = fresh ~= old
+        emit("NATURAL STREAM RECOVERED", "target=kenji fresh=" .. tostring(fresh ~= old))
+    end
+end)
+
 -- QA-only client streaming stimulus. Remove one real native NPC body from the
 -- local cell while retaining its stale NLNpcClient handle, then apply the last
 -- authoritative presence packet. Production NpcClient must discard the stale
@@ -1374,6 +1447,8 @@ end)
 Events.OnRenderTick.Add(function()
     if not isClient() or qaIdentity().username ~= "nl-host" then return end
     if NLQAMultiplayer.streamProbeObserved then return end
+    if not NLQAMultiplayer.streamWalkSent
+            or (not NLQAMultiplayer.streamWalkObserved and NLQAMultiplayer.streamWalkFrame < 1800) then return end
     local body = NLNpcClient and NLNpcClient.bodies and NLNpcClient.bodies.kenji
     if not NLQAMultiplayer.streamProbeSent then
         if not body or not NLClient or not NLClient.npcPresence then return end
