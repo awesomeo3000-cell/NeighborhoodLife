@@ -38,9 +38,9 @@ assert(panel.y==300-panel.height-expectedLift)
 if NLPlumbob.baseWidth then
     assert(panel.width==NLPlumbob.baseWidth and panel.height==NLPlumbob.baseHeight,
         "plumbob panel uses its configured compact dimensions")
-    if NLPlumbob.baseWidth==6 then
-        assert(NLPlumbob.baseHeight==10,
-            "plumbob uses the compact in-world marker dimensions")
+    if NLPlumbob.baseWidth==4 then
+        assert(NLPlumbob.baseHeight==7,
+            "plumbob uses the extra-small in-world marker dimensions")
     end
     if NLPlumbob.baseWidth <= 12 then
         assert(NLPlumbob.baseHeight <= 16,

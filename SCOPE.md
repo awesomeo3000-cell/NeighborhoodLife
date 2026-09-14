@@ -7,7 +7,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Requirement | Current implementation | Completion evidence still required |
 |---|---|---|
 | Sims-inspired HUD | Six live adverse-stat bars, fold control, career journal link | Actual host+guest independent values; resolution and accessibility polish |
-| Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.25 uses a compact 16x22 source texture, a 6x10 panel and a 30px lift so the gem remains very small and close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
+| Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.25 uses a compact 16x22 source texture, v1.36 reduces the runtime panel to 4x7 with a 30px lift so the gem stays very small and close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits | Rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; server-authoritative worn-garment capture and revisioned private snapshots in v1.28; v1.29 actual vanilla clothing acquisition, wear and reconnect snapshot persistence; v1.30 actual production saved-outfit replacement after vanilla unequip; light-themed wardrobe panel reachable from HUD | New garment variants, original assets, unlock/reward integration |
@@ -140,6 +140,13 @@ romance synchronization remain open.
   captured run.
 - This closes the actual saved-outfit replacement probe. New clothing
   variants, original assets and unlock/reward integration remain breadth work.
+
+## v1.36 extra-small plumbob placement
+
+- The production runtime panel is now 4x7 pixels instead of 6x10, while the
+  30-pixel lift keeps the marker above the model.
+- The focused plumbob contract suite locks the extra-small dimensions. This is
+  a presentation change and does not add multiplayer or NPC completion claims.
 
 ## v1.35 dedicated-server restart persistence probe
 

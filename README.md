@@ -499,6 +499,14 @@ garments at zero, and then logged replacement completion for both garments from
 `production-NLWardrobe.wear`. New clothing variants, original assets and
 unlock/reward integration remain breadth work.
 
+## v1.36 extra-small plumbob placement
+
+The production marker is now a 4x7 runtime panel, down from 6x10, while keeping
+the 30-pixel lift so its tip remains above the player model. The existing
+16x22 source texture is still scaled through the panel, and the plumbob
+contract suite now locks the extra-small dimensions. This is a presentation
+change; NPC, multiplayer, and persistence claims remain unchanged.
+
 ## v1.35 dedicated-server restart persistence probe
 
 The isolated hands-free QA runner now performs a real dedicated-server process
