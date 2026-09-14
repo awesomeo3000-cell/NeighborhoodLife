@@ -527,6 +527,14 @@ The Lua/Kahlua suites cover both player-side and world-side partial mutations.
 This recovery journal is the production mechanism exercised by the v1.38
 forced-crash probe above.
 
+## v1.39 pin-sized plumbob placement
+
+The production marker is now a 3x5 runtime panel with a 20-pixel lift, down
+from 4x7 and 30 pixels. This keeps the gem above the head while making it a
+small visual cue instead of a second character-sized object. The plumbob
+contract locks the new dimensions; NPC, multiplayer and persistence behavior
+remain unchanged.
+
 ## v1.36 extra-small plumbob placement
 
 The production marker is now a 4x7 runtime panel, down from 6x10, while keeping
