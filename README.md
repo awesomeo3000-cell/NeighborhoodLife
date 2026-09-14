@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.55)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.56)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -504,6 +504,16 @@ wore both garments, saved revision 75, completed vanilla unequip with both
 garments at zero, and then logged replacement completion for both garments from
 `production-NLWardrobe.wear`. New clothing variants, original assets and
 unlock/reward integration remain breadth work.
+
+## v1.56 actual automatic wardrobe-layer removal
+
+The isolated hands-free Build 42.20.4 probe now seeds `Base.Hat_Cowboy` only
+after the server has saved the two-piece production outfit. The host acquires
+and wears that extra hat, invokes the production `NLWardrobe.wear` path, and
+records the extra layer changing from `before=1` to `after=0` while the saved
+shirt and trousers return to `1`. `evidence/v77/actual-gameplay-probes.txt`
+and the captured host/guest/server logs are actual gameplay evidence; the QA
+seed remains outside the production package.
 
 ## v1.55 saved outfits replace unrelated layers
 

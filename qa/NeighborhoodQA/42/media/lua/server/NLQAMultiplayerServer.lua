@@ -23,6 +23,7 @@ end
 local reannounced = false
 local careerSeeded = {}
 local wardrobeSeeded = {}
+local wardrobeExtraSeeded = {}
 local dangerProbeSeeded = false
 local householdViewpointMoved = false
 local inventoryFaultArmed = false
@@ -193,6 +194,36 @@ Events.OnClientCommand.Add(function(module, command, player)
     print("NLQA DANGER PROBE: ok=" .. tostring(ok) .. " count=" .. tostring(count)
         .. " x=" .. tostring(x) .. " y=" .. tostring(y) .. " z=" .. tostring(z)
         .. " error=" .. tostring(err))
+end)
+
+-- QA-only extra layer: seed a hat after the production slot snapshot has been
+-- captured. The production wear call must remove this later-worn garment even
+-- though it is absent from the saved slot.
+Events.OnClientCommand.Add(function(module, command, player)
+    if module ~= "NeighborhoodQA" or command ~= "seed_wardrobe_extra" or not player
+            or player:getUsername() ~= "nl-host" or wardrobeExtraSeeded["nl-host"] then return end
+    local square = player:getCurrentSquare()
+    if not square then
+        print("NLQA WARDROBE EXTRA SEED FAILED: username=nl-host reason=no-current-square")
+        return
+    end
+    local item = "Base.Hat_Cowboy"
+    local worldObjects = square:getWorldObjects()
+    if worldObjects then
+        for index=worldObjects:size()-1,0,-1 do
+            local worldObject = worldObjects:get(index)
+            local oldItem = worldObject and worldObject:getItem()
+            if oldItem and oldItem:getFullType() == item then
+                square:transmitRemoveItemFromSquare(worldObject)
+            end
+        end
+    end
+    square:AddWorldInventoryItem(item, 0.75, 0.50, 0.0)
+    wardrobeExtraSeeded["nl-host"] = true
+    print("NLQA WARDROBE EXTRA WORLD SEED: username=nl-host item=" .. item
+        .. " square=" .. tostring(square:getX()) .. "," .. tostring(square:getY())
+        .. "," .. tostring(square:getZ()))
+    sendServerCommand(player, "NeighborhoodQA", "wardrobe_extra_seeded", {item=item})
 end)
 
 Events.OnClientCommand.Add(function(module, command, player)
