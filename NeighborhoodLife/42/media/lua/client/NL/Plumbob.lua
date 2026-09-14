@@ -143,6 +143,12 @@ local function isLocalCharacter(character)
     return false
 end
 
+local function isRemoteReplica(character)
+    if not character or not character.getModData then return false end
+    local ok, data = pcall(character.getModData, character)
+    return ok and data and data.NeighborhoodRemotePlayerId ~= nil
+end
+
 -- Build 42 exposes the native remote-player bodies through getOnlinePlayers()
 -- on clients. Attach the same world-to-screen marker to those bodies without
 -- constructing a substitute character or trusting client-supplied positions.
@@ -167,7 +173,7 @@ function NLPlumbob.syncRemotePlayers()
             usernameOk, username = pcall(character.getUsername, character)
             if not usernameOk then username = nil end
         end
-        if character and username and username ~= "" then
+        if character and username and username ~= "" and not isRemoteReplica(character) then
             local id = "remote:" .. tostring(username)
             seen[id] = true
             NLPlumbob.nativeRemoteIds[id] = true

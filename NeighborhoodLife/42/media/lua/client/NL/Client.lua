@@ -1,5 +1,6 @@
 require "NL/Domain"
 pcall(require, "NL/NpcClient")
+pcall(require, "NL/RemotePlayerClient")
 NLClient = { profiles = {}, presence = nil, npcPresence = nil, presenceFrame = 0 }
 
 function NLClient.receive(module, command, args)
@@ -17,6 +18,7 @@ function NLClient.receive(module, command, args)
         if not old or (args.revision or 0) >= (old.revision or 0) then
             NLClient.presence = args
             if NLPlumbob and NLPlumbob.applyPresence then NLPlumbob.applyPresence(args) end
+            if NLRemotePlayerClient then NLRemotePlayerClient.apply(args) end
         end
         return
     end

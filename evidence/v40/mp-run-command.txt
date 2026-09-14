@@ -1,0 +1,4 @@
+& .\tools\launch-multiplayer-qa.ps1
+INPUT: E:\pzmod\test-profile
+SERVER PID: 19240; HOST PID: 29756; GUEST PID: 14664
+STOP: processes stopped after logs flushed

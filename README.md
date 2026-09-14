@@ -353,3 +353,20 @@ The isolated Build 42.20.4 engine logged `size=8x11` for the real player and
 continued to anchor all three production NPC markers. The change affects only
 the production marker presentation; it does not claim native remote-player
 body replication.
+
+## v1.21 authoritative remote-player body fallback
+
+The existing server-authoritative `presence` roster now has a production body
+fallback. `NLRemotePlayerClient` uses Build 42's native remote body whenever it
+is present; when the engine temporarily omits that peer, it creates exactly one
+local native `IsoPlayer` tagged with `NeighborhoodRemotePlayerId`, follows the
+revisioned server position through the native path frame and bounded
+interpolation, and removes the replica when the peer leaves the roster. The
+marker-only presence plumbob remains visible throughout the engine gap.
+
+The Lua/Kahlua contract suite covers fallback creation, movement, native-body
+promotion, stale packets and cleanup. A fresh hands-free host/guest run kept
+the real `nl-host`/`nl-guest` native bodies visible on both clients across
+repeated scans, so it verifies the no-duplicate native path; it did not
+naturally trigger the missing-peer fallback and that branch remains explicitly
+unclaimed as gameplay evidence.

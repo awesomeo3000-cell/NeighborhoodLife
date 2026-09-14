@@ -7,7 +7,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Requirement | Current implementation | Completion evidence still required |
 |---|---|---|
 | Sims-inspired HUD | Six live adverse-stat bars, fold control, career journal link | Actual host+guest independent values; resolution and accessibility polish |
-| Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.12 uses a 10x14 panel with a 72px lift so the gem sits compactly just above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and the authoritative presence roster supplies a marker-only fallback when native enumeration drops a peer | Stable native two-way remote-character bodies and movement; fallback marker visibility is now proven |
+| Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.20 uses an 8x11 panel with a 56px lift so the gem sits tiny and close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits | Rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
@@ -17,7 +17,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Household life | v1.16 extends the v1.15 server-authoritative Neighborhood Home with persistent shared storage, exact item-type deposits from unequipped main inventory, member withdrawals, capacity and malformed-item guards, shared-storage UI actions, and real host-to-guest inventory transfer evidence | Home ownership transfer UX, functional furnishings, offline/co-op routines beyond the tested activity, richer item metadata/container transfer |
 | Aspirations and home activities | Delivery milestones already persist and render in the career journal; v1.15 adds three authoritative home routines (tidy, meal, social) with daily replay guards and rewards | Household-linked aspiration goals, hobbies, functional furnishings and broader home progression |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host social mutation, guest isolation, server-authoritative career delivery, vanilla client-acquisition inventory transfer, server-authoritative household invite/accept/activity loop, shared-storage host deposit plus guest withdrawal, disconnect-clean local native NPC replicas and authoritative remote marker fallback; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6/v1.7/v1.8/v1.9/v1.10/v1.11/v1.13/v1.14/v1.15/v1.16 real host plus guest evidence | Simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
+| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host social mutation, guest isolation, server-authoritative career delivery, vanilla client-acquisition inventory transfer, server-authoritative household invite/accept/activity loop, shared-storage host deposit plus guest withdrawal, disconnect-clean local native NPC replicas, authoritative remote marker fallback and v1.21 local native remote-player fallback | Simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way remote movement under a naturally missing native peer, and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile; v1.14 vanilla world-item pickup plus fresh production delivery | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -484,3 +484,23 @@ The original broad goal remains active. This ledger is not a reduced definition 
   retained anchored plumbobs for Marisol, Kenji and Amara. This is actual
   single-player engine evidence for presentation, not proof of native remote
   player-body replication.
+
+## v1.21 authoritative remote-player body fallback
+
+- Production clients now consume the existing authoritative `presence` roster
+  through `NLRemotePlayerClient`. If Build 42 exposes a native peer,
+  presentation continues to use that engine body. If the peer disappears from
+  `getOnlinePlayers()`, the client creates one local native `IsoPlayer` replica,
+  tags it as `NeighborhoodRemotePlayerId`, drives it toward revisioned server
+  coordinates with the native path frame and bounded interpolation fallback,
+  and removes it when the roster disappears.
+- The replica never accepts client-supplied identity or coordinates and never
+  enters the production package as a server authority. The marker-only
+  presence plumbob remains available while the local body fills the engine
+  enumeration gap.
+- `tests/remote-player-client.lua` covers fallback creation, authoritative
+  movement, promotion to a real native body, stale revision rejection and
+  cleanup. The latest hands-free two-client run also retained the native
+  `nl-host`/`nl-guest` bodies in both clients across repeated scans; it did not
+  naturally enter the missing-peer fallback branch, so that branch is not
+  claimed as actual multiplayer evidence yet.

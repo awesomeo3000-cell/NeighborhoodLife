@@ -609,6 +609,7 @@ local function scanRemoteObjects()
         details[#details + 1] = luaListOk and scanList("ObjectListForLua", luaList, player)
             or "ObjectListForLua=error:" .. tostring(luaList)
         local npcReplicas=0
+        local remoteReplicas=0
         local householdFurnishings=0
         if luaListOk and luaList then
             local listCountOk,listCount=pcall(luaList.size,luaList)
@@ -618,6 +619,7 @@ local function scanRemoteObjects()
                     if objectOk and object and object.getModData then
                         local dataOk,data=pcall(object.getModData,object)
                         if dataOk and data and data.NeighborhoodNpcId then npcReplicas=npcReplicas+1 end
+                        if dataOk and data and data.NeighborhoodRemotePlayerId then remoteReplicas=remoteReplicas+1 end
                         if dataOk and data and data.NeighborhoodHouseholdFurnishing then
                             householdFurnishings=householdFurnishings+1
                         end
@@ -626,6 +628,7 @@ local function scanRemoteObjects()
             end
         end
         details[#details + 1] = "productionNpcReplicas=" .. tostring(npcReplicas)
+        details[#details + 1] = "productionRemoteReplicas=" .. tostring(remoteReplicas)
         details[#details + 1] = "productionHouseholdFurnishings=" .. tostring(householdFurnishings)
         local furnishingClientCount, furnishingPendingCount = 0, 0
         if NLHouseholdFurnishingClient then

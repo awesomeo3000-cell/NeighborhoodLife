@@ -1,0 +1,73 @@
+Neighborhood Life v1.21 verification
+
+CHANGED BRANCH/FIELD
+- Production client branch: NL/RemotePlayerClient.lua consumes the authoritative presence roster and creates one local native IsoPlayer replica only when a peer is absent from Build 42's native online-player list. It follows revisioned server coordinates with the native path frame and bounded interpolation, promotes back to the real native body when it reappears, and cleans up on roster removal, disconnect and menu entry.
+- NL/Client.lua now routes presence packets to this branch. NL/Plumbob.lua ignores tagged fallback replicas during native enumeration so marker ownership does not duplicate. QA diagnostics record productionRemoteReplicas but remain outside the package.
+
+ARTIFACTS
+- MODIFIED_FILE: E:\pzmod\evidence\v40\MODIFIED_FILE.zip
+- DIFF_FILE: E:\pzmod\evidence\v40\DIFF_FILE.patch
+- VERIFICATION.txt: E:\pzmod\evidence\v40\VERIFICATION.txt
+- ROLLBACK.sh: E:\pzmod\evidence\v40\ROLLBACK.sh
+- Gameplay logs: E:\pzmod\evidence\v40\mp-host-full.log, E:\pzmod\evidence\v40\mp-guest-full.log, E:\pzmod\evidence\v40\mp-server-full.log
+- Gameplay command record: E:\pzmod\evidence\v40\mp-run-command.txt
+
+BASELINE
+COMMAND: python tools\pipeline.py test --target evidence\v40\baseline
+INPUT: E:\pzmod
+OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: baseline passed
+EXIT: 0
+
+MODIFIED
+COMMAND: python tools\pipeline.py test
+INPUT: E:\pzmod
+OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: modified suite passed, including remote-player-client
+EXIT: 0
+COMMAND: & 'C:\Program Files (x86)\Lua\5.1\lua.exe' tests\remote-player-client.lua NeighborhoodLife
+INPUT: E:\pzmod
+OUTPUT: PASS: remote player replica creation, authoritative movement, native promotion, stale rejection and cleanup
+RESULT: targeted replica contract passed
+EXIT: 0
+COMMAND: & 'C:\Program Files (x86)\Lua\5.1\luac.exe' -p qa\NeighborhoodQA\42\media\lua\client\NLQAMultiplayer.lua
+INPUT: E:\pzmod
+OUTPUT: [empty]
+RESULT: QA syntax passed
+EXIT: 0
+COMMAND: python tools\pipeline.py package --version v40 --baseline evidence\v40\baseline
+INPUT: E:\pzmod
+OUTPUT: PASS: release package E:\pzmod\evidence\v40\MODIFIED_FILE.zip
+RESULT: package built
+EXIT: 0
+COMMAND: python -c "import zipfile; z=zipfile.ZipFile(r'evidence/v40/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('PRODUCTION_QA',any('qa/' in n for n in z.namelist())); print('REMOTE_CLIENT',any(n.endswith('42/media/lua/client/NL/RemotePlayerClient.lua') for n in z.namelist())); print('REMOTE_REQUIRE',b'RemotePlayerClient' in z.read('NeighborhoodLife/42/media/lua/client/NL/Client.lua'))"
+INPUT: E:\pzmod
+OUTPUT: ZIP_TEST None; QA_ENTRIES []; PRODUCTION_QA False; REMOTE_CLIENT True; REMOTE_REQUIRE True
+RESULT: production package contains the remote body fallback and excludes QA
+EXIT: 0
+
+ROLLBACK
+COMMAND: & 'C:\Program Files\Git\bin\bash.exe' -lc 'TARGET_ROOT=/e/pzmod/evidence/v40/rollback-target bash /e/pzmod/evidence/v40/ROLLBACK.sh'; python tools\pipeline.py test --target evidence\v40\rollback-target
+INPUT: E:\pzmod\evidence\v40\rollback-target
+OUTPUT: ROLLBACK RESTORED: baseline production and QA/test trees
+PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+RESULT: rollback passed
+RESTORED STATUS: baseline and rollback Client.lua SHA-256 both BD658A8BB1588B5E66F6FFF69F4D085000B5ACB5CCE1AAC760B2D9548DA8E6C3
+EXIT: 0
+
+ACTUAL MULTIPLAYER EVIDENCE
+COMMAND: & .\tools\launch-multiplayer-qa.ps1
+INPUT: E:\pzmod\test-profile
+OUTPUT: host and guest connected to the dedicated server; both clients repeatedly logged the other native body in ObjectListForLua and OnlinePlayers.
+OUTPUT: host scans include username=nl-guest and OnlinePlayersCount=2 with productionRemoteReplicas=0.
+OUTPUT: guest scans include username=nl-host and OnlinePlayersCount=2 with productionRemoteReplicas=0.
+OUTPUT: repeated scans retained productionNpcReplicas=3 and productionNpcNativePaths=3 on both clients.
+OUTPUT: guest household furnishing fallback still reached productionHouseholdFurnishingClient=1 and pending=0.
+RESULT: actual host/guest native-body presentation remained stable in this run without duplicate local fallback replicas. The naturally missing-peer fallback branch was not triggered by this run; its movement/promotion/cleanup evidence is contract-test evidence only.
+EXIT: 0 launcher/evidence capture; processes stopped after logs flushed
+
+TEST CLASSIFICATION
+- Mock/unit: tests/remote-player-client.lua covers local fallback behavior with native-shaped fixtures.
+- Engine-VM: consolidated Lua 5.1/Kahlua suite, exit 0.
+- Actual gameplay: isolated hands-free dedicated server plus two clients, logs above.
+- This advances remote presentation and does not claim native server-body reannouncement, obstacle/danger behavior, damage/death, offline routines or full feature completion.
