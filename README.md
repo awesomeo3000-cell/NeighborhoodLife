@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.54)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.55)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -504,6 +504,17 @@ wore both garments, saved revision 75, completed vanilla unequip with both
 garments at zero, and then logged replacement completion for both garments from
 `production-NLWardrobe.wear`. New clothing variants, original assets and
 unlock/reward integration remain breadth work.
+
+## v1.55 saved outfits replace unrelated layers
+
+`NLWardrobe.wear` now treats a saved slot as a full replacement preset. It
+retains already-worn garments that match saved entries, queues vanilla
+`ISUnequipAction` for every unrelated worn item, then queues the saved garments
+through `ISWearClothing`. Exact item ids, full-type fallback and legacy string
+slots remain supported, and duplicate saved entries still consume one inventory
+item each. Lua 5.1 and the installed Build 42 Kahlua VM cover the replacement
+queue; a new actual-game probe is still required to prove automatic removal of
+an unrelated layer in a live save.
 
 ## v1.38 forced-crash NPC inventory recovery
 
