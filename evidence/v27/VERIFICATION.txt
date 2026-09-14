@@ -1,0 +1,65 @@
+Neighborhood Life v1.9 authoritative remote-marker fallback verification
+
+CHANGED BRANCH/FIELD: production client presence-marker branch. NeighborhoodLife/42/media/lua/client/NL/Client.lua forwards the authoritative presence roster to NLPlumbob. NeighborhoodLife/42/media/lua/client/NL/Plumbob.lua keeps marker-only authoritative peer entries, prefers native getOnlinePlayers() bodies, removes stale/empty fallback entries, and clears them on menu/disconnect. No substitute player body is created. qa/NeighborhoodQA remains outside the production package. SCOPE.md preserves the full Sims-inspired scope; only the character-marker and host-multiplayer evidence ledger rows were advanced.
+BASELINE PLUMBOB SHA256: 1D5B962822ACE8128A0586B75616463AACB7823FA081D80C497A8DAB02029037
+MODIFIED PLUMBOB SHA256: 1FAD55E1367C3CEE0D967C60F319272D31BFD225FCBE0A19286619724343050D
+BASELINE CLIENT SHA256: FD6B595998D4CAA7EDCB1DB967DC174405A0334E120A18C4B87974D1930BBAA4
+MODIFIED CLIENT SHA256: 6AA62F0868929EAB6C94A9AA9324749E57B85A6C04875C10CD649C7AD7951E60
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v27\baseline
+BASELINE INPUT: E:\pzmod
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE RESULT: commit d5fe855 production baseline passed mock, syntax and installed-game engine-VM suites.
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod\NeighborhoodLife
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED RESULT: presence forwarding, marker fallback, NPC client, social and career production suites passed.
+MODIFIED EXIT: 0
+
+QA SYNTAX COMMAND: Get-ChildItem qa\NeighborhoodQA\42\media\lua -Recurse -Filter *.lua | ForEach-Object { & 'C:\Program Files (x86)\Lua\5.1\luac.exe' -p $_.FullName }
+QA SYNTAX INPUT: E:\pzmod
+QA SYNTAX LITERAL OUTPUT: QA_SYNTAX_EXIT=0
+QA SYNTAX RESULT: hands-free QA helpers remain syntactically valid and outside the production package.
+QA SYNTAX EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v27 --baseline evidence\v27\baseline
+PACKAGE INPUT: E:\pzmod
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v27\MODIFIED_FILE.zip
+PACKAGE RESULT: production-only package and baseline diff created.
+PACKAGE EXIT: 0
+
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; z=zipfile.ZipFile('evidence/v27/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('PRESENCE',any(n.endswith('42/media/lua/client/NL/Client.lua') for n in z.namelist())); print('PLUMBOB',any(n.endswith('42/media/lua/client/NL/Plumbob.lua') for n in z.namelist()))"
+PACKAGE VALIDATION INPUT: E:\pzmod
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; PRESENCE True; PLUMBOB True
+PACKAGE VALIDATION RESULT: valid production ZIP; QA helpers are excluded.
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v27/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' 'E:\pzmod\evidence\v27\ROLLBACK.sh'
+ROLLBACK INPUT: copied the modified E:\pzmod\NeighborhoodLife tree into E:\pzmod\evidence\v27\rollback-target\NeighborhoodLife
+ROLLBACK LITERAL OUTPUT: ROLLBACK RESTORED: /e/pzmod/evidence/v27/rollback-target/NeighborhoodLife from /e/pzmod/evidence/v27/baseline
+ROLLBACK RESULT: BASELINE_TREE_SHA256 908ecc3664013a8cd34376007e20d6d0a0d512d2ba5ab090ca3f9a66717e56b3; ROLLBACK_TREE_SHA256 908ecc3664013a8cd34376007e20d6d0a0d512d2ba5ab090ca3f9a66717e56b3; RESTORED_MATCH True; MODIFIED_DIFFERS True. The production source remained modified after the rollback-copy test.
+ROLLBACK EXIT: 0
+
+ACTUAL MULTIPLAYER COMMAND: & .\tools\launch-multiplayer-qa.ps1
+ACTUAL MULTIPLAYER INPUT: E:\pzmod\test-profile; isolated no-Steam Project Zomboid Build 42.20.4 dedicated server, hands-free nl-host and nl-guest clients, no mouse or keyboard
+ACTUAL MULTIPLAYER LITERAL OUTPUT: QA multiplayer processes started: server=35544 host=23756 guest=31384
+ACTUAL MULTIPLAYER LITERAL OUTPUT: host productionRemoteMarkers=1 while the native guest body was enumerated.
+ACTUAL MULTIPLAYER LITERAL OUTPUT: host productionPresenceMarkers=1 after native enumeration dropped the guest.
+ACTUAL MULTIPLAYER LITERAL OUTPUT: guest productionPresenceMarkers=1 in the same fallback state.
+ACTUAL MULTIPLAYER LITERAL OUTPUT: both clients continued to receive presence with players=2 and npc_presence with count=3; both clients logged productionNpcReplicas=3.
+ACTUAL MULTIPLAYER RESULT: real two-client engine evidence proves stable marker-only fallback visibility from authoritative server positions, native-body preference, and three-NPC replica continuity. It does not prove native body reannouncement, same-client reconnect, or synchronized native remote movement.
+ACTUAL MULTIPLAYER EXIT: 0 for the launcher runner; launcher stderr was empty; server, host and guest were stopped after capture.
+ACTUAL MULTIPLAYER EVIDENCE: E:\pzmod\evidence\v27\mp-server-relevant.log; E:\pzmod\evidence\v27\mp-host-relevant.log; E:\pzmod\evidence\v27\mp-guest-relevant.log; E:\pzmod\evidence\v27\mp-run-command.txt
+
+CLASSIFICATION: Lua 5.1 suites are mock tests; installed-game Kahlua suites execute production Lua in the engine VM with explicit mocks; v27 logs are actual two-client Build 42 gameplay evidence. The marker fallback is not a claim that native remote-character replication is complete. Household life, aspirations/home activities, client-acquired inventory sync, same-client reconnect, native body reannouncement and stable native remote movement remain open in SCOPE.md.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v27\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v27\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v27\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v27\ROLLBACK.sh
+SHA256 MODIFIED_FILE: 06D73426DF16D29683EF5ACEDC6AB73DB4EB33C0632F74CDAFC0F505B907B56F
+SHA256 DIFF_FILE: B242782361A77EEFD02892A8011905B879B270D93AC9C35440D4B8435C9844A8
+SHA256 ROLLBACK: D56282AD68F99265FCE0C5A89BCB50A2E42BE8AF63B5DCEF0A6E03457659D686

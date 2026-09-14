@@ -1,0 +1,9 @@
+ACTUAL MULTIPLAYER COMMAND: & .\tools\launch-multiplayer-qa.ps1
+ACTUAL MULTIPLAYER INPUT: E:\pzmod\test-profile; one isolated no-Steam Build 42.20.4 dedicated server plus hands-free nl-host and nl-guest clients; no mouse or keyboard
+LAUNCHER RUNNER COMMAND: Start-Process powershell.exe -WindowStyle Hidden -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File','E:\pzmod\tools\launch-multiplayer-qa.ps1')
+LAUNCHER LITERAL OUTPUT: QA multiplayer processes started: server=35544 host=23756 guest=31384
+SERVER/CLIENT RESULT: both clients connected; host and guest received the same authoritative presence roster and NPC presence stream.
+MARKER RESULT: host logged productionRemoteMarkers=1 while the native guest was enumerated, then productionPresenceMarkers=1 after native enumeration dropped it; guest logged productionPresenceMarkers=1 in the same fallback state.
+NPC RESULT: both clients retained productionNpcReplicas=3.
+CLEANUP RESULT: server=35544 host=23756 guest=31384 stopped after capture; no Project Zomboid JVMs remain.
+ACTUAL MULTIPLAYER EXIT: 0 for launcher runner; launcher stdout had no stderr.

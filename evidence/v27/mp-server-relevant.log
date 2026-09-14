@@ -1,0 +1,59 @@
+LOG  : Lua          f:0 st:202,233,038> NLQA MP SERVER BOOT: authority=true requireOk=true error=nil
+LOG  : Lua          f:601 st:202,300,910> NLQA NPC PRODUCTION RESTORE id=marisol x=6766.17 y=5361.31 revision=173
+LOG  : Lua          f:601 st:202,300,912> NLQA NPC PRODUCTION SPAWN FAILED id=marisol: no free spawn square
+LOG  : Lua          f:601 st:202,300,912> NLQA NPC PRODUCTION RESTORE id=kenji x=6766.25 y=5361.31 revision=167
+LOG  : Lua          f:601 st:202,300,913> NLQA NPC PRODUCTION SPAWN FAILED id=kenji: no free spawn square
+LOG  : Lua          f:601 st:202,300,914> NLQA NPC PRODUCTION RESTORE id=amara x=6766.33 y=5361.38 revision=167
+LOG  : Lua          f:601 st:202,300,916> NLQA NPC PRODUCTION SPAWN FAILED id=amara: no free spawn square
+LOG  : Lua          f:604 st:202,301,650> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:623 st:202,304,423> NLQA PRODUCTION AUTHORITY COMMAND: refresh username=nl-host
+LOG  : Lua          f:623 st:202,304,425> NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-host revision=3
+LOG  : Lua          f:623 st:202,304,425> NLQA MP SERVER COMMAND: refresh username=nl-host
+LOG  : Lua          f:623 st:202,304,426> NLQA MP SERVER PLAYER: dead=false authorityKey=nl-host argsType=nil
+LOG  : Lua          f:623 st:202,304,429> NLQA MP SERVER GAME-SERVER API: unavailable=attempted index: getPlayers of non-table: null java.lang.RuntimeException
+LOG  : Lua          f:661 st:202,308,472> NLQA NPC PRODUCTION RESTORE id=marisol x=6766.17 y=5361.31 revision=173
+LOG  : Lua          f:661 st:202,308,489> NLQA NPC PRODUCTION SPAWN id=marisol x=8282.50 y=11721.50 z=0
+LOG  : Lua          f:661 st:202,308,489> NLQA NPC PRODUCTION RESTORE id=kenji x=6766.25 y=5361.31 revision=167
+LOG  : Lua          f:661 st:202,308,493> NLQA NPC PRODUCTION SPAWN id=kenji x=8282.50 y=11721.50 z=0
+LOG  : Lua          f:661 st:202,308,493> NLQA NPC PRODUCTION RESTORE id=amara x=6766.33 y=5361.38 revision=167
+LOG  : Lua          f:661 st:202,308,495> NLQA NPC PRODUCTION SPAWN id=amara x=8282.50 y=11721.50 z=0
+LOG  : Lua          f:662 st:202,308,604> NLQA NPC PRODUCTION PATH id=marisol from=8282.50,11721.50 to=6817.00,5259.00 waypoint=1
+LOG  : Lua          f:662 st:202,308,613> NLQA NPC PRODUCTION PATH id=kenji from=8282.50,11721.50 to=6817.00,5261.00 waypoint=2
+LOG  : Lua          f:662 st:202,308,618> NLQA NPC PRODUCTION PATH id=amara from=8282.50,11721.50 to=6819.00,5259.00 waypoint=2
+LOG  : Lua          f:664 st:202,308,811> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:672 st:202,309,580> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:679 st:202,310,325> NLQA PRODUCTION AUTHORITY COMMAND: refresh username=nl-guest
+LOG  : Lua          f:679 st:202,310,326> NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-guest revision=1
+LOG  : Lua          f:679 st:202,310,326> NLQA MP SERVER COMMAND: refresh username=nl-guest
+LOG  : Lua          f:679 st:202,310,327> NLQA MP SERVER PLAYER: dead=false authorityKey=nl-guest argsType=nil
+LOG  : Lua          f:679 st:202,310,335> NLQA MP SERVER GAME-SERVER API: unavailable=attempted index: getPlayers of non-table: null java.lang.RuntimeException
+LOG  : Lua          f:719 st:202,314,319> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:722 st:202,314,587> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:722 st:202,314,588> NLQA SOCIAL COMMAND: refresh username=nl-host id=nil action=nil
+LOG  : Lua          f:722 st:202,314,618> NLQA CAREER SEED: username=nl-host item=Base.RippedSheets amount=6
+LOG  : Lua          f:727 st:202,315,117> NLQA SOCIAL COMMAND: interact username=nl-host id=marisol action=introduce
+LOG  : Lua          f:727 st:202,315,119> NLQA SOCIAL RESULT: username=nl-host message=Not completed: You already know each other.
+LOG  : Lua          f:727 st:202,315,135> NLQA PRODUCTION AUTHORITY COMMAND: select username=nl-host
+LOG  : Lua          f:727 st:202,315,135> NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-host revision=3
+LOG  : Lua          f:733 st:202,315,653> NLQA PRODUCTION AUTHORITY COMMAND: deliver username=nl-host
+LOG  : Lua          f:733 st:202,315,655> NLQA PRODUCTION AUTHORITY SNAPSHOT: username=nl-host revision=3
+LOG  : Lua          f:769 st:202,319,324> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:769 st:202,319,325> NLQA SOCIAL COMMAND: refresh username=nl-guest id=nil action=nil
+LOG  : Lua          f:772 st:202,319,588> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:819 st:202,324,323> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:822 st:202,324,591> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:869 st:202,329,324> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:872 st:202,329,584> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:919 st:202,334,326> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:922 st:202,334,589> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:961 st:202,338,450> NLQA NPC PRODUCTION TICK id=marisol x=8282.34 y=11720.80
+LOG  : Lua          f:961 st:202,338,452> NLQA NPC PRODUCTION TICK id=kenji x=8282.34 y=11720.80
+LOG  : Lua          f:961 st:202,338,452> NLQA NPC PRODUCTION TICK id=amara x=8282.34 y=11720.80
+LOG  : Lua          f:969 st:202,339,322> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:972 st:202,339,590> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:1019 st:202,344,313> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:1022 st:202,344,586> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:1069 st:202,349,324> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:1072 st:202,349,580> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host
+LOG  : Lua          f:1119 st:202,354,323> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest
+LOG  : Lua          f:1122 st:202,354,584> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host

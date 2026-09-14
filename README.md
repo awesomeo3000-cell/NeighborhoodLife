@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, wardrobe and relationship prototype (v1.8)
+# Neighborhood Life: careers, wardrobe and relationship prototype (v1.9)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -185,3 +185,19 @@ The same isolated host now receives a QA-seeded authoritative inventory fixture,
 selects the Tailor career through the production command, and completes a real
 server-side delivery for `+20 career XP, +10 community credits`; the seed remains
 QA-only and does not alter the production economy.
+
+## v1.9 authoritative remote marker fallback
+
+Production clients now consume the server's authoritative `presence` roster when
+Build 42 temporarily omits a remote player from `getOnlinePlayers()`. The client
+draws a marker-only plumbob at the roster position, never constructs a substitute
+player body, and immediately prefers a native body again when one reappears. Empty
+or stale rosters remove the fallback marker on disconnect/menu reset.
+
+The real two-client run in `evidence/v27/` logged `productionRemoteMarkers=1` while
+the native guest body was visible, then `productionPresenceMarkers=1` on both host
+and guest after native enumeration dropped the peer. Both clients continued to
+receive the same authoritative two-player positions and the three native NPC
+replicas. Native remote-body reannouncement and synchronized native movement remain
+open; the fallback proves stable authoritative marker visibility, not body
+replication completion.

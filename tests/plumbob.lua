@@ -52,4 +52,12 @@ if NLPlumbob.syncRemotePlayers then
     function getOnlinePlayers() return {size=function() return 1 end,get=function() return localPlayer end} end
     NLPlumbob.syncRemotePlayers(); assert(NLPlumbob.instances['remote:nl-guest']==nil)
 end
+if NLPlumbob.applyPresence then
+    assert(NLPlumbob.applyPresence({revision=10,players={{username='nl-guest',x=104,y=205,z=0}}})==1)
+    local presence=NLPlumbob.instances['presence:nl-guest']
+    assert(presence and presence.character.isPresence and presence.character.x==104,
+        'authoritative presence creates a marker-only remote fallback')
+    NLPlumbob.applyPresence({revision=11,players={}})
+    assert(NLPlumbob.instances['presence:nl-guest']==nil,'empty presence removes fallback marker')
+end
 print('PASS: plumbob asset lookup, screen anchoring, dead-character hide, registration and cleanup')

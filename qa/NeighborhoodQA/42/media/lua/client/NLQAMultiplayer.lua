@@ -417,12 +417,15 @@ local function scanRemoteObjects()
         details[#details + 1] = "OnlinePlayers=unavailable"
     end
     local markerCount = 0
+    local presenceMarkerCount = 0
     if NLPlumbob and NLPlumbob.instances then
         for id, _ in pairs(NLPlumbob.instances) do
             if string.sub(id, 1, 7) == "remote:" then markerCount = markerCount + 1 end
+            if string.sub(id, 1, 9) == "presence:" then presenceMarkerCount = presenceMarkerCount + 1 end
         end
     end
     details[#details + 1] = "productionRemoteMarkers=" .. tostring(markerCount)
+    details[#details + 1] = "productionPresenceMarkers=" .. tostring(presenceMarkerCount)
     emit("REMOTE SCAN", table.concat(details, " "))
 end
 

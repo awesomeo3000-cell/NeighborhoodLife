@@ -14,10 +14,7 @@ function NLClient.receive(module, command, args)
     end
     if command == "presence" then
         local old = NLClient.presence
-        if not old or (args.revision or 0) >= (old.revision or 0) then
-            NLClient.presence = args
-            if NLPlumbob and NLPlumbob.applyPresence then NLPlumbob.applyPresence(args) end
-        end
+        if not old or (args.revision or 0) >= (old.revision or 0) then NLClient.presence = args end
         return
     end
     if command ~= "snapshot" then return end
@@ -54,7 +51,6 @@ Events.OnRenderTick.Add(function()
 end)
 local function resetClientState()
     NLClient.profiles = {}; NLClient.presence = nil; NLClient.npcPresence = nil; NLClient.presenceFrame = 0
-    if NLPlumbob and NLPlumbob.clearPresence then NLPlumbob.clearPresence() end
 end
 Events.OnMainMenuEnter.Add(resetClientState)
 if Events.OnDisconnect then Events.OnDisconnect.Add(resetClientState) end

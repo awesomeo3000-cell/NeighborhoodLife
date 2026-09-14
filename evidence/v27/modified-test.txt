@@ -1,0 +1,1 @@
+PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
