@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.69)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.70)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -1025,3 +1025,17 @@ This closes one career vertical-slice gate, not the full overhaul: native NPC
 server-body reannouncement remains blocked by `GameServer=nil`, `Java=nil`, and
 `onlineHints=0`, while richer neighborhood breadth and global-data crash
 atomicity remain open. QA helpers stay outside the production package.
+
+## v1.70 native roster bridge investigation
+
+The QA-only `-NativeRosterProbe` tested the remaining server-side route exposed
+by the installed Build 42 Lua environment. In
+`evidence/v100/actual/native-roster-c/`, the real dedicated server added all
+three production NPC bodies to the exposed online-player collection (`before=2
+after=5 added=3`), while neither connected client received an engine-native NPC
+online-player body. The compatibility `npc_presence` channel remains the
+active client path.
+
+This is actual host-plus-guest engine evidence, distinct from mock/unit and
+Kahlua VM tests. It narrows the native replication work to the unexposed Build
+42 connection/player-packet bridge rather than another Lua roster workaround.

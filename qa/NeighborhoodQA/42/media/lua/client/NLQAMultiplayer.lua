@@ -70,7 +70,8 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
      inventoryExchangeDue = 0, inventoryMetadataLogged = false,
      inventoryPositioned = false,
     connectionCount = 0, inventoryRestartProbeSent = false,
-    inventoryRestartObserved = false, inventoryRestartDue = 0 }
+    inventoryRestartObserved = false, inventoryRestartDue = 0,
+    nativeRosterObserved = false }
 NLQAMultiplayer.deliveryRecoverySnapshot = false
 NLQAMultiplayer.deliveryRecoveryObserved = false
 -- Keep the hands-free probe bounded while retaining one full render-loop delay
@@ -1955,6 +1956,32 @@ Events.OnRenderTick.Add(function()
         if NLQAMultiplayer.remoteScanCount >= 8 then
             NLQAMultiplayer.remoteScanLogged = true
         end
+    end
+end)
+
+-- QA-only assertion for the native roster experiment.  A matching NPC in the
+-- client online-player list must be an engine-received body, not the local
+-- compatibility replica created from npc_presence.
+Events.OnRenderTick.Add(function()
+    if not isClient() or qaIdentity().nativeRosterProbe ~= true
+            or NLQAMultiplayer.nativeRosterObserved
+            or type(getOnlinePlayers) ~= "function" then return end
+    local listOk, players = pcall(getOnlinePlayers)
+    if not listOk or not players or not players.size or not players.get then return end
+    local names = {}
+    for index = 0, players:size() - 1 do
+        local object = players:get(index)
+        local data = object and object.getModData and object:getModData() or nil
+        if data and data.NeighborhoodNpcId and data.NeighborhoodNpcReplica ~= true then
+            local name = object.getUsername and object:getUsername() or "?"
+            names[#names + 1] = tostring(data.NeighborhoodNpcId) .. "=" .. tostring(name)
+        end
+    end
+    if #names > 0 then
+        NLQAMultiplayer.nativeRosterObserved = true
+        emit("NATIVE ROSTER RESULT", "count=" .. tostring(#names)
+            .. " entries=" .. table.concat(names, ",")
+            .. " source=engine-online-players")
     end
 end)
 

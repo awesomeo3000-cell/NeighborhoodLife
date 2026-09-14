@@ -1,4 +1,4 @@
-# Neighborhood Life — full scope and evidence ledger (v1.69)
+# Neighborhood Life — full scope and evidence ledger (v1.70)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
@@ -1103,3 +1103,17 @@ player body replication or completion of the remaining multiplayer gates.
 - This milestone does not close native NPC server-body reannouncement,
   naturally missing-peer NPC movement, broader global-data crash atomicity, or
   the remaining neighborhood vertical-slice breadth.
+
+## v1.70 native roster bridge investigation
+
+- The QA-only `-NativeRosterProbe` added all three production NPC bodies to the
+  exposed server online-player collection in an actual Build 42.20.4 session:
+  `before=2 after=5 added=3`.
+- Neither connected client received an engine-native NPC body in its vanilla
+  online-player list. The captured result is therefore a negative engine
+  experiment, not a native-replication claim; the production `npc_presence`
+  compatibility path remains active.
+- Evidence is in `evidence/v100/actual/native-roster-c/`. This is actual
+  host-plus-guest engine evidence, separate from Lua mock/unit and installed
+  Kahlua VM tests. The unexposed Build 42 connection/player-packet bridge
+  remains the native NPC replication blocker.

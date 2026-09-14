@@ -2,6 +2,7 @@
 -- production authority; it does not implement gameplay or alter the package.
 NLQAMultiplayerServer = true
 if isClient() then return end
+pcall(require, "NLQANativeRosterConfig")
 local ok,err=pcall(function() require "NL/Authority" end)
 print("NLQA MP SERVER BOOT: authority=" .. tostring(NLAuthority ~= nil) .. " requireOk=" .. tostring(ok)
     .. " error=" .. tostring(err))
@@ -28,6 +29,7 @@ local dangerProbeSeeded = false
 local householdViewpointMoved = false
 local inventoryFaultArmed = false
 local householdRestartProbeSent = false
+local nativeRosterProbeDone = false
 
 -- These helpers are QA-only. They seed genuine Item instances in the host's
 -- networked inventory so the production household authority must capture and
@@ -96,6 +98,44 @@ Events.OnTick.Add(function()
     NLSocialAuthority.testFaultPhase=NLQAInventoryFaultMode
     inventoryFaultArmed=true
     print("NLQA INVENTORY FAULT ARMED: phase="..tostring(NLQAInventoryFaultMode))
+end)
+
+-- QA-only native multiplayer experiment.  The installed dedicated server
+-- exposes getOnlinePlayers() but does not publish GameServer to Lua.  Add the
+-- already-created NPC bodies to that exposed roster for one isolated run to
+-- test whether the vanilla server loop distributes them without a Java bridge.
+-- This never runs in the production mod and suppresses the QA presence repeat
+-- while the roster is being observed so NPC bodies are not treated as clients.
+Events.OnTick.Add(function()
+    if nativeRosterProbeDone or NLQANativeRosterProbe ~= true
+            or type(getOnlinePlayers) ~= "function"
+            or not NLNpcAuthority or not NLNpcAuthority.started then return end
+    local listOk, players = pcall(getOnlinePlayers)
+    if not listOk or not players or not players.size or not players.add then return end
+    local before = players:size()
+    if before < 2 then return end
+    local added, details = 0, {}
+    for _, id in ipairs({"marisol", "kenji", "amara"}) do
+        local body = NLNpcAuthority.bodies[id]
+        if body then
+            local containsOk, already = false, false
+            if players.contains then
+                containsOk, already = pcall(players.contains, players, body)
+            end
+            if not containsOk or already ~= true then
+                local addOk = pcall(players.add, players, body)
+                if addOk then added = added + 1 end
+            end
+            details[#details + 1] = id .. "=" .. tostring(added)
+        end
+    end
+    nativeRosterProbeDone = true
+    if NLNpcAuthority.broadcastPresence then
+        NLNpcAuthority.broadcastPresence = function() return 0 end
+    end
+    print("NLQA NATIVE ROSTER PROBE: before=" .. tostring(before)
+        .. " after=" .. tostring(players:size()) .. " added=" .. tostring(added)
+        .. " bodies=" .. table.concat(details, ","))
 end)
 
 -- The restart tool adds this QA-only server config after the initial household
