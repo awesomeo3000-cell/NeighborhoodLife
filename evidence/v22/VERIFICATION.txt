@@ -1,0 +1,55 @@
+Neighborhood Life v1.5 disconnect-cleanup verification
+
+CHANGED BRANCH/FIELD: production client disconnect lifecycle. `NL/Client.lua` now routes both `OnMainMenuEnter` and `OnDisconnect` through `resetClientState`, clearing profiles, player/NPC presence and the presence frame. `NL/NpcClient.lua` now registers `OnDisconnect` cleanup, removing native NPC bodies and plumbobs and resetting the accepted NPC packet revision. The QA-only launcher marks reconnect intent in its isolated identity fixture; it is not packaged. The full Sims-inspired scope remains in SCOPE.md.
+BASELINE SOURCE: E:\pzmod\evidence\v22\baseline extracted from commit 5ee8319286094c5b045dff40f6084463a67905f2
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v22\baseline
+BASELINE INPUT: E:\pzmod\evidence\v22\baseline
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE RESULT: pre-change production package passed the consolidated mock, syntax and installed-game Kahlua suites
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod\NeighborhoodLife
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED RESULT: production Lua 5.1, syntax, installed-game Kahlua and disconnect-cleanup contract suites passed
+MODIFIED EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v22 --baseline evidence\v22\baseline
+PACKAGE INPUT: E:\pzmod\NeighborhoodLife compared with E:\pzmod\evidence\v22\baseline
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v22\MODIFIED_FILE.zip
+PACKAGE RESULT: production-only ZIP and baseline diff created; QA helpers and test sources remain excluded
+PACKAGE EXIT: 0
+
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; z=zipfile.ZipFile('evidence/v22/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('NPC_CLIENT',any(n.endswith('client/NL/NpcClient.lua') for n in z.namelist())); print('NPC_TEST',any(n.endswith('tests/npc-client.lua') for n in z.namelist()))"
+PACKAGE VALIDATION INPUT: E:\pzmod
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; NPC_CLIENT True; NPC_TEST False
+PACKAGE VALIDATION RESULT: valid production ZIP; QA helpers and tests are not shipped
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v22/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' evidence/v22/ROLLBACK.sh
+ROLLBACK INPUT: copied the final modified NeighborhoodLife tree into E:\pzmod\evidence\v22\rollback-target\NeighborhoodLife
+ROLLBACK LITERAL OUTPUT: ROLLBACK RESTORED: /e/pzmod/evidence/v22/rollback-target/NeighborhoodLife from /e/pzmod/evidence/v22/baseline
+ROLLBACK RESULT: restored tree matched the baseline tree SHA256 6c1ec56da215568dd04947ecf123de5040e7a22409ef570102c5f88147dc2756; final production source remained modified
+ROLLBACK EXIT: 0
+
+ACTUAL ENGINE RECONNECT PROBE COMMAND: & .\tools\launch-multiplayer-qa.ps1
+ACTUAL ENGINE RECONNECT PROBE INPUT: E:\pzmod\test-profile, isolated B42.20.4 server and two hands-free QA clients, no OS input
+ACTUAL ENGINE INITIAL RESULT: server=8456, host=20692 and guest=3020 started; both clients logged CLIENT START, SNAPSHOT and NPC PRESENCE with productionNpcReplicas=1
+ACTUAL ENGINE STOP COMMAND: Stop-Process -Id 8456 -Force
+ACTUAL ENGINE STOP INPUT: dedicated server process only; host and guest remained running
+ACTUAL ENGINE STOP RESULT: after 60 seconds neither client log emitted NLQA MP DISCONNECT or a new CONNECT REQUEST
+ACTUAL ENGINE RESTART RESULT: direct isolated GameServer restart pid=1684 reached SERVER STARTED but logged no new client connection; the original clients retained their prior process state and were stopped after capture
+ACTUAL ENGINE EXIT: launcher/restart processes exited after capture; this is a negative observation, not reconnect completion
+ACTUAL ENGINE EVIDENCE: E:\pzmod\evidence\v22\reconnect-probe.txt
+
+CLASSIFICATION: Lua 5.1 suites are mock tests. The Kahlua suites execute production Lua in the installed-game VM with explicit mocks. The reconnect-probe is actual isolated Build 42 process evidence: initial host/guest NPC presence worked, but forced server stop did not produce a client disconnect event or automatic re-connect within the observation window. Therefore production disconnect hooks are implemented and contract-tested, while same-client reconnect, native Build 42 body reannouncement, live remote movement/UI, inventory/action synchronization, obstacle/danger handling, damage/death, offscreen behavior, households and the remaining full-overhaul scope remain open.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v22\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v22\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v22\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v22\ROLLBACK.sh
+SHA256 MODIFIED_FILE: B7F1EA25DB3971C59F35D632A6E5DABBE5D24DE48AD57F00D81614643A73E825
+SHA256 DIFF_FILE: CECB2E3FB630679FB32A6C0A156F6EDE72191EB3DD4E163C47E92F9A7AE26A34
+SHA256 ROLLBACK: B4B7A708281D272ACE7EA84B7426B9A24886075E638ADF7B26465F6A52A6773B

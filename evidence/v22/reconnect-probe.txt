@@ -1,0 +1,11 @@
+RECONNECT PROBE COMMAND: & .\tools\launch-multiplayer-qa.ps1
+RECONNECT PROBE INPUT: E:\pzmod\test-profile, isolated B42.20.4 server and two clients, no OS input
+INITIAL PROCESSES: server=8456 host=20692 guest=3020
+INITIAL RESULT: both clients logged CLIENT START, SNAPSHOT and NPC PRESENCE with productionNpcReplicas=1
+SERVER STOP COMMAND: Stop-Process -Id 8456 -Force
+SERVER STOP INPUT: dedicated server process only; host and guest remained running
+SERVER STOP RESULT: after 60 seconds neither client log emitted NLQA MP DISCONNECT or a new CONNECT REQUEST
+SERVER RESTART COMMAND: direct isolated GameServer launch using E:\pzmod\test-profile\mp-server
+SERVER RESTART PROCESS: pid=1684
+SERVER RESTART RESULT: server reached SERVER STARTED but logged no new client connection; the clients retained their original process state and were stopped after capture
+CLASSIFICATION: this is a genuine negative engine observation, not proof of reconnect completion. The production disconnect cleanup hook is covered separately by tests/npc-client.lua.

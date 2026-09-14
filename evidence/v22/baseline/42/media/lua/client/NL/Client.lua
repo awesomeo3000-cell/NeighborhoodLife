@@ -49,9 +49,7 @@ Events.OnRenderTick.Add(function()
         NLClient.request(i, "presence")
     end
 end)
-local function resetClientState()
+Events.OnMainMenuEnter.Add(function()
     NLClient.profiles = {}; NLClient.presence = nil; NLClient.npcPresence = nil; NLClient.presenceFrame = 0
-end
-Events.OnMainMenuEnter.Add(resetClientState)
-if Events.OnDisconnect then Events.OnDisconnect.Add(resetClientState) end
+end)
 return NLClient

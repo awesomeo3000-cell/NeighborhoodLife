@@ -120,7 +120,4 @@ end
 
 Events.OnTick.Add(NLNpcClient.update)
 Events.OnMainMenuEnter.Add(NLNpcClient.cleanup)
-if Events.OnDisconnect then
-    Events.OnDisconnect.Add(NLNpcClient.cleanup)
-end
 return NLNpcClient

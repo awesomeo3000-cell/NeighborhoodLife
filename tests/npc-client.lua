@@ -3,7 +3,9 @@
 package.path = arg[1] .. '/42/media/lua/client/?.lua;' .. package.path
 function isClient() return true end
 local hooks={Add=function() end}
-Events={OnTick=hooks,OnMainMenuEnter=hooks,OnCreatePlayer=hooks,OnRenderTick=hooks}
+local disconnectHook
+Events={OnTick=hooks,OnMainMenuEnter=hooks,OnCreatePlayer=hooks,OnRenderTick=hooks,
+    OnDisconnect={Add=function(f) disconnectHook=f end}}
 package.preload['ISUI/ISPanel']=function() end
 ISPanel={}
 function ISPanel:derive() local t={}; t.__index=t; return setmetatable(t,{__index=self}) end
@@ -56,4 +58,11 @@ if NLNpcClient.revision then
 end
 NLNpcClient.apply({revision=3,npcs={}})
 assert(NLNpcClient.bodies.marisol==nil and plumbobs['npc:marisol']==nil,'replica cleanup follows authoritative roster')
+if disconnectHook then
+    assert(disconnectHook,'disconnect cleanup hook registered')
+    disconnectHook('server restart','qa')
+else
+    NLNpcClient.cleanup()
+end
+assert(NLNpcClient.revision==0,'disconnect/menu cleanup resets NPC revision')
 print('PASS: client NPC native replica creation, authoritative interpolation, plumbob and cleanup')

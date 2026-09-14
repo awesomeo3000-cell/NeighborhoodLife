@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, wardrobe and relationship prototype (v1.4)
+# Neighborhood Life: careers, wardrobe and relationship prototype (v1.5)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -166,3 +166,7 @@ and guest. The production adapter now also registers `OnSave` so the final posit
 is persisted before a normal world save. This proves NPC ModData persistence across
 a dedicated-server restart, not native body reannouncement or a reconnect inside
 the same client process.
+
+The client replica layer now clears native NPC bodies, plumbobs and revision state
+on both `OnDisconnect` and `OnMainMenuEnter`, preventing stale replicas from
+surviving a normal engine disconnect transition.

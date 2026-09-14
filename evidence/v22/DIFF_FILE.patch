@@ -1,0 +1,25 @@
+--- baseline/42/media/lua/client/NL/Client.lua
++++ modified/42/media/lua/client/NL/Client.lua
+@@ -49,7 +49,9 @@
+         NLClient.request(i, "presence")
+     end
+ end)
+-Events.OnMainMenuEnter.Add(function()
++local function resetClientState()
+     NLClient.profiles = {}; NLClient.presence = nil; NLClient.npcPresence = nil; NLClient.presenceFrame = 0
+-end)
++end
++Events.OnMainMenuEnter.Add(resetClientState)
++if Events.OnDisconnect then Events.OnDisconnect.Add(resetClientState) end
+ return NLClient
+--- baseline/42/media/lua/client/NL/NpcClient.lua
++++ modified/42/media/lua/client/NL/NpcClient.lua
+@@ -120,4 +120,7 @@
+ 
+ Events.OnTick.Add(NLNpcClient.update)
+ Events.OnMainMenuEnter.Add(NLNpcClient.cleanup)
++if Events.OnDisconnect then
++    Events.OnDisconnect.Add(NLNpcClient.cleanup)
++end
+ return NLNpcClient
+BINARY FILE CHANGED: baseline/42/media/textures/NL_Plumbob.png -> modified/42/media/textures/NL_Plumbob.png
