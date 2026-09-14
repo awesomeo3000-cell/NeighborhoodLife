@@ -20,8 +20,10 @@ public final class HandsFreeQA {
                 Class<?> loading=Class.forName("zombie.gameStates.GameLoadingState",false,cl);
                 Object completed=null;
                 boolean menuSeen=false;
+                boolean reconnectRequested=false;
                 String lastState="";
                 String lastConnectState="";
+                Path reconnectMarker=Path.of(qaProfile,"reconnect-request");
                 for (int i=0;i<1200;i++) {
                     Thread.sleep(500);
                     Object machine=window.getField("states").get(null);
@@ -53,6 +55,28 @@ public final class HandsFreeQA {
                         Files.writeString(Path.of(qaProfile,"hands-free-qa.log"),
                             "PASS: main menu reached; QA Lua owns the no-Steam server connect\n",
                             StandardOpenOption.CREATE,StandardOpenOption.APPEND);
+                    }
+                    if(!reconnectRequested && Files.exists(reconnectMarker) && current != null
+                        && current.getClass().getName().equals("zombie.gameStates.IngameState")) {
+                        try {
+                            Class<?> client=Class.forName("zombie.network.GameClient",false,cl);
+                            Object instance=client.getField("instance").get(null);
+                            try {
+                                client.getMethod("doDisconnect",String.class)
+                                    .invoke(instance,"Neighborhood Life QA server restart");
+                            } catch(Exception gracefulFailure) {
+                                client.getMethod("connectionLost").invoke(instance);
+                            }
+                            reconnectRequested=true;
+                            Files.deleteIfExists(reconnectMarker);
+                            Files.writeString(Path.of(qaProfile,"hands-free-qa.log"),
+                                "PASS: QA requested engine disconnect for same-client reconnect\n",
+                                StandardOpenOption.CREATE,StandardOpenOption.APPEND);
+                        } catch(Exception disconnectFailure) {
+                            Files.writeString(Path.of(qaProfile,"hands-free-qa.log"),
+                                "FAIL: reconnect request "+disconnectFailure+"\n",
+                                StandardOpenOption.CREATE,StandardOpenOption.APPEND);
+                        }
                     }
                     if(current==null || !loading.isInstance(current) || current==completed) continue;
                     if(!(Boolean)read(loading,null,"done") || !(Boolean)read(loading,null,"showedClickToSkip")) continue;

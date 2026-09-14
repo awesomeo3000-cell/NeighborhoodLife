@@ -1,0 +1,8 @@
+ACTUAL MULTIPLAYER COMMAND: & .\tools\launch-multiplayer-qa.ps1
+ACTUAL MULTIPLAYER INPUT: E:\pzmod\test-profile; isolated no-Steam Project Zomboid Build 42.20.4, hands-free QA agent, no mouse or keyboard
+ACTUAL MULTIPLAYER LITERAL OUTPUT: QA multiplayer processes started: server=5872 host=34584 guest=4672
+ACTUAL MULTIPLAYER LITERAL OUTPUT: host and guest entered IngameState; host logged productionNpcReplicas=3 and productionPresenceMarkers=1; guest logged productionNpcReplicas=3 and productionPresenceMarkers=1.
+ACTUAL MULTIPLAYER RESULT: the production-only package with the 16x22 marker geometry loaded in a real two-client Build 42 run, and authoritative presence plus three NPC replicas continued to arrive on both clients.
+ACTUAL MULTIPLAYER CLASSIFICATION: actual two-client Build 42 engine gameplay evidence. It does not prove native remote-body reannouncement, same-client reconnect, or stable native remote movement.
+ACTUAL MULTIPLAYER EXIT: 0 for the launcher runner; server PID 5872, host PID 34584 and guest PID 4672 were stopped after capture.
+ACTUAL MULTIPLAYER EVIDENCE: E:\pzmod\evidence\v28\mp-host-relevant.log; E:\pzmod\evidence\v28\mp-guest-relevant.log; E:\pzmod\evidence\v28\mp-server-relevant.log

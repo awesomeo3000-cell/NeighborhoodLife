@@ -11,6 +11,7 @@ New-Item -ItemType Directory -Force $evidence | Out-Null
 
 foreach ($profile in $profiles) {
     New-Item -ItemType Directory -Force "$profile\mods" | Out-Null
+    [System.IO.File]::Delete((Join-Path $profile 'reconnect-request'))
     foreach ($modId in @('NeighborhoodLife','NeighborhoodQA')) {
         $stale = Join-Path $profile "mods\$modId"
         if (Test-Path $stale) { Remove-Item -LiteralPath $stale -Recurse -Force }

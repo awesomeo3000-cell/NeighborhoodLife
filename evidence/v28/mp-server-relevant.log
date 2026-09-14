@@ -1,0 +1,30 @@
+[13-09-26 22:13:12.367] LOG  : Lua          f:693 st:203,908,421> NLQA MP SERVER GAME-SERVER API: api=nil apiOk=true playersOk=false players=nil.
+[13-09-26 22:13:14.016] LOG  : Lua          f:710 st:203,910,069> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host.
+[13-09-26 22:13:15.361] LOG  : Lua          f:723 st:203,911,413> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest.
+[13-09-26 22:13:19.004] LOG  : Lua          f:760 st:203,915,056> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host.
+[13-09-26 22:13:20.367] LOG  : Lua          f:773 st:203,916,419> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest.
+[13-09-26 22:13:24.013] LOG  : Lua          f:810 st:203,920,065> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host.
+[13-09-26 22:13:25.363] LOG  : Lua          f:823 st:203,921,416> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest.
+[13-09-26 22:13:29.007] LOG  : Lua          f:860 st:203,925,059> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host.
+[13-09-26 22:13:30.360] LOG  : Lua          f:873 st:203,926,412> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest.
+[13-09-26 22:13:34.010] LOG  : Lua          f:910 st:203,930,062> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host.
+[13-09-26 22:13:35.364] LOG  : Lua          f:923 st:203,931,416> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest.
+[13-09-26 22:13:39.014] LOG  : Lua          f:960 st:203,935,067> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-host.
+[13-09-26 22:13:40.356] LOG  : Lua          f:973 st:203,936,408> NLQA PRODUCTION AUTHORITY COMMAND: presence username=nl-guest.
+[13-09-26 22:13:05.994] 127.0.0.1 "nl-host" NeighborhoodLife.refresh @ 8283,11720,1.
+[13-09-26 22:13:08.994] 127.0.0.1 "nl-host" NeighborhoodLife.presence @ 8283,11720,1.
+[13-09-26 22:13:12.364] 127.0.0.1 "nl-guest" NeighborhoodLife.refresh @ 8469,11558,1.
+[13-09-26 22:13:14.015] 127.0.0.1 "nl-host" NeighborhoodLife.presence @ 8283,11720,1.
+[13-09-26 22:13:15.359] 127.0.0.1 "nl-guest" NeighborhoodLife.presence @ 8469,11558,1.
+[13-09-26 22:13:19.002] 127.0.0.1 "nl-host" NeighborhoodLife.presence @ 8283,11720,1.
+[13-09-26 22:13:19.560] 127.0.0.1 "nl-host" NeighborhoodLife.select @ 8283,11720,1.
+[13-09-26 22:13:20.077] 127.0.0.1 "nl-host" NeighborhoodLife.deliver @ 8283,11720,1.
+[13-09-26 22:13:20.365] 127.0.0.1 "nl-guest" NeighborhoodLife.presence @ 8469,11558,1.
+[13-09-26 22:13:24.012] 127.0.0.1 "nl-host" NeighborhoodLife.presence @ 8283,11720,1.
+[13-09-26 22:13:25.362] 127.0.0.1 "nl-guest" NeighborhoodLife.presence @ 8469,11558,1.
+[13-09-26 22:13:29.005] 127.0.0.1 "nl-host" NeighborhoodLife.presence @ 8283,11720,1.
+[13-09-26 22:13:30.359] 127.0.0.1 "nl-guest" NeighborhoodLife.presence @ 8469,11558,1.
+[13-09-26 22:13:34.009] 127.0.0.1 "nl-host" NeighborhoodLife.presence @ 8283,11720,1.
+[13-09-26 22:13:35.362] 127.0.0.1 "nl-guest" NeighborhoodLife.presence @ 8469,11558,1.
+[13-09-26 22:13:39.013] 127.0.0.1 "nl-host" NeighborhoodLife.presence @ 8283,11720,1.
+[13-09-26 22:13:40.355] 127.0.0.1 "nl-guest" NeighborhoodLife.presence @ 8469,11558,1.

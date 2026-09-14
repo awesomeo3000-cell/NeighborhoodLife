@@ -12,11 +12,11 @@ NLPlumbob.texturePath = "media/textures/NL_Plumbob.png"
 NLPlumbob.defaultColor = { r = 0.22, g = 0.88, b = 0.58 }
 NLPlumbob.remoteColor = { r = 0.28, g = 0.86, b = 0.95 }
 -- Keep the marker clearly readable while leaving the character silhouette
--- dominant. The smaller gem sits close above the head instead of floating
--- far above the player model.
-NLPlumbob.baseWidth = 16
-NLPlumbob.baseHeight = 22
-NLPlumbob.baseLift = 96
+-- dominant.  The bottom tip keeps the same head-level anchor as the prior
+-- compact pass, so shrinking cannot pull the gem down over the model.
+NLPlumbob.baseWidth = 20
+NLPlumbob.baseHeight = 28
+NLPlumbob.baseLift = 104
 
 function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, lift)
     return math.floor(screenX - left - width / 2), math.floor(screenY - top - height - lift)

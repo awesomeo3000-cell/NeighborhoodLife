@@ -1,0 +1,69 @@
+Neighborhood Life v1.9.1 plumbob geometry and QA reconnect-tooling verification
+
+CHANGED BRANCH/FIELD: production character-marker geometry in E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Plumbob.lua. NLPlumbob.baseWidth changed from 20 to 16, baseHeight from 28 to 22, and baseLift from 104 to 96. The marker remains world-to-screen anchored to the character, with its bottom tip closer above the model. QA-only reconnect-request cleanup was added to E:\pzmod\tools\launch-multiplayer-qa.ps1, and the hands-free QA agent jar was rebuilt; neither enters the production package. SCOPE.md still preserves the full Sims-inspired scope and open multiplayer/NPC gates.
+BASELINE PLUMBOB SHA256: 1FAD55E1367C3CEE0D967C60F319272D31BFD225FCBE0A19286619724343050D
+MODIFIED PLUMBOB SHA256: 5D673B8B02AFF48307F2CC3D4BF2D6759DAF9DB9BE155E8861FA32AB29049132
+QA AGENT JAR SHA256: 348A38844F35C23F63B84E640048B6F4B98639D61E5E6A2C4723E035308479AD
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v28\baseline
+BASELINE INPUT: E:\pzmod
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE RESULT: HEAD production baseline passed mock, syntax and installed-game engine-VM suites.
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED RESULT: changed plumbob geometry and all existing production suites passed.
+MODIFIED EXIT: 0
+
+QA BUILD COMMAND: & 'C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin\javac.exe' -d tests tests\HandsFreeQA.java; & 'C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin\jar.exe' cfm tests\hands-free-qa.jar META-INF\MANIFEST.MF -C tests HandsFreeQA.class
+QA BUILD INPUT: E:\pzmod
+QA BUILD LITERAL OUTPUT: JAVAC_EXIT=0; JAR_EXIT=0; jar tf returned META-INF/, META-INF/MANIFEST.MF, HandsFreeQA.class
+QA BUILD RESULT: QA-only hands-free agent rebuilt with marker-triggered engine disconnect probe; production mod excludes it.
+QA BUILD EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v28 --baseline evidence\v28\baseline
+PACKAGE INPUT: E:\pzmod
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v28\MODIFIED_FILE.zip
+PACKAGE RESULT: production-only package and baseline diff created.
+PACKAGE EXIT: 0
+
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; z=zipfile.ZipFile('evidence/v28/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('PLUMBOB',any(n.endswith('42/media/lua/client/NL/Plumbob.lua') for n in z.namelist())); print('GEOMETRY',16,22,96)"
+PACKAGE VALIDATION INPUT: E:\pzmod
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; PLUMBOB True; GEOMETRY 16 22 96
+PACKAGE VALIDATION RESULT: valid production ZIP; QA helpers remain excluded.
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v28/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' 'E:\pzmod\evidence\v28\ROLLBACK.sh'
+ROLLBACK INPUT: copied the modified E:\pzmod\NeighborhoodLife tree into E:\pzmod\evidence\v28\rollback-target\NeighborhoodLife
+ROLLBACK LITERAL OUTPUT: ROLLBACK RESTORED: /e/pzmod/evidence/v28/rollback-target/NeighborhoodLife from /e/pzmod/evidence/v28/baseline
+ROLLBACK RESULT: BASELINE_TREE_SHA256 bb0fb4596c7c467ed624f13f0c5e667113de3ab24ae7d7fc6917dd1ab54b4681; ROLLBACK_TREE_SHA256 bb0fb4596c7c467ed624f13f0c5e667113de3ab24ae7d7fc6917dd1ab54b4681; RESTORED_MATCH True; MODIFIED_DIFFERS True. The production source remained modified after the rollback-copy test.
+ROLLBACK EXIT: 0
+
+ACTUAL MULTIPLAYER COMMAND: & .\tools\launch-multiplayer-qa.ps1
+ACTUAL MULTIPLAYER INPUT: E:\pzmod\test-profile; isolated no-Steam Project Zomboid Build 42.20.4, hands-free QA agent, no mouse or keyboard
+ACTUAL MULTIPLAYER LITERAL OUTPUT: QA multiplayer processes started: server=5872 host=34584 guest=4672
+ACTUAL MULTIPLAYER LITERAL OUTPUT: host and guest entered IngameState; host logged productionNpcReplicas=3 and productionPresenceMarkers=1; guest logged productionNpcReplicas=3 and productionPresenceMarkers=1.
+ACTUAL MULTIPLAYER RESULT: production-only package with 16x22 marker geometry loaded in a real two-client Build 42 run, and authoritative presence plus three NPC replicas continued to arrive on both clients.
+ACTUAL MULTIPLAYER CLASSIFICATION: actual two-client Build 42 engine gameplay evidence; not a mock test and not a Kahlua-only claim. It does not prove native remote-body reannouncement, same-client reconnect, or stable native remote movement.
+ACTUAL MULTIPLAYER EXIT: 0 for launcher runner; server PID 5872, host PID 34584 and guest PID 4672 were stopped after capture.
+ACTUAL MULTIPLAYER EVIDENCE: E:\pzmod\evidence\v28\mp-host-relevant.log; E:\pzmod\evidence\v28\mp-guest-relevant.log; E:\pzmod\evidence\v28\mp-server-relevant.log
+
+CLASSIFICATION: Lua suites are mock tests; installed-game Kahlua suites execute production Lua in the engine VM with explicit mocks; v28 multiplayer logs are actual two-client Build 42 evidence. The smaller plumbob is validated at source/package level and the real two-client loop still loads, but this run does not claim visual screenshot equivalence. Same-client reconnect, native body reannouncement, stable native remote movement, client-acquisition inventory sync, household life, and aspirations/home activities remain open SCOPE.md gates.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v28\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v28\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v28\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v28\ROLLBACK.sh
+SHA256 MODIFIED_FILE: B5334C4D40D9FBED3F3C5EE79B1DBB1C4C0F12E51F6B2320916C9EF872589B0B
+SHA256 DIFF_FILE: A14B6E454853E66581ABF551C45AF171F5716785D1AB25205B40206F8FFD4A66
+SHA256 ROLLBACK: 6EEB80E1F4ECDE6DBFC9A0FF07D8F133662A2B34D8E8CFD62E5B77B1A74603A3
+
+SAME-CLIENT RECONNECT PROBE COMMAND: Set-Content E:\pzmod\test-profile\mp-host\reconnect-request ''; then inspect the hands-free QA log; stop exact observed PIDs with Stop-Process -Id 24668,26932,23352 -Force
+SAME-CLIENT RECONNECT PROBE INPUT: isolated host profile while the Build 42 client was in IngameState; no mouse or keyboard
+SAME-CLIENT RECONNECT PROBE LITERAL OUTPUT: PASS: QA requested engine disconnect for same-client reconnect
+SAME-CLIENT RECONNECT PROBE RESULT: the QA agent consumed and deleted the marker and invoked the reflective GameClient disconnect path. The log ended immediately after that request with no later MainScreenState, reconnect CONNECTED, or new production presence sequence before exact-PID shutdown. Same-client reconnect remains an observed blocker; this probe does not claim completion.
+SAME-CLIENT RECONNECT PROBE EXIT: 0 for the marker/cleanup command; gameplay reconnect result remains open.
+SAME-CLIENT RECONNECT EVIDENCE: E:\pzmod\evidence\v28\same-client-reconnect-probe.log
