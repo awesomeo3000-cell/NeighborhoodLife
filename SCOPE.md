@@ -1,4 +1,4 @@
-# Neighborhood Life — full scope and evidence ledger (v1.72)
+# Neighborhood Life — full scope and evidence ledger (v1.73)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
@@ -1147,6 +1147,24 @@ player body replication or completion of the remaining multiplayer gates.
 - The helper result is `PASS: actual host-plus-guest partnership snapshot and
   rejection loop completed` in
   `evidence/v102/actual/partnership-h/RESULT.txt`. This is actual gameplay
-  evidence, distinct from mock/unit and installed Kahlua VM tests. Native NPC
-  server-body reannouncement remains open because the installed server still
-  exposes `GameServer=nil`, `Java=nil`, and `getClass=nil`.
+evidence, distinct from mock/unit and installed Kahlua VM tests. Native NPC
+server-body reannouncement remains open because the installed server still
+exposes `GameServer=nil`, `Java=nil`, and `getClass=nil`.
+
+## v1.73 native roster registration groundwork
+
+- When the `GameServer` class bridge is available, production
+  `NLNpcAuthority.reannounceTo` now registers each authored body in the public
+  `Players`, `IDToPlayerMap`, and `UserNameToPlayerMap` registries before
+  invoking `sendPlayerConnected`. Each Java collection call is checked, and no
+  client address is assigned to a server-owned NPC.
+- Mock/unit evidence: `tests/npc-authority.lua` verifies all three stable online
+  IDs, usernames, roster additions, the global bridge route, and the loaded
+  class route. The consolidated installed-game Kahlua suite passes. These are
+  not native multiplayer evidence.
+- Actual evidence: a fresh Build 42.20.4 no-Steam host-plus-guest run in
+  `evidence/v103/actual/native-roster-d/` again logged
+  `before=2 after=5 added=3`, while the server reported
+  `GameServer=nil`, `Java=nil`, and `getClass=nil`; neither client received an
+  engine-native NPC body. The `npc_presence` path remains the verified
+  compatibility route, and native server-body reannouncement is still open.

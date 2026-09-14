@@ -121,6 +121,52 @@ local function gameServerApi()
 end
 NLNpcAuthority.resolveGameServer = gameServerApi
 
+local function javaCall(receiver, methodName, ...)
+    if not receiver then return false, nil end
+    local methodOk, method = pcall(function() return receiver[methodName] end)
+    if not methodOk or not method then return false, nil end
+    return pcall(method, receiver, ...)
+end
+
+-- A server-created IsoPlayer must occupy the same native registries as a
+-- connected player before ConnectedPlayer is sent.  Build 42 keeps these
+-- registries public on GameServer, but only some Lua hosts publish the class
+-- bridge.  Registration is therefore additive and verified per Java call;
+-- the npc_presence compatibility packet remains authoritative when the bridge
+-- is absent.
+local function registerNativeBody(api, body)
+    if not api or not body then return 0 end
+    local idOk, onlineId = pcall(body.getOnlineID, body)
+    if not idOk or tonumber(onlineId) == nil then return 0 end
+    onlineId = tonumber(onlineId)
+    local nameOk, username = pcall(body.getUsername, body)
+    if not nameOk or not username or username == "" then return 0 end
+    local registered = 0
+
+    local rosterOk, roster = pcall(function() return api.Players end)
+    if rosterOk and roster then
+        local containsOk, contains = javaCall(roster, "contains", body)
+        if containsOk and not contains then
+            local addOk = javaCall(roster, "add", body)
+            if addOk then registered = registered + 1 end
+        end
+    end
+
+    local mapSpecs = {
+        { field = "IDToPlayerMap", key = onlineId, value = body },
+        { field = "UserNameToPlayerMap", key = username, value = onlineId },
+    }
+    for _, spec in ipairs(mapSpecs) do
+        local fieldOk, map = pcall(function() return api[spec.field] end)
+        if fieldOk and map then
+            local putOk = javaCall(map, "put", spec.key, spec.value)
+            if putOk then registered = registered + 1 end
+        end
+    end
+    return registered
+end
+NLNpcAuthority.registerNativeBody = registerNativeBody
+
 function NLNpcAuthority.reannounceTo(player)
     if not player then return 0 end
     local api, source = gameServerApi()
@@ -130,8 +176,15 @@ function NLNpcAuthority.reannounceTo(player)
     local sent = 0
     for _, body in pairs(NLNpcAuthority.bodies) do
         if body then
+            local registered = registerNativeBody(api, body)
             local ok = pcall(api.sendPlayerConnected, body, connection)
-            if ok then sent = sent + 1 end
+            if ok then
+                sent = sent + 1
+                if registered > 0 then
+                    emit("ROSTER source=" .. tostring(source) .. " id=" .. tostring(body:getOnlineID())
+                        .. " fields=" .. tostring(registered))
+                end
+            end
         end
     end
     if sent > 0 then emit("REANNOUNCE source=" .. tostring(source) .. " sent=" .. tostring(sent)) end

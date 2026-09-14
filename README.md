@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.72)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.73)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -1064,3 +1064,21 @@ and guest `Not completed: Already in a partnership.`. This closes the direct
 two-client partnership synchronization gate, while native NPC server-body
 reannouncement remains blocked by the Build 42 Lua bridge. QA helpers stay
 outside the production package.
+
+## v1.73 native roster registration groundwork
+
+When a Build 42 installation publishes the `GameServer` class to Lua, the
+production NPC authority now registers each authored native body in the
+server's public `Players`, `IDToPlayerMap`, and `UserNameToPlayerMap` registries
+before sending `ConnectedPlayer`. The registration is verified per Java call
+and does not invent an address or claim ownership for an NPC. The existing
+`npc_presence` compatibility channel remains the fallback when the bridge is
+not published.
+
+The Lua 5.1 NPC contract now covers the roster fields and the installed-game
+Kahlua suite remains green. A fresh actual Build 42.20.4 host-plus-guest probe
+still reports `GameServer=nil`, `Java=nil`, and `getClass=nil`; adding three
+bodies to the server online-player collection still produced no engine-native
+NPC body on either client. Evidence is in
+`evidence/v103/actual/native-roster-d/`, so native server-body replication
+remains an explicit open gate rather than a compatibility-path claim.

@@ -38,7 +38,8 @@ BehaviorResult={Succeeded='succeeded'}
 local function bodyAt(cell,desc,x,y,z)
     local b={x=x+0.5,y=y+0.5,z=z,mod={}}
     function b:setNpc(v) self.npc=v end; function b:isNpc() return self.npc end
-    function b:setUsername(v) self.username=v end; function b:setGodMod() end
+    function b:setUsername(v) self.username=v end; function b:getUsername() return self.username end
+    function b:setGodMod() end
     function b:getModData() return self.mod end; function b:dressInNamedOutfit() end
     function b:setX(v) self.x=v end; function b:setY(v) self.y=v end; function b:getX() return self.x end
     function b:getY() return self.y end; function b:getZ() return self.z end
@@ -58,8 +59,21 @@ local function bodyAt(cell,desc,x,y,z)
 end
 IsoPlayer={new=bodyAt}
 local reannounced={}
+local function javaMap()
+    local map={data={}}
+    function map:put(key,value) local previous=self.data[key]; self.data[key]=value; return previous end
+    return map
+end
+local nativeMaps={
+    IDToPlayerMap=javaMap(), UserNameToPlayerMap=javaMap(),
+}
+local nativeRoster={items={}}
+function nativeRoster:contains(value) for _,item in ipairs(self.items) do if item==value then return true end end return false end
+function nativeRoster:add(value) self.items[#self.items+1]=value end
 GameServer={
-    getConnectionFromPlayer=function(target) return {target=target} end,
+    Players=nativeRoster, IDToPlayerMap=nativeMaps.IDToPlayerMap,
+    UserNameToPlayerMap=nativeMaps.UserNameToPlayerMap,
+    getConnectionFromPlayer=function(target) return {target=target,getConnectedGUID=function() return 9001 end} end,
     sendPlayerConnected=function(source, connection)
         reannounced[#reannounced+1]={source=source,connection=connection}
     end,
@@ -123,6 +137,13 @@ if NLNpcAuthority.reannounceTo then
     assert(NLNpcAuthority.reannounceTo(player)==expectedBodies
         and #reannounced==expectedBodies,
         'native reannounce adapter sends authored bodies to a connected player')
+    assert(nativeMaps.IDToPlayerMap.data[30001]==NLNpcAuthority.bodies.marisol
+        and nativeMaps.IDToPlayerMap.data[30002]==NLNpcAuthority.bodies.kenji
+        and nativeMaps.IDToPlayerMap.data[30003]==NLNpcAuthority.bodies.amara,
+        'native reannounce registers authored online ids in GameServer')
+    assert(nativeMaps.UserNameToPlayerMap.data['Marisol Vega [Neighborhood Life]']==30001
+        and #nativeRoster.items==expectedBodies,
+        'native reannounce registers usernames and adds each body to the native roster')
     if NLNpcAuthority.resolveGameServer then
         local globalGameServer=GameServer
         GameServer=nil
