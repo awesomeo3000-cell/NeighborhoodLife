@@ -73,6 +73,12 @@ if NLHouseholds.storageCount then
     assert(NLHouseholds.storageCount(home, 'Base.RippedSheets') == 0, 'guest consumed shared storage quantity')
     assert(#players[2].items == 3, 'guest retrieved shared item into main inventory')
 end
+if NLHouseholdFurnishings and NLHouseholdFurnishings.isNearby then
+    NLHouseholdFurnishings.isNearby = function() return true end
+    command(players[1], 'furnishing', {action='store', item='Base.RippedSheets', amount=1})
+    assert(NLHouseholds.storageCount(home, 'Base.RippedSheets') == 1,
+        'furnishing command stores through the native fixture')
+end
 command(players[1], 'task', {task='tidy'})
 assert(world.households[hostProfile.householdId].tasks.tidy == 1, 'daily replay rejected')
 if NLHouseholds.transferOwner then

@@ -60,6 +60,8 @@ def suites(target: Path, engine: bool, record: list[str]) -> None:
         suite_names.append("household-furnishings")
     if (target / "42/media/lua/client/NL/HouseholdFurnishingClient.lua").exists():
         suite_names.append("household-furnishing-client")
+    if (target / "42/media/lua/client/NL/HouseholdFurnishingMenu.lua").exists():
+        suite_names.append("household-furnishing-menu")
     if (target / "42/media/lua/server/NL/NpcAuthority.lua").exists():
         suite_names.append("npc-authority")
     if (target / "42/media/lua/client/NL/NpcClient.lua").exists():

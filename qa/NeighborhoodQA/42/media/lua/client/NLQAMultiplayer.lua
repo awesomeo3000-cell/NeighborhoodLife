@@ -20,8 +20,11 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     householdInviteDue = 0, householdMembersObserved = false,
     householdStoreSent = false, householdStoreObserved = false,
     householdRetrieveSent = false, householdRetrieveObserved = false,
+    householdFurnishingSent = false, householdFurnishingObserved = false,
     householdTransferSent = false, householdTransferObserved = false,
     householdTransferDue = 0, householdTaskDue = 0, householdResetSent = false,
+    householdDirectCreateDue = 180,
+    householdFurnishingPrepared = false, householdFurnishingActionDue = 0,
     wardrobeSeedSent = false, wardrobeSeeded = false, wardrobePickupAttempted = false,
     wardrobePickupObserved = false, wardrobePickupNextAttempt = 0,
     wardrobeItemTypes = {}, wardrobeWearSent = false, wardrobeWearObserved = false,
@@ -41,6 +44,20 @@ NLQAMultiplayer.socialCooldownFrames = 3600
 
 local function emit(label, value)
     print("NLQA MP " .. label .. ": " .. tostring(value))
+end
+
+local function requestHouseholdFurnishing(action)
+    local player = getSpecificPlayer(0)
+    if not player then return false end
+    pcall(require, "NL/HouseholdFurnishingMenu")
+    if NLHouseholdFurnishingMenu and NLHouseholdFurnishingMenu.request then
+        NLHouseholdFurnishingMenu.request(player, action)
+        return true
+    end
+    NLHouseholdClient.request(0, "furnishing", {
+        action = action, item = "Base.RippedSheets", amount = 1,
+    })
+    return true
 end
 
 local function qaIdentity()
@@ -308,6 +325,28 @@ end
 
 local function positionHostForSocial(targetId)
     return positionClientForSocial("nl-host", targetId)
+end
+
+local function positionHostForHousehold()
+    if qaIdentity().username ~= "nl-host" then return false end
+    local state = NLHouseholdClient and NLHouseholdClient.snapshots
+        and NLHouseholdClient.snapshots[0]
+    local home = state and state.household and state.household.home
+    local player = getSpecificPlayer(0)
+    if not home or not player then return false end
+    local x, y, z = (tonumber(home.x) or player:getX()) + 0.5,
+        (tonumber(home.y) or player:getY()) + 0.5, tonumber(home.z) or player:getZ()
+    if player.teleportTo then player:teleportTo(x, y, z)
+    else
+        player:setX(x); player:setY(y)
+        if player.setZ then player:setZ(z) end
+        local cell = getCell and getCell()
+        local square = cell and cell:getGridSquare(home.x, home.y, home.z)
+        if square and player.setCurrent then player:setCurrent(square) end
+    end
+    emit("HOUSEHOLD VIEWPOINT", string.format("host moved to shared home tile x=%d y=%d z=%d",
+        tonumber(home.x) or 0, tonumber(home.y) or 0, tonumber(home.z) or 0))
+    return true
 end
 
 local function positionGuestForSocial(targetId)
@@ -746,23 +785,33 @@ Events.OnServerCommand.Add(function(module, command, args)
         end
         if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdStoreSent
                 and not NLQAMultiplayer.householdStoreObserved and args.message
-                and string.find(args.message,"updated shared storage",1,true) then
+                and string.find(args.message,"used household storage",1,true) then
             NLQAMultiplayer.householdStoreObserved=true
             NLQAMultiplayer.householdTransferDue=NLQAMultiplayer.socialFrame+30
             NLQAMultiplayer.householdTaskDue=NLQAMultiplayer.socialFrame+60
-            emit("HOUSEHOLD STORE RESULT", tostring(args.message))
+            NLQAMultiplayer.householdFurnishingObserved=true
+            emit("HOUSEHOLD FURNISHING RESULT", tostring(args.message))
+        end
+        if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdStoreSent
+                and not NLQAMultiplayer.householdStoreObserved and args.message
+                and string.find(args.message,"Stand beside the household storage",1,true) then
+            NLQAMultiplayer.householdStoreSent=false
+            NLQAMultiplayer.householdFurnishingPrepared=false
+            NLQAMultiplayer.householdFurnishingActionDue=NLQAMultiplayer.socialFrame+60
+            emit("HOUSEHOLD FURNISHING RETRY", "server position was not beside the native object")
         end
         if qaIdentity().username=="nl-guest" and home
                 and not NLQAMultiplayer.householdRetrieveSent
                 and (home.storage and (home.storage["Base.RippedSheets"] or 0) > 0) then
             NLQAMultiplayer.householdRetrieveSent=true
-            NLHouseholdClient.request(0,"retrieve",{item="Base.RippedSheets",amount=1})
-            emit("HOUSEHOLD RETRIEVE", "Base.RippedSheets x1")
+            requestHouseholdFurnishing("retrieve")
+            NLQAMultiplayer.householdFurnishingSent=true
+            emit("HOUSEHOLD RETRIEVE", "Base.RippedSheets x1 source=production-world-menu-callback")
         elseif qaIdentity().username=="nl-guest" and NLQAMultiplayer.householdRetrieveSent
                 and not NLQAMultiplayer.householdRetrieveObserved and args.message
-                and string.find(args.message,"updated shared storage",1,true) then
+                and string.find(args.message,"used household storage",1,true) then
             NLQAMultiplayer.householdRetrieveObserved=true
-            emit("HOUSEHOLD RETRIEVE RESULT", tostring(args.message))
+            emit("HOUSEHOLD FURNISHING RETRIEVE RESULT", tostring(args.message))
         end
         if qaIdentity().username=="nl-host" and home
                 and NLQAMultiplayer.householdTransferSent
@@ -810,6 +859,17 @@ Events.OnRenderTick.Add(function()
             NLQAMultiplayer.householdResetSent=true
             emit("HOUSEHOLD RESET", "isolated QA setup")
         end
+    end
+    -- The household vertical slice can run independently of the longer career
+    -- probe. This keeps the actual storage furnishing check repeatable after a
+    -- persisted career restart while still using the production command path.
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdResetSent
+            and NLQAMultiplayer.snapshots>0
+            and not NLQAMultiplayer.householdCreateSent
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.householdDirectCreateDue then
+        NLQAMultiplayer.householdCreateSent=true
+        NLHouseholdClient.request(0,"create")
+        emit("HOUSEHOLD CREATE", "Neighborhood Home source=direct-vertical-slice")
     end
     if NLQAMultiplayer.socialFrame>=900 and NLQAMultiplayer.socialPositioned
             and not NLQAMultiplayer.socialRefreshSent then
@@ -1093,9 +1153,16 @@ Events.OnRenderTick.Add(function()
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdMembersObserved
             and not NLQAMultiplayer.householdStoreSent
             and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.householdTaskDue then
-        NLQAMultiplayer.householdStoreSent=true
-        NLHouseholdClient.request(0,"store",{item="Base.RippedSheets",amount=1})
-        emit("HOUSEHOLD STORE", "Base.RippedSheets x1")
+        if not NLQAMultiplayer.householdFurnishingPrepared then
+            NLQAMultiplayer.householdFurnishingPrepared=positionHostForHousehold()
+            NLQAMultiplayer.householdFurnishingActionDue=NLQAMultiplayer.socialFrame+30
+            emit("HOUSEHOLD FURNISHING PREPARED", "waiting for server position sync")
+        elseif NLQAMultiplayer.socialFrame>=NLQAMultiplayer.householdFurnishingActionDue then
+            NLQAMultiplayer.householdStoreSent=true
+            requestHouseholdFurnishing("store")
+            NLQAMultiplayer.householdFurnishingSent=true
+            emit("HOUSEHOLD FURNISHING", "store Base.RippedSheets x1 source=production-world-menu-callback")
+        end
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdStoreObserved
             and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.householdTransferDue

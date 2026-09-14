@@ -61,6 +61,18 @@ function NLHouseholdFurnishings.find(household)
     return household and findIn(squareFor(household.furnishing), household.id) or nil
 end
 
+function NLHouseholdFurnishings.isNearby(household, player, radius)
+    if not household or not player then return false end
+    local furnishing = household.furnishing or household.home
+    if not furnishing or not player.getX or not player.getY then return false end
+    local z = math.floor(tonumber(player.getZ and player:getZ() or 0) or 0)
+    if z ~= math.floor(tonumber(furnishing.z) or 0) then return false end
+    local dx = player:getX() - (tonumber(furnishing.x) or 0)
+    local dy = player:getY() - (tonumber(furnishing.y) or 0)
+    local range = tonumber(radius) or 4.0
+    return dx * dx + dy * dy <= range * range
+end
+
 function NLHouseholdFurnishings.ensure(household)
     if not household or not household.home then emit("SKIP reason=no-household-home"); return nil end
     if not IsoObject then emit("SKIP reason=IsoObject-unavailable"); return nil end

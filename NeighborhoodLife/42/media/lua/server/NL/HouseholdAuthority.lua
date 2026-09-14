@@ -155,11 +155,29 @@ local function storageCommand(world, household, player, key, args, mode)
     return ok, message
 end
 
+local function furnishingCommand(world, household, player, key, args)
+    if not NLHouseholdFurnishings or not NLHouseholdFurnishings.isNearby then
+        return false, "Household storage is unavailable"
+    end
+    NLHouseholdFurnishings.ensure(household)
+    if not NLHouseholdFurnishings.isNearby(household, player) then
+        return false, "Stand beside the household storage"
+    end
+    local action = args and args.action
+    if action ~= "store" and action ~= "retrieve" then
+        return false, "Choose store or retrieve"
+    end
+    local ok, message = storageCommand(world, household, player, key, args, action)
+    if not ok then return false, message end
+    return true, "Used household storage: " .. message
+end
+
 function NLHouseholdAuthority.command(module, command, player, args)
     if module ~= NLHouseholdAuthority.module or not player or player:isDead() then return end
     if command ~= "refresh" and command ~= "create" and command ~= "invite"
             and command ~= "accept" and command ~= "leave" and command ~= "task"
-            and command ~= "store" and command ~= "retrieve" and command ~= "transfer" then return end
+            and command ~= "store" and command ~= "retrieve" and command ~= "furnishing"
+            and command ~= "transfer" then return end
     if type(args) ~= "table" then args = {} end
     local key, now = NLAuthority.key(player), getTimestampMs()
     if NLHouseholdAuthority.lastRequest[key] and now - NLHouseholdAuthority.lastRequest[key] < 200 then return end
@@ -287,6 +305,20 @@ function NLHouseholdAuthority.command(module, command, player, args)
                 if NLQAMultiplayerServer then
                     print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key)
                         .. " command=" .. tostring(command) .. " message=" .. tostring(message))
+                end
+                return
+            end
+        end
+    elseif command == "furnishing" then
+        if not household then message = "Join a household first"
+        else
+            local ok
+            ok, message = furnishingCommand(world, household, player, key, args)
+            if ok then
+                notifyMembers(world, household, key .. " used household storage")
+                if NLQAMultiplayerServer then
+                    print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key)
+                        .. " command=furnishing message=" .. tostring(message))
                 end
                 return
             end

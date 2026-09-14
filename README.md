@@ -561,6 +561,18 @@ from restoring the old large native-size gem, while the shorter lift keeps the
 marker close above the character model. This is a presentation change; it does
 not change NPC, multiplayer, or persistence behavior.
 
+## v1.45 functional household storage furnishing
+
+The native household storage object now has a world-object context menu with
+`Store 1 Ripped Sheet` and `Take 1 Ripped Sheet` actions. The production client
+routes those actions through the server, which validates the household member,
+the furnishing tile, action, item type and quantity before changing shared
+storage. The actual host-plus-guest run in `evidence/v65/` stores on the host,
+retrieves on the guest, then continues through the existing ownership-transfer
+request. The isolated save already had the daily household task claimed, so
+the later task probe correctly returned the server's replay guard. The menu
+and engine-VM checks remain distinct from that gameplay evidence.
+
 ## v1.44 household ownership transfer
 
 The Neighborhood Home panel now exposes a server-authoritative `Transfer owner`

@@ -50,4 +50,5 @@ end
 
 Events.OnServerCommand.Add(NLHouseholdClient.receive)
 Events.OnMainMenuEnter.Add(function() NLHouseholdClient.snapshots = {} end)
+pcall(require, "NL/HouseholdFurnishingMenu")
 return NLHouseholdClient
