@@ -42,6 +42,19 @@ function NeighborhoodNeeds:new(index, player)
     return o
 end
 
+function NeighborhoodNeeds.playerName(player, index)
+    if player and player.getUsername then
+        local ok, name = pcall(player.getUsername, player)
+        if ok and name and name ~= "" then return tostring(name) end
+    end
+    return "Player " .. tostring((index or 0) + 1)
+end
+
+function NeighborhoodNeeds.header(player, index)
+    return "NEEDS / " .. NeighborhoodNeeds.playerName(player, index)
+        .. " / LOWER % IS BETTER"
+end
+
 function NeighborhoodNeeds:onMouseDown(x, y)
     if y <= self.headerHeight then
         self.collapsed = not self.collapsed
@@ -65,7 +78,8 @@ function NeighborhoodNeeds:prerender()
     self:setX(left + 12)
     self:setY(top + math.max(12, height - self.height - 84))
     ISPanel.prerender(self)
-    self:drawText("NEEDS / LOWER % IS BETTER", 12, 7, 0.12, 0.38, 0.63, 1, UIFont.Small)
+    self.title = self.header(player, self.playerIndex)
+    self:drawText(self.title, 12, 7, 0.12, 0.38, 0.63, 1, UIFont.Small)
     self:drawTextRight(self.collapsed and "+" or "-", self.width - 12, 7, 0.12, 0.38, 0.63, 1, UIFont.Small)
     if self.collapsed then return end
     for i, row in ipairs(self.rows) do

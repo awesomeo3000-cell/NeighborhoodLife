@@ -2,7 +2,7 @@
 NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     presenceCount = 0, movementFrame = 0, movementSent = false,
     remoteScanFrame = 0, remoteScanCount = 0, remoteScanLogged = false,
-    plumbobSizeLogged = false,
+    plumbobSizeLogged = false, hudProbeLogged = false,
     socialFrame = 0, socialRefreshSent = false, socialActionSent = false,
     socialActionScheduled = false, socialActionName = nil, socialTarget = nil,
     socialActionDue = 0, socialActionCount = 0, socialActionPrepared = false,
@@ -1290,6 +1290,28 @@ Events.OnRenderTick.Add(function()
         NLQAMultiplayer.plumbobSizeLogged = true
         emit("PLUMBOB SIZE", table.concat(details, " "))
     end
+end)
+
+-- QA-only HUD contract: record the live production panel's local username and
+-- six independently read vanilla stat values for each isolated client.
+Events.OnRenderTick.Add(function()
+    if not isClient() or NLQAMultiplayer.hudProbeLogged then return end
+    pcall(require, "NeighborhoodNeeds")
+    local player = getSpecificPlayer(0)
+    local panel = NeighborhoodNeeds and NeighborhoodNeeds.instances
+        and NeighborhoodNeeds.instances[0]
+    if not player or not panel or not NeighborhoodNeeds.rows
+            or not NeighborhoodNeeds.read then return end
+    local values = {}
+    for _, row in ipairs(NeighborhoodNeeds.rows) do
+        local value = NeighborhoodNeeds.read(player, row[2])
+        values[#values + 1] = row[2] .. "=" .. tostring(value)
+    end
+    NLQAMultiplayer.hudProbeLogged = true
+    emit("HUD INSTANCE", "username=" .. NeighborhoodNeeds.playerName(player, 0)
+        .. " title=" .. NeighborhoodNeeds.header(player, 0)
+        .. " rows=" .. tostring(#NeighborhoodNeeds.rows)
+        .. " values=" .. table.concat(values, ","))
 end)
 
 -- QA-only clothing vertical-slice probe. It opens the real production panel

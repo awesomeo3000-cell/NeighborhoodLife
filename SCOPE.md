@@ -6,7 +6,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 
 | Requirement | Current implementation | Completion evidence still required |
 |---|---|---|
-| Sims-inspired HUD | Six live adverse-stat bars, fold control, career journal link | Actual host+guest independent values; resolution and accessibility polish |
+| Sims-inspired HUD | Six live adverse-stat bars, fold control, career journal link, and v1.43 per-instance local-character labels | Resolution and accessibility polish |
 | Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.25 uses a compact 16x22 source texture, v1.36 reduces the runtime panel to 4x7, v1.39 tightens it to a pin-sized 3x5 panel with a 20px lift, and v1.42 reduces the source to 8x11 with a 2x3 panel and 10px lift so the gem stays tiny and close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits; v1.40 adds named server-authoritative daily work shifts with duplicate-day guards and actual host evidence | Rank/restart tests, richer work beyond the daily shift, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
@@ -208,6 +208,18 @@ romance synchronization remain open.
   the tip close above the player model.
 - The focused plumbob contract suite locks the tiny dimensions. This is a
   presentation change and does not add multiplayer or NPC completion claims.
+
+## v1.43 multiplayer HUD identity
+
+- The production needs panel now labels each instance with the local character
+  name, such as `NEEDS / nl-host / LOWER % IS BETTER`, while retaining six
+  live vanilla-stat rows and the existing fold/actions behavior.
+- `evidence/v63/` records actual hands-free Build 42 host and guest panels:
+  both clients created six-row HUD instances and read their own six stat
+  values independently. QA logging remains outside the production package.
+- This closes the runtime HUD-routing evidence gate. Resolution and broader
+  accessibility polish remain open; it does not claim NPC or multiplayer
+  completion beyond the observed HUD loop.
 
 ## v1.39 pin-sized plumbob placement
 

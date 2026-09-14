@@ -28,10 +28,10 @@ for _, key in ipairs({'HUNGER','THIRST','FATIGUE','BOREDOM','STRESS','UNHAPPINES
     local max = (key=='BOREDOM' or key=='UNHAPPINESS') and 100 or 1
     CharacterStat[key]={key=key,getMinimumValue=function() return 0 end,getMaximumValue=function() return max end}
 end
-local function player(value)
-    return {isDead=function() return false end,getStats=function() return {get=function(_,stat) return value*stat:getMaximumValue() end} end}
+local function player(value, username)
+    return {getUsername=function() return username end,isDead=function() return false end,getStats=function() return {get=function(_,stat) return value*stat:getMaximumValue() end} end}
 end
-local players={[0]=player(0.2),[1]=player(0.8)}
+local players={[0]=player(0.2,'nl-host'),[1]=player(0.8,'nl-guest')}
 function getSpecificPlayer(i) return players[i] end
 function getPlayerScreenLeft(i) return i*960 end
 function getPlayerScreenTop() return 0 end
@@ -47,6 +47,10 @@ end
 assert(count==1)
 NeighborhoodNeeds.create(0,players[0]); assert(count==1)
 NeighborhoodNeeds.create(1,players[1]); assert(count==2)
+if NeighborhoodNeeds.header then
+    assert(NeighborhoodNeeds.header(players[0],0)=='NEEDS / nl-host / LOWER % IS BETTER')
+    assert(NeighborhoodNeeds.header(players[1],1)=='NEEDS / nl-guest / LOWER % IS BETTER')
+end
 for _,key in ipairs({'HUNGER','THIRST','FATIGUE','BOREDOM','STRESS','UNHAPPINESS'}) do
     assert(math.abs(NeighborhoodNeeds.read(players[0],key)-0.2)<0.0001)
     assert(math.abs(NeighborhoodNeeds.read(players[1],key)-0.8)<0.0001)

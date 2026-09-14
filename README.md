@@ -561,6 +561,16 @@ from restoring the old large native-size gem, while the shorter lift keeps the
 marker close above the character model. This is a presentation change; it does
 not change NPC, multiplayer, or persistence behavior.
 
+## v1.43 multiplayer HUD identity
+
+The needs panel now labels each live instance with its local character name,
+for example `NEEDS / nl-host / LOWER % IS BETTER`, so split-screen and
+multi-client observations cannot be confused. The actual hands-free host and
+guest run in `evidence/v63/` created six-row panels on both clients and read
+each client's six vanilla stats independently. The QA logger remains outside
+the production package; this proves runtime HUD routing, not final visual
+accessibility polish.
+
 ## v1.39 pin-sized plumbob placement
 
 The production marker is now a 3x5 runtime panel with a 20-pixel lift, down
