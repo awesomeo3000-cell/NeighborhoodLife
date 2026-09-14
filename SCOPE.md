@@ -7,17 +7,17 @@ The original broad goal remains active. This ledger is not a reduced definition 
 | Requirement | Current implementation | Completion evidence still required |
 |---|---|---|
 | Sims-inspired HUD | Six live adverse-stat bars, fold control, career journal link | Actual host+guest independent values; resolution and accessibility polish |
-| Character markers | Production client plumbob asset and world-to-screen panel for active characters; native remote-player discovery attaches markers when Build 42 exposes a body, and the authoritative presence roster supplies a marker-only fallback when native enumeration drops a peer | Stable native two-way remote-character bodies and movement; fallback marker visibility is now proven |
+| Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.12 uses a 10x14 panel with a 72px lift so the gem sits compactly just above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and the authoritative presence roster supplies a marker-only fallback when native enumeration drops a peer | Stable native two-way remote-character bodies and movement; fallback marker visibility is now proven |
 | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits | Client-acquisition inventory sync, rank/restart tests, richer work beyond deliveries, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
-| Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts | Native Build 42 body reannouncement to the engine's native player list, obstacle/danger handling, damage/death and offscreen behavior |
+| Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts and v1.11 proves distinct native positions on both clients | Native Build 42 body reannouncement to the engine's native player list, obstacle/danger handling, damage/death and offscreen behavior |
 | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot | Multi-step two-client conversations, richer world actions and inventory exchange |
 | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence | In-world UI/interaction checks, richer date activities and two-client synchronization |
 | Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
 | Aspirations and home activities | Not implemented | Goals, progress/rewards, hobbies and functional furnishings |
 | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, three named NPC replicas, host social mutation, guest isolation, server-authoritative career delivery, disconnect-clean local native NPC replicas and authoritative remote marker fallback; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6/v1.7/v1.8/v1.9/v1.10 real host plus guest evidence | Client-acquisition inventory sync, simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
+| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host social mutation, guest isolation, server-authoritative career delivery, disconnect-clean local native NPC replicas and authoritative remote marker fallback; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6/v1.7/v1.8/v1.9/v1.10/v1.11 real host plus guest evidence | Client-acquisition inventory sync, simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
 | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile | Broader world/inventory/NPC/host integration tests and regression suite |
 
 ## Current test environments
@@ -307,6 +307,20 @@ The original broad goal remains active. This ledger is not a reduced definition 
 - This proves mod-level position replication for a real movement change. It
   does not yet prove stable native remote-body visibility, inventory/action
   replication, reconnect/restart, or production NPC movement/persistence.
+
+## v1.11 distinct native NPC spawn repair
+
+- `evidence/v30/` records a fresh isolated Build 42.20.4 host plus guest run
+  against the persisted QA world after the server had previously saved all
+  three legacy rows on one tile.
+- The production server logged `RELOCATE` for Kenji and Amara, moving them from
+  the stacked `8282,11718,0` square to `8281,11718,0` and `8282,11717,0` before
+  native spawn. The server then logged separate native paths for all three.
+- Both clients received `count=3` `npc_presence` entries with distinct
+  coordinates and logged `productionNpcReplicas=3`; their object scans listed
+  Marisol, Kenji and Amara at separate positions. This is actual gameplay
+  evidence, while `tests/npc-authority.lua` remains a mock contract for the
+  collision-repair branch.
 
 ## v1.10 same-client reconnect after dedicated-server restart
 

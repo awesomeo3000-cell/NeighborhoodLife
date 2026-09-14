@@ -1,0 +1,163 @@
+diff --git a/NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua b/NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua
+index 2997ea1..1edcd6d 100644
+--- a/NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua
++++ b/NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua
+@@ -16,6 +16,7 @@ NLNpcAuthority = {
+     tick = 0,
+     started = false,
+     startAttempts = 0,
++    repairStacked = true,
+     definitions = { "marisol", "kenji", "amara" },
+ }
+ 
+@@ -97,6 +98,18 @@ local function freeSquareNear(cell, x, y, z, minDistance, maxDistance, reserved)
+     return best
+ end
+ 
++local function npcReservedSquares()
++    local reserved = {}
++    for _, existing in pairs(NLNpcAuthority.bodies) do
++        if existing and existing.getX and existing.getY and existing.getZ then
++            local key = math.floor(existing:getX()) .. ":" .. math.floor(existing:getY())
++                .. ":" .. math.floor(existing:getZ())
++            reserved[key] = true
++        end
++    end
++    return reserved
++end
++
+ local function setBodyPosition(body, square, x, y, z)
+     body:setX(x or square:getX() + 0.5)
+     body:setY(y or square:getY() + 0.5)
+@@ -130,22 +143,30 @@ local function spawnBody(id, row, player)
+     local cell = getCell()
+     if not cell then return nil, "cell unavailable" end
+     local x, y, z = math.floor(row.position.x), math.floor(row.position.y), math.floor(row.position.z)
++    local reserved = npcReservedSquares()
+     local square = cell:getGridSquare(x, y, z)
+-    if not square or not square:isFree(false) then
++    local requestedKey = x .. ":" .. y .. ":" .. z
++    if not square or not square:isFree(false) or reserved[requestedKey] then
+         -- A saved tile can be occupied after a restart by a player, a corpse,
+         -- or a streamed map object. Search around the persisted tile first so
+         -- the neighbor stays in the same home area before falling back to the
+         -- current player's area.
+-        if row.revision > 0 then
+-            square = freeSquareNear(cell, x, y, z, 0, 4)
+-        end
++        square = freeSquareNear(cell, x, y, z, 0, 4, reserved)
+     end
+     if not square and player then
+         square = freeSquareNear(cell, math.floor(player:getX()), math.floor(player:getY()),
+-            math.floor(player:getZ()), 2, 4)
++            math.floor(player:getZ()), 2, 4, reserved)
+     end
+     if not square then return nil, "no free spawn square" end
+ 
++    if square:getX() ~= x or square:getY() ~= y or square:getZ() ~= z then
++        emit(string.format("RELOCATE id=%s from=%d,%d,%d to=%d,%d,%d", id, x, y, z,
++            square:getX(), square:getY(), square:getZ()))
++        -- Keep the saved home aligned with the repaired spawn so the authored
++        -- route does not immediately stack legacy neighbors on the next tick.
++        row.home = { x=square:getX(), y=square:getY(), z=square:getZ() }
++    end
++
+     local definition = NLNeighbors.definitions[id] or {}
+     local desc = SurvivorFactory.CreateSurvivor()
+     desc:setForename(definition.forename or id)
+diff --git a/README.md b/README.md
+index 2924d02..56cb46f 100644
+--- a/README.md
++++ b/README.md
+@@ -1,4 +1,4 @@
+-# Neighborhood Life: careers, wardrobe and relationship prototype (v1.10)
++# Neighborhood Life: careers, wardrobe and relationship prototype (v1.11)
+ 
+ Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
+ Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
+@@ -217,3 +217,16 @@ logged three production NPC replicas and fresh `npc_presence` packets. This
+ proves same-client reconnect plus NPC persistence across a dedicated-server
+ restart; native Build 42 remote-body reannouncement and stable two-way native
+ remote movement remain open.
++
++## v1.11 distinct native NPC spawn repair
++
++`evidence/v30/` records a fresh isolated host plus guest run against the
++persisted QA world after a legacy save had placed all three neighbors on one
++tile. The production server logged `RELOCATE` for Kenji and Amara before native
++spawn, then assigned separate native paths. Both clients received three NPC
++presence entries with distinct coordinates and logged three production NPC
++replicas; their object scans listed all three neighbors at separate positions.
++
++The Lua contract test covers the repair branch as a mock, while the v30 logs
++are actual Build 42 gameplay evidence. Native remote-body reannouncement and
++stable two-way native remote movement remain open.
+diff --git a/SCOPE.md b/SCOPE.md
+index 2b8846e..2284a1f 100644
+--- a/SCOPE.md
++++ b/SCOPE.md
+@@ -11,13 +11,13 @@ The original broad goal remains active. This ledger is not a reduced definition
+ | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits | Client-acquisition inventory sync, rank/restart tests, richer work beyond deliveries, rewards and balance |
+ | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
+ | Clothing options | Three saved outfit-layer slots; vanilla wear actions; light-themed wardrobe panel reachable from HUD | In-game panel rendering and preset save/load/reconnect test; new garment variants, original assets, unlock/reward integration |
+-| Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts | Native Build 42 body reannouncement to the engine's native player list, obstacle/danger handling, damage/death and offscreen behavior |
++| Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts and v1.11 proves distinct native positions on both clients | Native Build 42 body reannouncement to the engine's native player list, obstacle/danger handling, damage/death and offscreen behavior |
+ | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot | Multi-step two-client conversations, richer world actions and inventory exchange |
+ | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence | In-world UI/interaction checks, richer date activities and two-client synchronization |
+ | Household life | Not implemented | Homes, responsibilities, inventory rules, membership and co-op routines |
+ | Aspirations and home activities | Not implemented | Goals, progress/rewards, hobbies and functional furnishings |
+ | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
+-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, three named NPC replicas, host social mutation, guest isolation, server-authoritative career delivery, disconnect-clean local native NPC replicas and authoritative remote marker fallback; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6/v1.7/v1.8/v1.9/v1.10 real host plus guest evidence | Client-acquisition inventory sync, simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
++| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host social mutation, guest isolation, server-authoritative career delivery, disconnect-clean local native NPC replicas and authoritative remote marker fallback; v0.7/v0.9/v1.0/v1.2/v1.3/v1.4/v1.5/v1.6/v1.7/v1.8/v1.9/v1.10/v1.11 real host plus guest evidence | Client-acquisition inventory sync, simultaneous gameplay beyond the tested delivery, mod distribution, native body reannouncement, stable two-way native remote movement and replicated-character UI |
+ | Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile | Broader world/inventory/NPC/host integration tests and regression suite |
+ 
+ ## Current test environments
+@@ -308,6 +308,20 @@ The original broad goal remains active. This ledger is not a reduced definition
+   does not yet prove stable native remote-body visibility, inventory/action
+   replication, reconnect/restart, or production NPC movement/persistence.
+ 
++## v1.11 distinct native NPC spawn repair
++
++- `evidence/v30/` records a fresh isolated Build 42.20.4 host plus guest run
++  against the persisted QA world after the server had previously saved all
++  three legacy rows on one tile.
++- The production server logged `RELOCATE` for Kenji and Amara, moving them from
++  the stacked `8282,11718,0` square to `8281,11718,0` and `8282,11717,0` before
++  native spawn. The server then logged separate native paths for all three.
++- Both clients received `count=3` `npc_presence` entries with distinct
++  coordinates and logged `productionNpcReplicas=3`; their object scans listed
++  Marisol, Kenji and Amara at separate positions. This is actual gameplay
++  evidence, while `tests/npc-authority.lua` remains a mock contract for the
++  collision-repair branch.
++
+ ## v1.10 same-client reconnect after dedicated-server restart
+ 
+ - `evidence/v29/` records a hands-free isolated run in which the dedicated
+diff --git a/tests/npc-authority.lua b/tests/npc-authority.lua
+index 6091906..2a6e259 100644
+--- a/tests/npc-authority.lua
++++ b/tests/npc-authority.lua
+@@ -85,4 +85,23 @@ if expectedBodies>=3 then
+     assert(NLNpcAuthority.bodies.kenji and NLNpcAuthority.bodies.amara,
+         'all authored bodies restore after reset')
+ end
++if NLNpcAuthority.repairStacked then
++    -- Legacy isolated saves can contain stacked rows. A restart must repair
++    -- those rows to distinct native squares; this remains a mock contract, not
++    -- gameplay evidence.
++    local savedWorld=NLAuthority.world()
++    for _, id in ipairs({'marisol','kenji','amara'}) do
++        local stacked=savedWorld.neighbors[id]
++        stacked.position={x=101.5,y=101.5,z=0}; stacked.home={x=101,y=101,z=0}
++        stacked.revision=1; stacked.spawned=true; stacked.alive=true
++    end
++    NLNpcAuthority.reset(); NLNpcAuthority.start()
++    local occupied={}
++    for _, id in ipairs({'marisol','kenji','amara'}) do
++        local stackedBody=NLNpcAuthority.bodies[id]
++        local key=math.floor(stackedBody:getX())..':'..math.floor(stackedBody:getY())..':'..math.floor(stackedBody:getZ())
++        assert(not occupied[key],'stacked legacy NPC rows are repaired to distinct squares')
++        occupied[key]=true
++    end
++end
+ print('PASS: production NPC identity, native body adapter, route tick and save/reload position restoration')

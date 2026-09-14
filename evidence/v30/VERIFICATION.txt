@@ -1,0 +1,54 @@
+Neighborhood Life v1.11 distinct native NPC spawn repair verification
+
+CHANGED BRANCH/FIELD: production server NPC spawn occupancy branch in E:\pzmod\NeighborhoodLife\42\media\lua\server\NL\NpcAuthority.lua. `NLNpcAuthority.repairStacked=true` enables a saved-position repair path that reserves squares already used by authored native bodies, relocates a legacy stacked row to the nearest free square, updates its saved home, and leaves the existing authoritative route/persistence path intact. `tests/npc-authority.lua` exercises this branch as a mock contract. SCOPE.md and README.md advance the full scope ledger to v1.11; QA remains outside the production package.
+NPC AUTHORITY SHA256: 9BD6EB68A1B8155CF2BFE6BFEB11796DFDE67401580554E83A6D5F76641C10C6
+NPC TEST SHA256: 069882BDA79457C4DD7DEE925FC06A65C9B3A4D52B803FFC2051E0B527E10AC4
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v30\baseline
+BASELINE INPUT: E:\pzmod
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE RESULT: v1.10 production baseline passed; the compatibility-gated repair assertion was skipped because the old authority has no repair capability.
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED RESULT: production mock, syntax and installed-game engine-VM suites passed with the stacked-row repair contract active.
+MODIFIED EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v30 --baseline evidence\v30\baseline
+PACKAGE INPUT: E:\pzmod
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v30\MODIFIED_FILE.zip
+PACKAGE RESULT: production-only package and baseline diff created.
+PACKAGE EXIT: 0
+
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; z=zipfile.ZipFile('evidence/v30/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('NPC_AUTHORITY',any(n.endswith('42/media/lua/server/NL/NpcAuthority.lua') for n in z.namelist()))"
+PACKAGE VALIDATION INPUT: E:\pzmod
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; NPC_AUTHORITY True
+PACKAGE VALIDATION RESULT: valid production ZIP; QA helpers are excluded.
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v30/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' 'E:\pzmod\evidence\v30\ROLLBACK.sh'
+ROLLBACK INPUT: verified copy of the modified NPC authority and contract test at E:\pzmod\evidence\v30\rollback-target
+ROLLBACK LITERAL OUTPUT: ROLLBACK RESTORED: NPC authority and contract test from /e/pzmod/evidence/v30/rollback-baseline
+ROLLBACK RESULT: BASELINE_WORKTREE_SHA256 5b4183844d1c361bc13d7d03c285a598ccb6f5da10e5c049dc2ed60857447c2d; ROLLBACK_WORKTREE_SHA256 5b4183844d1c361bc13d7d03c285a598ccb6f5da10e5c049dc2ed60857447c2d; MODIFIED_WORKTREE_SHA256 87b9d61f325d4baf546a6715c5d9ae7bf2c585ea0bd583976f90187ec4bd138d; RESTORED_MATCH True; MODIFIED_DIFFERS True. The production source remained modified after the rollback-copy test.
+ROLLBACK EXIT: 0
+
+ACTUAL NPC REPAIR COMMAND: & .\tools\launch-multiplayer-qa.ps1
+ACTUAL NPC REPAIR INPUT: E:\pzmod\test-profile; persisted isolated Project Zomboid Build 42.20.4 world containing legacy stacked NPC rows; hands-free server, host and guest; no mouse or keyboard
+ACTUAL NPC REPAIR LITERAL OUTPUT: QA multiplayer processes started: server=35364 host=1340 guest=20140; server logged RELOCATE id=kenji from=8282,11718,0 to=8281,11718,0 and RELOCATE id=amara from=8282,11718,0 to=8282,11717,0; host and guest each logged productionNpcReplicas=3 with distinct Marisol/Kenji/Amara coordinates.
+ACTUAL NPC REPAIR RESULT: real two-client Build 42 evidence proves the production server repairs legacy stacked positions before native spawn, broadcasts distinct authoritative coordinates, and both clients render three separate native replicas. It does not prove obstacle/danger handling, damage/death, offscreen behavior or native remote-body reannouncement.
+ACTUAL NPC REPAIR CLASSIFICATION: actual gameplay evidence; tests/npc-authority.lua is a mock contract only.
+ACTUAL NPC REPAIR EXIT: 0 for launcher runner; exact PIDs 35364, 1340 and 20140 were stopped after capture.
+ACTUAL NPC REPAIR EVIDENCE: E:\pzmod\evidence\v30\mp-server-relevant.log; E:\pzmod\evidence\v30\mp-host-relevant.log; E:\pzmod\evidence\v30\mp-guest-relevant.log; E:\pzmod\evidence\v30\mp-run-command.txt
+
+CLASSIFICATION: Lua suites are mock tests; installed-game Kahlua suites execute production Lua in the engine VM with explicit mocks; v30 logs are actual two-client Build 42 evidence. Distinct NPC spawn/replication is now proven for the repaired legacy save. Native Build 42 remote-body reannouncement, stable two-way native movement, obstacle/danger handling, damage/death, offscreen behavior, client-acquisition inventory sync, simultaneous gameplay beyond the tested delivery, mod distribution, household life and aspirations/home activities remain open SCOPE.md gates.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v30\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v30\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v30\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v30\ROLLBACK.sh
+SHA256 MODIFIED_FILE: F3FB6F283678CDC851126B6C759D42A23C1556ADA79E676FAB4B60513D79A49E
+SHA256 DIFF_FILE: 15030CD1A141343CD5220AAE0AE6646C619EA11AEFD0F30C37511E08B1F49668
+SHA256 ROLLBACK: BDCE9FCB0225DC81F9DC9DD7BCF325E1E06225B8395D34923AAF5EDAE8AE9029

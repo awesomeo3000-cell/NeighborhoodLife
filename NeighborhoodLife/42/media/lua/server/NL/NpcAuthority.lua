@@ -16,6 +16,7 @@ NLNpcAuthority = {
     tick = 0,
     started = false,
     startAttempts = 0,
+    repairStacked = true,
     definitions = { "marisol", "kenji", "amara" },
 }
 
@@ -97,6 +98,18 @@ local function freeSquareNear(cell, x, y, z, minDistance, maxDistance, reserved)
     return best
 end
 
+local function npcReservedSquares()
+    local reserved = {}
+    for _, existing in pairs(NLNpcAuthority.bodies) do
+        if existing and existing.getX and existing.getY and existing.getZ then
+            local key = math.floor(existing:getX()) .. ":" .. math.floor(existing:getY())
+                .. ":" .. math.floor(existing:getZ())
+            reserved[key] = true
+        end
+    end
+    return reserved
+end
+
 local function setBodyPosition(body, square, x, y, z)
     body:setX(x or square:getX() + 0.5)
     body:setY(y or square:getY() + 0.5)
@@ -130,21 +143,29 @@ local function spawnBody(id, row, player)
     local cell = getCell()
     if not cell then return nil, "cell unavailable" end
     local x, y, z = math.floor(row.position.x), math.floor(row.position.y), math.floor(row.position.z)
+    local reserved = npcReservedSquares()
     local square = cell:getGridSquare(x, y, z)
-    if not square or not square:isFree(false) then
+    local requestedKey = x .. ":" .. y .. ":" .. z
+    if not square or not square:isFree(false) or reserved[requestedKey] then
         -- A saved tile can be occupied after a restart by a player, a corpse,
         -- or a streamed map object. Search around the persisted tile first so
         -- the neighbor stays in the same home area before falling back to the
         -- current player's area.
-        if row.revision > 0 then
-            square = freeSquareNear(cell, x, y, z, 0, 4)
-        end
+        square = freeSquareNear(cell, x, y, z, 0, 4, reserved)
     end
     if not square and player then
         square = freeSquareNear(cell, math.floor(player:getX()), math.floor(player:getY()),
-            math.floor(player:getZ()), 2, 4)
+            math.floor(player:getZ()), 2, 4, reserved)
     end
     if not square then return nil, "no free spawn square" end
+
+    if square:getX() ~= x or square:getY() ~= y or square:getZ() ~= z then
+        emit(string.format("RELOCATE id=%s from=%d,%d,%d to=%d,%d,%d", id, x, y, z,
+            square:getX(), square:getY(), square:getZ()))
+        -- Keep the saved home aligned with the repaired spawn so the authored
+        -- route does not immediately stack legacy neighbors on the next tick.
+        row.home = { x=square:getX(), y=square:getY(), z=square:getZ() }
+    end
 
     local definition = NLNeighbors.definitions[id] or {}
     local desc = SurvivorFactory.CreateSurvivor()

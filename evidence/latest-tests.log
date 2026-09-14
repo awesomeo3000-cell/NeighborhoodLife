@@ -163,6 +163,14 @@ NLQA NPC PRODUCTION RESTORE id=kenji x=100.50 y=98.50 revision=3
 NLQA NPC PRODUCTION SPAWN id=kenji x=100.50 y=98.50 z=0
 NLQA NPC PRODUCTION RESTORE id=amara x=100.50 y=102.50 revision=3
 NLQA NPC PRODUCTION SPAWN id=amara x=100.50 y=102.50 z=0
+NLQA NPC PRODUCTION RESTORE id=marisol x=101.50 y=101.50 revision=1
+NLQA NPC PRODUCTION SPAWN id=marisol x=101.50 y=101.50 z=0
+NLQA NPC PRODUCTION RESTORE id=kenji x=101.50 y=101.50 revision=1
+NLQA NPC PRODUCTION RELOCATE id=kenji from=101,101,0 to=100,101,0
+NLQA NPC PRODUCTION SPAWN id=kenji x=100.50 y=101.50 z=0
+NLQA NPC PRODUCTION RESTORE id=amara x=101.50 y=101.50 revision=1
+NLQA NPC PRODUCTION RELOCATE id=amara from=101,101,0 to=101,100,0
+NLQA NPC PRODUCTION SPAWN id=amara x=101.50 y=100.50 z=0
 PASS: production NPC identity, native body adapter, route tick and save/reload position restoration
 LUA STDERR: 
 LUA EXIT: 0
@@ -255,6 +263,14 @@ NLQA NPC PRODUCTION RESTORE id=kenji x=100.50 y=98.50 revision=3
 NLQA NPC PRODUCTION SPAWN id=kenji x=100.50 y=98.50 z=0
 NLQA NPC PRODUCTION RESTORE id=amara x=100.50 y=102.50 revision=3
 NLQA NPC PRODUCTION SPAWN id=amara x=100.50 y=102.50 z=0
+NLQA NPC PRODUCTION RESTORE id=marisol x=101.50 y=101.50 revision=1
+NLQA NPC PRODUCTION SPAWN id=marisol x=101.50 y=101.50 z=0
+NLQA NPC PRODUCTION RESTORE id=kenji x=101.50 y=101.50 revision=1
+NLQA NPC PRODUCTION RELOCATE id=kenji from=101,101,0 to=100,101,0
+NLQA NPC PRODUCTION SPAWN id=kenji x=100.50 y=101.50 z=0
+NLQA NPC PRODUCTION RESTORE id=amara x=101.50 y=101.50 revision=1
+NLQA NPC PRODUCTION RELOCATE id=amara from=101,101,0 to=101,100,0
+NLQA NPC PRODUCTION SPAWN id=amara x=101.50 y=100.50 z=0
 PASS: production NPC identity, native body adapter, route tick and save/reload position restoration
 PASS: installed Project Zomboid Kahlua VM execution
 KAHLUA STDERR: 

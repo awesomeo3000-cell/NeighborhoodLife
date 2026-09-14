@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, wardrobe and relationship prototype (v1.10)
+# Neighborhood Life: careers, wardrobe and relationship prototype (v1.12)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -217,3 +217,24 @@ logged three production NPC replicas and fresh `npc_presence` packets. This
 proves same-client reconnect plus NPC persistence across a dedicated-server
 restart; native Build 42 remote-body reannouncement and stable two-way native
 remote movement remain open.
+
+## v1.11 distinct native NPC spawn repair
+
+`evidence/v30/` records a fresh isolated host plus guest run against the
+persisted QA world after a legacy save had placed all three neighbors on one
+tile. The production server logged `RELOCATE` for Kenji and Amara before native
+spawn, then assigned separate native paths. Both clients received three NPC
+presence entries with distinct coordinates and logged three production NPC
+replicas; their object scans listed all three neighbors at separate positions.
+
+The Lua contract test covers the repair branch as a mock, while the v30 logs
+are actual Build 42 gameplay evidence. Native remote-body reannouncement and
+stable two-way native remote movement remain open.
+
+## v1.12 compact plumbob placement
+
+The production marker now uses a `10x14` screen-space panel and a `72px` lift,
+keeping the gem small and directly above the active character model. The
+fallback renderer is bounded to that panel instead of drawing an oversized
+shape outside its UI bounds. The isolated Build 42 smoke run logged
+`size=10x14`; this is engine UI evidence, not multiplayer completion.

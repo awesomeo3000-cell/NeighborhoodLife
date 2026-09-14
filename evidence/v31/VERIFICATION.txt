@@ -1,0 +1,60 @@
+Neighborhood Life v1.12 compact plumbob placement verification
+
+CHANGED BRANCH/FIELD: production client character-marker branch in E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Plumbob.lua. The marker now uses baseWidth=10, baseHeight=14 and baseLift=72; the fallback renderer stays inside the panel bounds. tests/plumbob.lua keeps the compactness assertion compatibility-gated so the prior baseline remains runnable. README.md and SCOPE.md record v1.12. QA helpers remain outside the production package.
+SOURCE PLUMBOB SHA256: 49A28364FB9F6716FE85A38A8E425B41CB4EE656002E07EADB4590E00AC82E13
+SOURCE TEST SHA256: 289AEE647906F627D1EE482BA2DFB49D3AAB5A85DD77582BE37B7678B649A031
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v31\baseline
+BASELINE INPUT: E:\pzmod
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE RESULT: previous 10x14/72 compactness assertions were skipped for the 16x22/96 baseline; all baseline mock, syntax and engine-VM suites passed.
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED RESULT: current compact-marker mock, syntax and installed-game engine-VM suites passed.
+MODIFIED EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v31 --baseline evidence\v31\baseline
+PACKAGE INPUT: E:\pzmod
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v31\MODIFIED_FILE.zip
+PACKAGE RESULT: production-only package and baseline diff created.
+PACKAGE EXIT: 0
+
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; z=zipfile.ZipFile('evidence/v31/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('PLUMBOB',any(n.endswith('42/media/lua/client/NL/Plumbob.lua') for n in z.namelist()))"
+PACKAGE VALIDATION INPUT: E:\pzmod
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; PLUMBOB True
+PACKAGE VALIDATION RESULT: valid production ZIP; QA helpers are excluded.
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v31/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' 'E:\pzmod\evidence\v31\ROLLBACK.sh'
+ROLLBACK INPUT: modified-copy rollback target at E:\pzmod\evidence\v31\rollback-target
+ROLLBACK LITERAL OUTPUT: MODIFIED_TARGET 49a28364fb9f6716fe85a38a8e425b41cb4ee656002e07eadb4590e00ac82e13 /.../Plumbob.lua; 289aee647906f627d1ee482ba2dfb49d3aab5a85dd77582be37b7678b649a031 /.../tests-plumbob.lua; ROLLBACK RESTORED: compact plumbob source and contract test from /e/pzmod/evidence/v31/rollback-baseline; RESTORED_TARGET 5d673b8b02aff48307f2cc3d4bf2d6759daf9db9be155e8861fa32ab29049132 /.../Plumbob.lua; 48d5f79c794669e09217807941c29eed1f5b71ceb0b9577aebd7c60a08155bf0 /.../tests-plumbob.lua
+ROLLBACK RESULT: restored copy matches rollback baseline and differs from modified copy; production source remains compact and changed.
+ROLLBACK EXIT: 0
+
+ACTUAL UI COMMAND: & .\tools\launch-qa.ps1
+ACTUAL UI INPUT: E:\pzmod\test-profile; isolated Build 42.20.4 profile; hands-free QA agent; no mouse or keyboard
+ACTUAL UI LITERAL OUTPUT: QA process: 34864; isolated profile: E:\pzmod\test-profile; NLQA PASS: real engine plumbob panel registered and anchored at 1270,706 size=10x14.
+ACTUAL UI RESULT: real installed-engine UI smoke evidence confirms the compact panel is loaded and anchored over the active player. The following line also confirms three production NPC bodies with persisted positions and plumbobs: NLQA PASS: 3 production NPC bodies, persisted positions and plumbobs verified at marisol=10777.02,10256.98 kenji=10776.50,10256.50 amara=10777.50,10255.50.
+ACTUAL UI CLASSIFICATION: actual single-player engine evidence, not a mock or engine-VM claim.
+ACTUAL UI EXIT: 0; QA process 34864 was stopped after capture.
+
+ACTUAL MULTIPLAYER COMMAND: & .\tools\launch-multiplayer-qa.ps1
+ACTUAL MULTIPLAYER INPUT: E:\pzmod\test-profile; isolated Build 42.20.4 dedicated server, host and guest; no mouse or keyboard
+ACTUAL MULTIPLAYER LITERAL OUTPUT: QA multiplayer processes started: server=35432 host=20280 guest=19140; host and guest each logged productionNpcReplicas=3 and count=3 npc_presence with distinct Marisol, Kenji and Amara coordinates.
+ACTUAL MULTIPLAYER RESULT: actual two-client engine evidence remains valid for the three-NPC vertical slice; the plumbob size is directly verified by the single-player engine smoke line above. Server, host and guest PIDs 35432, 20280 and 19140 were stopped after capture.
+ACTUAL MULTIPLAYER EXIT: 0
+ACTUAL MULTIPLAYER EVIDENCE: E:\pzmod\evidence\v31\singleplayer-debug.log; E:\pzmod\evidence\v31\mp-server-full.log; E:\pzmod\evidence\v31\mp-host-full.log; E:\pzmod\evidence\v31\mp-guest-full.log
+
+CLASSIFICATION: tests/plumbob.lua is a mock contract; pipeline Kahlua suites are installed-game engine-VM tests with explicit mocks; v31 logs are actual Build 42 engine evidence. The requested compact marker is verified in the real engine. Native remote-body reannouncement, stable two-way native movement, obstacle/danger handling, damage/death, offscreen behavior, inventory synchronization, households, aspirations and home activities remain open SCOPE.md gates.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v31\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v31\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v31\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v31\ROLLBACK.sh
+SHA256 MODIFIED_FILE: 5EBCB1076DB7D48E9FBEAF3F8FAED8DD9AB5B41CFC64F81FDAFF032E3875496B
+SHA256 DIFF_FILE: 15E873C49F5054380A4AF486499114D0C124C69DD5B97B2E33D4AB2A468DE795
+SHA256 ROLLBACK: A5E762F77A3C3620A918C59872A29B8448E9A34A373C276A4E1FE80E7CCB289F

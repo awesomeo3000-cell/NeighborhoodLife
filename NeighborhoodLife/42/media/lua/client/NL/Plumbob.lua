@@ -11,12 +11,11 @@ NLPlumbob.nativeRemoteIds = {}
 NLPlumbob.texturePath = "media/textures/NL_Plumbob.png"
 NLPlumbob.defaultColor = { r = 0.22, g = 0.88, b = 0.58 }
 NLPlumbob.remoteColor = { r = 0.28, g = 0.86, b = 0.95 }
--- Keep the marker clearly readable while leaving the character silhouette
--- dominant. The smaller gem sits close above the head instead of floating
--- far above the player model.
-NLPlumbob.baseWidth = 16
-NLPlumbob.baseHeight = 22
-NLPlumbob.baseLift = 96
+-- Keep the player silhouette dominant.  The marker is deliberately compact
+-- and its tip sits just above the model instead of floating over the street.
+NLPlumbob.baseWidth = 10
+NLPlumbob.baseHeight = 14
+NLPlumbob.baseLift = 72
 
 function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, lift)
     return math.floor(screenX - left - width / 2), math.floor(screenY - top - height - lift)
@@ -104,11 +103,19 @@ function NLPlumbob:prerender()
     else
         -- Keep a visible fallback if the texture cache is unavailable during load.
         local cx = math.floor(self.width / 2)
-        self:drawRect(cx - 2, 0, 4, 8, 0.96, self.color.r, self.color.g, self.color.b)
-        self:drawRect(cx - 10, 8, 20, 10, 0.96, self.color.r, self.color.g, self.color.b)
-        self:drawRect(cx - 16, 18, 32, 12, 0.96, self.color.r, self.color.g, self.color.b)
-        self:drawRect(cx - 10, 30, 20, 14, 0.96, self.color.r, self.color.g, self.color.b)
-        self:drawRect(cx - 2, 44, 4, 12, 0.96, self.color.r, self.color.g, self.color.b)
+        local mid = math.max(1, math.floor(self.width * 0.62))
+        local lower = math.max(1, math.floor(self.height * 0.42))
+        self:drawRect(cx - 1, 0, 2, math.max(1, math.floor(self.height * 0.18)),
+            0.96, self.color.r, self.color.g, self.color.b)
+        self:drawRect(cx - math.floor(mid / 2), math.floor(self.height * 0.18), mid,
+            math.max(1, math.floor(self.height * 0.34)), 0.96,
+            self.color.r, self.color.g, self.color.b)
+        self:drawRect(cx - math.floor(lower / 2), math.floor(self.height * 0.52), lower,
+            math.max(1, math.floor(self.height * 0.32)), 0.96,
+            self.color.r, self.color.g, self.color.b)
+        self:drawRect(cx - 1, math.floor(self.height * 0.84), 2,
+            math.max(1, self.height - math.floor(self.height * 0.84)), 0.96,
+            self.color.r, self.color.g, self.color.b)
     end
 end
 

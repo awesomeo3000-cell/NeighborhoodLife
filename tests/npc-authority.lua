@@ -85,4 +85,23 @@ if expectedBodies>=3 then
     assert(NLNpcAuthority.bodies.kenji and NLNpcAuthority.bodies.amara,
         'all authored bodies restore after reset')
 end
+if NLNpcAuthority.repairStacked then
+    -- Legacy isolated saves can contain stacked rows. A restart must repair
+    -- those rows to distinct native squares; this remains a mock contract, not
+    -- gameplay evidence.
+    local savedWorld=NLAuthority.world()
+    for _, id in ipairs({'marisol','kenji','amara'}) do
+        local stacked=savedWorld.neighbors[id]
+        stacked.position={x=101.5,y=101.5,z=0}; stacked.home={x=101,y=101,z=0}
+        stacked.revision=1; stacked.spawned=true; stacked.alive=true
+    end
+    NLNpcAuthority.reset(); NLNpcAuthority.start()
+    local occupied={}
+    for _, id in ipairs({'marisol','kenji','amara'}) do
+        local stackedBody=NLNpcAuthority.bodies[id]
+        local key=math.floor(stackedBody:getX())..':'..math.floor(stackedBody:getY())..':'..math.floor(stackedBody:getZ())
+        assert(not occupied[key],'stacked legacy NPC rows are repaired to distinct squares')
+        occupied[key]=true
+    end
+end
 print('PASS: production NPC identity, native body adapter, route tick and save/reload position restoration')
