@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.73)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.74)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -1082,3 +1082,23 @@ bodies to the server online-player collection still produced no engine-native
 NPC body on either client. Evidence is in
 `evidence/v103/actual/native-roster-d/`, so native server-body replication
 remains an explicit open gate rather than a compatibility-path claim.
+
+## v1.74 actual neighborhood vertical slice
+
+The QA-only `-VerticalSliceProbe` composes the production paths into one
+repeatable no-Steam Build 42.20.4 host-plus-guest run. In
+`evidence/v108/actual/neighborhood-slice/`, the host partnered with Marisol,
+selected Medic and reached rank 2 after three deliveries, created a household,
+and used the native storage furnishing; the guest accepted the invite, joined
+the shared home, retrieved the stored sheet, and observed Marisol as
+`Unavailable` before the authoritative partner rejection. The host also
+completed the shared-home tidy task. The server and both client logs prove the
+networked sequence; the career and partnership prerequisites are explicitly
+marked as QA fixtures, while the mutations, snapshots, inventory transfer,
+and rejection use production code.
+
+This closes the first complete neighborhood vertical-slice gate. It does not
+close the full overhaul: native NPC server-body reannouncement remains open,
+and broader careers, conversations, relationships, clothing, aspirations,
+households, furnishings, and optional-zombie gameplay still need expansion.
+QA helpers remain outside the production package.

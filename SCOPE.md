@@ -1,4 +1,4 @@
-# Neighborhood Life — full scope and evidence ledger (v1.73)
+# Neighborhood Life — full scope and evidence ledger (v1.74)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
@@ -60,7 +60,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 
 1. Broaden global-data crash atomicity and household routines; v1.63 proves a guest main-inventory retrieve from the production furnishing, v1.64 proves household storage membership/furnishing/item persistence across a dedicated-server restart, v1.66 proves arbitrary item/container metadata capture and restoration in a real host+guest run, and v1.67 proves repair of an interrupted household storage transaction after a forced server stop.
 2. Resolve native NPC server-body reannouncement and test persistent movement under a naturally missing native peer; the current v1.62 run still reports `GameServer=nil`, `Java=nil`, and `onlineHints=0`.
-3. Expand the vertical slice into conversations, relationships, romance, neighborhood careers, households, aspirations and furnishings without reducing the host/invite multiplayer requirement.
+3. Expand the completed first vertical slice into broader conversations, relationships, romance, neighborhood careers, households, aspirations and furnishings without reducing the host/invite multiplayer requirement.
 4. Integrate conversations, relationships, romance and neighborhood careers.
 5. Expand appearance/clothing assets, households, aspirations, furnishings and UI polish.
 
@@ -1168,3 +1168,25 @@ exposes `GameServer=nil`, `Java=nil`, and `getClass=nil`.
   `GameServer=nil`, `Java=nil`, and `getClass=nil`; neither client received an
   engine-native NPC body. The `npc_presence` path remains the verified
   compatibility route, and native server-body reannouncement is still open.
+
+## v1.74 actual neighborhood vertical slice
+
+- The QA-only `-VerticalSliceProbe` composes the production multiplayer paths in
+  one hands-free Build 42.20.4 no-Steam run. Evidence is in
+  `evidence/v108/actual/neighborhood-slice/`.
+- Actual host evidence: the host partnered with Marisol, selected Medic,
+  completed three production deliveries, reached `career=medic rank=2 skill=1
+  xp=75 variety=3`, created a household, stored one `Base.RippedSheets`, and
+  completed the shared-home tidy task.
+- Actual guest evidence: the guest received and accepted the invite, observed
+  `shared home members=2`, retrieved the stored sheet through the production
+  furnishing path, and observed Marisol as `Unavailable`; the guest's
+  production partner attempt received `Already in a partnership.`.
+- The server and both client logs prove the networked order. Career and
+  partnership prerequisites are labeled QA fixtures; the career promotion,
+  household mutations, native furnishing transfer, snapshots and partnership
+  rejection use production paths. This is actual gameplay evidence, separate
+  from mock/unit and installed Kahlua VM tests.
+- This closes the first complete neighborhood vertical-slice gate. Native NPC
+  server-body reannouncement remains open, and the full breadth of the stated
+  overhaul remains active.

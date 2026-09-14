@@ -504,26 +504,47 @@ pcall(require, "NL/HouseholdClient")
 
 local function queueCareerWorldPickup(itemType, expected)
     local player = getSpecificPlayer(0)
-    local square = player and player:getCurrentSquare()
-    local worlds = square and square:getWorldObjects()
-    if not player or not worlds then return 0 end
+    if not player then return 0 end
     local ok, err = pcall(function() require "TimedActions/ISInventoryTransferUtil" end)
     if not ok or not ISTimedActionQueue or not ISInventoryTransferUtil then
         emit("CAREER PICKUP FAILED", "vanilla transfer API unavailable error=" .. tostring(err))
         return 0
     end
+    -- A no-Steam dedicated server can report the player's square one tile
+    -- ahead of the client's streamed square while the teleport packet is
+    -- settling. Search the loaded 3x3 neighborhood so the QA stimulus still
+    -- exercises vanilla world-object transfer instead of stalling forever.
+    local cell = getCell and getCell()
+    local origin = player.getCurrentSquare and player:getCurrentSquare()
+    local ox = origin and origin.getX and origin:getX() or math.floor(player:getX())
+    local oy = origin and origin.getY and origin:getY() or math.floor(player:getY())
+    local oz = origin and origin.getZ and origin:getZ() or math.floor(player:getZ())
     local queued = 0
-    for index = 0, worlds:size() - 1 do
-        if queued >= expected then break end
-        local worldObject = worlds:get(index)
-        local item = worldObject and worldObject:getItem()
-        if item and item.getFullType and item:getFullType() == itemType then
-            local source = item:getContainer()
-            local action = source and ISInventoryTransferUtil.newInventoryTransferAction(
-                player, item, source, player:getInventory())
-            if action then
-                ISTimedActionQueue.add(action)
-                queued = queued + 1
+    if cell and cell.getGridSquare then
+        for radius = 0, 1 do
+            for dx = -radius, radius do
+                for dy = -radius, radius do
+                    if queued < expected and (radius == 1 or math.abs(dx) == radius or math.abs(dy) == radius) then
+                        local square = cell:getGridSquare(ox + dx, oy + dy, oz)
+                        local worlds = square and square:getWorldObjects()
+                        if worlds then
+                            for index = 0, worlds:size() - 1 do
+                                if queued >= expected then break end
+                                local worldObject = worlds:get(index)
+                                local item = worldObject and worldObject:getItem()
+                                if item and item.getFullType and item:getFullType() == itemType then
+                                    local source = item:getContainer()
+                                    local action = source and ISInventoryTransferUtil.newInventoryTransferAction(
+                                        player, item, source, player:getInventory())
+                                    if action then
+                                        ISTimedActionQueue.add(action)
+                                        queued = queued + 1
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
             end
         end
     end
@@ -1252,6 +1273,14 @@ Events.OnRenderTick.Add(function()
         if qaIdentity().username == "nl-host" and NLQAMultiplayer.partnershipSeeded
                 and not NLQAMultiplayer.partnershipPositioned then
             NLQAMultiplayer.partnershipPositioned=positionHostForSocial("marisol")
+            if NLQAMultiplayer.partnershipPositioned
+                    and qaIdentity().verticalSliceProbe == true then
+                -- The career and household legs deliberately move the host
+                -- away from the NPC. Refresh after the final viewpoint move so
+                -- the production proximity gate is evaluated at the new tile.
+                NLSocialClient.request(0,"refresh")
+                emit("PARTNERSHIP VERTICAL SLICE REFRESH", "after=career-household")
+            end
         elseif qaIdentity().username == "nl-guest" and not NLQAMultiplayer.partnershipPositioned
                 and NLQAMultiplayer.socialFrame>=840 then
             NLQAMultiplayer.partnershipPositioned=positionGuestForSocial("marisol")
@@ -1629,6 +1658,8 @@ Events.OnRenderTick.Add(function()
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.snapshots > 0
             and not (qaIdentity().deliveryCrashProbe == true
                 and NLQAMultiplayer.deliveryRecoverySnapshot)
+            and (qaIdentity().verticalSliceProbe ~= true
+                or NLQAMultiplayer.partnershipHostObserved)
             and not NLQAMultiplayer.careerSeedSent then
         local player=getSpecificPlayer(0)
         if player then
