@@ -123,6 +123,22 @@ if promotionSupported then
         assert(NLNpcClient.bodies.marisol==onlineOnly,
             'native NPC body can promote from the authoritative online identity hint')
         expectedBody=onlineOnly
+        objects:remove(onlineOnly)
+        NLNpcClient.bodies.marisol=nil
+        NLNpcClient.modes.marisol=nil
+        NLPlumbob.unregister('npc:marisol')
+        local duplicateA=IsoPlayer.new(nil,nil,24,20,0)
+        local duplicateB=IsoPlayer.new(nil,nil,25,20,0)
+        function duplicateA:getModData() return nil end
+        function duplicateB:getModData() return nil end
+        function duplicateA:getOnlineID() return 888 end
+        function duplicateB:getOnlineID() return 888 end
+        objects:add(duplicateA); objects:add(duplicateB)
+        NLNpcClient.apply({revision=7,npcs={{id='marisol',x=24,y=20,z=0,alive=true,onlineId=888},
+            {id='kenji',x=14,y=11,z=0,alive=true,onlineId=888}}})
+        assert(NLNpcClient.bodies.marisol~=duplicateA and NLNpcClient.bodies.marisol~=duplicateB,
+            'duplicate native online identities do not promote an arbitrary NPC body')
+        expectedBody=NLNpcClient.bodies.marisol
     end
 end
 local xAfterNewer=body:getX()
@@ -132,7 +148,7 @@ if NLNpcClient.revision then
     assert(NLNpcClient.targets.marisol==targetAfterNewer and NLNpcClient.bodies.marisol==expectedBody,
         'stale NPC packet is ignored')
 end
-NLNpcClient.apply({revision=7,npcs={}})
+NLNpcClient.apply({revision=8,npcs={}})
 assert(NLNpcClient.bodies.marisol==nil and NLNpcClient.bodies.kenji==nil
     and plumbobs['npc:marisol']==nil and plumbobs['npc:kenji']==nil,
     'replica cleanup follows authoritative roster')

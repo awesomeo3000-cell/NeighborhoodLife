@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.58)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.59)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -532,9 +532,22 @@ host, guest and server logs can be captured under a version-specific evidence
 directory without overwriting earlier runs. The QA-only NPC presence logger
 also records the count of valid `onlineId` hints and each packet entry's raw
 hint. This improves evidence collection without adding QA code to the
-production package. The v79 attempt is retained as a failed startup probe:
-both clients reached the main menu and issued connect requests, but neither
-reached IngameState before the disposable processes ended.
+production package. The v79 capture records both clients connected to the
+dedicated server, three moving NPC presence rows, `onlineHints=3`, a natural
+walk reaching `playerDelta=12.34`, and the forced streamed-body recovery
+probe. The raw hints were all `online=1`, revealing that Build 42 assigns the
+same default online id to these server-created NPC bodies; v1.59 suppresses
+those duplicate hints instead of treating them as unique identities.
+
+## v1.59 duplicate native online-id handling
+
+The server now emits an NPC `onlineId` only when it is unique within the
+authoritative NPC roster. The client also refuses to promote from duplicate
+online-id hints, so a shared Build 42 default id cannot attach the wrong native
+body. Persistent `NeighborhoodNpcId` ModData remains the preferred identity.
+Lua, Kahlua and actual v79 host/guest evidence cover the corrected contract;
+native server-body reannouncement remains open because `GameServer` is still
+unavailable to the dedicated-server Lua environment.
 
 ## v1.55 saved outfits replace unrelated layers
 

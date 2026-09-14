@@ -31,6 +31,7 @@ end
 local function presencePacket()
     local world = NLAuthority.world()
     local entries = {}
+    local onlineIdCounts = {}
     for id, body in pairs(NLNpcAuthority.bodies) do
         local row = NLNeighbors.get(world, id)
         local definition = NLNeighbors.definitions[id]
@@ -53,6 +54,17 @@ local function presencePacket()
                 outfit=definition and definition.outfit or "Generic01",
                 onlineId=onlineId,
             }
+            if onlineId ~= nil then
+                onlineIdCounts[onlineId] = (onlineIdCounts[onlineId] or 0) + 1
+            end
+        end
+    end
+    -- Build 42 currently returns the same default online id for multiple
+    -- server-created NPC IsoPlayers. A duplicate hint is unsafe for client
+    -- promotion, so only publish an identity that is unique in this roster.
+    for _, entry in ipairs(entries) do
+        if entry.onlineId ~= nil and onlineIdCounts[entry.onlineId] ~= 1 then
+            entry.onlineId = nil
         end
     end
     return { revision=getTimestampMs(), npcs=entries }, #entries

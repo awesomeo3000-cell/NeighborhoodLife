@@ -53,6 +53,22 @@ if npcOk and NLNpcAuthority and NLNpcAuthority.broadcastPresence and NLNpcAuthor
     assert(npcPacket and npcPacket.args.npcs[1].id=='marisol','NPC state sent to each connected player')
     assert(npcPacket.args.npcs[1].onlineId==12,
         'NPC presence carries the native online identity hint when available')
+    local duplicateNpc={getX=function() return 10757.5 end,getY=function() return 10214.5 end,
+        getZ=function() return 0 end,getOnlineID=function() return 12 end,
+        isDead=function() return false end}
+    NLNpcAuthority.bodies={marisol=npc,kenji=duplicateNpc}
+    NLNpcAuthority.broadcastPresence()
+    local duplicatePacket
+    for index=#packets,1,-1 do
+        if packets[index].command=='npc_presence' then duplicatePacket=packets[index]; break end
+    end
+    local duplicateCount=0
+    for _,entry in ipairs((duplicatePacket and duplicatePacket.args.npcs) or {}) do
+        duplicateCount=duplicateCount+1
+        assert(entry.onlineId==nil,'duplicate native online identities are omitted from NPC hints')
+    end
+    assert(duplicateCount==2,'duplicate online-id fixture retains both NPC presence rows')
+    NLNpcAuthority.bodies={marisol=npc}
     assert(NLNpcAuthority.sendPresence(host)==1,'NPC state can be sent immediately to a reconnecting player')
     NLClient.receive('NeighborhoodLife','npc_presence',npcPacket.args)
     assert(NLClient.npcPresence.npcs[1].x==10756.5,'client stores authoritative NPC state')

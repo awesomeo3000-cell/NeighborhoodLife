@@ -22,6 +22,8 @@ local function bodyPresent(body)
     if not listOk or not list or not list.size or not list.get then return nil end
     local countOk, count = pcall(list.size, list)
     if not countOk then return nil end
+    local hintedBody = nil
+    local duplicateHint = false
     for i=0,count-1 do
         local objectOk, object = pcall(list.get, list, i)
         if objectOk and object == body then return true end
@@ -48,9 +50,13 @@ local function nativeBody(id, onlineId)
         end
         if onlineId ~= nil and object and object.getOnlineID then
             local onlineOk, value = pcall(object.getOnlineID, object)
-            if onlineOk and tonumber(value) == tonumber(onlineId) then return object end
+            if onlineOk and tonumber(value) == tonumber(onlineId) then
+                if hintedBody then duplicateHint = true end
+                hintedBody = object
+            end
         end
     end
+    if hintedBody and not duplicateHint then return hintedBody end
     return nil
 end
 
@@ -127,11 +133,20 @@ local function reconcileNativeBodies()
             if not id and object.getOnlineID then
                 local onlineOk, onlineId = pcall(object.getOnlineID, object)
                 if onlineOk then
+                    local candidateId, candidateCount
                     for candidateId, state in pairs(NLNpcClient.states) do
                         if state and state.onlineId ~= nil
                                 and tonumber(state.onlineId) == tonumber(onlineId) then
-                            id = candidateId
-                            break
+                            candidateCount = (candidateCount or 0) + 1
+                        end
+                    end
+                    if candidateCount == 1 then
+                        for candidateId, state in pairs(NLNpcClient.states) do
+                            if state and state.onlineId ~= nil
+                                    and tonumber(state.onlineId) == tonumber(onlineId) then
+                                id = candidateId
+                                break
+                            end
                         end
                     end
                 end
