@@ -18,6 +18,9 @@ Each has four ranks, actual PZ skill requirements and three daily supply request
 Deliver consumes the displayed quantity from unequipped main-inventory items.
 Career XP and community credits are separate from vanilla skill XP. Credits are
 recorded but not spendable yet. Career progress persists per account per world.
+The career journal also offers one server-authoritative work shift per career
+and world day; shifts award modest career XP and community credits without
+replacing delivery contracts.
 Right-click the world for Neighborhood wardrobe: three save/wear layer presets.
 Wear uses vanilla timed actions and requires the garments in main inventory.
 It does not remove unrelated worn layers or create missing clothes.
@@ -526,6 +529,19 @@ discarded, and a partial transaction is repaired to its recorded pre-state.
 The Lua/Kahlua suites cover both player-side and world-side partial mutations.
 This recovery journal is the production mechanism exercised by the v1.38
 forced-crash probe above.
+
+## v1.40 career work shifts
+
+Each career now exposes a named daily work shift in the journal. The server
+tracks the claim per career and world day, awards 15 career XP and 5 community
+credits, and keeps vanilla perk level as the promotion gate. Duplicate clicks
+are rejected for that day, and a new world day unlocks the shift again.
+
+The actual Build 42 host-plus-guest run in `evidence/v60/` completed the medic
+delivery, then sent the production `work` command and received
+`Staff the neighborhood clinic: +15 career XP, +5 community credits`. The
+guest remained connected and the household sequence continued afterward. QA
+stimulus remains outside the production package.
 
 ## v1.39 pin-sized plumbob placement
 

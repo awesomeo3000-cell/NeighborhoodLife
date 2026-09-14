@@ -10,6 +10,7 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     socialConversationComplete = false,
     socialResultLogged = false, careerSeedSent = false, careerSeeded = false,
     careerSelectSent = false, careerDeliverSent = false, careerResultLogged = false,
+    careerWorkSent = false, careerWorkResultLogged = false, careerWorkDue = 0,
     careerDue = 0, careerStage = 0, careerPickupAttempted = false,
     careerPickupObserved = false, careerPickupExpected = 0, careerPickupItem = nil,
     careerPickupNextAttempt = 0, householdCreateSent = false,
@@ -523,7 +524,15 @@ Events.OnServerCommand.Add(function(module, command, args)
                 and NLQAMultiplayer.careerDeliverSent and not NLQAMultiplayer.careerResultLogged
                 and args.message and string.find(args.message,"Delivery complete",1,true) then
             NLQAMultiplayer.careerResultLogged=true
+            NLQAMultiplayer.careerWorkDue=NLQAMultiplayer.socialFrame+30
             emit("CAREER RESULT", "delivery complete message="..tostring(args.message))
+        end
+        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                and NLQAMultiplayer.careerWorkSent
+                and not NLQAMultiplayer.careerWorkResultLogged
+                and args.message and string.find(args.message,"career XP",1,true) then
+            NLQAMultiplayer.careerWorkResultLogged=true
+            emit("CAREER WORK RESULT", tostring(args.message))
         end
         if qaIdentity().username == "nl-host" and args.username == "nl-host"
                 and not NLQAMultiplayer.inventoryGiveObserved and args.message
@@ -1033,6 +1042,13 @@ Events.OnRenderTick.Add(function()
         end
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerResultLogged
+            and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.careerWorkDue
+            and not NLQAMultiplayer.careerWorkSent then
+        NLClient.request(0,"work",{})
+        NLQAMultiplayer.careerWorkSent=true
+        emit("CAREER WORK", "shift")
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.careerWorkResultLogged
             and not NLQAMultiplayer.householdCreateSent then
         NLQAMultiplayer.householdCreateSent=true
         NLHouseholdClient.request(0,"create")

@@ -4,13 +4,16 @@ NLDefinitions.careerOrder = { "tailor", "carpenter", "medic" }
 NLDefinitions.careers = {
     tailor = { name = "Tailor", perk = "Tailoring", ranks = {
         "Mending Apprentice", "Neighborhood Tailor", "Pattern Maker", "Master Clothier"
-    }, materials = { { "Base.RippedSheets", 6 }, { "Base.Sheet", 2 }, { "Base.Bandage", 3 } } },
+    }, materials = { { "Base.RippedSheets", 6 }, { "Base.Sheet", 2 }, { "Base.Bandage", 3 } },
+        shift = { name="Mend a neighborhood garment", skill=0, xp=15, credits=5 } },
     carpenter = { name = "Carpenter", perk = "Woodwork", ranks = {
         "Workshop Helper", "Repair Carpenter", "House Builder", "Master Carpenter"
-    }, materials = { { "Base.Plank", 2 }, { "Base.Nails", 12 }, { "Base.Plank", 4 } } },
+    }, materials = { { "Base.Plank", 2 }, { "Base.Nails", 12 }, { "Base.Plank", 4 } },
+        shift = { name="Repair a neighborhood fixture", skill=0, xp=15, credits=5 } },
     medic = { name = "Medic", perk = "Doctor", ranks = {
         "First Aid Volunteer", "Neighborhood Medic", "Clinic Lead", "Community Physician"
-    }, materials = { { "Base.RippedSheets", 8 }, { "Base.Bandage", 3 }, { "Base.Bandage", 5 } } }
+    }, materials = { { "Base.RippedSheets", 8 }, { "Base.Bandage", 3 }, { "Base.Bandage", 5 } },
+        shift = { name="Staff the neighborhood clinic", skill=0, xp=15, credits=5 } }
 }
 -- Promotion requires deliveries AND the actual game skill; career XP is not skill XP.
 NLDefinitions.promotions = {

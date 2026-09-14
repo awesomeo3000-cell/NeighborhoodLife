@@ -8,7 +8,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 |---|---|---|
 | Sims-inspired HUD | Six live adverse-stat bars, fold control, career journal link | Actual host+guest independent values; resolution and accessibility polish |
 | Character markers | Production client plumbob asset and world-to-screen panel for active characters; v1.25 uses a compact 16x22 source texture, v1.36 reduces the runtime panel to 4x7, and v1.39 tightens it to a pin-sized 3x5 panel with a 20px lift so the gem stays small and close above the model; native remote-player discovery attaches markers when Build 42 exposes a body, and v1.21 adds an authoritative-presence-driven local native remote-player replica when the engine temporarily omits a peer | Stable native two-way remote-character bodies and movement; fallback replica behavior is covered by contract tests and remains to be exercised in a naturally missing-peer gameplay run |
-| Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits | Rank/restart tests, richer work beyond deliveries, rewards and balance |
+| Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits; v1.40 adds named server-authoritative daily work shifts with duplicate-day guards and actual host evidence | Rank/restart tests, richer work beyond the daily shift, rewards and balance |
 | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
 | Clothing options | Three saved outfit-layer slots; server-authoritative worn-garment capture and revisioned private snapshots in v1.28; v1.29 actual vanilla clothing acquisition, wear and reconnect snapshot persistence; v1.30 actual production saved-outfit replacement after vanilla unequip; light-themed wardrobe panel reachable from HUD | New garment variants, original assets, unlock/reward integration |
 | Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback, v1.27 adds a best-effort `GameServer` reannouncement adapter plus mock contract coverage, v1.31 makes the dedicated-server fallback collision-aware and reroutes a blocked waypoint instead of stepping through it, and v1.32 retires native deaths into persistent dead rows and schedules saved-tile recovery for missing streamed bodies | Build 42 native server-body reannouncement remains unproven because the real dedicated server exposes `GameServer=nil` to Lua; danger handling and natural streamed-cell behavior still need actual gameplay evidence |
@@ -39,6 +39,8 @@ The original broad goal remains active. This ledger is not a reduced definition 
   journal repair after a forced crash is proven in v1.38; broader global-data
   crash-atomic commits remain open and must be investigated before release.
 - Careers persist per account per world, including after a survivor dies.
+- A career work shift is one claim per career/world day; vanilla perk level remains
+  authoritative for promotion gates.
 - Community credits are currently a ledger, not yet spendable currency.
 - Saved outfits currently add/equip layers; they do not remove unrelated worn layers.
 - Vanilla stats remain authoritative. Need percentages show adverse intensity, lower is better.
@@ -172,6 +174,18 @@ romance synchronization remain open.
   the installed Kahlua VM.
 - The v1.38 forced-crash probe exercises this recovery path across a real
   dedicated-server process restart.
+
+## v1.40 career work shifts
+
+- Each career now exposes a named daily work shift in the production journal.
+  The server records one claim per career and world day, awards 15 career XP
+  and 5 community credits, and keeps the vanilla perk level as the promotion
+  gate. A duplicate claim is rejected until the next world day.
+- `evidence/v60/` records actual Build 42 host-plus-guest gameplay: the host
+  completed the medic delivery, sent the production `work` command, received
+  `Staff the neighborhood clinic: +15 career XP, +5 community credits`, and
+  continued into the household sequence. Lua/Kahlua tests remain separate
+  mock and engine-VM evidence.
 
 ## v1.39 pin-sized plumbob placement
 

@@ -46,6 +46,7 @@ function NLAuthority.snapshot(player, profile, message)
     result.playerNum = player:getPlayerNum()
     result.username = NLAuthority.key(player)
     result.message = message or "Updated"
+    result.workedToday = profile.worked and profile.worked[profile.career] == profile.day or false
     result.skill = player:getPerkLevel(Perks[NLDefinitions.careers[profile.career].perk])
     if isServer() then sendServerCommand(player, NLAuthority.module, "snapshot", result)
     elseif NLClient then NLClient.receive(NLAuthority.module, "snapshot", result) end
@@ -86,6 +87,13 @@ function NLAuthority.delivery(player, profile, id)
     return NLDomain.complete(profile, contract)
 end
 
+function NLAuthority.work(player, profile)
+    local career = NLDefinitions.careers[profile.career]
+    local perk = career and Perks[career.perk]
+    local skill = perk and player:getPerkLevel(perk) or 0
+    return NLDomain.work(profile, skill)
+end
+
 -- Capture the authoritative player's currently worn garment identities. The
 -- client only requests a slot; the server reads the real worn-item list so a
 -- preset cannot contain client-invented item types or IDs.
@@ -117,7 +125,8 @@ end
 function NLAuthority.command(module, command, player, args)
     if module ~= NLAuthority.module or not player or player:isDead() then return end
     if command ~= "refresh" and command ~= "presence" and command ~= "select"
-            and command ~= "deliver" and command ~= "promote" and command ~= "wardrobe_save" then return end
+            and command ~= "deliver" and command ~= "promote" and command ~= "work"
+            and command ~= "wardrobe_save" then return end
     -- Build 42's dedicated-server callback can omit the empty packet table for
     -- no-argument commands. Treat that as an empty request instead of dropping
     -- an otherwise valid refresh from a real client.
@@ -144,6 +153,7 @@ function NLAuthority.command(module, command, player, args)
     elseif command == "deliver" then ok, message = NLAuthority.delivery(player, profile, args.id)
     elseif command == "promote" then
         ok, message = NLDomain.promote(profile, player:getPerkLevel(Perks[NLDefinitions.careers[profile.career].perk]))
+    elseif command == "work" then ok, message = NLAuthority.work(player, profile)
     elseif command == "wardrobe_save" then
         ok, message = NLAuthority.captureOutfit(player, profile, args.slot)
     end

@@ -70,6 +70,16 @@ function getSpecificPlayer() return nil end
 NLClient.profiles[0]=p; p.skill=0
 NLJournal.open(0); NLJournal.instances[0]:prerender()
 assert(NLJournal.instances[0].careerButtons.tailor.backgroundColor.g==0.88)
+if NLJournal.instances[0].workButton then
+    assert(NLJournal.instances[0].workButton.enabled,
+        'career journal exposes a ready work-shift action')
+    local originalJournalRequest=NLClient.request
+    local workCommand
+    NLClient.request=function(_,command) workCommand=command end
+    NLJournal.instances[0]:onButton(NLJournal.instances[0].workButton)
+    NLClient.request=originalJournalRequest
+    assert(workCommand=='work','career journal routes work shift')
+end
 print('PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme')
 if arg[2]=='wardrobe-panel' then
     package.preload['NL/Wardrobe']=function()

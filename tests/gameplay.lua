@@ -44,6 +44,12 @@ packets[1].args.credits=999; check(profile(a).credits==0,'snapshot detached from
 cmd(a,'select',{career='bogus'}); check(profile(a).career=='tailor','invalid career rejected')
 cmd(a,'select',{career='carpenter',username='guest'}); check(profile(b).career=='tailor','spoofed target ignored')
 cmd(a,'select',{career='tailor'})
+if NLDomain.work then
+    cmd(b,'work'); check(profile(b).credits==5 and profile(b).careers.tailor.xp==15,
+        'career shift awards separate work progress')
+    cmd(b,'work'); check(profile(b).credits==5 and profile(b).careers.tailor.shifts==1,
+        'career shift is once per career/day')
+end
 local contract=NLDomain.contracts(profile(a))[1]
 cmd(a,'deliver',{id=contract.id}); check(profile(a).credits==0,'empty inventory rejected')
 for i=1,6 do a.items[#a.items+1]=item('Base.RippedSheets') end
@@ -63,10 +69,17 @@ end
 check(profile(a).careers.tailor.xp==60,'three distinct contracts grant 60 XP')
 cmd(a,'promote'); check(profile(a).careers.tailor.rank==1,'skill gate enforced')
 a.skill=1; cmd(a,'promote'); check(profile(a).careers.tailor.rank==2,'earned promotion')
-check(profile(b).credits==0 and profile(b).careers.tailor.rank==1,'guest progress unaffected')
+if NLDomain.work then
+    check(profile(b).credits==5 and profile(b).careers.tailor.rank==1 and profile(b).careers.tailor.xp==15,
+        'guest career progress remains private')
+end
 day=1; cmd(a,'refresh')
 local claimCount=0; for _ in pairs(profile(a).claimed) do claimCount=claimCount+1 end
 check(claimCount==0,'day rollover')
+if NLDomain.work then
+    cmd(b,'refresh'); cmd(b,'work'); check(profile(b).credits==10 and profile(b).careers.tailor.shifts==2,
+        'next world day unlocks another career shift')
+end
 local earnedCredits=profile(a).credits
 cmd(a,'deliver',{id=contract.id}); check(profile(a).credits==earnedCredits,'old day token rejected')
 local before=profile(a).credits

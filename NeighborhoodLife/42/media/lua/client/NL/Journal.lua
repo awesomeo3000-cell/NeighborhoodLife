@@ -36,6 +36,7 @@ function NLJournal:initialise()
     for i=1,3 do self.deliverButtons[i] = self:button(455,162+(i-1)*48,115,"Deliver","deliver",i) end
     self:button(16,325,180,"Check promotion","promote")
     self:button(210,325,100,"Refresh","refresh")
+    self.workButton = self:button(320,325,150,"Work shift","work")
 end
 
 function NLJournal:onButton(button)
@@ -47,6 +48,7 @@ function NLJournal:onButton(button)
         if not p then return end
         args.id = NLDomain.contracts(p)[button.value].id
     end
+    if button.action=="work" then args = {} end
     NLClient.request(self.playerIndex,button.action,args)
 end
 
@@ -68,6 +70,10 @@ function NLJournal:prerender()
         16,90,0.18,0.24,0.32,1,UIFont.Small)
     self:drawText("Community credits: " .. p.credits .. " | Deliveries: " .. progress.delivered,
         16,115,0.30,0.38,0.47,1,UIFont.Small)
+    local shift = NLDefinitions.careers[p.career].shift
+    local worked = p.workedToday == true or (p.worked and p.worked[p.career] == p.day)
+    self:drawText("SHIFT: " .. (shift and shift.name or "Unavailable")
+        .. (worked and " / DONE" or " / READY"), 16,135,0.12,0.38,0.63,1,UIFont.Small)
     self:drawText("SUPPLY REQUESTS / refresh each world day",16,142,0.12,0.38,0.63,1,UIFont.Small)
     for i,c in ipairs(NLDomain.contracts(p)) do
         local y = 170+(i-1)*48
@@ -75,6 +81,7 @@ function NLJournal:prerender()
         self:drawText(c.amount .. " x " .. c.item .. (done and " / DONE" or ""),16,y,0.18,0.24,0.32,1,UIFont.Small)
         self.deliverButtons[i]:setEnable(not done)
     end
+    if self.workButton then self.workButton:setEnable(not worked) end
     self:drawText(NLAspirations.label(p),16,284,0.12,0.38,0.63,1,UIFont.Small)
     self:drawText("Delivery consumes items in your main inventory.",16,303,0.46,0.32,0.12,1,UIFont.Small)
     local nextRank = NLDefinitions.promotions[progress.rank+1]
