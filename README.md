@@ -785,5 +785,9 @@ list and the loaded cell object list. A connected peer that has entered the
 cell before `getOnlinePlayers()` refreshes is promoted over the local fallback,
 with the old replica path cancelled and its plumbob/state presentation cleaned
 up. The focused Lua 5.1 and installed-game Kahlua tests cover this branch.
-This remains engine-VM evidence; a real naturally missing peer still needs a
-full gameplay capture.
+`evidence/v73/` also records an actual hands-free Build 42.20.4 host+guest
+run: later scans show the moving host peer in the loaded cell with
+`productionRemoteReplicas=0` while the host is temporarily absent from the
+client online-player list, and both clients retain the three production NPCs.
+This is actual loaded-cell peer evidence; native server-body reannouncement and
+natural NPC cell streaming remain open.
