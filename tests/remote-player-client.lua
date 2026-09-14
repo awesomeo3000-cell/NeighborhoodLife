@@ -13,10 +13,12 @@ function getSpecificPlayer() return localPlayer end
 
 local objects={}
 function objects:size() return #objects end
+function objects:get(i) return objects[i+1] end
 function objects:contains(value) for _,v in ipairs(self) do if v==value then return true end end return false end
 function objects:add(value) self[#self+1]=value end
 function objects:remove(value) for i,v in ipairs(self) do if v==value then table.remove(self,i); return end end end
 local cell={getObjectList=function() return objects end,
+    getObjectListForLua=function() return objects end,
     getGridSquare=function(_,x,y,z) return {getX=function() return x end,getY=function() return y end,getZ=function() return z end} end}
 function getCell() return cell end
 local function desc()
@@ -72,7 +74,24 @@ NLRemotePlayerClient.apply({revision=3,players={{username='nl-host',x=20,y=21,z=
 check(NLRemotePlayerClient.bodies['nl-host']==native,'native engine body wins when available')
 check(NLRemotePlayerClient.modes['nl-host']=='engine','engine mode recorded')
 check(not objects:contains(replica),'fallback replica removed after native body appears')
-NLRemotePlayerClient.apply({revision=4,players={}})
+online={localPlayer}
+local cellNative={name='nl-host',x=30,y=31,z=0,data={}}
+function cellNative:getUsername() return self.name end
+function cellNative:getModData() return self.data end
+function cellNative:getX() return self.x end; function cellNative:getY() return self.y end
+function cellNative:getZ() return self.z end
+objects:add(cellNative)
+if NLRemotePlayerClient.findNativePlayer then
+    check(NLRemotePlayerClient.findNativePlayer('nl-host')==cellNative,
+        'loaded-cell native peer is discoverable when online-player list is empty')
+end
+NLRemotePlayerClient.apply({revision=4,players={{username='nl-host',x=30,y=31,z=0}}})
+if NLRemotePlayerClient.cellNativeDiscoverySupported then
+    check(NLRemotePlayerClient.bodies['nl-host']==cellNative,
+        'loaded-cell native peer wins when online-player list is temporarily empty')
+    check(NLRemotePlayerClient.modes['nl-host']=='engine','loaded-cell native mode recorded')
+end
+NLRemotePlayerClient.apply({revision=5,players={}})
 check(NLRemotePlayerClient.bodies['nl-host']==nil,'roster removal clears remote body state')
 NLRemotePlayerClient.cleanup(); check(NLRemotePlayerClient.revision==0,'cleanup resets revision')
 print('PASS: remote player replica creation, authoritative movement, native promotion, stale rejection and cleanup')

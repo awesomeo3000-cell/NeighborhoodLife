@@ -777,3 +777,13 @@ native body, repositions it from the authoritative entry, and reuses the
 plumbob registration. The focused contract test and installed-game Kahlua
 execution cover the promotion path; a real naturally missing native peer is
 still not available in the current dedicated-server Lua exposure.
+
+## v1.52 loaded-cell remote-player discovery
+
+The production remote-player client now searches both Build 42's online-player
+list and the loaded cell object list. A connected peer that has entered the
+cell before `getOnlinePlayers()` refreshes is promoted over the local fallback,
+with the old replica path cancelled and its plumbob/state presentation cleaned
+up. The focused Lua 5.1 and installed-game Kahlua tests cover this branch.
+This remains engine-VM evidence; a real naturally missing peer still needs a
+full gameplay capture.

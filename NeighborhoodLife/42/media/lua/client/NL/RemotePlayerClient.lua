@@ -25,22 +25,48 @@ local function localUsername(username)
 end
 
 local function nativePlayer(username)
-    if type(getOnlinePlayers) ~= "function" then return nil end
-    local ok, players = pcall(getOnlinePlayers)
-    if not ok or not players or not players.size or not players.get then return nil end
-    for i = 0, players:size() - 1 do
-        local player = players:get(i)
-        if player and player.getUsername then
-            local nameOk, name = pcall(player.getUsername, player)
-            local dataOk, data = pcall(player.getModData, player)
-            local isReplica = dataOk and data and data.NeighborhoodRemotePlayerId
-            if nameOk and name == username and not localUsername(name) and not isReplica then
-                return player
+    local function candidate(player)
+        if not player or not player.getUsername then return nil end
+        local nameOk, name = pcall(player.getUsername, player)
+        local dataOk, data = pcall(player.getModData, player)
+        local isReplica = dataOk and data and data.NeighborhoodRemotePlayerId
+        if nameOk and name == username and not localUsername(name) and not isReplica then
+            return player
+        end
+        return nil
+    end
+    if type(getOnlinePlayers) == "function" then
+        local ok, players = pcall(getOnlinePlayers)
+        if ok and players and players.size and players.get then
+            for i = 0, players:size() - 1 do
+                local player = candidate(players:get(i))
+                if player then return player end
+            end
+        end
+    end
+    -- A peer can be present in the loaded cell before Build 42 repopulates
+    -- getOnlinePlayers(). Prefer that engine-owned object over a fallback
+    -- replica so its native movement and replication remain authoritative.
+    local cell = getCell and getCell()
+    if cell and cell.getObjectListForLua then
+        local listOk, list = pcall(cell.getObjectListForLua, cell)
+        if listOk and list and list.size and list.get then
+            local countOk, count = pcall(list.size, list)
+            if countOk then
+                for i = 0, count - 1 do
+                    local player = candidate(list:get(i))
+                    if player then return player end
+                end
             end
         end
     end
     return nil
 end
+
+-- Contract tests use this flag to exercise the new cell-discovery branch
+-- without making older production baselines fail their existing assertions.
+NLRemotePlayerClient.cellNativeDiscoverySupported = true
+NLRemotePlayerClient.findNativePlayer = nativePlayer
 
 local function positionBody(body, x, y, z)
     body:setX(x); body:setY(y)
@@ -149,7 +175,10 @@ function NLRemotePlayerClient.apply(packet)
             local native = nativePlayer(username)
             local body = NLRemotePlayerClient.bodies[username]
             if native then
-                if body and body ~= native then removeReplica(username, body) end
+                if body and body ~= native then
+                    cancelPath(username, body)
+                    removeReplica(username, body)
+                end
                 NLRemotePlayerClient.bodies[username] = native
                 NLRemotePlayerClient.modes[username] = "engine"
                 cancelPath(username, native)
