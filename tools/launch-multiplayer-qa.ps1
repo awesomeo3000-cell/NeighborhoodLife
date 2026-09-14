@@ -1,6 +1,7 @@
 param(
     [switch]$InventoryCrashProbe,
     [switch]$PreserveHousehold,
+    [switch]$VerifyHouseholdMetadata,
     [string]$ProfileRoot = 'E:\pzmod\test-profile',
     [string]$EvidenceRoot = 'E:\pzmod\evidence\v14'
 )
@@ -52,8 +53,9 @@ if ($InventoryCrashProbe) {
 # Per-client identity: the engine has no no-Steam username source at the main menu,
 # so the isolated launcher writes one small identity file into each QA client copy.
 $preserveHouseholdValue = if ($PreserveHousehold) { 'true' } else { 'false' }
-"NLQAIdentity = { username = `"nl-host`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue }" | Set-Content "$hostProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
-"NLQAIdentity = { username = `"nl-guest`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue }" | Set-Content "$guestProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+$metadataProbeValue = if ($VerifyHouseholdMetadata) { 'true' } else { 'false' }
+"NLQAIdentity = { username = `"nl-host`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue }" | Set-Content "$hostProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+"NLQAIdentity = { username = `"nl-guest`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue }" | Set-Content "$guestProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
 
 # Keep both QA client windows windowed and silent; never leave a fullscreen QA window.
 function Set-WindowedOptions($path) {

@@ -94,12 +94,33 @@ local function mainInventoryItems(player, itemType, amount)
     return chosen, inventory
 end
 
-local function itemValue(item, method)
+local function itemMethod(item, method)
     if not item then return nil end
     local ok, fn = pcall(function() return item[method] end)
-    if not ok or not fn then return nil end
+    return ok and fn or nil
+end
+
+local function itemValue(item, method)
+    local fn = itemMethod(item, method)
+    if not fn then return nil end
     local valueOk, value = pcall(fn, item)
     return valueOk and value or nil
+end
+
+local function fluidValue(item, method)
+    local fluidContainer = itemValue(item, "getFluidContainer")
+    return itemValue(fluidContainer, method)
+end
+
+local function itemUsedDelta(item)
+    local legacy = itemValue(item, "getUsedDelta")
+    if legacy ~= nil then return legacy end
+    local amount = fluidValue(item, "getAmount")
+    local capacity = fluidValue(item, "getCapacity")
+    if amount ~= nil and capacity ~= nil and tonumber(capacity) and tonumber(capacity) > 0 then
+        return tonumber(amount) / tonumber(capacity)
+    end
+    return nil
 end
 
 local function itemStorageDetails(item, itemType)
@@ -112,7 +133,9 @@ local function itemStorageDetails(item, itemType)
         container = containerType,
         condition = itemValue(item, "getCondition"),
         maxCondition = itemValue(item, "getConditionMax"),
-        usedDelta = itemValue(item, "getUsedDelta"),
+        -- Build 42 fluid-container items no longer expose the legacy
+        -- getUsedDelta API; persist their normalized fill level instead.
+        usedDelta = itemUsedDelta(item),
     }
 end
 
@@ -126,6 +149,14 @@ local function applyStorageDetails(item, details)
     if not item or type(details) ~= "table" then return end
     setItemValue(item, "setCondition", details.condition)
     setItemValue(item, "setUsedDelta", details.usedDelta)
+    if details.usedDelta ~= nil then
+        local fluidContainer = itemValue(item, "getFluidContainer")
+        local capacity = itemValue(fluidContainer, "getCapacity")
+        local adjust = itemMethod(fluidContainer, "adjustAmount")
+        if adjust and capacity ~= nil then
+            pcall(adjust, fluidContainer, tonumber(details.usedDelta) * tonumber(capacity))
+        end
+    end
     -- Build 42 permits a restored custom display name on item instances. If a
     -- build omits the setter, the durable metadata still remains in the home.
     setItemValue(item, "setName", details.name)
@@ -184,15 +215,21 @@ local function storageCommand(world, household, player, key, args, mode)
             return false, "Main inventory could not accept " .. itemType
         end
         added[#added + 1] = item
-        if isServer() and sendAddItemToContainer then
-            sendAddItemToContainer(inventory, item)
-        end
     end
     local ok, message, details = NLHouseholds.retrieve(household, itemType, amount)
     if not ok then
         for _, restored in ipairs(added) do inventory:Remove(restored) end
     end
-    for index, item in ipairs(added) do applyStorageDetails(item, details and details[index]) end
+    if ok then
+        for index, item in ipairs(added) do
+            applyStorageDetails(item, details and details[index])
+            -- Send only after applying the instance metadata so the first
+            -- client replica carries the restored condition/fluid state too.
+            if isServer() and sendAddItemToContainer then
+                sendAddItemToContainer(inventory, item)
+            end
+        end
+    end
     return ok, message
 end
 

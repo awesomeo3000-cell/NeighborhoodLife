@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.65)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.66)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -28,6 +28,8 @@ Click Looks in the HUD footer for four server-saved Build 42 hair presets. The
 selected preset is returned in the revisioned profile snapshot and applied to
 the local survivor's native HumanVisual. Host and guest choices are independent.
 The HUD footer opens Careers, Social, Looks, Wardrobe and Home actions.
+Household storage now preserves tested Build 42 item-instance metadata, including
+weapon condition and fluid-container fill level, across a real host/guest exchange.
 Relationships use separate friendship, trust and attraction bars, with introductions,
 chat, jokes, flirting, dates, partnerships and breakups. They only operate on a neighbor
 registered with a real server-side body. In a new or loaded single-player world,

@@ -29,6 +29,65 @@ local householdViewpointMoved = false
 local inventoryFaultArmed = false
 local householdRestartProbeSent = false
 
+-- These helpers are QA-only. They seed genuine Item instances in the host's
+-- networked inventory so the production household authority must capture and
+-- restore instance metadata during the probe.
+local function qaSetItemValue(item, method, value)
+    if not item or value == nil then return end
+    local ok, fn = pcall(function() return item[method] end)
+    if ok and fn then pcall(fn, item, value) end
+end
+
+local function qaItemValue(item, method)
+    if not item then return nil end
+    local ok, fn = pcall(function() return item[method] end)
+    if not ok or not fn then return nil end
+    local valueOk, value = pcall(fn, item)
+    return valueOk and value or nil
+end
+
+local function qaSetFluidFraction(item, fraction)
+    local container = qaItemValue(item, "getFluidContainer")
+    if not container then return false end
+    local ok, adjust = pcall(function() return container.adjustAmount end)
+    if not ok or not adjust then return false end
+    local capacity = qaItemValue(container, "getCapacity")
+    if not capacity then return false end
+    local adjusted = pcall(adjust, container, tonumber(fraction) * tonumber(capacity))
+    return adjusted == true
+end
+
+local function qaFluidFraction(item)
+    local container = qaItemValue(item, "getFluidContainer")
+    local amount = qaItemValue(container, "getAmount")
+    local capacity = qaItemValue(container, "getCapacity")
+    if amount == nil or capacity == nil or tonumber(capacity) == 0 then return nil end
+    return tonumber(amount) / tonumber(capacity)
+end
+
+local function qaClearInventoryType(inventory, fullType)
+    local items = inventory and inventory:getItems()
+    if not items then return end
+    for index = items:size() - 1, 0, -1 do
+        local item = items:get(index)
+        if item and item:getFullType() == fullType then
+            inventory:Remove(item)
+            if sendRemoveItemFromContainer then
+                sendRemoveItemFromContainer(inventory, item)
+            end
+        end
+    end
+end
+
+local function qaSeedInventoryItem(inventory, fullType, configure)
+    if not inventory or not inventory.AddItem then return nil end
+    local ok, item = pcall(inventory.AddItem, inventory, fullType)
+    if not ok or not item then return nil end
+    if configure then configure(item) end
+    if sendAddItemToContainer then sendAddItemToContainer(inventory, item) end
+    return item
+end
+
 -- The crash probe supplies NLQAInventoryFaultMode through a temporary
 -- server-only QA config file. It never exists in the production package.
 Events.OnTick.Add(function()
@@ -328,11 +387,28 @@ Events.OnClientCommand.Add(function(module, command, player, args)
     for index=1,amount do
         square:AddWorldInventoryItem(item, 0.25 + (index * 0.07), 0.50, 0.0)
     end
+    local metadataProbe = args and args.metadataProbe == true
+    if metadataProbe then
+        qaClearInventoryType(inventory, "Base.KitchenKnife")
+        qaClearInventoryType(inventory, "Base.WaterBottle")
+        local knife = qaSeedInventoryItem(inventory, "Base.KitchenKnife", function(item)
+            qaSetItemValue(item, "setCondition", 4)
+        end)
+        local bottle = qaSeedInventoryItem(inventory, "Base.WaterBottle", function(item)
+            qaSetFluidFraction(item, 0.25)
+        end)
+        print("NLQA HOUSEHOLD METADATA SEED: item=Base.KitchenKnife condition=4 actual="
+            .. tostring(qaItemValue(knife, "getCondition")) .. " ok=" .. tostring(knife ~= nil))
+        print("NLQA HOUSEHOLD METADATA SEED: item=Base.WaterBottle usedDelta=0.25 actual="
+            .. tostring(qaFluidFraction(bottle)) .. " ok=" .. tostring(bottle ~= nil))
+    end
     careerSeeded[username] = true
     print("NLQA CAREER WORLD SEED: username="..tostring(username).." item="..item
         .." amount="..amount.." square="..tostring(square:getX())..","..tostring(square:getY())
         ..","..tostring(square:getZ()))
-    sendServerCommand(player,"NeighborhoodQA","career_seeded",{item=item,amount=amount,mode="world"})
+    sendServerCommand(player,"NeighborhoodQA","career_seeded",{
+        item=item, amount=amount, mode="world", metadataProbe=metadataProbe,
+    })
 end)
 
 -- QA-only clothing fixture: place real vanilla garments in the current square

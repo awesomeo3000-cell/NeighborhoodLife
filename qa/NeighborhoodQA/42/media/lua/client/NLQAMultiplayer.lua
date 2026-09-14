@@ -34,6 +34,11 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     -- delayed QA seed command can erase the newly-created home.
     householdDirectCreateDue = 180,
     householdFurnishingPrepared = false, householdFurnishingActionDue = 0,
+    householdMetadataProbe = false, householdMetadataStage = 0,
+    householdMetadataStoreSent = false, householdMetadataStoreObserved = false,
+    householdMetadataDue = 0,
+    householdMetadataRetrieveStage = 0, householdMetadataRetrieveSent = false,
+    householdMetadataRetrieveObserved = false,
     householdRestartRefreshDue = 0, householdRestartRefreshSent = false,
     householdRestartObserved = false,
     dangerProbeSent = false,
@@ -66,18 +71,22 @@ local function emit(label, value)
     print("NLQA MP " .. label .. ": " .. tostring(value))
 end
 
-local function requestHouseholdFurnishing(action)
+local function requestHouseholdItem(action, itemType, amount)
     local player = getSpecificPlayer(0)
     if not player then return false end
     pcall(require, "NL/HouseholdFurnishingMenu")
-    if NLHouseholdFurnishingMenu and NLHouseholdFurnishingMenu.request then
-        NLHouseholdFurnishingMenu.request(player, action)
+    if NLHouseholdFurnishingMenu and NLHouseholdFurnishingMenu.requestItem then
+        NLHouseholdFurnishingMenu.requestItem(player, action, itemType, amount)
         return true
     end
     NLHouseholdClient.request(0, "furnishing", {
-        action = action, item = "Base.RippedSheets", amount = 1,
+        action = action, item = itemType, amount = amount or 1,
     })
     return true
+end
+
+local function requestHouseholdFurnishing(action)
+    return requestHouseholdItem(action, "Base.RippedSheets", 1)
 end
 
 local function qaIdentity()
@@ -356,6 +365,38 @@ local function positionClientForSocial(username, targetId)
         emit("SOCIAL VIEWPOINT WAIT", "no visible adjacent square yet")
     end
     return false
+end
+
+local function qaFindInventoryItem(player, fullType)
+    if not player or not player.getInventory then return nil end
+    local inventory = player:getInventory()
+    local items = inventory and inventory.getItems and inventory:getItems()
+    if not items or not items.size then return nil end
+    for index = 0, items:size() - 1 do
+        local item = items:get(index)
+        if item and item.getFullType and item:getFullType() == fullType then
+            return item
+        end
+    end
+    return nil
+end
+
+local function qaItemValue(item, method)
+    if not item then return nil end
+    local ok, fn = pcall(function() return item[method] end)
+    if not ok or not fn then return nil end
+    local valueOk, value = pcall(fn, item)
+    return valueOk and value or nil
+end
+
+local function qaItemUsedDelta(item)
+    local legacy = qaItemValue(item, "getUsedDelta")
+    if legacy ~= nil then return legacy end
+    local container = qaItemValue(item, "getFluidContainer")
+    local amount = qaItemValue(container, "getAmount")
+    local capacity = qaItemValue(container, "getCapacity")
+    if amount == nil or capacity == nil or tonumber(capacity) == 0 then return nil end
+    return tonumber(amount) / tonumber(capacity)
 end
 
 -- QA-only natural streaming stimulus. Walk the host far enough through the
@@ -875,6 +916,7 @@ Events.OnServerCommand.Add(function(module, command, args)
         NLQAMultiplayer.careerPickupNextAttempt=NLQAMultiplayer.socialFrame
         NLQAMultiplayer.careerPickupExpected=tonumber(args.amount or 0) or 0
         NLQAMultiplayer.careerPickupItem=args.item
+        NLQAMultiplayer.householdMetadataProbe=args.metadataProbe == true
         queueCareerWorldPickup(NLQAMultiplayer.careerPickupItem,
             NLQAMultiplayer.careerPickupExpected)
         emit("CAREER SEED ACK", "item="..tostring(args.item).." amount="..tostring(args.amount))
@@ -889,6 +931,9 @@ Events.OnServerCommand.Add(function(module, command, args)
     if module == "NeighborhoodHousehold" and command == "snapshot" and type(args) == "table" then
         local home=args.household
         local members=home and home.members or {}
+        if qaIdentity().metadataProbe == true then
+            NLQAMultiplayer.householdMetadataProbe=true
+        end
         emit("HOUSEHOLD SNAPSHOT", "username="..tostring(args.username)
             .." members="..tostring(#members).." furnishing="
             ..tostring(home and home.furnishing and home.furnishing.kind)
@@ -896,6 +941,17 @@ Events.OnServerCommand.Add(function(module, command, args)
             ..","..tostring(home and home.furnishing and home.furnishing.y)
             ..","..tostring(home and home.furnishing and home.furnishing.z)
             .." message="..tostring(args.message))
+        if qaIdentity().metadataProbe == true and home and home.storageDetails then
+            local rows = {}
+            for _, entry in ipairs(home.storageDetails) do
+                rows[#rows + 1] = tostring(entry.item)
+                    .. "/condition=" .. tostring(entry.condition)
+                    .. "/usedDelta=" .. tostring(entry.usedDelta)
+            end
+            if #rows > 0 then
+                emit("HOUSEHOLD METADATA SNAPSHOT", table.concat(rows, ","))
+            end
+        end
         if qaIdentity().username=="nl-host" and home
                 and not NLQAMultiplayer.householdCreatedObserved then
             NLQAMultiplayer.householdCreatedObserved=true
@@ -915,10 +971,31 @@ Events.OnServerCommand.Add(function(module, command, args)
                 and not NLQAMultiplayer.householdStoreObserved and args.message
                 and string.find(args.message,"used household storage",1,true) then
             NLQAMultiplayer.householdStoreObserved=true
-            NLQAMultiplayer.householdTransferDue=NLQAMultiplayer.socialFrame+30
-            NLQAMultiplayer.householdTaskDue=NLQAMultiplayer.socialFrame+60
             NLQAMultiplayer.householdFurnishingObserved=true
             emit("HOUSEHOLD FURNISHING RESULT", tostring(args.message))
+            if NLQAMultiplayer.householdMetadataProbe then
+                NLQAMultiplayer.householdMetadataStage=1
+                NLQAMultiplayer.householdMetadataDue=NLQAMultiplayer.socialFrame+30
+                emit("HOUSEHOLD METADATA PROBE", "sheet baseline stored; next=Base.KitchenKnife")
+            else
+                NLQAMultiplayer.householdTransferDue=NLQAMultiplayer.socialFrame+30
+                NLQAMultiplayer.householdTaskDue=NLQAMultiplayer.socialFrame+60
+            end
+        elseif qaIdentity().username=="nl-host" and NLQAMultiplayer.householdMetadataProbe
+                and NLQAMultiplayer.householdMetadataStoreSent
+                and args.message and string.find(args.message,"used household storage",1,true) then
+            if NLQAMultiplayer.householdMetadataStage == 2 then
+                NLQAMultiplayer.householdMetadataStoreObserved=true
+                NLQAMultiplayer.householdMetadataStage=3
+                NLQAMultiplayer.householdMetadataDue=NLQAMultiplayer.socialFrame+30
+                emit("HOUSEHOLD METADATA STORE RESULT", "item=Base.KitchenKnife condition=4")
+            elseif NLQAMultiplayer.householdMetadataStage == 4 then
+                NLQAMultiplayer.householdMetadataStoreObserved=true
+                NLQAMultiplayer.householdMetadataStage=5
+                NLQAMultiplayer.householdTransferDue=NLQAMultiplayer.socialFrame+30
+                NLQAMultiplayer.householdTaskDue=NLQAMultiplayer.socialFrame+60
+                emit("HOUSEHOLD METADATA STORE RESULT", "item=Base.WaterBottle usedDelta=0.25")
+            end
         end
         if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdStoreSent
                 and not NLQAMultiplayer.householdStoreObserved and args.message
@@ -928,7 +1005,15 @@ Events.OnServerCommand.Add(function(module, command, args)
             NLQAMultiplayer.householdFurnishingActionDue=NLQAMultiplayer.socialFrame+60
             emit("HOUSEHOLD FURNISHING RETRY", "server position was not beside the native object")
         end
-        if qaIdentity().username=="nl-guest" and not qaIdentity().preserveHousehold and home
+        if qaIdentity().username=="nl-guest" and NLQAMultiplayer.householdMetadataProbe
+                and NLQAMultiplayer.householdMetadataRetrieveStage == 0 and home
+                and home.storage and (home.storage["Base.KitchenKnife"] or 0) > 0 then
+            NLQAMultiplayer.householdMetadataRetrieveSent=true
+            NLQAMultiplayer.householdMetadataRetrieveStage=1
+            requestHouseholdItem("retrieve", "Base.KitchenKnife", 1)
+            emit("HOUSEHOLD METADATA RETRIEVE", "item=Base.KitchenKnife")
+        elseif qaIdentity().username=="nl-guest" and not NLQAMultiplayer.householdMetadataProbe
+                and not qaIdentity().preserveHousehold and home
                 and not NLQAMultiplayer.householdRetrieveSent
                 and (home.storage and (home.storage["Base.RippedSheets"] or 0) > 0) then
             NLQAMultiplayer.householdRetrieveSent=true
@@ -939,6 +1024,15 @@ Events.OnServerCommand.Add(function(module, command, args)
                 and not NLQAMultiplayer.householdRetrieveObserved and args.message
                 and string.find(args.message,"used household storage",1,true) then
             emit("HOUSEHOLD FURNISHING RETRIEVE RESULT", tostring(args.message))
+        end
+        if qaIdentity().username=="nl-guest" and NLQAMultiplayer.householdMetadataProbe
+                and NLQAMultiplayer.householdMetadataRetrieveStage == 2
+                and home and home.storage
+                and (home.storage["Base.WaterBottle"] or 0) > 0 then
+            NLQAMultiplayer.householdMetadataRetrieveSent=true
+            NLQAMultiplayer.householdMetadataRetrieveStage=3
+            requestHouseholdItem("retrieve", "Base.WaterBottle", 1)
+            emit("HOUSEHOLD METADATA RETRIEVE", "item=Base.WaterBottle")
         end
         if qaIdentity().username=="nl-host" and home
                 and NLQAMultiplayer.householdTransferSent
@@ -1352,6 +1446,7 @@ Events.OnRenderTick.Add(function()
         if player then
             sendClientCommand(player,"NeighborhoodQA","seed_inventory",{
                 career="medic", preserveHousehold=qaIdentity().preserveHousehold == true,
+                metadataProbe=qaIdentity().metadataProbe == true,
             })
             NLQAMultiplayer.careerSeedSent=true
             emit("CAREER SEED REQUEST", "medic after-social-intro")
@@ -1461,7 +1556,26 @@ Events.OnRenderTick.Add(function()
             emit("HOUSEHOLD FURNISHING", "store Base.RippedSheets x1 source=production-world-menu-callback")
         end
     end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdMetadataProbe
+            and NLQAMultiplayer.householdStoreObserved
+            and NLQAMultiplayer.householdMetadataStage == 1
+            and NLQAMultiplayer.socialFrame >= NLQAMultiplayer.householdMetadataDue then
+        NLQAMultiplayer.householdMetadataStoreSent=true
+        NLQAMultiplayer.householdMetadataStage=2
+        requestHouseholdItem("store", "Base.KitchenKnife", 1)
+        emit("HOUSEHOLD METADATA STORE", "item=Base.KitchenKnife condition=4")
+    end
+    if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdMetadataProbe
+            and NLQAMultiplayer.householdMetadataStage == 3
+            and NLQAMultiplayer.socialFrame >= NLQAMultiplayer.householdMetadataDue then
+        NLQAMultiplayer.householdMetadataStoreSent=true
+        NLQAMultiplayer.householdMetadataStage=4
+        requestHouseholdItem("store", "Base.WaterBottle", 1)
+        emit("HOUSEHOLD METADATA STORE", "item=Base.WaterBottle usedDelta=0.25")
+    end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdStoreObserved
+            and (not NLQAMultiplayer.householdMetadataProbe
+                or NLQAMultiplayer.householdMetadataStage >= 5)
             and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.householdTransferDue
             and not NLQAMultiplayer.householdTransferSent then
         NLQAMultiplayer.householdTransferSent=true
@@ -1469,6 +1583,8 @@ Events.OnRenderTick.Add(function()
         emit("HOUSEHOLD TRANSFER", "target=nl-guest")
     end
     if qaIdentity().username=="nl-host" and NLQAMultiplayer.householdStoreObserved
+            and (not NLQAMultiplayer.householdMetadataProbe
+                or NLQAMultiplayer.householdMetadataStage >= 5)
             and not NLQAMultiplayer.householdTaskSent
             and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.householdTaskDue then
         NLQAMultiplayer.householdTaskSent=true
@@ -1479,6 +1595,30 @@ end)
 
 -- Confirm the guest received the item in its real main inventory, rather than
 -- treating the authoritative response text alone as an item-transfer proof.
+Events.OnTick.Add(function()
+    if qaIdentity().username ~= "nl-guest"
+            or not NLQAMultiplayer.householdMetadataProbe
+            or NLQAMultiplayer.householdMetadataRetrieveStage == 0
+            or NLQAMultiplayer.householdMetadataRetrieveStage == 2
+            or NLQAMultiplayer.householdMetadataRetrieveStage == 4 then return end
+    if NLQAMultiplayer.householdMetadataRetrieveStage == 1 then
+        local item = qaFindInventoryItem(getSpecificPlayer(0), "Base.KitchenKnife")
+        if item then
+            NLQAMultiplayer.householdMetadataRetrieveStage=2
+            NLQAMultiplayer.householdMetadataDue=NLQAMultiplayer.socialFrame+30
+            emit("HOUSEHOLD METADATA RETRIEVE RESULT", "item=Base.KitchenKnife condition="
+                .. tostring(qaItemValue(item, "getCondition")))
+        end
+    elseif NLQAMultiplayer.householdMetadataRetrieveStage == 3 then
+        local item = qaFindInventoryItem(getSpecificPlayer(0), "Base.WaterBottle")
+        if item then
+            NLQAMultiplayer.householdMetadataRetrieveStage=4
+            emit("HOUSEHOLD METADATA RETRIEVE RESULT", "item=Base.WaterBottle usedDelta="
+                .. tostring(qaItemUsedDelta(item)))
+        end
+    end
+end)
+
 Events.OnTick.Add(function()
     if qaIdentity().username ~= "nl-guest"
             or not NLQAMultiplayer.householdRetrieveSent
