@@ -45,8 +45,9 @@ position instead of snapping to the tile center.
 
 ## Roadmap
 1. In-game host/guest HUD verification and layout polish.
-2. Complete the persistent server-controlled NPC gate: obstacle/danger reactions,
-   damage/death, offscreen behavior, native body reannouncement and reconnect state.
+2. Complete the persistent server-controlled NPC gate: damage/death, offscreen
+   behavior, native body reannouncement and reconnect state. The v1.31
+   dedicated-server fallback now refuses blocked tiles and reroutes safely.
 3. Individual friendship/trust, server-validated requests and exactly-once rewards.
 4. Tailoring career, clothing variants and wardrobe; new meshes are separate art work.
 5. Adult NPC mutual-interest romance, routines and shared households.
@@ -495,3 +496,20 @@ wore both garments, saved revision 75, completed vanilla unequip with both
 garments at zero, and then logged replacement completion for both garments from
 `production-NLWardrobe.wear`. New clothing variants, original assets and
 unlock/reward integration remain breadth work.
+
+## v1.31 collision-aware NPC fallback and runtime API gate
+
+Production `NLNpcAuthority` now checks destination tiles before its bounded
+dedicated-server stalled-path fallback moves an NPC. It chooses a free
+neighboring step around a short obstruction and skips a waypoint when no safe
+step exists instead of moving through a solid or occupied tile. The Lua
+contract test covers both cases.
+
+`evidence/v51/` records an actual Build 42.20.4 host-plus-guest run after the
+change: the server moved the three native NPC bodies, both clients received
+their moving replicas, and the guest completed the real social event. The same
+run confirmed that the dedicated server still exposes `GameServer=nil` and
+that the Java class wrapper does not expose the reflection methods needed for
+native reannouncement; the existing authoritative presence/local-replica
+route remains active. Damage/death, offscreen scheduling and native
+reannouncement remain open.

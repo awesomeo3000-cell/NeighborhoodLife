@@ -24,6 +24,102 @@ local careerSeeded = {}
 local wardrobeSeeded = {}
 local householdViewpointMoved = false
 
+-- QA-only engine bridge probe.  Build 42 does not publish GameServer as a Lua
+-- global on the dedicated server, but its native objects still carry a Java
+-- class loader.  Try the public Java methods through that loader before
+-- declaring native server-body reannouncement unavailable.  This probe never
+-- enters the production mod package.
+local function tryReflectiveNpcReannounce(players)
+    if not NLNpcAuthority or not NLNpcAuthority.bodies then
+        print("NLQA MP REFLECTION: npc-authority-unavailable")
+        return 0
+    end
+    local source
+    for _, id in ipairs({"marisol", "kenji", "amara"}) do
+        if NLNpcAuthority.bodies[id] then
+            source = NLNpcAuthority.bodies[id]
+            break
+        end
+    end
+    if not source then
+        print("NLQA MP REFLECTION: no-native-npc-body")
+        return 0
+    end
+    local classOk, bodyClass = pcall(function() return source:getClass() end)
+    local nameOk, className = false, nil
+    if classOk and bodyClass then nameOk, className = pcall(function() return bodyClass:getName() end) end
+    local loaderOk, loader = false, nil
+    if classOk and bodyClass then
+        loaderOk, loader = pcall(function() return bodyClass:getClassLoader() end)
+    end
+    local serverClassOk, serverClass = false, nil
+    if loaderOk and loader then
+        serverClassOk, serverClass = pcall(function()
+            return loader:loadClass("zombie.network.GameServer")
+        end)
+    end
+    local connectionClassOk, connectionClass = false, nil
+    if loaderOk and loader then
+        connectionClassOk, connectionClass = pcall(function()
+            return loader:loadClass("zombie.network.IConnection")
+        end)
+    end
+    if classOk and bodyClass and not serverClassOk then
+        serverClassOk, serverClass = pcall(function()
+            return bodyClass:forName("zombie.network.GameServer")
+        end)
+    end
+    if classOk and bodyClass and not connectionClassOk then
+        connectionClassOk, connectionClass = pcall(function()
+            return bodyClass:forName("zombie.network.IConnection")
+        end)
+    end
+    print("NLQA MP REFLECTION: classOk=" .. tostring(classOk)
+        .. " nameOk=" .. tostring(nameOk) .. " className=" .. tostring(className)
+        .. " loaderOk=" .. tostring(loaderOk)
+        .. " serverClassOk=" .. tostring(serverClassOk)
+        .. " connectionClassOk=" .. tostring(connectionClassOk))
+    if not loaderOk then print("NLQA MP REFLECTION LOADER ERROR: " .. tostring(loader)) end
+    if not serverClassOk then print("NLQA MP REFLECTION SERVER CLASS ERROR: " .. tostring(serverClass)) end
+    if not connectionClassOk then print("NLQA MP REFLECTION CONNECTION CLASS ERROR: " .. tostring(connectionClass)) end
+    if not serverClassOk or not connectionClassOk or not serverClass or not connectionClass then
+        return 0
+    end
+    local getConnectionOk, getConnection = pcall(function()
+        return serverClass:getMethod("getConnectionFromPlayer", bodyClass)
+    end)
+    local sendConnectedOk, sendConnected = pcall(function()
+        return serverClass:getMethod("sendPlayerConnected", bodyClass, connectionClass)
+    end)
+    print("NLQA MP REFLECTION METHODS: getConnectionOk=" .. tostring(getConnectionOk)
+        .. " sendConnectedOk=" .. tostring(sendConnectedOk))
+    if not getConnectionOk or not sendConnectedOk or not getConnection or not sendConnected then
+        return 0
+    end
+    local sent = 0
+    for targetIndex = 0, players:size() - 1 do
+        local target = players:get(targetIndex)
+        local connectionOk, connection = pcall(function()
+            return getConnection:invoke(nil, target)
+        end)
+        if connectionOk and connection then
+            local sendOk = pcall(function()
+                return sendConnected:invoke(nil, source, connection)
+            end)
+            print("NLQA MP REFLECTION SEND: source=" .. tostring(source:getUsername())
+                .. " target=" .. tostring(target:getUsername())
+                .. " connectionOk=" .. tostring(connectionOk)
+                .. " sendOk=" .. tostring(sendOk))
+            if sendOk then sent = sent + 1 end
+        else
+            print("NLQA MP REFLECTION SEND: target=" .. tostring(target:getUsername())
+                .. " connectionOk=" .. tostring(connectionOk)
+                .. " connection=" .. tostring(connection))
+        end
+    end
+    return sent
+end
+
 -- QA-only viewpoint setup: after the real invite/accept flow, place the guest
 -- at the shared home so the production client can exercise streamed-in tile
 -- retry without mouse or keyboard input. This does not enter the mod package.
@@ -175,26 +271,41 @@ local function tryReannounce()
         .. " apiOk=" .. tostring(apiOk) .. " playersOk=" .. tostring(playersOk)
         .. " players=" .. tostring(players))
     if not playersOk or not players then
-        return
+        local onlineOk, onlinePlayers = false, nil
+        if type(getOnlinePlayers) == "function" then
+            onlineOk, onlinePlayers = pcall(getOnlinePlayers)
+        end
+        print("NLQA MP SERVER ONLINE PLAYERS FALLBACK: ok=" .. tostring(onlineOk)
+            .. " players=" .. tostring(onlinePlayers))
+        if not onlineOk or not onlinePlayers then return end
+        players = onlinePlayers
     end
     print("NLQA MP SERVER GAME-SERVER API: players=" .. tostring(players:size()))
     if players:size() < 2 then return end
     local sent = 0
-    for sourceIndex = 0, players:size() - 1 do
-        local source = players:get(sourceIndex)
-        for targetIndex = 0, players:size() - 1 do
-            local target = players:get(targetIndex)
-            if source ~= target then
-                local connOk, connection = pcall(GameServer.getConnectionFromPlayer, target)
-                if connOk and connection then
-                    local sendOk = pcall(GameServer.sendPlayerConnected, source, connection)
-                    if sendOk then sent = sent + 1 end
+    if api and api.getConnectionFromPlayer and api.sendPlayerConnected then
+        for sourceIndex = 0, players:size() - 1 do
+            local source = players:get(sourceIndex)
+            for targetIndex = 0, players:size() - 1 do
+                local target = players:get(targetIndex)
+                if source ~= target then
+                    local connOk, connection = pcall(api.getConnectionFromPlayer, target)
+                    if connOk and connection then
+                        local sendOk = pcall(api.sendPlayerConnected, source, connection)
+                        if sendOk then sent = sent + 1 end
+                    end
                 end
             end
         end
     end
+    local reflectionOk, reflectiveSent = pcall(tryReflectiveNpcReannounce, players)
+    if not reflectionOk then
+        print("NLQA MP REFLECTION ERROR: " .. tostring(reflectiveSent))
+        reflectiveSent = 0
+    end
     reannounced = true
-    print("NLQA MP SERVER REANNOUNCE: players=" .. tostring(players:size()) .. " sent=" .. tostring(sent))
+    print("NLQA MP SERVER REANNOUNCE: players=" .. tostring(players:size())
+        .. " sent=" .. tostring(sent) .. " reflectiveNpcSent=" .. tostring(reflectiveSent))
 end
 
 Events.OnClientCommand.Add(function(module, command, player, args)

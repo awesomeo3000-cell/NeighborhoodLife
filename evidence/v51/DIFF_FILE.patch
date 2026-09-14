@@ -1,0 +1,411 @@
+diff --git a/NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua b/NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua
+index 2be7378..3cc73db 100644
+--- a/NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua
++++ b/NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua
+@@ -132,6 +132,71 @@ local function freeSquareNear(cell, x, y, z, minDistance, maxDistance, reserved)
+     return best
+ end
+ 
++-- The native path behavior is authoritative when it advances.  The dedicated
++-- server can still stall an unowned IsoPlayer, so its bounded fallback must
++-- never step through a solid tile or an occupied square.  Choosing the next
++-- free tile toward the target also lets a neighbor turn around a short-lived
++-- obstruction instead of teleporting through it.
++local function walkableSquare(cell, x, y, z)
++    if not cell then return nil end
++    local ok, square = pcall(cell.getGridSquare, cell, math.floor(x), math.floor(y), z)
++    if not ok or not square then return nil end
++    local freeOk, free = pcall(function() return square:isFree(false) end)
++    if not freeOk or not free then return nil end
++    if square.isSolidFloor then
++        local floorOk, solid = pcall(function() return square:isSolidFloor() end)
++        if floorOk and not solid then return nil end
++    end
++    return square
++end
++
++local function fallbackStep(body, target)
++    if not body or not target then return nil end
++    local currentX, currentY, currentZ = body:getX(), body:getY(), body:getZ()
++    local destinationX, destinationY = target.x + 0.5, target.y + 0.5
++    local dx, dy = destinationX - currentX, destinationY - currentY
++    local distance = math.sqrt(dx * dx + dy * dy)
++    if distance <= 0.05 then return currentX, currentY, nil end
++    local signX = dx > 0 and 1 or (dx < 0 and -1 or 0)
++    local signY = dy > 0 and 1 or (dy < 0 and -1 or 0)
++    local directions = {}
++    if signX ~= 0 then directions[#directions + 1] = { x=signX, y=0 } end
++    if signY ~= 0 then directions[#directions + 1] = { x=0, y=signY } end
++    if signX ~= 0 and signY ~= 0 then
++        directions[#directions + 1] = { x=signX, y=signY }
++    end
++    if signX ~= 0 then directions[#directions + 1] = { x=0, y=signX } end
++    if signY ~= 0 then directions[#directions + 1] = { x=signY, y=0 } end
++    local step = math.min(0.08, distance)
++    local cell = getCell and getCell()
++    local best, bestScore
++    for _, direction in ipairs(directions) do
++        local length = math.sqrt(direction.x * direction.x + direction.y * direction.y)
++        local nextX = currentX + direction.x / length * step
++        local nextY = currentY + direction.y / length * step
++        local crossesTile = math.floor(nextX) ~= math.floor(currentX)
++            or math.floor(nextY) ~= math.floor(currentY)
++        -- The current tile contains the body itself, so do not ask
++        -- `isFree(false)` to reject that tile.  Only a tile-boundary crossing
++        -- needs an occupancy/solid-floor check.
++        local square = true
++        if crossesTile then square = walkableSquare(cell, nextX, nextY, currentZ) end
++        if square then
++            local remainingX, remainingY = destinationX - nextX, destinationY - nextY
++            local score = remainingX * remainingX + remainingY * remainingY
++            if not best or score < bestScore then
++                best, bestScore = { x=nextX, y=nextY, square=square }, score
++            end
++        end
++    end
++    if not best then return nil end
++    return best.x, best.y, best.square
++end
++
++-- Exposed for the deterministic contract suite; gameplay still reaches this
++-- helper only through the server's stalled-native-path branch.
++NLNpcAuthority.safeFallbackStep = fallbackStep
++
+ local function npcReservedSquares()
+     local reserved = {}
+     for _, existing in pairs(NLNpcAuthority.bodies) do
+@@ -336,28 +401,42 @@ function NLNpcAuthority.update()
+                 -- IsoPlayer, so PathFindBehavior2 can remain stationary there.
+                 -- Keep the server-native body authoritative with a small tile
+                 -- step after the native behavior has demonstrably stalled.
++                local rerouted = false
+                 if isServer() and target.stall >= 30 then
+-                    local destinationX, destinationY = target.x + 0.5, target.y + 0.5
+-                    local dx, dy = destinationX-currentX, destinationY-currentY
+-                    local distance = math.sqrt(dx*dx + dy*dy)
+-                    if distance > 0.05 then
+-                        local step = math.min(0.08, distance)
+-                        body:setX(currentX + dx/distance*step)
+-                        body:setY(currentY + dy/distance*step)
+-                        local square = getCell():getGridSquare(math.floor(body:getX()),
+-                            math.floor(body:getY()), math.floor(body:getZ()))
+-                        if square then body:setCurrent(square) end
++                    local nextX, nextY, square = fallbackStep(body, target)
++                    if nextX then
++                        body:setX(nextX); body:setY(nextY)
++                        if square and square ~= true then body:setCurrent(square) end
++                    else
++                        -- A blocked fallback route must not keep hammering the
++                        -- same target forever.  Cancel the native behavior,
++                        -- advance the persisted route and let the next update
++                        -- choose the next authored waypoint.
++                        behavior:cancel(); body:setPath2(nil)
++                        local next = (target.waypoint or 1) + 1
++                        local route = NLNeighbors.definitions[id].waypoints
++                        if row.spawned then
++                            if next > 2 then next = 1 end
++                        elseif route and next > #route then next = 1 end
++                        NLNeighbors.position(world, id, currentX, currentY, body:getZ(), next)
++                        NLNpcAuthority.targets[id] = nil
++                        emit(string.format("BLOCKED id=%s x=%.2f,%.2f skippedWaypoint=%d",
++                            id, currentX, currentY, target.waypoint or 0))
++                        rerouted = true
+                     end
+                 end
+-                local ok, result = pcall(function()
+-                    body:preupdate(); body:update(); local r = behavior:update(); body:postupdate(); return r
+-                end)
++                local ok, result = true, nil
++                if not rerouted then
++                    ok, result = pcall(function()
++                        body:preupdate(); body:update(); local r = behavior:update(); body:postupdate(); return r
++                    end)
++                end
+                 if not ok then
+                     behavior:cancel(); body:setPath2(nil); NLNpcAuthority.targets[id] = nil
+-                elseif result == BehaviorResult.Succeeded
++                elseif not rerouted and (result == BehaviorResult.Succeeded
+                         or (isServer() and target.stall >= 30
+                             and math.abs(body:getX()-(target.x+0.5))<0.06
+-                            and math.abs(body:getY()-(target.y+0.5))<0.06) then
++                            and math.abs(body:getY()-(target.y+0.5))<0.06)) then
+                     behavior:cancel(); body:setPath2(nil)
+                     local next = (target.waypoint or 1) + 1
+                     local route = NLNeighbors.definitions[id].waypoints
+diff --git a/README.md b/README.md
+index c0dea97..dac3f49 100644
+--- a/README.md
++++ b/README.md
+@@ -45,8 +45,9 @@ position instead of snapping to the tile center.
+ 
+ ## Roadmap
+ 1. In-game host/guest HUD verification and layout polish.
+-2. Complete the persistent server-controlled NPC gate: obstacle/danger reactions,
+-   damage/death, offscreen behavior, native body reannouncement and reconnect state.
++2. Complete the persistent server-controlled NPC gate: damage/death, offscreen
++   behavior, native body reannouncement and reconnect state. The v1.31
++   dedicated-server fallback now refuses blocked tiles and reroutes safely.
+ 3. Individual friendship/trust, server-validated requests and exactly-once rewards.
+ 4. Tailoring career, clothing variants and wardrobe; new meshes are separate art work.
+ 5. Adult NPC mutual-interest romance, routines and shared households.
+@@ -495,3 +496,20 @@ wore both garments, saved revision 75, completed vanilla unequip with both
+ garments at zero, and then logged replacement completion for both garments from
+ `production-NLWardrobe.wear`. New clothing variants, original assets and
+ unlock/reward integration remain breadth work.
++
++## v1.31 collision-aware NPC fallback and runtime API gate
++
++Production `NLNpcAuthority` now checks destination tiles before its bounded
++dedicated-server stalled-path fallback moves an NPC. It chooses a free
++neighboring step around a short obstruction and skips a waypoint when no safe
++step exists instead of moving through a solid or occupied tile. The Lua
++contract test covers both cases.
++
++`evidence/v51/` records an actual Build 42.20.4 host-plus-guest run after the
++change: the server moved the three native NPC bodies, both clients received
++their moving replicas, and the guest completed the real social event. The same
++run confirmed that the dedicated server still exposes `GameServer=nil` and
++that the Java class wrapper does not expose the reflection methods needed for
++native reannouncement; the existing authoritative presence/local-replica
++route remains active. Damage/death, offscreen scheduling and native
++reannouncement remain open.
+diff --git a/SCOPE.md b/SCOPE.md
+index 33947b8..c209c84 100644
+--- a/SCOPE.md
++++ b/SCOPE.md
+@@ -11,14 +11,14 @@ The original broad goal remains active. This ledger is not a reduced definition
+ | Careers | Tailor, carpenter, medic; four ranks; daily supply requests; actual skill gates; account/world persistence; v1.8 real host delivery consumed six authoritative `Base.RippedSheets` and returned XP/credits; v1.14 real client pickup transferred eight server-spawned `Base.RippedSheets` through vanilla inventory actions before a fresh medic delivery returned XP/credits | Rank/restart tests, richer work beyond deliveries, rewards and balance |
+ | Customization | Existing vanilla appearance retained | Expanded creator, preference/profile UI, appearance presets, original additional hair/assets |
+ | Clothing options | Three saved outfit-layer slots; server-authoritative worn-garment capture and revisioned private snapshots in v1.28; v1.29 actual vanilla clothing acquisition, wear and reconnect snapshot persistence; v1.30 actual production saved-outfit replacement after vanilla unequip; light-themed wardrobe panel reachable from HUD | New garment variants, original assets, unlock/reward integration |
+-| Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback, and v1.27 adds a best-effort `GameServer` reannouncement adapter plus mock contract coverage | Build 42 native server-body reannouncement remains unproven because the real dedicated server exposes `GameServer=nil` to Lua; obstacle/danger handling, damage/death and offscreen behavior remain open |
++| Persistent neighborhood NPCs | Production `NpcAuthority` creates all three authored vertical-slice neighbors (Marisol, Kenji and Amara) as native `IsoPlayer` bodies, repairs legacy stacked saved rows to distinct free squares, gives each identity/outfit data and a persisted nearby route, restores the exact fractional position across a dedicated-server restart, sends immediate and periodic `npc_presence` from a dedicated server, and production clients render named revision-checked native replicas with plumbobs and disconnect/menu cleanup; v1.10 proves the same client reconnects after the dedicated server restarts, v1.11 proves distinct native positions on both clients, v1.13 drives client replicas through Build 42's native `preupdate`/`update`/path behavior frame with a bounded interpolation fallback, v1.27 adds a best-effort `GameServer` reannouncement adapter plus mock contract coverage, and v1.31 makes the dedicated-server fallback collision-aware and reroutes a blocked waypoint instead of stepping through it | Build 42 native server-body reannouncement remains unproven because the real dedicated server exposes `GameServer=nil` to Lua; damage/death and offscreen behavior remain open |
+ | NPC interaction | Server proximity/floor/visibility gates and personality-based dialogue implemented for all three native bodies; v1.7 hands-free host introduced Marisol through the production command and guest received an independent proximity-gated snapshot; v1.23 completes a real host `chat` -> `joke` sequence against Marisol during a connected host+guest run with cooldown and line-of-sight gates; v1.24 broadcasts successful social events to every connected client without sharing private relationship values; v1.26 drives a guest `introduce` against Kenji while the host remains connected and receives the guest event | Richer world actions and inventory exchange |
+ | Relationships and romance | Per-player friendship/trust/attraction, bounded memories, pacing, dates and exclusive partnerships implemented; Sims-inspired panel; v1.7 actual host relation mutation and guest isolation evidence; v1.24 adds a bounded replicated social-event feed and Relationships-panel shared-event line; v1.26 proves the guest independently mutates Kenji to friendship 3/trust 2 while the host receives only the event | In-world UI/interaction checks, richer date activities and direct two-client romance synchronization |
+ | Household life | v1.16 extends the v1.15 server-authoritative Neighborhood Home with persistent shared storage, exact item-type deposits from unequipped main inventory, member withdrawals, capacity and malformed-item guards, shared-storage UI actions, and real host-to-guest inventory transfer evidence | Home ownership transfer UX, functional furnishings, offline/co-op routines beyond the tested activity, richer item metadata/container transfer |
+ | Aspirations and home activities | Delivery milestones already persist and render in the career journal; v1.15 adds three authoritative home routines (tidy, meal, social) with daily replay guards and rewards | Household-linked aspiration goals, hobbies, functional furnishings and broader home progression |
+ | Zombies optional | Careers have no kill requirements | Test same full loop with zombies disabled and enabled |
+-| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host and guest social mutations with private relationship state, replicated social events, server-authoritative career delivery, server-authoritative wardrobe capture plus vanilla clothing acquisition/wear and same-client reconnect snapshot persistence in v1.29, actual production saved-outfit replacement in v1.30, vanilla client-acquisition inventory transfer, server-authoritative household invite/accept/activity loop, shared-storage host deposit plus guest withdrawal, disconnect-clean local native NPC replicas, authoritative remote marker fallback and v1.21 local native remote-player fallback, and v1.27 native reannouncement adapter probing | Simultaneous gameplay beyond the tested delivery, mod distribution, successful native body reannouncement, stable two-way remote movement under a naturally missing native peer, and replicated-character UI |
+-| Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile; v1.14 vanilla world-item pickup plus fresh production delivery | Broader world/inventory/NPC/host integration tests and regression suite |
++| Host multiplayer | Server command adapter, private snapshots, authoritative player/NPC presence broadcasts, immediate refresh state, production client heartbeat, stale-packet rejection, dedicated-server NPC restart persistence, distinct three named NPC replicas, host and guest social mutations with private relationship state, replicated social events, server-authoritative career delivery, server-authoritative wardrobe capture plus vanilla clothing acquisition/wear and same-client reconnect snapshot persistence in v1.29, actual production saved-outfit replacement in v1.30, vanilla client-acquisition inventory transfer, server-authoritative household invite/accept/activity loop, shared-storage host deposit plus guest withdrawal, disconnect-clean local native NPC replicas, authoritative remote marker fallback and v1.21 local native remote-player fallback, v1.27 native reannouncement adapter probing, and v1.31 collision-aware native NPC fallback movement | Simultaneous gameplay beyond the tested delivery, mod distribution, successful native body reannouncement, stable two-way remote movement under a naturally missing native peer, and replicated-character UI |
++| Verification on this machine | Lua 5.1 tests; installed-game Kahlua harness; isolated real PZ profile; v1.14 vanilla world-item pickup plus fresh production delivery; v1.31 hands-free host+guest movement, NPC replicas and runtime API probe | Broader world/inventory/NPC/host integration tests and regression suite |
+ 
+ ## Current test environments
+ 
+@@ -141,6 +141,27 @@ romance synchronization remain open.
+ - This closes the actual saved-outfit replacement probe. New clothing
+   variants, original assets and unlock/reward integration remain breadth work.
+ 
++## v1.31 collision-aware NPC fallback and runtime API gate
++
++- Production `NLNpcAuthority` now checks the destination tile before its
++  dedicated-server stalled-path fallback moves a native NPC. A blocked tile
++  causes the body to choose a bounded free neighboring step; when no safe step
++  exists, the authority cancels the path, advances the persisted route and
++  emits a `BLOCKED` diagnostic instead of moving through the obstruction.
++- `tests/npc-authority.lua` covers both the free-tile fallback and refusal to
++  cross a blocked tile. These are mock contract assertions, not gameplay
++  evidence.
++- `evidence/v51/` records an actual Build 42.20.4 host-plus-guest run after
++  the production change. The server logged native route movement, both clients
++  received three moving NPCs and the guest logged the real social event. The
++  same run probed the public Java class route; the native server still exposed
++  `GameServer=nil`, the reflective class wrapper exposed neither
++  `getClassLoader` nor `forName`, and `reflectiveNpcSent=0`. The mod therefore
++  keeps the authoritative `npc_presence`/local-native-replica route rather
++  than claiming native server-body reannouncement.
++- This closes the collision-aware fallback probe. Damage/death, offscreen
++  scheduling and the engine-native reannouncement gate remain open.
++
+ ## v1.25 compact plumbob asset and placement
+ 
+ The production plumbob source texture is now 16x22 pixels, the runtime panel is
+diff --git a/qa/NeighborhoodQA/42/media/lua/server/NLQAMultiplayerServer.lua b/qa/NeighborhoodQA/42/media/lua/server/NLQAMultiplayerServer.lua
+index aa664c6..8bca323 100644
+--- a/qa/NeighborhoodQA/42/media/lua/server/NLQAMultiplayerServer.lua
++++ b/qa/NeighborhoodQA/42/media/lua/server/NLQAMultiplayerServer.lua
+@@ -24,6 +24,102 @@ local careerSeeded = {}
+ local wardrobeSeeded = {}
+ local householdViewpointMoved = false
+ 
++-- QA-only engine bridge probe.  Build 42 does not publish GameServer as a Lua
++-- global on the dedicated server, but its native objects still carry a Java
++-- class loader.  Try the public Java methods through that loader before
++-- declaring native server-body reannouncement unavailable.  This probe never
++-- enters the production mod package.
++local function tryReflectiveNpcReannounce(players)
++    if not NLNpcAuthority or not NLNpcAuthority.bodies then
++        print("NLQA MP REFLECTION: npc-authority-unavailable")
++        return 0
++    end
++    local source
++    for _, id in ipairs({"marisol", "kenji", "amara"}) do
++        if NLNpcAuthority.bodies[id] then
++            source = NLNpcAuthority.bodies[id]
++            break
++        end
++    end
++    if not source then
++        print("NLQA MP REFLECTION: no-native-npc-body")
++        return 0
++    end
++    local classOk, bodyClass = pcall(function() return source:getClass() end)
++    local nameOk, className = false, nil
++    if classOk and bodyClass then nameOk, className = pcall(function() return bodyClass:getName() end) end
++    local loaderOk, loader = false, nil
++    if classOk and bodyClass then
++        loaderOk, loader = pcall(function() return bodyClass:getClassLoader() end)
++    end
++    local serverClassOk, serverClass = false, nil
++    if loaderOk and loader then
++        serverClassOk, serverClass = pcall(function()
++            return loader:loadClass("zombie.network.GameServer")
++        end)
++    end
++    local connectionClassOk, connectionClass = false, nil
++    if loaderOk and loader then
++        connectionClassOk, connectionClass = pcall(function()
++            return loader:loadClass("zombie.network.IConnection")
++        end)
++    end
++    if classOk and bodyClass and not serverClassOk then
++        serverClassOk, serverClass = pcall(function()
++            return bodyClass:forName("zombie.network.GameServer")
++        end)
++    end
++    if classOk and bodyClass and not connectionClassOk then
++        connectionClassOk, connectionClass = pcall(function()
++            return bodyClass:forName("zombie.network.IConnection")
++        end)
++    end
++    print("NLQA MP REFLECTION: classOk=" .. tostring(classOk)
++        .. " nameOk=" .. tostring(nameOk) .. " className=" .. tostring(className)
++        .. " loaderOk=" .. tostring(loaderOk)
++        .. " serverClassOk=" .. tostring(serverClassOk)
++        .. " connectionClassOk=" .. tostring(connectionClassOk))
++    if not loaderOk then print("NLQA MP REFLECTION LOADER ERROR: " .. tostring(loader)) end
++    if not serverClassOk then print("NLQA MP REFLECTION SERVER CLASS ERROR: " .. tostring(serverClass)) end
++    if not connectionClassOk then print("NLQA MP REFLECTION CONNECTION CLASS ERROR: " .. tostring(connectionClass)) end
++    if not serverClassOk or not connectionClassOk or not serverClass or not connectionClass then
++        return 0
++    end
++    local getConnectionOk, getConnection = pcall(function()
++        return serverClass:getMethod("getConnectionFromPlayer", bodyClass)
++    end)
++    local sendConnectedOk, sendConnected = pcall(function()
++        return serverClass:getMethod("sendPlayerConnected", bodyClass, connectionClass)
++    end)
++    print("NLQA MP REFLECTION METHODS: getConnectionOk=" .. tostring(getConnectionOk)
++        .. " sendConnectedOk=" .. tostring(sendConnectedOk))
++    if not getConnectionOk or not sendConnectedOk or not getConnection or not sendConnected then
++        return 0
++    end
++    local sent = 0
++    for targetIndex = 0, players:size() - 1 do
++        local target = players:get(targetIndex)
++        local connectionOk, connection = pcall(function()
++            return getConnection:invoke(nil, target)
++        end)
++        if connectionOk and connection then
++            local sendOk = pcall(function()
++                return sendConnected:invoke(nil, source, connection)
++            end)
++            print("NLQA MP REFLECTION SEND: source=" .. tostring(source:getUsername())
++                .. " target=" .. tostring(target:getUsername())
++                .. " connectionOk=" .. tostring(connectionOk)
++                .. " sendOk=" .. tostring(sendOk))
++            if sendOk then sent = sent + 1 end
++        else
++            print("NLQA MP REFLECTION SEND: target=" .. tostring(target:getUsername())
++                .. " connectionOk=" .. tostring(connectionOk)
++                .. " connection=" .. tostring(connection))
++        end
++    end
++    return sent
++end
++
+ -- QA-only viewpoint setup: after the real invite/accept flow, place the guest
+ -- at the shared home so the production client can exercise streamed-in tile
+ -- retry without mouse or keyboard input. This does not enter the mod package.
+@@ -175,26 +271,41 @@ local function tryReannounce()
+         .. " apiOk=" .. tostring(apiOk) .. " playersOk=" .. tostring(playersOk)
+         .. " players=" .. tostring(players))
+     if not playersOk or not players then
+-        return
++        local onlineOk, onlinePlayers = false, nil
++        if type(getOnlinePlayers) == "function" then
++            onlineOk, onlinePlayers = pcall(getOnlinePlayers)
++        end
++        print("NLQA MP SERVER ONLINE PLAYERS FALLBACK: ok=" .. tostring(onlineOk)
++            .. " players=" .. tostring(onlinePlayers))
++        if not onlineOk or not onlinePlayers then return end
++        players = onlinePlayers
+     end
+     print("NLQA MP SERVER GAME-SERVER API: players=" .. tostring(players:size()))
+     if players:size() < 2 then return end
+     local sent = 0
+-    for sourceIndex = 0, players:size() - 1 do
+-        local source = players:get(sourceIndex)
+-        for targetIndex = 0, players:size() - 1 do
+-            local target = players:get(targetIndex)
+-            if source ~= target then
+-                local connOk, connection = pcall(GameServer.getConnectionFromPlayer, target)
+-                if connOk and connection then
+-                    local sendOk = pcall(GameServer.sendPlayerConnected, source, connection)
+-                    if sendOk then sent = sent + 1 end
++    if api and api.getConnectionFromPlayer and api.sendPlayerConnected then
++        for sourceIndex = 0, players:size() - 1 do
++            local source = players:get(sourceIndex)
++            for targetIndex = 0, players:size() - 1 do
++                local target = players:get(targetIndex)
++                if source ~= target then
++                    local connOk, connection = pcall(api.getConnectionFromPlayer, target)
++                    if connOk and connection then
++                        local sendOk = pcall(api.sendPlayerConnected, source, connection)
++                        if sendOk then sent = sent + 1 end
++                    end
+                 end
+             end
+         end
+     end
++    local reflectionOk, reflectiveSent = pcall(tryReflectiveNpcReannounce, players)
++    if not reflectionOk then
++        print("NLQA MP REFLECTION ERROR: " .. tostring(reflectiveSent))
++        reflectiveSent = 0
++    end
+     reannounced = true
+-    print("NLQA MP SERVER REANNOUNCE: players=" .. tostring(players:size()) .. " sent=" .. tostring(sent))
++    print("NLQA MP SERVER REANNOUNCE: players=" .. tostring(players:size())
++        .. " sent=" .. tostring(sent) .. " reflectiveNpcSent=" .. tostring(reflectiveSent))
+ end
+ 
+ Events.OnClientCommand.Add(function(module, command, player, args)
+diff --git a/tests/npc-authority.lua b/tests/npc-authority.lua
+index f6836eb..70d7362 100644
+--- a/tests/npc-authority.lua
++++ b/tests/npc-authority.lua
+@@ -66,6 +66,25 @@ assert(NLNpcAuthority and type(NLNpcAuthority.start)=='function')
+ NLNpcAuthority.start()
+ local body=NLNpcAuthority.bodies.marisol
+ assert(body and body:isNpc() and body:getModData().NeighborhoodNpcId=='marisol','production body created')
++if NLNpcAuthority.safeFallbackStep then
++    local freeStepX,freeStepY=NLNpcAuthority.safeFallbackStep(body,{x=math.floor(body:getX())+2,y=math.floor(body:getY()),z=body:getZ()})
++    assert(freeStepX and freeStepY,'stalled native path has a bounded free-tile fallback')
++    local originalBodyX,originalBodyY=body:getX(),body:getY()
++    local originalGetCell=getCell
++    getCell=function()
++        return {getGridSquare=function(_,x,y,z)
++            local s=square(x,y,z)
++            s.isFree=function() return x~=101 end
++            return s
++        end}
++    end
++    body:setX(100.95); body:setY(100.50)
++    local blockedStepX,blockedStepY=NLNpcAuthority.safeFallbackStep(body,{x=102,y=100,z=0})
++    assert(blockedStepX and blockedStepY and math.floor(blockedStepX)~=101,
++        'stalled native path refuses to cross an occupied tile')
++    getCell=originalGetCell
++    body:setX(originalBodyX); body:setY(originalBodyY)
++end
+ local expectedBodies=#NLNpcAuthority.definitions
+ if NLNpcAuthority.reannounceTo then
+     assert(NLNpcAuthority.reannounceTo(player)==expectedBodies

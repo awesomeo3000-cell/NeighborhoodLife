@@ -132,6 +132,71 @@ local function freeSquareNear(cell, x, y, z, minDistance, maxDistance, reserved)
     return best
 end
 
+-- The native path behavior is authoritative when it advances.  The dedicated
+-- server can still stall an unowned IsoPlayer, so its bounded fallback must
+-- never step through a solid tile or an occupied square.  Choosing the next
+-- free tile toward the target also lets a neighbor turn around a short-lived
+-- obstruction instead of teleporting through it.
+local function walkableSquare(cell, x, y, z)
+    if not cell then return nil end
+    local ok, square = pcall(cell.getGridSquare, cell, math.floor(x), math.floor(y), z)
+    if not ok or not square then return nil end
+    local freeOk, free = pcall(function() return square:isFree(false) end)
+    if not freeOk or not free then return nil end
+    if square.isSolidFloor then
+        local floorOk, solid = pcall(function() return square:isSolidFloor() end)
+        if floorOk and not solid then return nil end
+    end
+    return square
+end
+
+local function fallbackStep(body, target)
+    if not body or not target then return nil end
+    local currentX, currentY, currentZ = body:getX(), body:getY(), body:getZ()
+    local destinationX, destinationY = target.x + 0.5, target.y + 0.5
+    local dx, dy = destinationX - currentX, destinationY - currentY
+    local distance = math.sqrt(dx * dx + dy * dy)
+    if distance <= 0.05 then return currentX, currentY, nil end
+    local signX = dx > 0 and 1 or (dx < 0 and -1 or 0)
+    local signY = dy > 0 and 1 or (dy < 0 and -1 or 0)
+    local directions = {}
+    if signX ~= 0 then directions[#directions + 1] = { x=signX, y=0 } end
+    if signY ~= 0 then directions[#directions + 1] = { x=0, y=signY } end
+    if signX ~= 0 and signY ~= 0 then
+        directions[#directions + 1] = { x=signX, y=signY }
+    end
+    if signX ~= 0 then directions[#directions + 1] = { x=0, y=signX } end
+    if signY ~= 0 then directions[#directions + 1] = { x=signY, y=0 } end
+    local step = math.min(0.08, distance)
+    local cell = getCell and getCell()
+    local best, bestScore
+    for _, direction in ipairs(directions) do
+        local length = math.sqrt(direction.x * direction.x + direction.y * direction.y)
+        local nextX = currentX + direction.x / length * step
+        local nextY = currentY + direction.y / length * step
+        local crossesTile = math.floor(nextX) ~= math.floor(currentX)
+            or math.floor(nextY) ~= math.floor(currentY)
+        -- The current tile contains the body itself, so do not ask
+        -- `isFree(false)` to reject that tile.  Only a tile-boundary crossing
+        -- needs an occupancy/solid-floor check.
+        local square = true
+        if crossesTile then square = walkableSquare(cell, nextX, nextY, currentZ) end
+        if square then
+            local remainingX, remainingY = destinationX - nextX, destinationY - nextY
+            local score = remainingX * remainingX + remainingY * remainingY
+            if not best or score < bestScore then
+                best, bestScore = { x=nextX, y=nextY, square=square }, score
+            end
+        end
+    end
+    if not best then return nil end
+    return best.x, best.y, best.square
+end
+
+-- Exposed for the deterministic contract suite; gameplay still reaches this
+-- helper only through the server's stalled-native-path branch.
+NLNpcAuthority.safeFallbackStep = fallbackStep
+
 local function npcReservedSquares()
     local reserved = {}
     for _, existing in pairs(NLNpcAuthority.bodies) do
@@ -336,28 +401,42 @@ function NLNpcAuthority.update()
                 -- IsoPlayer, so PathFindBehavior2 can remain stationary there.
                 -- Keep the server-native body authoritative with a small tile
                 -- step after the native behavior has demonstrably stalled.
+                local rerouted = false
                 if isServer() and target.stall >= 30 then
-                    local destinationX, destinationY = target.x + 0.5, target.y + 0.5
-                    local dx, dy = destinationX-currentX, destinationY-currentY
-                    local distance = math.sqrt(dx*dx + dy*dy)
-                    if distance > 0.05 then
-                        local step = math.min(0.08, distance)
-                        body:setX(currentX + dx/distance*step)
-                        body:setY(currentY + dy/distance*step)
-                        local square = getCell():getGridSquare(math.floor(body:getX()),
-                            math.floor(body:getY()), math.floor(body:getZ()))
-                        if square then body:setCurrent(square) end
+                    local nextX, nextY, square = fallbackStep(body, target)
+                    if nextX then
+                        body:setX(nextX); body:setY(nextY)
+                        if square and square ~= true then body:setCurrent(square) end
+                    else
+                        -- A blocked fallback route must not keep hammering the
+                        -- same target forever.  Cancel the native behavior,
+                        -- advance the persisted route and let the next update
+                        -- choose the next authored waypoint.
+                        behavior:cancel(); body:setPath2(nil)
+                        local next = (target.waypoint or 1) + 1
+                        local route = NLNeighbors.definitions[id].waypoints
+                        if row.spawned then
+                            if next > 2 then next = 1 end
+                        elseif route and next > #route then next = 1 end
+                        NLNeighbors.position(world, id, currentX, currentY, body:getZ(), next)
+                        NLNpcAuthority.targets[id] = nil
+                        emit(string.format("BLOCKED id=%s x=%.2f,%.2f skippedWaypoint=%d",
+                            id, currentX, currentY, target.waypoint or 0))
+                        rerouted = true
                     end
                 end
-                local ok, result = pcall(function()
-                    body:preupdate(); body:update(); local r = behavior:update(); body:postupdate(); return r
-                end)
+                local ok, result = true, nil
+                if not rerouted then
+                    ok, result = pcall(function()
+                        body:preupdate(); body:update(); local r = behavior:update(); body:postupdate(); return r
+                    end)
+                end
                 if not ok then
                     behavior:cancel(); body:setPath2(nil); NLNpcAuthority.targets[id] = nil
-                elseif result == BehaviorResult.Succeeded
+                elseif not rerouted and (result == BehaviorResult.Succeeded
                         or (isServer() and target.stall >= 30
                             and math.abs(body:getX()-(target.x+0.5))<0.06
-                            and math.abs(body:getY()-(target.y+0.5))<0.06) then
+                            and math.abs(body:getY()-(target.y+0.5))<0.06)) then
                     behavior:cancel(); body:setPath2(nil)
                     local next = (target.waypoint or 1) + 1
                     local route = NLNeighbors.definitions[id].waypoints

@@ -1,0 +1,125 @@
+# Neighborhood Life v1.31 verification
+
+## Changed branch and fields
+
+- Branch: collision-aware authoritative NPC fallback movement plus a real Build 42 native-reannouncement API probe.
+- Production file changed: `NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua`.
+- Production behavior changed: `safeFallbackStep`, walkable-square validation, bounded free-tile detours, and persisted waypoint advance when no safe fallback step exists.
+- QA-only probe changed: `qa/NeighborhoodQA/42/media/lua/server/NLQAMultiplayerServer.lua` records exposed `GameServer` state and guards the runtime probe; it is not in the release package.
+- Contract test changed: `tests/npc-authority.lua` covers a free fallback and refusal to cross a blocked tile.
+
+## Required artifacts
+
+- MODIFIED_FILE: `E:\pzmod\evidence\v51\MODIFIED_FILE.zip`
+- DIFF_FILE: `E:\pzmod\evidence\v51\DIFF_FILE.patch`
+- VERIFICATION.txt: `E:\pzmod\evidence\v51\VERIFICATION.txt`
+- ROLLBACK.sh: `E:\pzmod\evidence\v51\ROLLBACK.sh`
+
+## Baseline test
+
+Command:
+`cmd /c "python tools\pipeline.py test --target evidence\v51\baseline > evidence\v51\baseline-test.log 2>&1"`
+
+Input: `evidence\v51\baseline`, copied from commit `e595fb5` production tree plus the baseline common tree.
+
+Literal output: `PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites`
+
+Exit status: `0`.
+
+## Modified test
+
+Command:
+`cmd /c "python tools\pipeline.py test > evidence\v51\modified-test.log 2>&1"`
+
+Input: current modified workspace.
+
+Literal output: `PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites`
+
+Exit status: `0`.
+
+## NPC collision contract
+
+Command:
+`C:\Program Files (x86)\Lua\5.1\lua.exe tests\npc-authority.lua NeighborhoodLife`
+
+Literal output ending: `PASS: production NPC identity, native body adapter, route tick and save/reload position restoration`
+
+Exit status: `0`.
+
+The test also asserted `safeFallbackStep` returns a free step and does not cross the mocked blocked tile at x=101. This is mock/unit evidence, not gameplay evidence.
+
+## QA syntax tests
+
+Commands:
+- `C:\Program Files (x86)\Lua\5.1\luac.exe -p qa\NeighborhoodQA\42\media\lua\client\NLQAMultiplayer.lua`
+- `C:\Program Files (x86)\Lua\5.1\luac.exe -p qa\NeighborhoodQA\42\media\lua\server\NLQAMultiplayerServer.lua`
+
+Literal output: empty for both commands.
+
+Exit status: `0` for both.
+
+## Rollback test
+
+Command:
+`chmod +x /e/pzmod/evidence/v51/ROLLBACK.sh && TARGET_ROOT=/e/pzmod/evidence/v51/rollback-target bash /e/pzmod/evidence/v51/ROLLBACK.sh`
+
+Input: `TARGET_ROOT=/e/pzmod/evidence/v51/rollback-target`.
+
+Literal output: `ROLLBACK RESTORED: baseline production and QA/test trees`
+
+Exit status: `0`.
+
+Rollback test command:
+`cmd /c "python tools\pipeline.py test --target evidence\v51\rollback-target\NeighborhoodLife > evidence\v51\rollback-test.log 2>&1"`
+
+Literal output: `PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites`
+
+Exit status: `0`. Restored status: baseline production and QA/test trees passed the consolidated suite.
+
+## Packaging test
+
+Command:
+`cmd /c "python tools\pipeline.py package --version v51 --baseline evidence\v51\baseline > evidence\v51\package.log 2>&1"`
+
+Literal output: `PASS: release package E:\pzmod\evidence\v51\MODIFIED_FILE.zip`
+
+Exit status: `0`.
+
+Package reopening result: `ZIP_TEST None`, `ENTRY_COUNT 28`, `QA_ENTRIES 0`, `AUTHORITY True`.
+
+## Actual Build 42 gameplay evidence
+
+Command:
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\launch-multiplayer-qa.ps1`
+
+Input: isolated test profile, hands-free QA launcher, Build 42.20.4, one dedicated host and one guest. Logs: `mp-server-native-lifecycle.log`, `mp-host-native-lifecycle.log`, `mp-guest-native-lifecycle.log`.
+
+Classification: actual gameplay evidence, separate from mock/unit and engine-VM suites.
+
+Server evidence:
+- `NLQA NPC PRODUCTION PATH`, `MOVE` and `TICK` recorded authoritative native movement for the three authored neighbors.
+- `NLQA MP SERVER REANNOUNCE: players=2 sent=0 reflectiveNpcSent=0` recorded the unresolved native reannouncement result.
+- The runtime probe recorded `api=nil`, `serverClassOk=false`, and Java-wrapper errors for `getClassLoader` and `forName`.
+- No `BLOCKED` line occurred in this route run; blocked-tile behavior is proven by the contract test only.
+
+Host and guest evidence:
+- Both clients logged `CLIENT START` and `PLUMBOB SIZE: player:0=6x10 texture=16x22`.
+- The guest repeatedly logged `NPC PRESENCE ... count=3` with changing fractional positions for Marisol Vega, Kenji Arakawa and Amara Okonkwo.
+- Both clients logged `productionNpcNativePaths=3`; the guest also logged a bounded `productionNpcFallbackReplicas=1` interval before returning to native paths.
+- The guest logged `SOCIAL EVENT: actor=nl-guest action=chat npc=kenji` and `GUEST SOCIAL COMPLETE: target=kenji friendship=15 trust=14`.
+
+This proves the actual host+guest presence, moving-NPC replica and social loop. It does not claim native server-body reannouncement, damage/death, or offscreen completion.
+
+## Hashes
+
+- Baseline `NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua`: `44AFFA3F809909CA45D42EDD8C376ACFF612DF08E2A183E973998CBB540CD1AB`
+- Modified `NeighborhoodLife/42/media/lua/server/NL/NpcAuthority.lua`: `EA4AE5E82D48997D510E2F3CF94D334422F24AFD5EA83083192BF0D5DDD1A393`
+- QA server: `C7DCCD4AE4758BE49B93C051C7183DA7FECD53393839468986186685CCB08811`
+- NPC contract: `E7AA58764DC7A0BCC7AA33887E44C31A4A357C2FE85AC9F462DC08CDB70CC7CA`
+- DIFF_FILE.patch: `E57B726227D3CF19F0CD24314D3862A610E0290D2EA6C61B89A4611A5528751E`
+- MODIFIED_FILE.zip: `B1AF4D0FB8C529515A8E20E864F8329DFA224B9FCF60F43DFD04C6F0A5756DC3`
+
+## Remaining scope
+
+Native server-body reannouncement remains unproven because Build 42 exposes `GameServer=nil` and no usable Java reflection methods. Damage/death, offscreen scheduling, richer world actions, new clothing assets, unlock/reward integration, expanded customization, and the broader careers/relationships/households/zombie scope remain incomplete.
+

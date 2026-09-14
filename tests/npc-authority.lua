@@ -66,6 +66,25 @@ assert(NLNpcAuthority and type(NLNpcAuthority.start)=='function')
 NLNpcAuthority.start()
 local body=NLNpcAuthority.bodies.marisol
 assert(body and body:isNpc() and body:getModData().NeighborhoodNpcId=='marisol','production body created')
+if NLNpcAuthority.safeFallbackStep then
+    local freeStepX,freeStepY=NLNpcAuthority.safeFallbackStep(body,{x=math.floor(body:getX())+2,y=math.floor(body:getY()),z=body:getZ()})
+    assert(freeStepX and freeStepY,'stalled native path has a bounded free-tile fallback')
+    local originalBodyX,originalBodyY=body:getX(),body:getY()
+    local originalGetCell=getCell
+    getCell=function()
+        return {getGridSquare=function(_,x,y,z)
+            local s=square(x,y,z)
+            s.isFree=function() return x~=101 end
+            return s
+        end}
+    end
+    body:setX(100.95); body:setY(100.50)
+    local blockedStepX,blockedStepY=NLNpcAuthority.safeFallbackStep(body,{x=102,y=100,z=0})
+    assert(blockedStepX and blockedStepY and math.floor(blockedStepX)~=101,
+        'stalled native path refuses to cross an occupied tile')
+    getCell=originalGetCell
+    body:setX(originalBodyX); body:setY(originalBodyY)
+end
 local expectedBodies=#NLNpcAuthority.definitions
 if NLNpcAuthority.reannounceTo then
     assert(NLNpcAuthority.reannounceTo(player)==expectedBodies
