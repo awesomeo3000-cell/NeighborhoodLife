@@ -694,3 +694,12 @@ that the Java class wrapper does not expose the reflection methods needed for
 native reannouncement; the existing authoritative presence/local-replica
 route remains active. Damage/death, offscreen scheduling and native
 reannouncement remain open.
+
+## v1.46 smaller, closer character marker
+
+The production plumbob remains an 8x11 source texture rendered through a 2x3
+screen-space panel, and its lift is now 8 pixels so the tip sits closer above
+the character model. The isolated profile was resynchronized from the production
+mod; the hands-free host and guest run logged `player:0=2x3 texture=8x11` on
+both clients. This is presentation evidence, not a claim about native NPC
+reannouncement or broader multiplayer completion.

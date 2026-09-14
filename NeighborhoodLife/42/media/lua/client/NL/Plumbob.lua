@@ -16,7 +16,7 @@ NLPlumbob.remoteColor = { r = 0.28, g = 0.86, b = 0.95 }
 -- draws a texture at native dimensions instead of honoring a scaled panel.
 NLPlumbob.baseWidth = 2
 NLPlumbob.baseHeight = 3
-NLPlumbob.baseLift = 10
+NLPlumbob.baseLift = 8
 
 function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, lift)
     return math.floor(screenX - left - width / 2), math.floor(screenY - top - height - lift)

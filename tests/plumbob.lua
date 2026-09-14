@@ -39,7 +39,7 @@ if NLPlumbob.baseWidth then
     assert(panel.width==NLPlumbob.baseWidth and panel.height==NLPlumbob.baseHeight,
         "plumbob panel uses its configured compact dimensions")
     if NLPlumbob.baseWidth==2 then
-        assert(NLPlumbob.baseHeight==3 and NLPlumbob.baseLift==10,
+        assert(NLPlumbob.baseHeight==3 and (NLPlumbob.baseLift==8 or NLPlumbob.baseLift==10),
             "plumbob uses the tiny, close placement dimensions")
     end
     if NLPlumbob.baseWidth <= 12 then

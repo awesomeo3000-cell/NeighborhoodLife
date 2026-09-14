@@ -835,3 +835,14 @@ player body replication or completion of the remaining multiplayer gates.
   received `SOCIAL EVENT` packets for both actions. The host then completed
   the existing career and household loop. This proves cross-client social
   event replication, not shared private relationship mutation.
+
+## v1.46 smaller, closer plumbob placement
+
+- The production marker keeps the 8x11 source and 2x3 runtime panel but lowers
+  the world-to-screen lift from 10px to 8px, placing the tiny gem closer above
+  the model. The stale isolated profile copy was replaced with the current
+  production mod so the live test uses the same asset.
+- The hands-free Build 42 host and guest run logged `PLUMBOB SIZE:
+  player:0=2x3 texture=8x11` on both clients and retained the three production
+  NPC replicas. This confirms the runtime dimensions and host/guest loading, not
+  native NPC reannouncement or full multiplayer completion.
