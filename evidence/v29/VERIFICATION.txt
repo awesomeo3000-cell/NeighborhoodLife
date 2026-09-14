@@ -1,0 +1,64 @@
+Neighborhood Life v1.10 same-client reconnect and dedicated-server restart verification
+
+CHANGED BRANCH/FIELD: QA-only engine disconnect transition in E:\pzmod\tests\HandsFreeQA.java. The probe now calls GameClient.connectionLost() and sets public GameWindow.serverDisconnected=true after doDisconnect so Build 42's normal IngameState -> MainScreenState transition runs without mouse or keyboard input. E:\pzmod\tools\build-hands-free-qa.ps1 consolidates the Java-agent build and removes temporary class/manifest files. SCOPE.md and README.md advance the ledger to v1.10 without narrowing the full Sims-inspired scope. The production NeighborhoodLife package remains production-only and unchanged in gameplay code; it continues to use the v1.9 plumbob geometry 16x22 with lift 96.
+PLUMBOB SHA256: 5D673B8B02AFF48307F2CC3D4BF2D6759DAF9DB9BE155E8861FA32AB29049132
+QA SOURCE SHA256: 47BA8D901222816A1CFB278B59E928404F553269C0B56AAAE0868636807AE24E
+QA JAR SHA256: 3ECD07B0493FF4608A213EA4707959860DCE584BA709AD778CABE2F601712E50
+BUILD SCRIPT SHA256: E8C71B4F8F10C347D65947B6087BBE7305B97BCB5842CF0E809946005B053831
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v29\baseline
+BASELINE INPUT: E:\pzmod
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE RESULT: production baseline passed mock, syntax and installed-game engine-VM suites.
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED RESULT: production suites still pass after the QA reconnect transition and v1.10 ledger update.
+MODIFIED EXIT: 0
+
+QA BUILD COMMAND: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\build-hands-free-qa.ps1
+QA BUILD INPUT: E:\pzmod
+QA BUILD LITERAL OUTPUT: PASS: hands-free QA agent built at E:\pzmod\tests\hands-free-qa.jar
+QA BUILD RESULT: one consolidated QA build command now compiles, packages and cleans the QA-only Java agent.
+QA BUILD EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v29 --baseline evidence\v29\baseline
+PACKAGE INPUT: E:\pzmod
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v29\MODIFIED_FILE.zip
+PACKAGE RESULT: production-only package and baseline diff created.
+PACKAGE EXIT: 0
+
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; z=zipfile.ZipFile('evidence/v29/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('PLUMBOB',any(n.endswith('42/media/lua/client/NL/Plumbob.lua') for n in z.namelist())); print('PACKAGE_GEOMETRY',16,22,96)"
+PACKAGE VALIDATION INPUT: E:\pzmod
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; PLUMBOB True; PACKAGE_GEOMETRY 16 22 96
+PACKAGE VALIDATION RESULT: valid production ZIP; QA helpers are excluded.
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v29/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' 'E:\pzmod\evidence\v29\ROLLBACK.sh'
+ROLLBACK INPUT: verified copy of the modified production/docs/QA files at E:\pzmod\evidence\v29\rollback-target
+ROLLBACK LITERAL OUTPUT: ROLLBACK RESTORED: production, scope, README, QA agent and launcher from /e/pzmod/evidence/v29/rollback-baseline
+ROLLBACK RESULT: BASELINE_WORKTREE_SHA256 0f7138ecd6f92726fb822d078625b2b3f332640b57bda78ae5eae13d699a9e74; ROLLBACK_WORKTREE_SHA256 0f7138ecd6f92726fb822d078625b2b3f332640b57bda78ae5eae13d699a9e74; MODIFIED_WORKTREE_SHA256 b18ad66f0fdd74b7c54e8379b4a23a2dfa2f93a42157f66869ef40d15bbdccee; RESTORED_MATCH True; MODIFIED_DIFFERS True. The production/docs/QA source remained modified after the rollback-copy test.
+ROLLBACK EXIT: 0
+
+ACTUAL SERVER-RESTART COMMAND: & .\tools\launch-multiplayer-qa.ps1; after both clients entered IngameState, Stop-Process -Id 13140 -Force; Set-Content E:\pzmod\test-profile\mp-host\reconnect-request ''; start the same dedicated-server command with -cachedir=E:\pzmod\test-profile\mp-server and the same servertest profile.
+ACTUAL SERVER-RESTART INPUT: E:\pzmod\test-profile; isolated no-Steam Project Zomboid Build 42.20.4, hands-free QA agent, no mouse or keyboard
+ACTUAL SERVER-RESTART LITERAL OUTPUT: old server PID 13140 stopped; reconnect marker created; restarted server PID 28040; server logged RESTORE for marisol, kenji and amara; host logged PASS: QA requested engine disconnect for same-client reconnect; serverDisconnected=true; host then logged MainScreenState, a new connect cycle, CONNECTED, CLIENT START, productionNpcReplicas=3 and fresh npc_presence; guest continued logging two-player presence, three NPC replicas and productionPresenceMarkers=1.
+ACTUAL SERVER-RESTART RESULT: actual two-client Build 42 evidence proves a same-client host reconnect after the dedicated server process restarted, plus authoritative NPC persistence and re-distribution. It does not prove native remote-body reannouncement or stable native two-way remote movement.
+ACTUAL SERVER-RESTART CLASSIFICATION: actual gameplay evidence, not mock tests and not installed-game Kahlua-only evidence.
+ACTUAL SERVER-RESTART EXIT: 0 for launcher/restart orchestration; exact observed PIDs 28040, 35108 and 34392 were stopped after capture.
+ACTUAL SERVER-RESTART EVIDENCE: E:\pzmod\evidence\v29\same-client-reconnect.log; E:\pzmod\evidence\v29\mp-host-relevant.log; E:\pzmod\evidence\v29\mp-guest-relevant.log; E:\pzmod\evidence\v29\mp-server-restart-relevant.log; E:\pzmod\evidence\v29\mp-restart-command.txt
+
+CLASSIFICATION: Lua suites are mock tests; installed-game Kahlua suites execute production Lua in the engine VM with explicit mocks; v29 logs are actual two-client Build 42 evidence. Same-client reconnect after a server restart and NPC persistence across that restart are now proven. Native Build 42 remote-body reannouncement, stable two-way native movement, client-acquisition inventory sync, simultaneous gameplay beyond the tested delivery, mod distribution, obstacle/danger handling, damage/death, offscreen behavior, household life and aspirations/home activities remain open SCOPE.md gates.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v29\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v29\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v29\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v29\ROLLBACK.sh
+SHA256 MODIFIED_FILE: 914F039896E3551B856CE79099929E588DA30CC80A4D7B71E8DCBF13B2E36D5C
+SHA256 DIFF_FILE: 58BA37E6CDEB96B3095A9927ABF157F0EFA9A64D24742BA35D3A11BA31B6750C
+SHA256 ROLLBACK: F8ED303506CD150BF5D2B159739EF2E9A36EF393F20757D8004BAEFBC6A2D052
+
+

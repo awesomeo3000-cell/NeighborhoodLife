@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, wardrobe and relationship prototype (v1.10)
+# Neighborhood Life: careers, wardrobe and relationship prototype (v1.9)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -201,19 +201,3 @@ receive the same authoritative two-player positions and the three native NPC
 replicas. Native remote-body reannouncement and synchronized native movement remain
 open; the fallback proves stable authoritative marker visibility, not body
 replication completion.
-
-## v1.10 same-client reconnect after dedicated-server restart
-
-`evidence/v29/` records a hands-free run with the dedicated server stopped and
-restarted against the same isolated world profile. The QA-only engine probe
-requested the host disconnect without mouse or keyboard input; the host returned
-to `MainScreenState`, completed a new connect cycle, logged `CONNECTED` and a new
-`CLIENT START`, and then received production NPC state again. The guest continued
-to receive the authoritative presence stream.
-
-The restarted server restored Marisol, Kenji and Amara from their persisted
-fractional positions before spawning their native bodies. Both clients then
-logged three production NPC replicas and fresh `npc_presence` packets. This
-proves same-client reconnect plus NPC persistence across a dedicated-server
-restart; native Build 42 remote-body reannouncement and stable two-way native
-remote movement remain open.

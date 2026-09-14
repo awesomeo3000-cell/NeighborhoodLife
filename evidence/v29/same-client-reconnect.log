@@ -1,0 +1,32 @@
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+STATE: zombie.gameStates.IngameState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: Finish
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: Finish
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+STATE: zombie.gameStates.IngameState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: Finish
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+STATE: zombie.gameStates.IngameState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: Finish
+CONNECT STATE: Exit
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+STATE: zombie.gameStates.IngameState
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: Finish
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+STATE: zombie.gameStates.IngameState
+PASS: QA requested engine disconnect for same-client reconnect; serverDisconnected=true
+STATE: zombie.gameStates.MainScreenState
+CONNECT STATE: Finish
+STATE: zombie.gameStates.LoadingQueueState
+STATE: zombie.gameStates.GameLoadingState
+STATE: zombie.gameStates.IngameState

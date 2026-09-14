@@ -1,0 +1,5 @@
+SERVER RESTART COMMAND: Stop-Process -Id 13140 -Force; Set-Content E:\pzmod\test-profile\mp-host\reconnect-request ''; then start the same dedicated-server command with the existing mp-server cachedir/profile.
+SERVER RESTART INPUT: isolated Build 42.20.4 server plus already-connected nl-host/nl-guest clients; no mouse or keyboard.
+SERVER RESTART OBSERVED: old server PID 13140 stopped; reconnect marker created; restarted server PID 28040; server log recorded RESTORE for marisol, kenji and amara.
+QA RECONNECT OBSERVED: host log recorded PASS: QA requested engine disconnect for same-client reconnect; then MainScreenState, a new connect cycle, CONNECTED, CLIENT START, and new presence/NPC presence packets.
+SERVER RESTART CLASSIFICATION: actual two-client Build 42 gameplay evidence, not mock or engine-VM-only evidence.

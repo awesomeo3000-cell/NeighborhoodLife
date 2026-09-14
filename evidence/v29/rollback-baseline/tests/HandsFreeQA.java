@@ -67,19 +67,10 @@ public final class HandsFreeQA {
                             } catch(Exception gracefulFailure) {
                                 client.getMethod("connectionLost").invoke(instance);
                             }
-                            // Build 42's Lua-visible disconnect callback is not
-                            // guaranteed when doDisconnect is invoked from the
-                            // QA worker thread. Mark both native flags so the
-                            // normal IngameState redirect can run without OS
-                            // input; this remains QA-only.
-                            try { client.getMethod("connectionLost").invoke(instance); }
-                            catch(Exception ignoredConnectionLost) { }
-                            Field disconnected=window.getField("serverDisconnected");
-                            disconnected.setBoolean(null,true);
                             reconnectRequested=true;
                             Files.deleteIfExists(reconnectMarker);
                             Files.writeString(Path.of(qaProfile,"hands-free-qa.log"),
-                                "PASS: QA requested engine disconnect for same-client reconnect; serverDisconnected=true\n",
+                                "PASS: QA requested engine disconnect for same-client reconnect\n",
                                 StandardOpenOption.CREATE,StandardOpenOption.APPEND);
                         } catch(Exception disconnectFailure) {
                             Files.writeString(Path.of(qaProfile,"hands-free-qa.log"),
