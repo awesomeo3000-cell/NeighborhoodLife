@@ -90,6 +90,24 @@ if NLSocialAuthority.inventoryExchange then
         check(world.neighbors.marisol.inventory['bad']==nil,'malformed saved inventory entries are normalized away')
     end
 end
+if NLSocialAuthority.recoverInventoryJournal then
+    local repairCount=p:itemCount('Base.Hammer')
+    local row=world.neighbors.marisol
+    row.inventory={['Base.Hammer']=1}; row.inventoryMeta={['Base.Hammer']={label='Hammer'}}; row.revision=41
+    world.inventoryJournal={version=1,state='world-applied',mode='give',player='host',npcId='marisol',
+        itemType='Base.Hammer',amount=1,npcBefore=0,playerBefore=repairCount,
+        npcRevisionBefore=40,inventoryMetaBefore=nil}
+    check(NLSocialAuthority.recoverInventoryJournal(world,p),'partial world-side exchange repaired')
+    check((row.inventory['Base.Hammer'] or 0)==0 and p:itemCount('Base.Hammer')==repairCount,
+        'partial exchange restores both owners to the recorded pre-state')
+    world.inventoryJournal={version=1,state='player-applied',mode='request',player='host',npcId='marisol',
+        itemType='Base.RippedSheets',amount=1,npcBefore=2,playerBefore=p:itemCount('Base.RippedSheets'),
+        npcRevisionBefore=row.revision,inventoryMetaBefore={label='Ripped Sheets'}}
+    row.inventory={['Base.RippedSheets']=1}; row.inventoryMeta={['Base.RippedSheets']={label='Ripped Sheets'}}
+    check(NLSocialAuthority.recoverInventoryJournal(world,p),'partial player-side exchange repaired')
+    check((row.inventory['Base.RippedSheets'] or 0)==2,'request repair restores NPC inventory count')
+    check(world.inventoryJournal==nil,'repaired transaction journal is cleared')
+end
 before=r.friendship; p.dead=true; cmd(p,'chat'); check(r.friendship==before,'dead player rejected'); p.dead=false
 body.dead=true; cmd(p,'chat'); check(world.neighbors.marisol.dead and r.friendship==before,'dead NPC persisted and rejected')
 last.args.neighbors[1].relation.friendship=999

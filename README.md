@@ -499,6 +499,18 @@ garments at zero, and then logged replacement completion for both garments from
 `production-NLWardrobe.wear`. New clothing variants, original assets and
 unlock/reward integration remain breadth work.
 
+## v1.37 transactional NPC inventory recovery
+
+NPC `give` and `request` now write a world-level transaction journal before
+touching either the player's vanilla inventory or the persistent NPC row. The
+journal records both pre-state counts, the NPC revision and display metadata;
+the server clears it only after both sides apply. On the next command for the
+same account, a complete transaction is finalized, an untouched transaction is
+discarded, and a partial transaction is repaired to its recorded pre-state.
+The Lua/Kahlua suites cover both player-side and world-side partial mutations.
+This is recovery groundwork, not a claim of forced-crash atomicity; the
+cross-save crash window still needs a controlled live crash probe.
+
 ## v1.36 extra-small plumbob placement
 
 The production marker is now a 4x7 runtime panel, down from 6x10, while keeping

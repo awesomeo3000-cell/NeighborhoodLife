@@ -59,6 +59,104 @@ local function mainInventoryItems(player,itemType,amount)
     return chosen,inventory
 end
 
+local function mainInventoryCount(player,itemType)
+    local inventory=player and player.getInventory and player:getInventory()
+    local all=inventory and inventory.getItems and inventory:getItems()
+    if not all then return 0 end
+    local count=0
+    for i=0,all:size()-1 do
+        local item=all:get(i)
+        local equipped=false
+        if item and player.isEquipped then
+            local equippedOk,equippedValue=pcall(player.isEquipped,player,item)
+            equipped=equippedOk and equippedValue==true
+        end
+        if item and item.getFullType and item:getFullType()==itemType and not equipped then
+            count=count+1
+        end
+    end
+    return count
+end
+
+local function setJournal(world,journal)
+    world.inventoryJournal=journal
+    return journal
+end
+
+local function clearJournal(world)
+    world.inventoryJournal=nil
+end
+
+local function journalBefore(world,player,row,npcId,itemType,amount,mode)
+    return setJournal(world,{
+        version=1, state="prepared", mode=mode,
+        player=NLAuthority.key(player), npcId=npcId, itemType=itemType, amount=amount,
+        npcBefore=tonumber(row.inventory[itemType] or 0) or 0,
+        playerBefore=mainInventoryCount(player,itemType),
+        npcRevisionBefore=tonumber(row.revision or 0) or 0,
+        inventoryMetaBefore=NLDomain.copy(row.inventoryMeta and row.inventoryMeta[itemType] or nil),
+    })
+end
+
+local function changeMainInventoryCount(player,itemType,target)
+    local current=mainInventoryCount(player,itemType)
+    local inventory=player and player.getInventory and player:getInventory()
+    if not inventory then return false end
+    if current<target and inventory.AddItem then
+        for _=current+1,target do
+            local ok,item=pcall(inventory.AddItem,inventory,itemType)
+            if not ok or not item then return false end
+        end
+    elseif current>target then
+        local chosen=mainInventoryItems(player,itemType,current-target)
+        if not chosen or #chosen<current-target then return false end
+        for _,item in ipairs(chosen) do inventory:Remove(item) end
+    end
+    return mainInventoryCount(player,itemType)==target
+end
+
+-- Inventory mutations cross two persisted owners: the player's vanilla save and
+-- the world's NPC ModData. The journal makes an interrupted exchange
+-- recoverable instead of silently accepting a half-applied row.
+function NLSocialAuthority.recoverInventoryJournal(world,player)
+    local journal=world and world.inventoryJournal
+    if type(journal)~="table" then return true,"none" end
+    if not player or NLAuthority.key(player)~=journal.player then
+        return false,"Inventory transaction belongs to another account" end
+    local row=NLNeighbors.get(world,journal.npcId)
+    local currentNpc=tonumber(row.inventory[journal.itemType] or 0) or 0
+    local currentPlayer=mainInventoryCount(player,journal.itemType)
+    local npcExpected=journal.mode=="give"
+        and journal.npcBefore+journal.amount or journal.npcBefore-journal.amount
+    local playerExpected=journal.mode=="give"
+        and journal.playerBefore-journal.amount or journal.playerBefore+journal.amount
+    if currentNpc==npcExpected and currentPlayer==playerExpected then
+        clearJournal(world)
+        return true,"completed"
+    end
+    if currentNpc==journal.npcBefore and currentPlayer==journal.playerBefore then
+        clearJournal(world)
+        return true,"rolled-back"
+    end
+    -- A partial exchange is restored to the recorded pre-transaction counts.
+    -- If a live inventory cannot accept the repair, keep the journal for the
+    -- next login rather than discarding evidence of the unfinished mutation.
+    if not changeMainInventoryCount(player,journal.itemType,journal.playerBefore) then
+        return false,"Inventory transaction still needs repair" end
+    if journal.npcBefore>0 then
+        row.inventory[journal.itemType]=journal.npcBefore
+        row.inventoryMeta=row.inventoryMeta or {}
+        row.inventoryMeta[journal.itemType]=NLDomain.copy(journal.inventoryMetaBefore
+            or {label=journal.itemType})
+    else
+        row.inventory[journal.itemType]=nil
+        if row.inventoryMeta then row.inventoryMeta[journal.itemType]=nil end
+    end
+    row.revision=journal.npcRevisionBefore
+    clearJournal(world)
+    return true,"repaired"
+end
+
 local function itemLabel(item,itemType)
     if item and item.getDisplayName then
         local ok,label=pcall(item.getDisplayName,item)
@@ -79,10 +177,12 @@ local function inventoryExchange(world,player,npcId,args,mode)
     if not amount then return false,"Exchange amount must be between 1 and 20" end
     local row=NLNeighbors.get(world,npcId)
     row.inventory=row.inventory or {}
+    local journal=journalBefore(world,player,row,npcId,itemType,amount,mode)
     if mode=="give" then
         local chosen,inventoryOrMessage=mainInventoryItems(player,itemType,amount)
-        if not chosen then return false,inventoryOrMessage end
+        if not chosen then clearJournal(world); return false,inventoryOrMessage end
         if #chosen<amount then
+            clearJournal(world)
             return false,"Need "..amount.." unequipped "..itemType.." in main inventory"
         end
         for _,item in ipairs(chosen) do
@@ -91,23 +191,31 @@ local function inventoryExchange(world,player,npcId,args,mode)
                 sendRemoveItemFromContainer(inventoryOrMessage,item)
             end
         end
+        journal.state="player-applied"
         row.inventory[itemType]=(row.inventory[itemType] or 0)+amount
         rememberItem(row,itemType,chosen[1])
         row.revision=(row.revision or 0)+1
+        journal.state="world-applied"
+        clearJournal(world)
         return true,"Gave "..amount.." "..itemType.." to "..tostring(npcId).."."
     end
 
     local available=tonumber(row.inventory[itemType] or 0) or 0
     if available<amount then
+        clearJournal(world)
         return false,"They have only "..available.." "..itemType
     end
     local inventory=player:getInventory()
-    if not inventory or not inventory.AddItem then return false,"Main inventory unavailable" end
+    if not inventory or not inventory.AddItem then
+        clearJournal(world)
+        return false,"Main inventory unavailable"
+    end
     local added={}
     for _=1,amount do
         local addOk,item=pcall(inventory.AddItem,inventory,itemType)
         if not addOk or not item then
             for _,restored in ipairs(added) do inventory:Remove(restored) end
+            clearJournal(world)
             return false,"Main inventory could not accept "..itemType
         end
         added[#added+1]=item
@@ -115,12 +223,15 @@ local function inventoryExchange(world,player,npcId,args,mode)
             sendAddItemToContainer(inventory,item)
         end
     end
+    journal.state="player-applied"
     row.inventory[itemType]=available-amount
     if row.inventory[itemType]<=0 then
         row.inventory[itemType]=nil
         if row.inventoryMeta then row.inventoryMeta[itemType]=nil end
     end
     row.revision=(row.revision or 0)+1
+    journal.state="world-applied"
+    clearJournal(world)
     return true,"Received "..amount.." "..itemType.." from "..tostring(npcId).."."
 end
 
@@ -168,6 +279,12 @@ function NLSocialAuthority.command(module,command,player,args)
     end
     if NLSocialAuthority.lastRequest[key] and now-NLSocialAuthority.lastRequest[key]<200 then return end
     NLSocialAuthority.lastRequest[key]=now
+    local world=NLAuthority.world()
+    local recovered,recoveryState=NLSocialAuthority.recoverInventoryJournal(world,player)
+    if not recovered then
+        NLSocialAuthority.snapshot(player,"Inventory recovery pending: "..tostring(recoveryState))
+        return
+    end
     local message="Updated"
     local completed=command~="interact"
     if command=="interact" then
@@ -187,7 +304,6 @@ function NLSocialAuthority.command(module,command,player,args)
             if not completed then message="Not completed: "..message end
         end
     elseif command=="give" or command=="request" then
-        local world=NLAuthority.world()
         local npc=(world.neighbors or {})[args.id]
         local body=NLSocialAuthority.bodies[args.id]
         if not npc or not body then message="This neighbor is not nearby."
