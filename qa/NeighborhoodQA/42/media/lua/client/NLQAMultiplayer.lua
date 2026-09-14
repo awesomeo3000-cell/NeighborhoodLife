@@ -733,13 +733,17 @@ Events.OnServerCommand.Add(function(module, command, args)
     if module == "NeighborhoodLife" and command == "npc_presence" and type(args) == "table"
             and type(args.npcs) == "table" then
         local rows={}
+        local onlineHints=0
         for _,entry in ipairs(args.npcs) do
+            local onlineId = tonumber(entry.onlineId)
+            if onlineId and onlineId >= 0 then onlineHints = onlineHints + 1 end
             rows[#rows+1]=string.format("%s@%.2f,%.2f,%.0f/w%d", tostring(entry.id),
                 tonumber(entry.x or 0), tonumber(entry.y or 0), tonumber(entry.z or 0),
-                tonumber(entry.waypoint or 0))
+                tonumber(entry.waypoint or 0)) .. "/online=" .. tostring(entry.onlineId)
         end
         emit("NPC PRESENCE", "revision="..tostring(args.revision)
-            .." count="..tostring(#args.npcs).." entries="..table.concat(rows, ","))
+            .." count="..tostring(#args.npcs).." onlineHints="..tostring(onlineHints)
+            .." entries="..table.concat(rows, ","))
     end
     if module == "NeighborhoodSocial" and command == "event" and type(args) == "table" then
         emit("SOCIAL EVENT", "actor="..tostring(args.actor)

@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.57)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.58)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -524,6 +524,17 @@ body can be promoted even when its replicated ModData or display name has not
 arrived yet. Lua and installed-game Kahlua tests cover both identity paths;
 actual native server-body reannouncement remains dependent on the dedicated
 server's unavailable `GameServer` bridge.
+
+## v1.58 versioned multiplayer evidence
+
+The hands-free multiplayer launcher now accepts `-EvidenceRoot`, so isolated
+host, guest and server logs can be captured under a version-specific evidence
+directory without overwriting earlier runs. The QA-only NPC presence logger
+also records the count of valid `onlineId` hints and each packet entry's raw
+hint. This improves evidence collection without adding QA code to the
+production package. The v79 attempt is retained as a failed startup probe:
+both clients reached the main menu and issued connect requests, but neither
+reached IngameState before the disposable processes ended.
 
 ## v1.55 saved outfits replace unrelated layers
 

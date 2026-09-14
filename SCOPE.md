@@ -924,3 +924,15 @@ player body replication or completion of the remaining multiplayer gates.
   full Lua 5.1 and installed-game Kahlua pipelines cover the production packet
   shape and loaded-cell lifecycle. This is contract/VM evidence, not proof that
   the dedicated server has begun reannouncing NPC bodies.
+
+## v1.58 versioned multiplayer evidence tooling
+
+- `tools/launch-multiplayer-qa.ps1` now accepts `EvidenceRoot`, keeping a
+  disposable run's host, guest and server evidence separate from earlier
+  versions.
+- The QA-only `npc_presence` logger records valid `onlineId` hint counts and
+  raw packet values. QA remains outside the production package.
+- `evidence/v79/actual/` records a genuine failed startup probe: both clients
+  reached the main menu and issued connect requests, while the dedicated
+  server reached `SERVER STARTED` and still logged `GameServer=nil`; neither
+  client reached IngameState, so this is not multiplayer gameplay evidence.

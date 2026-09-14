@@ -1,6 +1,7 @@
 param(
     [switch]$InventoryCrashProbe,
-    [string]$ProfileRoot = 'E:\pzmod\test-profile'
+    [string]$ProfileRoot = 'E:\pzmod\test-profile',
+    [string]$EvidenceRoot = 'E:\pzmod\evidence\v14'
 )
 $ErrorActionPreference = 'Stop'
 $root = 'E:\pzmod'
@@ -10,7 +11,7 @@ New-Item -ItemType Directory -Force $base | Out-Null
 $serverProfile = Join-Path $base 'mp-server'
 $hostProfile = Join-Path $base 'mp-host'
 $guestProfile = Join-Path $base 'mp-guest'
-$evidence = Join-Path $root 'evidence\v14'
+$evidence = [System.IO.Path]::GetFullPath($EvidenceRoot)
 $profiles = @($serverProfile, $hostProfile, $guestProfile)
 New-Item -ItemType Directory -Force $evidence | Out-Null
 
