@@ -1,4 +1,5 @@
 param(
+    [switch]$VerifyHouseholdPersistence,
     [string]$ProfileRoot = 'E:\pzmod\test-profile',
     [string]$EvidenceRoot = 'E:\pzmod\evidence\v55'
 )
@@ -23,7 +24,9 @@ function Wait-LogPattern($path, $pattern, $seconds) {
     return $false
 }
 
-if (-not (Wait-LogPattern $hostLog.FullName 'NPC INVENTORY REQUEST RESULT' 420)) {
+if ($VerifyHouseholdPersistence) {
+    Write-Output 'HOUSEHOLD VERIFY BASELINE: using the existing persisted household in the isolated profile'
+} elseif (-not (Wait-LogPattern $hostLog.FullName 'NPC INVENTORY REQUEST RESULT' 420)) {
     throw "Initial inventory exchange did not complete; inspect $($hostLog.FullName)"
 }
 $hostLogOffset = (Get-Item $hostLog.FullName).Length
@@ -58,6 +61,10 @@ $oldPid = [int]$serverProcesses[0].ProcessId
 Stop-Process -Id $oldPid -Force
 Start-Sleep -Seconds 3
 if (Get-Process -Id $oldPid -ErrorAction SilentlyContinue) { throw "Server PID $oldPid did not stop" }
+if ($VerifyHouseholdPersistence) {
+    $probeConfig = Join-Path $serverProfile 'mods\NeighborhoodQA\42\media\lua\server\NLQAPersistenceConfig.lua'
+    Set-Content $probeConfig 'NLQAPreserveHouseholdRestart = true'
+}
 Set-Content (Join-Path $hostProfile 'reconnect-request') 'restart'
 
 $java = Join-Path $game 'jre64\bin\java.exe'
@@ -79,13 +86,27 @@ Write-Output "QA server restarted: old=$oldPid new=$($server.Id)"
 if (-not (Wait-LogPatternAfter $hostLog.FullName 'NLQA MP CONNECTED: nl-host' $hostLogOffset 180)) {
     throw "Host did not reconnect after dedicated-server restart; inspect $($hostLog.FullName)"
 }
-if (-not (Wait-LogPatternAfter $hostLog.FullName 'NPC INVENTORY RESTART SNAPSHOT' $hostLogOffset 300)) {
-    throw "Host did not observe persisted NPC inventory after reconnect; inspect $($hostLog.FullName)"
+if ($VerifyHouseholdPersistence) {
+    if (-not (Wait-LogPatternAfter $hostLog.FullName 'HOUSEHOLD RESTART SNAPSHOT' $hostLogOffset 300)) {
+        throw "Host did not observe persisted household after dedicated-server restart; inspect $($hostLog.FullName)"
+    }
+    Write-Output 'PASS: host observed persisted household membership, furnishing, and storage after dedicated-server restart'
 }
-if (-not (Wait-LogPatternAfter $hostLog.FullName 'NPC INVENTORY REQUEST RESULT' $hostLogOffset 300)) {
-    throw "Host did not complete post-restart inventory exchange; inspect $($hostLog.FullName)"
+if (-not $VerifyHouseholdPersistence) {
+    if (-not (Wait-LogPatternAfter $hostLog.FullName 'NPC INVENTORY RESTART SNAPSHOT' $hostLogOffset 300)) {
+        throw "Host did not observe persisted NPC inventory after reconnect; inspect $($hostLog.FullName)"
+    }
+    if (-not (Wait-LogPatternAfter $hostLog.FullName 'NPC INVENTORY REQUEST RESULT' $hostLogOffset 300)) {
+        throw "Host did not complete post-restart inventory exchange; inspect $($hostLog.FullName)"
+    }
 }
-if (-not (Wait-LogPatternAfter $hostLog.FullName 'CAREER WORK RESTART SNAPSHOT' $hostLogOffset 180)) {
-    throw "Host did not observe persisted career work after reconnect; inspect $($hostLog.FullName)"
+if (-not $VerifyHouseholdPersistence) {
+    if (-not (Wait-LogPatternAfter $hostLog.FullName 'CAREER WORK RESTART SNAPSHOT' $hostLogOffset 180)) {
+        throw "Host did not observe persisted career work after reconnect; inspect $($hostLog.FullName)"
+    }
 }
-Write-Output 'PASS: host observed persisted NPC inventory and career work after dedicated-server restart'
+if ($VerifyHouseholdPersistence) {
+    Write-Output 'PASS: host observed persisted household membership, furnishing, and storage after dedicated-server restart'
+} else {
+    Write-Output 'PASS: host observed persisted NPC inventory and career work after dedicated-server restart'
+}

@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.63)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.64)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -940,3 +940,20 @@ This closes the first actual co-op household-storage transfer assertion. It
 does not close multi-item/container metadata, household persistence across a
 restart, global-data crash atomicity, or the native NPC server-body
 reannouncement blocker. QA remains outside the production mod package.
+
+## v1.64 actual household storage restart persistence
+
+The isolated hands-free runner now preserves the existing household fixture,
+restarts the real dedicated server, reconnects the host, and requests a fresh
+production household snapshot. The Build 42.20.4 run in `evidence/v94/actual/`
+logged `HOUSEHOLD RESTART SNAPSHOT: members=2 owner=nl-guest
+storage=Base.RippedSheets/3 furnishing=storage`, followed by the career restart
+snapshot. The restart tool reported:
+`PASS: host observed persisted household membership, furnishing, and storage
+after dedicated-server restart`.
+
+This is actual host-plus-guest gameplay evidence, separate from Lua mock/unit
+tests and installed-game Kahlua engine-VM tests. It closes the tested household
+storage process-restart slice; richer item/container metadata, global-data
+crash atomicity, broader home life, and native NPC server-body reannouncement
+remain open. QA helpers remain outside the production mod package.

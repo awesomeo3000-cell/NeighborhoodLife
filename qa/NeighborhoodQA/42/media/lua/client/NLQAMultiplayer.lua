@@ -34,6 +34,8 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     -- delayed QA seed command can erase the newly-created home.
     householdDirectCreateDue = 180,
     householdFurnishingPrepared = false, householdFurnishingActionDue = 0,
+    householdRestartRefreshDue = 0, householdRestartRefreshSent = false,
+    householdRestartObserved = false,
     dangerProbeSent = false,
     wardrobeSeedSent = false, wardrobeSeeded = false, wardrobePickupAttempted = false,
     wardrobePickupObserved = false, wardrobePickupNextAttempt = 0,
@@ -242,6 +244,12 @@ Events.OnConnected.Add(function()
         NLQAMultiplayer.inventoryRestartProbeSent=false
         NLQAMultiplayer.inventoryRestartObserved=false
         NLQAMultiplayer.careerWorkPersistedLogged=false
+        if qaIdentity().householdRestartCheck == true then
+            NLQAMultiplayer.householdRestartRefreshDue=NLQAMultiplayer.socialFrame+120
+            NLQAMultiplayer.householdRestartRefreshSent=false
+            NLQAMultiplayer.householdRestartObserved=false
+            emit("HOUSEHOLD RESTART PROBE ARMED", "connection=" .. tostring(NLQAMultiplayer.connectionCount))
+        end
         emit("RESTART PROBE ARMED", "connection="..tostring(NLQAMultiplayer.connectionCount))
     end
     if checkSavePlayerExists() then return end
@@ -595,6 +603,14 @@ local function queueWardrobeUnequip(itemTypes)
 end
 
 Events.OnServerCommand.Add(function(module, command, args)
+    if module == "NeighborhoodQA" and command == "household_restart_probe"
+            and qaIdentity().username == "nl-host" then
+        qaIdentity().householdRestartCheck=true
+        NLQAMultiplayer.householdRestartRefreshDue=NLQAMultiplayer.socialFrame+120
+        NLQAMultiplayer.householdRestartRefreshSent=false
+        NLQAMultiplayer.householdRestartObserved=false
+        emit("HOUSEHOLD RESTART PROBE ARMED", "server marker received")
+    end
     if module == "NeighborhoodQA" and command == "household_viewpoint" and type(args) == "table"
             and qaIdentity().username == "nl-guest" then
         local player = getSpecificPlayer(0)
@@ -912,7 +928,7 @@ Events.OnServerCommand.Add(function(module, command, args)
             NLQAMultiplayer.householdFurnishingActionDue=NLQAMultiplayer.socialFrame+60
             emit("HOUSEHOLD FURNISHING RETRY", "server position was not beside the native object")
         end
-        if qaIdentity().username=="nl-guest" and home
+        if qaIdentity().username=="nl-guest" and not qaIdentity().preserveHousehold and home
                 and not NLQAMultiplayer.householdRetrieveSent
                 and (home.storage and (home.storage["Base.RippedSheets"] or 0) > 0) then
             NLQAMultiplayer.householdRetrieveSent=true
@@ -938,7 +954,29 @@ Events.OnServerCommand.Add(function(module, command, args)
             NLQAMultiplayer.householdResultLogged=true
             emit("HOUSEHOLD TASK RESULT", tostring(args.message))
         end
+        if qaIdentity().username=="nl-host" and qaIdentity().householdRestartCheck == true
+                and not NLQAMultiplayer.householdRestartObserved
+                and home and home.owner and #members >= 2
+                and home.furnishing and home.storage
+                and (home.storage["Base.RippedSheets"] or 0) >= 1 then
+            NLQAMultiplayer.householdRestartObserved=true
+            emit("HOUSEHOLD RESTART SNAPSHOT", "members=" .. tostring(#members)
+                .. " owner=" .. tostring(home.owner)
+                .. " storage=Base.RippedSheets/" .. tostring(home.storage["Base.RippedSheets"])
+                .. " furnishing=" .. tostring(home.furnishing.kind))
+        end
     end
+end)
+
+-- In preserve mode, request a fresh authoritative household snapshot after the
+-- client reconnects; this avoids counting stale client-side household state.
+Events.OnRenderTick.Add(function()
+    if qaIdentity().username ~= "nl-host" or qaIdentity().householdRestartCheck ~= true
+            or NLQAMultiplayer.householdRestartRefreshSent
+            or NLQAMultiplayer.socialFrame < NLQAMultiplayer.householdRestartRefreshDue then return end
+    NLHouseholdClient.request(0, "refresh")
+    NLQAMultiplayer.householdRestartRefreshSent=true
+    emit("HOUSEHOLD RESTART REFRESH", "production snapshot requested")
 end)
 
 -- QA-only appearance probe. It drives the production server command and then
@@ -1003,11 +1041,16 @@ Events.OnRenderTick.Add(function()
         end
     end
     if qaIdentity().username=="nl-host" and not NLQAMultiplayer.householdResetSent then
-        local player=getSpecificPlayer(0)
-        if player then
-            sendClientCommand(player,"NeighborhoodQA","reset_household",{})
+        if qaIdentity().preserveHousehold then
             NLQAMultiplayer.householdResetSent=true
-            emit("HOUSEHOLD RESET", "isolated QA setup")
+            emit("HOUSEHOLD RESET SKIPPED", "preserveHousehold=true")
+        else
+            local player=getSpecificPlayer(0)
+            if player then
+                sendClientCommand(player,"NeighborhoodQA","reset_household",{})
+                NLQAMultiplayer.householdResetSent=true
+                emit("HOUSEHOLD RESET", "isolated QA setup")
+            end
         end
     end
     -- The household vertical slice can run independently of the longer career
@@ -1307,7 +1350,9 @@ Events.OnRenderTick.Add(function()
             and not NLQAMultiplayer.careerSeedSent then
         local player=getSpecificPlayer(0)
         if player then
-            sendClientCommand(player,"NeighborhoodQA","seed_inventory",{career="medic"})
+            sendClientCommand(player,"NeighborhoodQA","seed_inventory",{
+                career="medic", preserveHousehold=qaIdentity().preserveHousehold == true,
+            })
             NLQAMultiplayer.careerSeedSent=true
             emit("CAREER SEED REQUEST", "medic after-social-intro")
         end

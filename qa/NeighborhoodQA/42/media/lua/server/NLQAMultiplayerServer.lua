@@ -27,6 +27,7 @@ local wardrobeExtraSeeded = {}
 local dangerProbeSeeded = false
 local householdViewpointMoved = false
 local inventoryFaultArmed = false
+local householdRestartProbeSent = false
 
 -- The crash probe supplies NLQAInventoryFaultMode through a temporary
 -- server-only QA config file. It never exists in the production package.
@@ -36,6 +37,26 @@ Events.OnTick.Add(function()
     NLSocialAuthority.testFaultPhase=NLQAInventoryFaultMode
     inventoryFaultArmed=true
     print("NLQA INVENTORY FAULT ARMED: phase="..tostring(NLQAInventoryFaultMode))
+end)
+
+-- The restart tool adds this QA-only server config after the initial household
+-- has been stored. Tell the reconnecting client to request a fresh snapshot;
+-- this marker is deliberately server-issued rather than inferred from stale
+-- client state.
+Events.OnTick.Add(function()
+    if householdRestartProbeSent or NLQAPreserveHouseholdRestart ~= true
+            or type(getOnlinePlayers) ~= "function" then return end
+    local ok, players = pcall(getOnlinePlayers)
+    if not ok or not players then return end
+    for index = 0, players:size() - 1 do
+        local player = players:get(index)
+        if player and player:getUsername() == "nl-host" then
+            householdRestartProbeSent=true
+            sendServerCommand(player, "NeighborhoodQA", "household_restart_probe", {})
+            print("NLQA HOUSEHOLD RESTART PROBE: host marker sent")
+            return
+        end
+    end
 end)
 
 -- QA-only engine bridge probe.  Build 42 does not publish GameServer as a Lua
@@ -258,15 +279,21 @@ Events.OnClientCommand.Add(function(module, command, player, args)
     end
     for _, qaUsername in ipairs({"nl-host", "nl-guest"}) do
         local profile = NLDomain.profile(world, qaUsername)
-        profile.householdId, profile.householdInvite = nil, nil
+        if not (args and args.preserveHousehold == true) then
+            profile.householdId, profile.householdInvite = nil, nil
+        end
         profile.claimed = {}
         profile.worked = {}
     end
-    for _, household in pairs(world.households or {}) do
-        if NLHouseholdFurnishings then NLHouseholdFurnishings.remove(household) end
+    if not (args and args.preserveHousehold == true) then
+        for _, household in pairs(world.households or {}) do
+            if NLHouseholdFurnishings then NLHouseholdFurnishings.remove(household) end
+        end
+        world.households = {}
+        print("NLQA HOUSEHOLD RESET: career fixture cleared persisted household and claims")
+    else
+        print("NLQA HOUSEHOLD PRESERVED: career fixture retained persisted household")
     end
-    world.households = {}
-    print("NLQA HOUSEHOLD RESET: career fixture cleared persisted household and claims")
     local item = "Base.RippedSheets"
     -- Ten sheets leave one real client-acquired item for household storage
     -- after the production NPC give probe consumes one and medic delivery
