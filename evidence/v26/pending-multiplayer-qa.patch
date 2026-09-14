@@ -1,0 +1,56 @@
+diff --git a/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua b/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
+index 3434ae0..6625195 100644
+--- a/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
++++ b/qa/NeighborhoodQA/42/media/lua/client/NLQAMultiplayer.lua
+@@ -6,7 +6,9 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
+     socialActionScheduled = false, socialTarget = nil, socialActionDue = 0,
+     socialResultLogged = false, careerSeedSent = false, careerSeeded = false,
+     careerSelectSent = false, careerDeliverSent = false, careerResultLogged = false,
+-    careerDue = 0, careerStage = 0 }
++    careerDue = 0, careerStage = 0, socialTimeAdvanceSent = false,
++    socialTimeAdvanced = false, socialChatSent = false, socialChatResultLogged = false,
++    socialChatStartHours = nil }
+ 
+ local function emit(label, value)
+     print("NLQA MP " .. label .. ": " .. tostring(value))
+@@ -250,6 +252,12 @@ Events.OnServerCommand.Add(function(module, command, args)
+             emit("SOCIAL RESULT", hostMet and "host introduction already persisted"
+                 or "host introduction delivered")
+         end
++        if qaIdentity().username == "nl-host" and NLQAMultiplayer.socialChatSent
++                and not NLQAMultiplayer.socialChatResultLogged and args.message
++                and string.find(args.message,"I'd like to hear",1,true) then
++            NLQAMultiplayer.socialChatResultLogged=true
++            emit("SOCIAL CHAT RESULT", "host multi-step chat delivered")
++        end
+     end
+     if module == "NeighborhoodQA" and command == "career_seeded" and type(args) == "table"
+             and qaIdentity().username == "nl-host" then
+@@ -297,6 +305,27 @@ Events.OnRenderTick.Add(function()
+         end
+     end
+     if qaIdentity().username=="nl-host" and NLQAMultiplayer.socialResultLogged
++            and not NLQAMultiplayer.socialTimeAdvanceSent then
++        local clock=getGameTime()
++        NLQAMultiplayer.socialChatStartHours=clock:getWorldAgeHours()
++        local controls=UIManager and UIManager.getSpeedControls and UIManager.getSpeedControls()
++        if controls then controls:SetCurrentGameSpeed(4) end
++        NLQAMultiplayer.socialTimeAdvanceSent=true
++        NLQAMultiplayer.socialTimeAdvanced=true
++        emit("SOCIAL SPEED", "4x startHours="..tostring(NLQAMultiplayer.socialChatStartHours))
++    end
++    if qaIdentity().username=="nl-host" and NLQAMultiplayer.socialTimeAdvanced
++            and not NLQAMultiplayer.socialChatSent then
++        local elapsed=getGameTime():getWorldAgeHours()-NLQAMultiplayer.socialChatStartHours
++        if elapsed>=0.25 then
++            NLSocialClient.request(0,"interact",{id="marisol",action="chat"})
++            NLQAMultiplayer.socialChatSent=true
++            local controls=UIManager and UIManager.getSpeedControls and UIManager.getSpeedControls()
++            if controls then controls:SetCurrentGameSpeed(1) end
++            emit("SOCIAL CHAT", "id=marisol action=chat elapsedHours="..tostring(elapsed))
++        end
++    end
++    if qaIdentity().username=="nl-host" and NLQAMultiplayer.socialChatResultLogged
+             and not NLQAMultiplayer.careerSeedSent then
+         local player=getSpecificPlayer(0)
+         if player then

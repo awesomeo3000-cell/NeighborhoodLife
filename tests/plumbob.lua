@@ -36,7 +36,8 @@ assert(panel.visible and panel.x==100-math.floor(panel.width/2))
 local expectedLift = NLPlumbob.baseLift or 128
 assert(panel.y==300-panel.height-expectedLift)
 if NLPlumbob.baseWidth then
-    assert(panel.width==28 and panel.height==40,"plumbob is compact")
+    assert(panel.width==NLPlumbob.baseWidth and panel.height==NLPlumbob.baseHeight,
+        "plumbob panel uses its configured compact dimensions")
 end
 character.isDead=function() return true end; panel:prerender(); assert(not panel.visible)
 NLPlumbob.unregister('test:character'); assert(NLPlumbob.instances['test:character']==nil)

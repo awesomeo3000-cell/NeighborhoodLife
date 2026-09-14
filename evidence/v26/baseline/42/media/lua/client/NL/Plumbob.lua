@@ -8,11 +8,8 @@ NLPlumbob.instances = {}
 NLPlumbob.texturePath = "media/textures/NL_Plumbob.png"
 NLPlumbob.defaultColor = { r = 0.22, g = 0.88, b = 0.58 }
 NLPlumbob.remoteColor = { r = 0.28, g = 0.86, b = 0.95 }
--- Keep the marker clearly readable while leaving the character silhouette
--- dominant.  The bottom tip keeps the same head-level anchor as the prior
--- compact pass, so shrinking cannot pull the gem down over the model.
-NLPlumbob.baseWidth = 20
-NLPlumbob.baseHeight = 28
+NLPlumbob.baseWidth = 28
+NLPlumbob.baseHeight = 40
 NLPlumbob.baseLift = 104
 
 function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, lift)
@@ -20,7 +17,7 @@ function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, li
 end
 
 function NLPlumbob:new(id, character, observerIndex, color)
-    local o = ISPanel.new(self, 0, 0, NLPlumbob.baseWidth, NLPlumbob.baseHeight)
+    local o = ISPanel.new(self, 0, 0, 32, 48)
     o.markerId = id
     o.character = character
     o.observerIndex = observerIndex or 0

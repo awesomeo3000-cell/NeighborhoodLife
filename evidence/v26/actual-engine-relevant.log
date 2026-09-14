@@ -1,0 +1,3 @@
+[13-09-26 21:36:40.014] LOG  : Lua          f:0> NLQA PASS: real engine plumbob panel registered and anchored at 1260,692 size=20x28.
+[13-09-26 21:36:40.015] LOG  : Lua          f:0> NLQA PASS: real player, authority, persistent world store, snapshot routing and hunger read.
+[13-09-26 21:36:40.178] LOG  : Lua          f:0> NLQA PASS: 3 production NPC bodies, persisted positions and plumbobs verified at marisol=10775.50,10258.50 kenji=10775.50,10256.50 amara=10777.50,10254.50.

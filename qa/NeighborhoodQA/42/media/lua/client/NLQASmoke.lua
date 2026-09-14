@@ -69,7 +69,8 @@ Events.OnGameStart.Add(function()
         local plumbob=NLPlumbob and NLPlumbob.instances["player:0"]
         assert(plumbob,"Plumbob panel was not registered for the real player")
         assert(plumbob:positionOverCharacter(),"Plumbob panel did not anchor over the real player")
-        print("NLQA PASS: real engine plumbob panel registered and anchored at "..plumbob:getX()..","..plumbob:getY())
+        print("NLQA PASS: real engine plumbob panel registered and anchored at "..plumbob:getX()..","..plumbob:getY()
+            .." size="..plumbob:getWidth().."x"..plumbob:getHeight())
         if NLQANpc and NLQANpc.body and NLPlumbob.instances["qa:marisol"] then
             assert(NLPlumbob.instances["qa:marisol"]:positionOverCharacter(),"NPC plumbob did not anchor")
             print("NLQA PASS: QA NPC plumbob adapter registered and anchored")

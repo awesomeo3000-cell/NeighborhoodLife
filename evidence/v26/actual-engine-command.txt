@@ -1,0 +1,8 @@
+ACTUAL ENGINE COMMAND: & .\tools\launch-qa.ps1
+ACTUAL ENGINE INPUT: E:\pzmod\test-profile, isolated no-Steam Build 42.20.4 single-player profile; hands-free QA launcher; no mouse or keyboard
+LAUNCHER OUTPUT: QA process: 34444; isolated profile: E:\pzmod\test-profile
+ACTUAL ENGINE LOG: NLQA PASS: real engine plumbob panel registered and anchored at 1260,692 size=20x28.
+ACTUAL ENGINE LOG: NLQA PASS: real player, authority, persistent world store, snapshot routing and hunger read.
+ACTUAL ENGINE LOG: NLQA PASS: 3 production NPC bodies, persisted positions and plumbobs verified at marisol=10775.50,10258.50 kenji=10775.50,10256.50 amara=10777.50,10254.50.
+ACTUAL ENGINE RESULT: production active-character and native NPC plumbobs rendered/anchored at the compact 20x28 panel size; this is actual single-player engine evidence, not multiplayer completion evidence.
+ACTUAL ENGINE EXIT: 0 observed launcher success; QA process stopped after capture.

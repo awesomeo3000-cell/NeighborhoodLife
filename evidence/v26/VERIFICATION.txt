@@ -1,0 +1,61 @@
+Neighborhood Life plumbob visual correction verification
+
+CHANGED BRANCH/FIELD: production client character-marker sizing branch in E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Plumbob.lua. The configured marker changed from 28x40 to 20x28 at the existing 104px head-level lift, and panel construction now starts from those same configured dimensions. SCOPE.md and the full Sims-inspired multiplayer/NPC scope remain unchanged. QA helpers remain outside the production package.
+ORIGINAL SOURCE HASH: E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Plumbob.lua SHA256 D4F81E59C8876E72370C2815DA16B3A975C4CC03FB9674F196D9F65DF7097909
+MODIFIED SOURCE HASH: E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Plumbob.lua SHA256 BB25239131F6E788636383207A1FDF675D926893CCFD13BEC4803900973A24B4
+
+BASELINE COMMAND: python tools\pipeline.py test --target evidence\v26\baseline
+BASELINE INPUT: E:\pzmod
+BASELINE LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+BASELINE RESULT: commit 2a9014f baseline passed all mock, syntax and engine-VM suites.
+BASELINE EXIT: 0
+
+MODIFIED COMMAND: python tools\pipeline.py test
+MODIFIED INPUT: E:\pzmod\NeighborhoodLife
+MODIFIED LITERAL OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
+MODIFIED RESULT: compact plumbob production Lua passed the mock, syntax and installed-game Kahlua suites.
+MODIFIED EXIT: 0
+
+QA SYNTAX COMMAND: Get-ChildItem qa\NeighborhoodQA\42\media\lua -Recurse -Filter *.lua | ForEach-Object { & 'C:\Program Files (x86)\Lua\5.1\luac.exe' -p $_.FullName }
+QA SYNTAX INPUT: E:\pzmod
+QA SYNTAX LITERAL OUTPUT: QA_SYNTAX_EXIT=0
+QA SYNTAX RESULT: hands-free QA helpers remain syntactically valid and are not production files.
+QA SYNTAX EXIT: 0
+
+PACKAGE COMMAND: python tools\pipeline.py package --version v26 --baseline evidence\v26\baseline
+PACKAGE INPUT: E:\pzmod
+PACKAGE LITERAL OUTPUT: PASS: release package E:\pzmod\evidence\v26\MODIFIED_FILE.zip
+PACKAGE RESULT: production-only package and baseline diff created.
+PACKAGE EXIT: 0
+
+PACKAGE VALIDATION COMMAND: python -c "import zipfile; z=zipfile.ZipFile('evidence/v26/MODIFIED_FILE.zip'); print('ZIP_TEST',z.testzip()); print('QA_ENTRIES',[n for n in z.namelist() if 'NeighborhoodQA' in n]); print('PLUMBOB',any(n.endswith('42/media/lua/client/NL/Plumbob.lua') for n in z.namelist())); print('TEXTURE',any(n.endswith('42/media/textures/NL_Plumbob.png') for n in z.namelist()))"
+PACKAGE VALIDATION INPUT: E:\pzmod
+PACKAGE VALIDATION LITERAL OUTPUT: ZIP_TEST None; QA_ENTRIES []; PLUMBOB True; TEXTURE True
+PACKAGE VALIDATION RESULT: valid production ZIP; QA helpers are excluded.
+PACKAGE VALIDATION EXIT: 0
+
+ROLLBACK COMMAND: $env:TARGET_ROOT='/e/pzmod/evidence/v26/rollback-target'; & 'C:\Program Files\Git\bin\bash.exe' 'E:\pzmod\evidence\v26\ROLLBACK.sh'
+ROLLBACK INPUT: copied the modified E:\pzmod\NeighborhoodLife tree into E:\pzmod\evidence\v26\rollback-target\NeighborhoodLife
+ROLLBACK LITERAL OUTPUT: ROLLBACK RESTORED: /e/pzmod/evidence/v26/rollback-target/NeighborhoodLife from /e/pzmod/evidence/v26/baseline
+ROLLBACK RESULT: BASELINE_TREE_SHA256 82c9c58d5ab201cf8343ce29f646d8f9f17e4be6fc2e4ac56cd98d563bdad7ac; ROLLBACK_TREE_SHA256 82c9c58d5ab201cf8343ce29f646d8f9f17e4be6fc2e4ac56cd98d563bdad7ac; RESTORED_MATCH True; MODIFIED_DIFFERS True. The production source remained changed after the rollback-copy test.
+ROLLBACK EXIT: 0
+
+ACTUAL ENGINE COMMAND: & .\tools\launch-qa.ps1
+ACTUAL ENGINE INPUT: E:\pzmod\test-profile, isolated no-Steam Project Zomboid Build 42.20.4 single-player profile, hands-free launcher, no mouse or keyboard
+ACTUAL ENGINE LITERAL OUTPUT: NLQA PASS: real engine plumbob panel registered and anchored at 1260,692 size=20x28.
+ACTUAL ENGINE LITERAL OUTPUT: NLQA PASS: 3 production NPC bodies, persisted positions and plumbobs verified at marisol=10775.50,10258.50 kenji=10775.50,10256.50 amara=10777.50,10254.50.
+ACTUAL ENGINE RESULT: real Build 42 rendered the active-character marker and anchored native NPC markers at the compact 20x28 panel size. This is actual single-player gameplay evidence. It does not claim host/guest multiplayer or NPC replication completion.
+ACTUAL ENGINE EXIT: 0 observed launcher success; QA process 34444 was stopped after capture.
+ACTUAL ENGINE EVIDENCE: E:\pzmod\evidence\v26\actual-engine-command.txt; E:\pzmod\evidence\v26\actual-engine-relevant.log
+
+CLASSIFICATION: tests/plumbob.lua and the consolidated Lua 5.1 suites are mock tests; the Kahlua suites run production Lua in the installed-game VM with explicit mocks; the v26 log is actual isolated Build 42 single-player evidence. No multiplayer completion claim is made from these tests.
+
+ARTIFACT PATHS:
+MODIFIED_FILE: E:\pzmod\evidence\v26\MODIFIED_FILE.zip
+DIFF_FILE: E:\pzmod\evidence\v26\DIFF_FILE.patch
+VERIFICATION: E:\pzmod\evidence\v26\VERIFICATION.txt
+ROLLBACK: E:\pzmod\evidence\v26\ROLLBACK.sh
+SHA256 MODIFIED_FILE: 65F302CB45EF0E0304428591A5FD66ED88E79A408B1059D5366E1EC6986946D7
+SHA256 DIFF_FILE: 3B9AA1795D28F8F4237DB94888C81F98A458617E0778761B1BE092E430B49CD7
+SHA256 ROLLBACK: E51C75438F0919E47DE0EB72A92815789F620B100DF6A069419776A31989C1BC
+PENDING PRIOR QA PATCH: E:\pzmod\evidence\v26\pending-multiplayer-qa.patch (QA-only, preserved separately and not included in the production package)

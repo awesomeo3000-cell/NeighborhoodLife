@@ -1,0 +1,26 @@
+--- baseline/42/media/lua/client/NL/Plumbob.lua
++++ modified/42/media/lua/client/NL/Plumbob.lua
+@@ -8,8 +8,11 @@
+ NLPlumbob.texturePath = "media/textures/NL_Plumbob.png"
+ NLPlumbob.defaultColor = { r = 0.22, g = 0.88, b = 0.58 }
+ NLPlumbob.remoteColor = { r = 0.28, g = 0.86, b = 0.95 }
+-NLPlumbob.baseWidth = 28
+-NLPlumbob.baseHeight = 40
++-- Keep the marker clearly readable while leaving the character silhouette
++-- dominant.  The bottom tip keeps the same head-level anchor as the prior
++-- compact pass, so shrinking cannot pull the gem down over the model.
++NLPlumbob.baseWidth = 20
++NLPlumbob.baseHeight = 28
+ NLPlumbob.baseLift = 104
+ 
+ function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, lift)
+@@ -17,7 +20,7 @@
+ end
+ 
+ function NLPlumbob:new(id, character, observerIndex, color)
+-    local o = ISPanel.new(self, 0, 0, 32, 48)
++    local o = ISPanel.new(self, 0, 0, NLPlumbob.baseWidth, NLPlumbob.baseHeight)
+     o.markerId = id
+     o.character = character
+     o.observerIndex = observerIndex or 0
+BINARY FILE CHANGED: baseline/42/media/textures/NL_Plumbob.png -> modified/42/media/textures/NL_Plumbob.png
