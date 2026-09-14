@@ -739,3 +739,21 @@ clean clients did not complete the hands-free connection path, while the
 archived profile relocated NPCs and produced no replicas. This run is retained
 as a genuine failed gameplay probe; streamed-cell gameplay evidence remains
 open.
+
+## v1.49 clean-profile startup and live stale-body recovery
+
+The isolated QA agent now acknowledges the first-run Build 42 terms state
+without OS input, while the multiplayer launcher seeds the mod-list sentinel
+that a clean profile otherwise uses to reset `default.txt`. The launcher also
+leaves connection ownership with the QA Lua callback instead of sending a
+competing `+connect` bootstrap. QA helpers remain outside the production mod.
+
+`evidence/v70/` records the resulting clean-profile Build 42.20.4 host+guest
+run. Both clients connected to the real dedicated server, loaded the current
+production mod, rendered three native moving NPC replicas with compact
+plumbobs, and completed the production stale-body probe: Kenji was removed from
+the host's local object list and the next authoritative presence application
+created a fresh native replica. The logs also retain the real danger probe,
+independent social actions and HUD/plumbob checks. This closes the live QA
+recovery probe without claiming native server-body reannouncement or natural
+engine-driven cell streaming.

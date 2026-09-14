@@ -35,6 +35,24 @@ public final class HandsFreeQA {
                         Files.writeString(Path.of(qaProfile,"hands-free-qa.log"),"STATE: "+state+"\n",
                             StandardOpenOption.CREATE,StandardOpenOption.APPEND);
                     }
+                    if(current != null && current.getClass().getName().equals("zombie.gameStates.TermsOfServiceState")) {
+                        try {
+                            // Fresh disposable profiles can stop here before Lua's menu
+                            // callbacks are installed. Mark the QA-only terms state as
+                            // created and exited through its public engine bridge; this
+                            // replaces the one-time UI acknowledgement without OS input.
+                            var fromLua= current.getClass().getMethod("fromLua0", String.class);
+                            fromLua.invoke(current, "created");
+                            fromLua.invoke(current, "exit");
+                            Files.writeString(Path.of(qaProfile,"hands-free-qa.log"),
+                                "PASS: terms state acknowledged without OS input\n",
+                                StandardOpenOption.CREATE,StandardOpenOption.APPEND);
+                        } catch(Exception termsFailure) {
+                            Files.writeString(Path.of(qaProfile,"hands-free-qa.log"),
+                                "FAIL: terms acknowledgement "+termsFailure+"\n",
+                                StandardOpenOption.CREATE,StandardOpenOption.APPEND);
+                        }
+                    }
                     if(current != null && current.getClass().getName().equals("zombie.gameStates.MainScreenState")) {
                         try {
                             Field link=current.getClass().getDeclaredField("connectToServerState"); link.setAccessible(true);

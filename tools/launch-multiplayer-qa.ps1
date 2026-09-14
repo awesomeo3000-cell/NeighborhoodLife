@@ -16,6 +16,13 @@ New-Item -ItemType Directory -Force $evidence | Out-Null
 
 foreach ($profile in $profiles) {
     New-Item -ItemType Directory -Force "$profile\mods" | Out-Null
+    # Build 42 creates this sentinel on first boot and otherwise resets
+    # default.txt to an empty mod list. Seed it before a disposable client
+    # starts so the QA copies remain enabled on a clean profile.
+    $resetMods = Join-Path $profile 'mods\reset-mods-42_00.txt'
+    if (-not (Test-Path $resetMods)) {
+        'Hands-free QA profile: preserve the launcher-provided mod list.' | Set-Content $resetMods
+    }
     [System.IO.File]::Delete((Join-Path $profile 'reconnect-request'))
     foreach ($modId in @('NeighborhoodLife','NeighborhoodQA')) {
         $stale = Join-Path $profile "mods\$modId"
@@ -103,8 +110,7 @@ if (-not $started) { throw "Dedicated server did not reach SERVER STARTED; inspe
 
 function Start-QAClient($profile, $username) {
     $args = $common + @('-javaagent:E:/pzmod/tests/hands-free-qa.jar=' + $profile,
-        'zombie.gameStates.MainScreenState',"-cachedir=$profile",'+connect','127.0.0.1:16261',
-        '+password','qa-account-password','-nosteam','-nosound')
+        'zombie.gameStates.MainScreenState',"-cachedir=$profile",'-nosteam','-nosound')
     return Start-Process "$game\jre64\bin\javaw.exe" -ArgumentList $args -WorkingDirectory $game -PassThru
 }
 
