@@ -1,8 +1,20 @@
-# Neighborhood Life — full scope and evidence ledger (v1.88)
+# Neighborhood Life — full scope and evidence ledger (v1.89)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
 The original broad goal remains active. This ledger is not a reduced definition of done.
+
+## v1.89 actual host-plus-guest NPC movement regression
+
+The fresh hands-free Build 42.20.4 capture in
+`evidence/v127/actual/npc-movement/` recorded changing authoritative Marisol
+coordinates on the dedicated server (`10649.32,9372.58` to
+`10652.50,9371.50`) and a `0.60`-tile rendered native-mode displacement on
+both host and guest. This is actual installed-game multiplayer evidence for the
+production compatibility movement stream, separate from mock/unit and Kahlua
+engine-VM evidence. It does not claim vanilla native-player replication or
+close the open native server-body reannouncement gate; QA helpers and isolated
+profiles remain outside the production package.
 
 ## v1.88 actual neighborhood vertical slice regression
 

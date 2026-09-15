@@ -1,8 +1,21 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.88)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.89)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.89 actual host-plus-guest NPC movement regression
+
+The fresh isolated Build 42.20.4 movement run recorded changing authoritative
+Marisol coordinates on the dedicated server (`10649.32,9372.58` to
+`10652.50,9371.50`) and rendered the resulting native-mode replica motion on
+both host and guest. Each client observed a `0.60`-tile displacement. This is
+actual installed-game multiplayer evidence for the production compatibility
+movement stream, distinct from Lua mock tests and installed-game Kahlua
+engine-VM tests; it does not claim vanilla native-player replication or close
+the open native server-body reannouncement gate. The capture is in
+`evidence/v127/actual/npc-movement/`, and QA helpers and profiles remain outside
+the production package.
 
 ## v1.88 actual neighborhood vertical slice regression
 
