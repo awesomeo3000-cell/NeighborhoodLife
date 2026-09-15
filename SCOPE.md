@@ -1,8 +1,26 @@
-# Neighborhood Life — full scope and evidence ledger (v1.93)
+# Neighborhood Life — full scope and evidence ledger (v1.94)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
 The original broad goal remains active. This ledger is not a reduced definition of done.
+
+## v1.94 native server-surface probe
+
+The fresh isolated Build 42.20.4 host-plus-guest diagnostic in
+`evidence/v135/actual/native-surface-clean/` enumerated the server's filtered
+connection/player/server global surface. The real dedicated Kahlua host
+exposes `getOnlinePlayers`, `getPlayerInfo`, and direct visual-sync helpers,
+but it exposes no `GameServer`, `getConnectionFromPlayer`,
+`sendPlayerConnected`, or direct connection lookup. A connected player and a
+production NPC both return a nil `getOwner()` value; `getPlayerInfo()` returns
+position, path and animation fields only; and the NPC network AI is exposed
+without a connection link. The existing reflection attempt still fails the
+engine's `validateReflectionAccess` gate. This is actual installed-game
+diagnostic evidence, not native multiplayer completion. It narrows the native
+route to a typed engine bridge that can receive a `UdpConnection` and populate
+its player slot plus the server maps; the production compatibility movement
+stream remains the playable route until that bridge exists. The probe and
+profiles remain outside the production package.
 
 ## v1.93 native online-id runtime cleanup and movement regression
 
@@ -177,7 +195,7 @@ reannouncement remains open because the real Lua bridge still exposes
 ## Next engineering gates
 
 1. Broaden global-data crash atomicity and household routines; v1.76 proves shared household activity progression and its home-aspiration snapshot path; v1.63 proves a guest main-inventory retrieve from the production furnishing, v1.64 proves household storage membership/furnishing/item persistence across a dedicated-server restart, v1.66 proves arbitrary item/container metadata capture and restoration in a real host+guest run, and v1.67 proves repair of an interrupted household storage transaction after a forced server stop.
-2. Resolve native NPC server-body reannouncement and test persistent movement under a naturally missing native peer; the current v1.62 run still reports `GameServer=nil`, `Java=nil`, and `onlineHints=0`. The v1.75 compatibility motion heartbeat is verified separately and is not a native-body claim.
+2. Resolve native NPC server-body reannouncement and test persistent movement under a naturally missing native peer; v1.94's fresh surface probe confirms `GameServer=nil`, no connection lookup, nil character owners, and no direct `sendPlayerConnected` global. The v1.75 compatibility motion heartbeat is verified separately and is not a native-body claim.
 3. Expand the completed first vertical slice into broader conversations, relationships, romance, neighborhood careers, households, aspirations and furnishings without reducing the host/invite multiplayer requirement.
 4. Integrate conversations, relationships, romance and neighborhood careers.
 5. Expand appearance/clothing assets, households, aspirations, furnishings and UI polish.

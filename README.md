@@ -1,8 +1,22 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.93)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.94)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.94 native server-surface probe
+
+The isolated Build 42.20.4 host-plus-guest diagnostic enumerated the actual
+dedicated-server Lua surface. `getOnlinePlayers`, `getPlayerInfo`, and the
+player visual sync helpers are available, but `GameServer`,
+`getConnectionFromPlayer`, `sendPlayerConnected`, and every direct connection
+lookup are absent. A connected player and a production NPC both report a nil
+owner, while the info table contains only position/path/animation fields. The
+full filtered global surface is captured in
+`evidence/v135/actual/native-surface-clean/`. This is actual installed-game
+diagnostic evidence, not native replication completion; the compatibility
+movement stream remains the playable path while the per-connection bridge is
+open. The QA probe remains outside the production package.
 
 ## v1.93 native online-id runtime cleanup and movement regression
 

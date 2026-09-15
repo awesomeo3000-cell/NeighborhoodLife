@@ -49,6 +49,7 @@ local nativeStaticRosterProbeDone = false
 local nativePacketProbeDone = false
 local nativeBridgeProbeDone = false
 local nativeReflectionProbeDone = false
+local nativeSurfaceProbeDone = false
 local partnershipProbeSeeded = false
 local partnershipSnapshotAttempts = 0
 local dateProbeSeeded = false
@@ -545,6 +546,118 @@ Events.OnTick.Add(function()
         .. " numPlayers=" .. tostring(playerCountOk and playerCount or "error")
         .. " playersArray=" .. tostring(playerArrayOk and type(playerArray) or "error")
         .. " slots=" .. table.concat(slots, ","))
+end)
+
+-- QA-only native server surface probe.  The Build 42 server publishes the
+-- player object and a handful of sync helpers to Kahlua, while the actual
+-- per-connection UdpConnection roster is kept behind GameServer.  Record the
+-- complete connection/player/server-shaped global surface, the player-info
+-- table, and the owner/packet links exposed by a real connected player and a
+-- production NPC body.  This is evidence for the native bridge gate only;
+-- it never changes a production body or a connection roster.
+local function nativeSurfaceValue(name)
+    local ok, value = pcall(function() return _G[name] end)
+    if not ok then return "lookup-error" end
+    if value == nil then return "nil" end
+    return type(value)
+end
+
+local function nativeSurfaceCall(name, ...)
+    local ok, fn = pcall(function() return _G[name] end)
+    if not ok or type(fn) ~= "function" then return "unavailable" end
+    local args = {...}
+    local callOk, value = pcall(function() return fn(unpack(args)) end)
+    if not callOk then return "error:" .. tostring(value) end
+    if value == nil then return "nil" end
+    return type(value)
+end
+
+local function nativeSurfaceOwner(body)
+    if not body then return "body-unavailable" end
+    local methodOk, method = pcall(function() return body.getOwner end)
+    if not methodOk or type(method) ~= "function" then return "method-unavailable" end
+    local ok, owner = pcall(method, body)
+    if not ok then return "error:" .. tostring(owner) end
+    return owner and type(owner) or "nil"
+end
+
+Events.OnTick.Add(function()
+    if nativeSurfaceProbeDone or NLQANativeRosterProbe ~= true
+            or not NLNpcAuthority or not NLNpcAuthority.started
+            or type(getOnlinePlayers) ~= "function" then return end
+    local listOk, players = pcall(getOnlinePlayers)
+    if not listOk or not players or not players.size or players:size() < 2 then return end
+    local target = players:get(0)
+    if not target then return end
+    nativeSurfaceProbeDone = true
+
+    local names = {
+        "getConnectionFromPlayer", "getPlayerFromConnection", "getConnection",
+        "getUdpConnection", "getServerConnection", "getPlayerAt", "getPlayerByOnlineID",
+        "getPlayerFromUsername", "getConnectedPlayers", "getOnlinePlayers",
+        "sendPlayerConnected", "sendPlayerExtraInfo", "sendVisual",
+        "sendSyncPlayerFields", "syncVisuals", "getServerOptions", "checkPermissions",
+    }
+    local globalTypes = {}
+    for _, name in ipairs(names) do
+        globalTypes[#globalTypes + 1] = name .. "=" .. nativeSurfaceValue(name)
+    end
+
+    local filtered = {}
+    local globalScanOk, globalScanError = pcall(function()
+        for name in pairs(_G) do
+            local text = string.lower(tostring(name))
+            if string.find(text, "connection", 1, true)
+                    or string.find(text, "player", 1, true)
+                    or string.find(text, "server", 1, true)
+                    or string.find(text, "network", 1, true) then
+                filtered[#filtered + 1] = tostring(name)
+            end
+        end
+    end)
+    table.sort(filtered)
+    if #filtered > 80 then
+        while #filtered > 80 do table.remove(filtered) end
+    end
+
+    local infoKeys = {}
+    local infoOk, info = pcall(getPlayerInfo, target)
+    if infoOk and info then
+        pcall(function()
+            for key in pairs(info) do
+                infoKeys[#infoKeys + 1] = tostring(key)
+            end
+        end)
+        table.sort(infoKeys)
+    end
+    local npc
+    for _, id in ipairs({"marisol", "kenji", "amara"}) do
+        if NLNpcAuthority.bodies[id] then npc = NLNpcAuthority.bodies[id]; break end
+    end
+    local aiType = "unavailable"
+    if npc then
+        local aiMethodOk, aiMethod = pcall(function() return npc.getNetworkCharacterAI end)
+        local aiOk, ai = false, nil
+        if aiMethodOk and type(aiMethod) == "function" then
+            aiOk, ai = pcall(aiMethod, npc)
+        end
+        if aiOk and ai then
+            aiType = type(ai)
+        else
+            aiType = "error"
+        end
+    end
+    print("NLQA NATIVE SERVER SURFACE: globals=" .. table.concat(globalTypes, ",")
+        .. " filteredOk=" .. tostring(globalScanOk)
+        .. " filteredError=" .. tostring(globalScanError)
+        .. " filtered=" .. table.concat(filtered, ",")
+        .. " targetOwner=" .. nativeSurfaceOwner(target)
+        .. " npcOwner=" .. nativeSurfaceOwner(npc)
+        .. " getConnectionFromPlayer=" .. nativeSurfaceCall("getConnectionFromPlayer", target)
+        .. " getConnectedPlayers=" .. nativeSurfaceCall("getConnectedPlayers")
+        .. " playerInfo=" .. tostring(infoOk and type(info) or "error")
+        .. " infoKeys=" .. table.concat(infoKeys, ",")
+        .. " npcAI=" .. aiType)
 end)
 
 -- The restart tool adds this QA-only server config after the initial household
