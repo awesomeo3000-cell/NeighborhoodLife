@@ -120,6 +120,31 @@ if NLNpcAuthority.safeFallbackStep then
     local blockedStepX,blockedStepY=NLNpcAuthority.safeFallbackStep(body,{x=102,y=100,z=0})
     assert(blockedStepX and blockedStepY and math.floor(blockedStepX)~=101,
         'stalled native path refuses to cross an occupied tile')
+    getCell=function()
+        return {getGridSquare=function(_,x,y,z)
+            local s=square(x,y,z)
+            s.isFree=function()
+                return not ((x==101 and y==100) or (x==100 and y==101)
+                    or (x==101 and y==101))
+            end
+            return s
+        end}
+    end
+    body:setX(100.95); body:setY(100.95)
+    local detourTarget={x=102,y=101,z=0}
+    local detourStepX,detourStepY=NLNpcAuthority.safeFallbackStep(body,detourTarget)
+    assert(detourStepX and detourStepY and detourStepY<body:getY() and detourTarget.detour,
+        'stalled native path chooses a remembered free-side detour around a corner')
+    body:setX(detourTarget.detour.x); body:setY(detourTarget.detour.y)
+    local aroundStepX,aroundStepY
+    for _=1,80 do
+        aroundStepX,aroundStepY=NLNpcAuthority.safeFallbackStep(body,detourTarget)
+        if not aroundStepX then break end
+        body:setX(aroundStepX); body:setY(aroundStepY)
+        if math.floor(aroundStepX)==101 then break end
+    end
+    assert(aroundStepX and math.floor(aroundStepX)==101,
+        'stalled native path resumes across the obstacle from the detour tile')
     getCell=originalGetCell
     body:setX(originalBodyX); body:setY(originalBodyY)
 end

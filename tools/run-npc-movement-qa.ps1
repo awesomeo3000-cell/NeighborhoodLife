@@ -1,6 +1,7 @@
 param(
     [string]$ProfileRoot = 'E:\pzmod\test-profile-v110-npc-movement',
-    [string]$EvidenceRoot = 'E:\pzmod\evidence\v110\actual\npc-movement'
+    [string]$EvidenceRoot = 'E:\pzmod\evidence\v110\actual\npc-movement',
+    [switch]$ZombiesDisabled
 )
 
 $ErrorActionPreference = 'Stop'
@@ -50,9 +51,10 @@ $hostLog = $null
 $guestLog = $null
 try {
     Stop-IsolatedProcesses
+    $launcherArgs = @('-NpcMovementProbe', '-ProfileRoot', $base, '-EvidenceRoot', $evidence)
+    if ($ZombiesDisabled) { $launcherArgs += '-ZombiesDisabledProbe' }
     & pwsh -NoProfile -ExecutionPolicy Bypass -File `
-        (Join-Path $root 'tools\launch-multiplayer-qa.ps1') `
-        -NpcMovementProbe -ProfileRoot $base -EvidenceRoot $evidence
+        (Join-Path $root 'tools\launch-multiplayer-qa.ps1') @launcherArgs
     $launcherExit = $LASTEXITCODE
     "QA launcher exit=$launcherExit" | Set-Content (Join-Path $evidence 'launcher.stdout.log')
     if ($launcherExit -ne 0) { throw "QA launcher failed with exit $launcherExit" }
@@ -95,7 +97,11 @@ try {
     $serverSamples | Set-Content (Join-Path $evidence 'server-motion-samples.txt')
     $hostMotion.Line | Set-Content (Join-Path $evidence 'host-motion-result.txt')
     $guestMotion.Line | Set-Content (Join-Path $evidence 'guest-motion-result.txt')
-    $result = 'PASS: actual host-plus-guest NPC movement heartbeat and rendered replica motion observed'
+    $result = if ($ZombiesDisabled) {
+        'PASS: actual host-plus-guest NPC movement heartbeat and rendered replica motion observed with zombies disabled'
+    } else {
+        'PASS: actual host-plus-guest NPC movement heartbeat and rendered replica motion observed'
+    }
     $result | Set-Content (Join-Path $evidence 'RESULT.txt')
     Write-Output $result
 }

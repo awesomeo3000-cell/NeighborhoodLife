@@ -286,43 +286,111 @@ local function fallbackStep(body, target)
     if not body or not target then return nil end
     local currentX, currentY, currentZ = body:getX(), body:getY(), body:getZ()
     local destinationX, destinationY = target.x + 0.5, target.y + 0.5
+    local cell = getCell and getCell()
+    local function stepToward(goalX, goalY)
+        local dx, dy = goalX - currentX, goalY - currentY
+        local distance = math.sqrt(dx * dx + dy * dy)
+        if distance <= 0.05 then return currentX, currentY, nil end
+        local signX = dx > 0 and 1 or (dx < 0 and -1 or 0)
+        local signY = dy > 0 and 1 or (dy < 0 and -1 or 0)
+        local directions = {}
+        local function addDirection(x, y)
+            if x ~= 0 or y ~= 0 then directions[#directions + 1] = { x=x, y=y } end
+        end
+        if signX ~= 0 then addDirection(signX, 0) end
+        if signY ~= 0 then addDirection(0, signY) end
+        if signX ~= 0 and signY ~= 0 then addDirection(signX, signY) end
+        -- Keep both sides available for a perpendicular detour.  The old
+        -- one-sided choice could walk into a blocked corner and oscillate in
+        -- the same tile forever.
+        if signX ~= 0 then addDirection(0, 1); addDirection(0, -1) end
+        if signY ~= 0 then addDirection(1, 0); addDirection(-1, 0) end
+        local step = math.min(0.08, distance)
+        local best, bestScore
+        for _, direction in ipairs(directions) do
+            local length = math.sqrt(direction.x * direction.x + direction.y * direction.y)
+            local nextX = currentX + direction.x / length * step
+            local nextY = currentY + direction.y / length * step
+            local crossesTile = math.floor(nextX) ~= math.floor(currentX)
+                or math.floor(nextY) ~= math.floor(currentY)
+            -- The current tile contains the body itself, so do not ask
+            -- `isFree(false)` to reject that tile.  Only a tile-boundary
+            -- crossing needs an occupancy/solid-floor check.
+            local square = true
+            if crossesTile then square = walkableSquare(cell, nextX, nextY, currentZ) end
+            if square then
+                local remainingX, remainingY = goalX - nextX, goalY - nextY
+                local score = remainingX * remainingX + remainingY * remainingY
+                if not best or score < bestScore then
+                    best, bestScore = { x=nextX, y=nextY, square=square }, score
+                end
+            end
+        end
+        if not best then return nil end
+        return best.x, best.y, best.square
+    end
+
+    -- A stalled horizontal/vertical route needs a remembered one-tile detour,
+    -- not an arbitrary micro-step that leaves the body oscillating beside the
+    -- same obstacle.  The detour is temporary target state and is cleared as
+    -- soon as the adjacent tile is reached.
+    if target.detour then
+        local detour = target.detour
+        local detourDistance = math.sqrt((detour.x-currentX)^2 + (detour.y-currentY)^2)
+        if detourDistance <= 0.08 then
+            if detour.exit then
+                target.detour = detour.exit
+                return stepToward(target.detour.x, target.detour.y)
+            end
+            target.detour = nil
+        else
+            return stepToward(detour.x, detour.y)
+        end
+    end
+
     local dx, dy = destinationX - currentX, destinationY - currentY
     local distance = math.sqrt(dx * dx + dy * dy)
     if distance <= 0.05 then return currentX, currentY, nil end
-    local signX = dx > 0 and 1 or (dx < 0 and -1 or 0)
-    local signY = dy > 0 and 1 or (dy < 0 and -1 or 0)
-    local directions = {}
-    if signX ~= 0 then directions[#directions + 1] = { x=signX, y=0 } end
-    if signY ~= 0 then directions[#directions + 1] = { x=0, y=signY } end
-    if signX ~= 0 and signY ~= 0 then
-        directions[#directions + 1] = { x=signX, y=signY }
-    end
-    if signX ~= 0 then directions[#directions + 1] = { x=0, y=signX } end
-    if signY ~= 0 then directions[#directions + 1] = { x=signY, y=0 } end
     local step = math.min(0.08, distance)
-    local cell = getCell and getCell()
-    local best, bestScore
-    for _, direction in ipairs(directions) do
-        local length = math.sqrt(direction.x * direction.x + direction.y * direction.y)
-        local nextX = currentX + direction.x / length * step
-        local nextY = currentY + direction.y / length * step
-        local crossesTile = math.floor(nextX) ~= math.floor(currentX)
-            or math.floor(nextY) ~= math.floor(currentY)
-        -- The current tile contains the body itself, so do not ask
-        -- `isFree(false)` to reject that tile.  Only a tile-boundary crossing
-        -- needs an occupancy/solid-floor check.
-        local square = true
-        if crossesTile then square = walkableSquare(cell, nextX, nextY, currentZ) end
-        if square then
-            local remainingX, remainingY = destinationX - nextX, destinationY - nextY
-            local score = remainingX * remainingX + remainingY * remainingY
-            if not best or score < bestScore then
-                best, bestScore = { x=nextX, y=nextY, square=square }, score
+    local directX = currentX + dx / distance * step
+    local directY = currentY + dy / distance * step
+    local crossesTile = math.floor(directX) ~= math.floor(currentX)
+        or math.floor(directY) ~= math.floor(currentY)
+    if crossesTile and not walkableSquare(cell, directX, directY, currentZ) then
+        local tileX, tileY = math.floor(currentX), math.floor(currentY)
+        local candidates = {}
+        if math.abs(dx) >= math.abs(dy) then
+            local nextTileX = tileX + (dx > 0 and 1 or -1)
+            candidates = { { x=tileX + 0.5, y=tileY - 0.5,
+                    exit={x=nextTileX + 0.5, y=tileY - 0.5} },
+                { x=tileX + 0.5, y=tileY + 1.5,
+                    exit={x=nextTileX + 0.5, y=tileY + 1.5} } }
+        else
+            local nextTileY = tileY + (dy > 0 and 1 or -1)
+            candidates = { { x=tileX - 0.5, y=tileY + 0.5,
+                    exit={x=tileX - 0.5, y=nextTileY + 0.5} },
+                { x=tileX + 1.5, y=tileY + 0.5,
+                    exit={x=tileX + 1.5, y=nextTileY + 0.5} } }
+        end
+        local detour, detourScore
+        for _, candidate in ipairs(candidates) do
+            local square = walkableSquare(cell, candidate.x, candidate.y, currentZ)
+            local exitSquare = candidate.exit
+                and walkableSquare(cell, candidate.exit.x, candidate.exit.y, currentZ)
+            if square and exitSquare then
+                local remainingX, remainingY = destinationX-candidate.x, destinationY-candidate.y
+                local score = remainingX*remainingX + remainingY*remainingY
+                if not detour or score < detourScore then
+                    detour, detourScore = candidate, score
+                end
             end
         end
+        if detour then
+            target.detour = detour
+            return stepToward(detour.x, detour.y)
+        end
     end
-    if not best then return nil end
-    return best.x, best.y, best.square
+    return stepToward(destinationX, destinationY)
 end
 
 -- Exposed for the deterministic contract suite; gameplay still reaches this
