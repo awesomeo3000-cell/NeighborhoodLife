@@ -438,11 +438,24 @@ Events.OnTick.Add(function()
     if postArrayOk and postArray and postArray.size then
         postArraySizeOk, postArraySize = pcall(postArray.size, postArray)
     end
+    local setterResult, setterContains = "unavailable", "unavailable"
+    if IsoPlayer.setLocalPlayer and body then
+        local setterOk = pcall(IsoPlayer.setLocalPlayer, 1, body)
+        setterResult = setterOk and "called" or "error"
+        local setterReadOk, setterRead = pcall(IsoPlayer.getPlayers)
+        if setterReadOk and setterRead and setterRead.contains then
+            local containsOk, contains = pcall(setterRead.contains, setterRead, body)
+            setterContains = containsOk and tostring(contains) or "error"
+        end
+        local clearOk = pcall(IsoPlayer.setLocalPlayer, 1, nil)
+        if not clearOk then setterResult = setterResult .. ":clear-error" end
+    end
     print("NLQA ISO-PLAYER LIST PROBE: getPlayers=true before=" .. tostring(sizeOk and before or "error")
         .. " after=" .. tostring(afterOk and after or "error") .. " added=" .. tostring(added)
         .. " addErrors=" .. tostring(addErrors) .. " reread=" .. tostring(rereadSizeOk and rereadSize or "error")
         .. " array=" .. tostring(arrayRead) .. " emptySlot=" .. tostring(emptySlot)
-        .. " arrayAdd=" .. tostring(arrayAdd) .. " postArray=" .. tostring(postArraySizeOk and postArraySize or "error"))
+        .. " arrayAdd=" .. tostring(arrayAdd) .. " postArray=" .. tostring(postArraySizeOk and postArraySize or "error")
+        .. " setter=" .. tostring(setterResult) .. " setterContains=" .. tostring(setterContains))
 end)
 
 -- QA-only packet-route experiment.  GlobalObject exposes a small set of

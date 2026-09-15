@@ -1,8 +1,20 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.91)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.92)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.92 IsoPlayer static-slot probe
+
+The next isolated Build 42.20.4 probe confirmed that
+`IsoPlayer.setLocalPlayer(1, body)` can place a body into the static local-player
+array (`setter=called setterContains=true`), but that array is not the server's
+per-connection roster: the native list still reads four after the temporary
+mutation, and both clients remain on `source=qa-local-replica`. This is actual
+installed-game host-plus-guest diagnostic evidence, not native replication
+completion. The result narrows the remaining bridge to each `UdpConnection`
+player array plus the `GameServer.sendPlayerConnected` path. The capture is in
+`evidence/v132/actual/native-roster-setter/`, and the probe remains QA-only.
 
 ## v1.91 native roster surface probe
 
