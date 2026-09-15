@@ -558,15 +558,41 @@ local function tryReflectiveNpcReannounce(players)
     local loadOk, gameServerClass, loadRoute = false, nil, "unavailable"
     local bridgeErrors = {}
     if classOk and bodyClass then
+        -- Kahlua's debug enumerator does not enumerate methods on a
+        -- java.lang.Class proxy in the dedicated server, even though direct
+        -- method dispatch on that proxy is still available. Try the direct
+        -- route first; this remains QA-only and is the only path that can
+        -- establish whether the hidden GameServer class is reachable.
+        local directLoaderOk, directLoader, directLoaderRoute = reflectionCall(bodyClass, "getClassLoader")
+        if directLoaderOk and directLoader then
+            local directLoadOk, directLoaded = reflectionCall(directLoader, "loadClass", "zombie.network.GameServer")
+            if directLoadOk and directLoaded then
+                loadOk, gameServerClass, loadRoute = true, directLoaded,
+                    "direct-class-loader-" .. tostring(directLoaderRoute)
+            else
+                bridgeErrors[#bridgeErrors + 1] = "direct-loadClass=" .. tostring(directLoaded)
+            end
+        else
+            bridgeErrors[#bridgeErrors + 1] = "direct-loader=" .. tostring(directLoader)
+        end
+        if not loadOk then
+            local directForNameOk, directForName = reflectionCall(bodyClass, "forName", "zombie.network.GameServer")
+            if directForNameOk and directForName then
+                loadOk, gameServerClass, loadRoute = true, directForName, "direct-class-for-name"
+            else
+                bridgeErrors[#bridgeErrors + 1] = "direct-forName=" .. tostring(directForName)
+            end
+        end
         local loaderMethod, loaderMethodText = findReflectiveMethod(bodyClass, ".getClassLoader()")
-        local loaderOk, loader = invokeReflectiveMethod(loaderMethod, bodyClass)
-        if loaderOk and loader then
+        local loaderOk, loader = false, nil
+        if not loadOk then loaderOk, loader = invokeReflectiveMethod(loaderMethod, bodyClass) end
+        if loaderOk and loader and not loadOk then
             local loadMethod, loadMethodText = findReflectiveMethod(loader, ".loadClass(java.lang.String)")
             loadOk, gameServerClass = invokeReflectiveMethod(loadMethod, loader, "zombie.network.GameServer")
             if loadOk then loadRoute = "class-loader" end
             if not loadOk then bridgeErrors[#bridgeErrors + 1] = "loadClass=" .. tostring(loadMethodText) end
         end
-        if not loaderOk or not loader then bridgeErrors[#bridgeErrors + 1] = "loader=" .. tostring(loaderMethodText) end
+        if not loadOk and (not loaderOk or not loader) then bridgeErrors[#bridgeErrors + 1] = "loader=" .. tostring(loaderMethodText) end
         if not loadOk then
             local forNameMethod, forNameMethodText = findReflectiveMethod(bodyClass, ".forName(java.lang.String)")
             loadOk, gameServerClass = invokeReflectiveMethod(forNameMethod, nil, "zombie.network.GameServer")
@@ -641,6 +667,10 @@ local function tryReflectiveNpcReannounce(players)
                         connectionOk, connection = pcall(function()
                             return getConnectionFromPlayer(target)
                         end)
+                    end
+                    if not connectionOk or not connection then
+                        connectionOk, connection = reflectionCall(gameServerClass,
+                            "getConnectionFromPlayer", target)
                     end
                     if connectionOk and connection then
                         local callOk = pcall(function() return method:invoke(nil, source, connection) end)

@@ -1,8 +1,22 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.86)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.87)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.87 native NPC bridge probe
+
+The fresh isolated Build 42.20.4 host-plus-guest probe now exercises the
+dedicated server's exposed native roster and packet helpers before falling back
+to compatibility replicas. The server reported `IsoPlayer.getPlayers()` with
+four native bodies and accepted three bodies into the temporary
+`getOnlinePlayers()` list; the direct sync and visual helper calls returned
+success. Fresh clients still reported `source=qa-local-replica`, and the
+server's direct class-loader and `Class.forName` routes both raised the engine's
+`java.lang.RuntimeException`. The result is recorded in
+`evidence/v124/actual/native-roster/` and keeps native server-body
+reannouncement explicitly open rather than overstating the diagnostic as
+multiplayer completion.
 
 ## v1.86 NPC date persistence across a dedicated-server restart
 
