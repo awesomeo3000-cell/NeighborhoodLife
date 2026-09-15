@@ -91,7 +91,7 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
      dateActivityObserved = false, dateGuestEventObserved = false,
      dateFrame = 0, datePositionedFrame = 0, dateActivityDue = 0, datePersistenceDue = 0,
      datePersistenceRefreshSent = false, datePersistenceObserved = false,
-     dateSaveDue = 0, dateSaveAttempted = false }
+     dateSaveDue = 0, dateSaveAttempted = false, globalJournalRecoveryObserved = false }
 NLQAMultiplayer.deliveryRecoverySnapshot = false
 NLQAMultiplayer.deliveryRecoveryObserved = false
 -- Keep the hands-free probe bounded while retaining one full render-loop delay
@@ -929,6 +929,13 @@ Events.OnServerCommand.Add(function(module, command, args)
                     or args.recoveryState == "repaired") then
             NLQAMultiplayer.deliveryRecoverySnapshot = true
             emit("CAREER DELIVERY RECOVERY SNAPSHOT", tostring(args.message))
+        end
+        if qaIdentity().username == "nl-host" and args.username == "nl-host"
+                and qaIdentity().globalJournalCrashProbe == true
+                and not NLQAMultiplayer.globalJournalRecoveryObserved
+                and args.message == "Global data recovery repaired" then
+            NLQAMultiplayer.globalJournalRecoveryObserved = true
+            emit("GLOBAL JOURNAL RECOVERY RESULT", tostring(args.message))
         end
         if qaIdentity().username == "nl-host" and args.username == "nl-host"
                 and NLQAMultiplayer.careerWorkSent

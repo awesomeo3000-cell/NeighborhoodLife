@@ -1,8 +1,21 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.95)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.96)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.96 actual global ModData crash recovery
+
+The QA-only hands-free runner now arms the production world journal for the
+household `task` command, waits for Build 42's real `SaveAll`, forcibly stops
+the dedicated server, restarts it, and reconnects fresh host and guest clients.
+The actual Build 42.20.4 capture in
+`evidence/v137/actual/global-journal-2/` records the saved
+`before-clear` journal, server-side `state=repaired` recovery, and the fresh
+host's `Global data recovery repaired` snapshot. This is actual multiplayer
+crash-restart evidence for the production shared-world mutation boundary,
+separate from the Lua mock and Kahlua engine-VM suites. QA helpers and profiles
+remain outside the release package.
 
 ## v1.95 global ModData mutation journal
 

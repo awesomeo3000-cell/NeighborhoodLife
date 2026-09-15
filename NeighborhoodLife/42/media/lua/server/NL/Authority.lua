@@ -55,6 +55,11 @@ end
 function NLAuthority.recoverWorldJournal(world, player)
     local journal = world and world.mutationJournal
     if type(journal) ~= "table" then return true, "none" end
+    if NLQAGlobalJournalFaultMode == "before-clear"
+            and NLQAGlobalJournalFaultConsumed == true
+            and journal.state == NLQAGlobalJournalFaultMode then
+        return false, "Global data recovery held for crash probe"
+    end
     if not player or NLAuthority.key(player) ~= journal.player then
         return false, "Global data recovery belongs to another account"
     end
@@ -63,6 +68,9 @@ function NLAuthority.recoverWorldJournal(world, player)
     end
     restoreWorld(world, journal.before)
     world.mutationJournal = nil
+    if NLQAGlobalJournalFaultMode == "before-clear" then
+        NLQAGlobalJournalFaultConsumed = true
+    end
     if NLQAMultiplayerServer then
         print("NLQA GLOBAL JOURNAL RECOVERY: state=repaired player=" .. tostring(journal.player)
             .. " command=" .. tostring(journal.command))
@@ -71,6 +79,21 @@ function NLAuthority.recoverWorldJournal(world, player)
 end
 
 function NLAuthority.commitWorldJournal(world, journal)
+    -- QA-only forced-stop probe: leave the prepared journal in ModData after
+    -- the command's writes, then let the isolated runner checkpoint and stop
+    -- the real server. Normal production sessions never define this global.
+    if journal and type(NLQAGlobalJournalFaultMode) == "string"
+            and NLQAGlobalJournalFaultConsumed ~= true
+            and (not NLQAGlobalJournalFaultCommand
+                or journal.command == NLQAGlobalJournalFaultCommand) then
+        NLQAGlobalJournalFaultConsumed = true
+        journal.state = NLQAGlobalJournalFaultMode
+        if NLQAMultiplayerServer then
+            print("NLQA GLOBAL JOURNAL PARTIAL: command=" .. tostring(journal.command)
+                .. " state=" .. tostring(journal.state))
+        end
+        return false
+    end
     return clearWorldJournal(world, journal)
 end
 

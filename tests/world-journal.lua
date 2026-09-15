@@ -40,4 +40,22 @@ assert(not blocked and blockedState == 'Global data recovery belongs to another 
     'foreign recovery cannot consume the active global journal')
 assert(NLAuthority.commitWorldJournal(world, journal) and not world.mutationJournal,
     'successful world command commits and clears its journal')
+NLQAGlobalJournalFaultMode = 'before-clear'
+NLQAGlobalJournalFaultCommand = 'task'
+journal = NLAuthority.beginWorldJournal(world, player, 'task')
+world.players.seed.credits = 42
+assert(not NLAuthority.commitWorldJournal(world, journal)
+    and world.mutationJournal == journal and journal.state == 'before-clear',
+    'QA crash hook leaves the prepared journal after the world mutation')
+NLQAGlobalJournalFaultConsumed = true
+local held, heldState = NLAuthority.recoverWorldJournal(world, player)
+assert(not held and heldState == 'Global data recovery held for crash probe'
+    and world.mutationJournal == journal,
+    'QA crash hook holds recovery until the real server checkpoint is complete')
+NLQAGlobalJournalFaultMode = nil
+NLQAGlobalJournalFaultCommand = nil
+NLQAGlobalJournalFaultConsumed = nil
+assert(NLAuthority.recoverWorldJournal(world, player)
+    and world.players.seed.credits == 11 and not world.mutationJournal,
+    'the interrupted QA mutation remains recoverable')
 print('PASS: global world mutation journal restores nested ModData, protects account ownership and commits cleanly')
