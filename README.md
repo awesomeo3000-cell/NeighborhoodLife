@@ -8,10 +8,12 @@ This is a work-in-progress life simulation, not a completed neighborhood overhau
 
 The isolated QA harness records the client-side `GameClient` player-index
 experiment separately from the server-side native roster probe. In the actual
-Build 42 client, `GameClient` is not exposed to Lua, so the probe records
-`status=GameClient-unavailable`; the visible NPCs continue through the
-production compatibility replica path. The probe does not claim server
-replication and remains outside the production package.
+Build 42 client, the `GameClient` class and its native registry fields are not
+exposed to ordinary Lua. The public `getGameClient()` wrapper returns an object
+but does not provide a writable roster bridge; the probe records the accepted
+QA-local list operation with the derived player list unchanged. Visible NPCs
+continue through the production compatibility replica path. The probe does not
+claim server replication and remains outside the production package.
 
 ## v1.79 production install tooling
 
