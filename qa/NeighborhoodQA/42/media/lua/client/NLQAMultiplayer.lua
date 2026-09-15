@@ -74,7 +74,7 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
      inventoryPositioned = false,
     connectionCount = 0, inventoryRestartProbeSent = false,
     inventoryRestartObserved = false, inventoryRestartDue = 0,
-    nativeRosterObserved = false, clientRosterProbeDone = false,
+     nativeRosterObserved = false, clientRosterProbeDone = false,
     clientRosterProbeFrame = 0, partnershipSeeded = false,
     npcMovementFirstX = nil, npcMovementFirstY = nil,
     npcMovementLastX = nil, npcMovementLastY = nil,
@@ -83,8 +83,8 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     partnershipHostObserved = false, partnershipGuestObserved = false,
     partnershipGuestRefreshDue = 0, partnershipGuestRefreshSent = false,
     partnershipGuestRefreshSentFrame = 0,
-    partnershipGuestRepositioned = false, partnershipGuestRejectSent = false,
-    partnershipGuestRejectObserved = false }
+     partnershipGuestRepositioned = false, partnershipGuestRejectSent = false,
+     partnershipGuestRejectObserved = false, dangerProbeSkipped = false }
 NLQAMultiplayer.deliveryRecoverySnapshot = false
 NLQAMultiplayer.deliveryRecoveryObserved = false
 -- Keep the hands-free probe bounded while retaining one full render-loop delay
@@ -2262,7 +2262,13 @@ end)
 -- it and retreat without relying on a client-side mock or teleport.
 Events.OnRenderTick.Add(function()
     if not isClient() or NLQAMultiplayer.dangerProbeSent
+            or NLQAMultiplayer.dangerProbeSkipped
             or qaIdentity().username ~= "nl-host" then return end
+    if qaIdentity().zombiesDisabledProbe == true then
+        NLQAMultiplayer.dangerProbeSkipped = true
+        emit("DANGER PROBE SKIPPED", "mode=zombies-disabled")
+        return
+    end
     if not NLNpcClient or not NLNpcClient.bodies or not NLNpcClient.bodies.marisol then return end
     local player = getSpecificPlayer(0)
     if not player then return end

@@ -6,9 +6,19 @@ pcall(require, "NLQANativeRosterConfig")
 pcall(require, "NLQANativeReflectionConfig")
 pcall(require, "NLQANpcMovementConfig")
 pcall(require, "NLQAPartnershipConfig")
+pcall(require, "NLQAZombieModeConfig")
 local ok,err=pcall(function() require "NL/Authority" end)
 print("NLQA MP SERVER BOOT: authority=" .. tostring(NLAuthority ~= nil) .. " requireOk=" .. tostring(ok)
     .. " error=" .. tostring(err))
+print("NLQA ZOMBIE MODE: disabled=" .. tostring(NLQAZombiesDisabled == true)
+    .. " sandboxZombies=" .. tostring(SandboxVars and SandboxVars.Zombies))
+local zombieModeActiveLogged = false
+Events.OnTick.Add(function()
+    if zombieModeActiveLogged then return end
+    zombieModeActiveLogged = true
+    print("NLQA ZOMBIE MODE ACTIVE: disabled=" .. tostring(NLQAZombiesDisabled == true)
+        .. " sandboxZombies=" .. tostring(SandboxVars and SandboxVars.Zombies))
+end)
 for _, name in ipairs({"getClass", "importClass", "Java", "luautils", "GameServer", "GameClient",
     "getNumClassFunctions", "getClassFunction", "getNumClassFields", "getClassField",
     "getClassFieldVal", "addZombiesInOutfit", "createZombie", "IsoZombie", "IsoDirections"}) do

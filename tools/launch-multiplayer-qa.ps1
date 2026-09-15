@@ -9,6 +9,7 @@ param(
     [switch]$HomeAspirationProbe,
     [switch]$VerticalSliceProbe,
     [switch]$NativeReflectionProbe,
+    [switch]$ZombiesDisabledProbe,
     [switch]$PreserveHousehold,
     [switch]$VerifyHouseholdMetadata,
     [string]$ProfileRoot = 'E:\pzmod\test-profile',
@@ -78,20 +79,22 @@ $partnershipProbeValue = if ($PartnershipProbe) { 'true' } else { 'false' }
 $homeAspirationProbeValue = if ($HomeAspirationProbe) { 'true' } else { 'false' }
 $verticalSliceProbeValue = if ($VerticalSliceProbe) { 'true' } else { 'false' }
 $nativeReflectionProbeValue = if ($NativeReflectionProbe) { 'true' } else { 'false' }
+$zombiesDisabledProbeValue = if ($ZombiesDisabledProbe) { 'true' } else { 'false' }
 if ($NativeRosterProbe) {
     "NLQANativeRosterProbe = true" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQANativeRosterConfig.lua"
 }
 if ($NativeReflectionProbe) {
     "NLQANativeReflectionProbe = true" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQANativeReflectionConfig.lua"
 }
+"NLQAZombiesDisabled = $zombiesDisabledProbeValue" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQAZombieModeConfig.lua"
 if ($PartnershipProbe) {
     "NLQAPartnershipProbe = true" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQAPartnershipConfig.lua"
 }
 if ($NpcMovementProbe) {
     "NLQANpcMovementProbe = true" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQANpcMovementConfig.lua"
 }
-"NLQAIdentity = { username = `"nl-host`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, nativeReflectionProbe = $nativeReflectionProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, homeAspirationProbe = $homeAspirationProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$hostProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
-"NLQAIdentity = { username = `"nl-guest`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, nativeReflectionProbe = $nativeReflectionProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, homeAspirationProbe = $homeAspirationProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$guestProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+"NLQAIdentity = { username = `"nl-host`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, nativeReflectionProbe = $nativeReflectionProbeValue, zombiesDisabledProbe = $zombiesDisabledProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, homeAspirationProbe = $homeAspirationProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$hostProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+"NLQAIdentity = { username = `"nl-guest`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, nativeReflectionProbe = $nativeReflectionProbeValue, zombiesDisabledProbe = $zombiesDisabledProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, homeAspirationProbe = $homeAspirationProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$guestProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
 
 # Keep both QA client windows windowed and silent; never leave a fullscreen QA window.
 function Set-WindowedOptions($path) {
@@ -112,6 +115,15 @@ Set-WindowedOptions "$guestProfile\options.ini"
 
 $serverConfig = Join-Path $serverProfile 'Server'
 New-Item -ItemType Directory -Force $serverConfig | Out-Null
+if ($ZombiesDisabledProbe) { $zombiePopulation = 6 } else { $zombiePopulation = 4 }
+@"
+SandboxVars = {
+    VERSION = 6,
+    Zombies = $zombiePopulation,
+    ZombieRespawn = 4,
+    ZombieMigrate = false,
+}
+"@ | Set-Content "$serverConfig\servertest_SandboxVars.lua"
 @'
 AntiCheatChecksum=4
 DoLuaChecksum=false

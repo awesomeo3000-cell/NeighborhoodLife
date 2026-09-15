@@ -1200,3 +1200,16 @@ reflection guard rejects `java.lang.Class`/`ClassLoader` targets, so no
 native server-body reannouncement was produced. The production
 `npc_presence` compatibility path remains unchanged; QA helpers stay outside
 the production package.
+
+## v1.82 optional-zombie mode matrix
+
+The QA-only multiplayer tooling now exercises the same host-plus-guest NPC
+movement loop with both Build 42 zombie modes. `-ZombiesDisabledProbe` writes
+the deterministic `Zombies = 6` (None) sandbox setting and suppresses the QA
+zombie stimulus; the enabled run writes `Zombies = 4` and seeds one real server
+zombie beside Marisol. `tools/run-zombie-modes-qa.ps1` requires both clients to
+observe rendered NPC movement, requires no danger stimulus in the disabled run,
+and requires the production retreat response in the enabled run. The captures
+in `evidence/v117/actual/zombie-modes/` are actual installed-game evidence;
+mock and Kahlua VM tests remain separately labeled, and QA helpers stay outside
+the production package.
