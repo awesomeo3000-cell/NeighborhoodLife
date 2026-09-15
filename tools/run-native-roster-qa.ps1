@@ -60,10 +60,24 @@ if (-not (Wait-LogPattern $serverDebug.FullName 'NLQA NATIVE ROSTER PROBE: befor
     throw "Native roster probe did not execute; inspect $($serverDebug.FullName)"
 }
 
-$hostLog = Get-ChildItem (Join-Path $hostProfile 'Logs') -Filter '*_DebugLog.txt' -File `
-    -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-$guestLog = Get-ChildItem (Join-Path $guestProfile 'Logs') -Filter '*_DebugLog.txt' -File `
-    -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+# Let both clients receive the ordinary authoritative presence packet before
+# deciding the client-side bridge result. The server-side roster experiment
+# mutates only a fresh getOnlinePlayers() copy and must not suppress the
+# compatibility stream used by this separate observation.
+$hostLog = $null
+$guestLog = $null
+$clientDeadline = (Get-Date).AddSeconds(120)
+do {
+    $hostLog = Get-ChildItem (Join-Path $hostProfile 'Logs') -Filter '*_DebugLog.txt' -File `
+        -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    $guestLog = Get-ChildItem (Join-Path $guestProfile 'Logs') -Filter '*_DebugLog.txt' -File `
+        -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    $hostProbe = $hostLog -and (Select-String -Path $hostLog.FullName -Pattern 'NLQA MP NATIVE CLIENT ROSTER PROBE:' -Quiet)
+    $guestProbe = $guestLog -and (Select-String -Path $guestLog.FullName -Pattern 'NLQA MP NATIVE CLIENT ROSTER PROBE:' -Quiet)
+    if ($hostProbe -or $guestProbe) { break }
+    Start-Sleep -Seconds 2
+} while ((Get-Date) -lt $clientDeadline)
+
 Copy-Item (Join-Path $serverProfile 'server.stdout.log') (Join-Path $evidence 'server.stdout.log') -Force
 Copy-Item $serverDebug.FullName (Join-Path $evidence 'server.DebugLog.txt') -Force
 if ($hostLog) { Copy-Item $hostLog.FullName (Join-Path $evidence 'host.DebugLog.txt') -Force }
@@ -77,8 +91,23 @@ $hostNative = $hostLog -and (Select-String -Path $hostLog.FullName -Pattern $nat
 $guestNative = $guestLog -and (Select-String -Path $guestLog.FullName -Pattern $nativePattern -Quiet)
 $serverResult = Select-String -Path $serverDebug.FullName -Pattern 'NLQA NATIVE ROSTER PROBE:' | Select-Object -Last 1
 $serverResult.Line | Set-Content (Join-Path $evidence 'server-roster-result.txt')
+$clientRoster = @()
+if ($hostLog) {
+    $clientRoster += Select-String -Path $hostLog.FullName -Pattern 'NLQA MP NATIVE CLIENT ROSTER PROBE:'
+}
+if ($guestLog) {
+    $clientRoster += Select-String -Path $guestLog.FullName -Pattern 'NLQA MP NATIVE CLIENT ROSTER PROBE:'
+}
+if ($clientRoster.Count -gt 0) {
+    $clientRoster | ForEach-Object { $_.Line } | Set-Content (Join-Path $evidence 'client-roster-result.txt')
+}
+$clientBridgeUnavailable = @($clientRoster | Where-Object { $_.Line -like '*status=GameClient-unavailable*' }).Count -gt 0
 if ($hostNative -or $guestNative) {
     $result = 'PASS: engine-native NPC body reached a client online-player roster'
+} elseif ($clientRoster.Count -gt 0 -and -not $clientBridgeUnavailable) {
+    $result = 'RESULT: client-native roster bridge accepted a QA-local compatibility replica; server native replication remains unproven'
+} elseif ($clientBridgeUnavailable) {
+    $result = 'RESULT: client GameClient roster bridge is not exposed to Lua; server native replication remains unproven'
 } else {
     $result = 'RESULT: online-player roster mutation did not produce an engine-native NPC client body'
 }

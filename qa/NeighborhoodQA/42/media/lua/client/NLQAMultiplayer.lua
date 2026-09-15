@@ -74,7 +74,8 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
      inventoryPositioned = false,
     connectionCount = 0, inventoryRestartProbeSent = false,
     inventoryRestartObserved = false, inventoryRestartDue = 0,
-    nativeRosterObserved = false, partnershipSeeded = false,
+    nativeRosterObserved = false, clientRosterProbeDone = false,
+    clientRosterProbeFrame = 0, partnershipSeeded = false,
     npcMovementFirstX = nil, npcMovementFirstY = nil,
     npcMovementLastX = nil, npcMovementLastY = nil,
     npcMovementSamples = 0, npcMovementLogged = false,
@@ -2186,6 +2187,64 @@ Events.OnRenderTick.Add(function()
             .. " entries=" .. table.concat(names, ",")
             .. " source=engine-online-players")
     end
+end)
+
+-- QA-only client-side bridge experiment. A server-created IsoPlayer cannot
+-- reach GameClient's private receive path from the dedicated-server Lua
+-- environment, so test the other half of the adapter independently: can a
+-- compatibility replica be admitted to the client-native player index that
+-- Build 42 itself uses after receiving a player-connected packet? This is
+-- diagnostic only and never enters the production mod.
+Events.OnRenderTick.Add(function()
+    if not isClient() or qaIdentity().nativeRosterProbe ~= true
+            or NLQAMultiplayer.clientRosterProbeDone then return end
+    NLQAMultiplayer.clientRosterProbeFrame = NLQAMultiplayer.clientRosterProbeFrame + 1
+    if NLQAMultiplayer.clientRosterProbeFrame < 240 then return end
+    local body = NLNpcClient and NLNpcClient.bodies and NLNpcClient.bodies.marisol
+    if not body then return end
+    NLQAMultiplayer.clientRosterProbeDone = true
+    local clientOk, client = pcall(function() return GameClient and GameClient.instance end)
+    if not clientOk or not client then
+        emit("NATIVE CLIENT ROSTER PROBE", "status=GameClient-unavailable")
+        return
+    end
+    local mapOk, map = pcall(function() return GameClient.IDToPlayerMap end)
+    local connectedOk, connected = pcall(client.getConnectedPlayers, client)
+    local beforeOk, beforePlayers = pcall(client.getPlayers, client)
+    local before = beforeOk and beforePlayers and beforePlayers.size
+            and beforePlayers:size() or -1
+    local key = 30001
+    local idOk = false
+    if body.setOnlineID then idOk = pcall(body.setOnlineID, body, key) end
+    local mapPutOk = false
+    if mapOk and map and map.put then
+        mapPutOk = pcall(map.put, map, key, body)
+    end
+    local connectedAddOk = false
+    if connectedOk and connected and connected.add then
+        local containsOk, contains = pcall(connected.contains, connected, body)
+        if not containsOk or contains ~= true then
+            connectedAddOk = pcall(connected.add, connected, body)
+        else
+            connectedAddOk = true
+        end
+    end
+    pcall(function() client.idMapDirty = true end)
+    local afterOk, afterPlayers = pcall(client.getPlayers, client)
+    local after = afterOk and afterPlayers and afterPlayers.size
+            and afterPlayers:size() or -1
+    local found = false
+    if afterOk and afterPlayers and afterPlayers.size and afterPlayers.get then
+        for index = 0, afterPlayers:size() - 1 do
+            local itemOk, item = pcall(afterPlayers.get, afterPlayers, index)
+            if itemOk and item == body then found = true; break end
+        end
+    end
+    emit("NATIVE CLIENT ROSTER PROBE", "id=marisol onlineId=" .. tostring(key)
+        .. " setOnlineID=" .. tostring(idOk) .. " mapPut=" .. tostring(mapPutOk)
+        .. " connectedAdd=" .. tostring(connectedAddOk) .. " before=" .. tostring(before)
+        .. " after=" .. tostring(after) .. " found=" .. tostring(found)
+        .. " source=qa-local-replica")
 end)
 
 -- QA-only zombie stimulus. The server creates one real zombie beside Marisol

@@ -219,9 +219,6 @@ Events.OnTick.Add(function()
         end
     end
     nativeRosterProbeDone = true
-    if NLNpcAuthority.broadcastPresence then
-        NLNpcAuthority.broadcastPresence = function() return 0 end
-    end
     print("NLQA NATIVE ROSTER PROBE: before=" .. tostring(before)
         .. " after=" .. tostring(players:size()) .. " added=" .. tostring(added)
         .. " bodies=" .. table.concat(details, ","))

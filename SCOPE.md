@@ -1,4 +1,4 @@
-# Neighborhood Life — full scope and evidence ledger (v1.77)
+# Neighborhood Life — full scope and evidence ledger (v1.78)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
@@ -1230,3 +1230,16 @@ exposes `GameServer=nil`, `Java=nil`, and `getClass=nil`.
   credits)`. Lua/Kahlua tests remain separate from this actual gameplay result.
 - QA helpers remain outside the production package. The native NPC server-body
   reannouncement blocker is unchanged and remains explicitly open.
+
+## v1.78 client-native roster bridge probe
+
+- The QA-only experiment checks whether the already-rendered Marisol
+  compatibility replica can be admitted to the client `GameClient` player
+  index, connected-player list, and derived player list.
+- The actual isolated Build 42 host-plus-guest capture recorded
+  `status=GameClient-unavailable`; the client-side `GameClient` bridge is not
+  exposed to Lua. The visible NPCs therefore remain production compatibility
+  replicas, and the result is diagnostic only.
+- Client-list admission would not by itself prove server reannouncement or
+  vanilla network replication. The native server-body gate remains open, and
+  the QA probe remains outside the production package.

@@ -1,8 +1,17 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.77)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.78)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.78 client-native roster bridge probe
+
+The isolated QA harness records the client-side `GameClient` player-index
+experiment separately from the server-side native roster probe. In the actual
+Build 42 client, `GameClient` is not exposed to Lua, so the probe records
+`status=GameClient-unavailable`; the visible NPCs continue through the
+production compatibility replica path. The probe does not claim server
+replication and remains outside the production package.
 
 ## Install and try
 Copy the NeighborhoodLife directory into your Windows user Zomboid/mods directory.
