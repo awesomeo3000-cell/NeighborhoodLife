@@ -1,8 +1,26 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.87)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.88)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.88 actual neighborhood vertical slice regression
+
+The fresh isolated Build 42.20.4 host-plus-guest run now completes the first
+neighborhood slice end to end: the host becomes Marisol's partner, the guest
+sees the relationship as unavailable and receives the authoritative
+`Already in a partnership` rejection, the host performs a direct NPC context
+callback, the medic promotion runs through its production delivery path, and
+the shared-home invite, storage transfer, ownership transfer and tidy reward
+complete on both clients. The server log also records repeated production NPC
+path updates while the clients render all three named NPC replicas.
+
+The guest partnership QA stimulus now waits 30 render ticks after the preceding
+NPC context request, clearing the production social anti-spam window instead of
+mistaking a discarded duplicate request for a multiplayer failure. The actual
+capture is in `evidence/v126/actual/neighborhood-slice/`; its result is actual
+installed-game host-plus-guest evidence, separate from mock tests and Kahlua
+engine-VM tests. Native server-body reannouncement remains open per v1.87.
 
 ## v1.87 native NPC bridge probe
 

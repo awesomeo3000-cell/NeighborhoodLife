@@ -83,7 +83,8 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     partnershipHostObserved = false, partnershipGuestObserved = false,
     partnershipGuestRefreshDue = 0, partnershipGuestRefreshSent = false,
     partnershipGuestRefreshSentFrame = 0,
-     partnershipGuestRepositioned = false, partnershipGuestRejectSent = false,
+    partnershipGuestRepositioned = false, partnershipGuestRejectSent = false,
+    partnershipGuestActionDue = 0,
      partnershipGuestRejectObserved = false, dangerProbeSkipped = false,
      dateProbeSeeded = false, datePositioned = false, dateRequested = false,
      dateActivityRequested = false, dateStartObserved = false,
@@ -1596,7 +1597,17 @@ Events.OnRenderTick.Add(function()
         end
         if qaIdentity().username=="nl-guest" and NLQAMultiplayer.partnershipGuestObserved
                 and target and target.canInteract and not NLQAMultiplayer.partnershipGuestRejectSent
-                then
+                and NLQAMultiplayer.partnershipGuestActionDue == 0 then
+            -- The guest's NPC-context callback can immediately precede this
+            -- request on the same server tick. Wait past the production
+            -- social anti-spam window so the rejection reaches the client
+            -- instead of being discarded as a duplicate request.
+            NLQAMultiplayer.partnershipGuestActionDue=NLQAMultiplayer.socialFrame+30
+            emit("PARTNERSHIP GUEST ACTION DELAY", "frames=30 target=marisol")
+        elseif qaIdentity().username=="nl-guest" and NLQAMultiplayer.partnershipGuestObserved
+                and target and target.canInteract and not NLQAMultiplayer.partnershipGuestRejectSent
+                and NLQAMultiplayer.partnershipGuestActionDue > 0
+                and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.partnershipGuestActionDue then
             NLSocialClient.request(0,"interact",{id="marisol",action="partner"})
             NLQAMultiplayer.partnershipGuestRejectSent=true
             emit("PARTNERSHIP GUEST ACTION", "partner target=marisol")
