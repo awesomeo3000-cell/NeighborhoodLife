@@ -13,6 +13,7 @@ param(
     [switch]$NpcInteractionProbe,
     [switch]$DateProbe,
     [switch]$SocialBreadthProbe,
+    [switch]$NpcScheduleProbe,
     [switch]$ZombiesDisabledProbe,
     [switch]$PreserveHousehold,
     [switch]$VerifyHouseholdMetadata,
@@ -92,6 +93,7 @@ $nativeReflectionProbeValue = if ($NativeReflectionProbe) { 'true' } else { 'fal
 $npcInteractionProbeValue = if ($NpcInteractionProbe) { 'true' } else { 'false' }
 $dateProbeValue = if ($DateProbe) { 'true' } else { 'false' }
 $socialBreadthProbeValue = if ($SocialBreadthProbe) { 'true' } else { 'false' }
+$npcScheduleProbeValue = if ($NpcScheduleProbe) { 'true' } else { 'false' }
 $zombiesDisabledProbeValue = if ($ZombiesDisabledProbe) { 'true' } else { 'false' }
 if ($NativeRosterProbe) {
     "NLQANativeRosterProbe = true" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQANativeRosterConfig.lua"
@@ -112,8 +114,11 @@ if ($DateProbe) {
 if ($SocialBreadthProbe) {
     "NLQASocialBreadthProbe = true" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQASocialBreadthConfig.lua"
 }
-"NLQAIdentity = { username = `"nl-host`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, globalJournalCrashProbe = $globalJournalCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, nativeReflectionProbe = $nativeReflectionProbeValue, npcInteractionProbe = $npcInteractionProbeValue, dateProbe = $dateProbeValue, socialBreadthProbe = $socialBreadthProbeValue, zombiesDisabledProbe = $zombiesDisabledProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, homeAspirationProbe = $homeAspirationProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$hostProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
-"NLQAIdentity = { username = `"nl-guest`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, globalJournalCrashProbe = $globalJournalCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, nativeReflectionProbe = $nativeReflectionProbeValue, npcInteractionProbe = $npcInteractionProbeValue, dateProbe = $dateProbeValue, socialBreadthProbe = $socialBreadthProbeValue, zombiesDisabledProbe = $zombiesDisabledProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, homeAspirationProbe = $homeAspirationProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$guestProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+if ($NpcScheduleProbe) {
+    "NLQANpcScheduleProbe = true" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQANpcScheduleConfig.lua"
+}
+"NLQAIdentity = { username = `"nl-host`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, globalJournalCrashProbe = $globalJournalCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, nativeReflectionProbe = $nativeReflectionProbeValue, npcInteractionProbe = $npcInteractionProbeValue, dateProbe = $dateProbeValue, socialBreadthProbe = $socialBreadthProbeValue, npcScheduleProbe = $npcScheduleProbeValue, zombiesDisabledProbe = $zombiesDisabledProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, homeAspirationProbe = $homeAspirationProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$hostProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+"NLQAIdentity = { username = `"nl-guest`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, globalJournalCrashProbe = $globalJournalCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, nativeReflectionProbe = $nativeReflectionProbeValue, npcInteractionProbe = $npcInteractionProbeValue, dateProbe = $dateProbeValue, socialBreadthProbe = $socialBreadthProbeValue, npcScheduleProbe = $npcScheduleProbeValue, zombiesDisabledProbe = $zombiesDisabledProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, homeAspirationProbe = $homeAspirationProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$guestProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
 
 # Keep both QA client windows windowed and silent; never leave a fullscreen QA window.
 function Set-WindowedOptions($path) {

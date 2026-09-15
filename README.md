@@ -1,8 +1,20 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.97)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.98)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.98 persistent NPC career routines
+
+The three authored neighbors now follow a server-clock-driven home/work routine.
+From 08:00 through 17:00 each neighbor travels to a saved-home-relative career
+destination; outside that window the neighbor follows a short home route. The
+routine is persisted in the NPC row and included in the normal presence
+heartbeat, so both multiplayer clients receive the same state. A fresh hands-free
+Build 42.20.4 capture records the real dedicated server and both clients seeing
+Marisol transition from home to her tailor routine:
+`evidence/v139/actual/npc-schedule/`. Native server-body reannouncement and
+natural streamed-cell movement remain open.
 
 ## v1.97 richer neighborhood social action slice
 

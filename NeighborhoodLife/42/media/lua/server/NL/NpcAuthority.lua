@@ -89,6 +89,8 @@ local function presencePacket()
                 female=isFemale,
                 outfit=definition and definition.outfit or "Generic01",
                 onlineId=onlineId,
+                routine=row.routine or "home",
+                schedule=definition and definition.schedule or nil,
                 -- The position is the authoritative sample; the motion
                 -- target lets a client continue the same route between
                 -- heartbeats instead of repeatedly stopping at each sample.
@@ -648,6 +650,66 @@ local function cancelBodyPath(id, body)
     NLNpcAuthority.targets[id] = nil
 end
 
+-- A neighbor's authored career supplies a small, persisted daily routine. The
+-- route stays relative to the saved home so the first-world nearby placement
+-- and every later restart remain valid, while the server clock selects home or
+-- work without any client-supplied time or position.
+local function worldClock()
+    if type(getGameTime) ~= "function" then return nil, nil end
+    local ok, gameTime = pcall(getGameTime)
+    if not ok or not gameTime then return nil, nil end
+    local hour, day
+    if gameTime.getHour then
+        local hourOk, value = pcall(gameTime.getHour, gameTime)
+        if hourOk then hour = tonumber(value) end
+    end
+    if gameTime.getDay then
+        local dayOk, value = pcall(gameTime.getDay, gameTime)
+        if dayOk then day = tonumber(value) end
+    end
+    return hour, day
+end
+
+local function routineForHour(definition, hour)
+    if not definition or hour == nil then return "home" end
+    local startHour = tonumber(definition.workStart or 8) or 8
+    local endHour = tonumber(definition.workEnd or 17) or 17
+    return hour >= startHour and hour < endHour and "work" or "home"
+end
+
+local function routineTarget(row, routine)
+    if not row or not row.home then return nil, 1 end
+    if routine == "work" then
+        local definition = NLNeighbors.definitions[row.id] or {}
+        local offset = definition.workOffset or { x=2, y=0 }
+        return { x=row.home.x + (tonumber(offset.x) or 0),
+            y=row.home.y + (tonumber(offset.y) or 0), z=row.home.z }, 2
+    end
+    -- Home time still has a small authored local route so a neighbor can be
+    -- seen living in the neighborhood instead of freezing on the spawn tile.
+    return { x=row.home.x, y=row.home.y + 2, z=row.home.z }, 1
+end
+
+NLNpcAuthority.worldClock = worldClock
+NLNpcAuthority.routineForHour = routineForHour
+NLNpcAuthority.routineTarget = routineTarget
+
+local function refreshRoutine(world, id, row, body)
+    local definition = NLNeighbors.definitions[id] or {}
+    local hour, day = worldClock()
+    local desired = routineForHour(definition, hour)
+    local previous = row.routine
+    NLNeighbors.routine(world, id, desired, day, hour)
+    if previous ~= desired then
+        cancelBodyPath(id, body)
+        local target = routineTarget(row, desired)
+        emit(string.format("ROUTINE id=%s state=%s hour=%s target=%s", id, desired,
+            tostring(hour), tostring(target and (target.x .. "," .. target.y) or "nil")))
+        return true
+    end
+    return false
+end
+
 local function retireBody(id, row, body, reason)
     local world = NLAuthority.world()
     if row and body and body.getX and body.getY and body.getZ then
@@ -782,11 +844,13 @@ NLNpcAuthority.recoverMissingBodies = recoverMissingBodies
 
 local function nextWaypoint(row, body)
     if row.spawned and row.home then
-        local index = row.waypoint or 1
-        if index == 1 then
-            return { x = row.home.x + 2, y = row.home.y, z = row.home.z }, index
+        local target, index = routineTarget(row, row.routine or "home")
+        if target and body and body.getX and body.getY
+                and math.abs(body:getX() - (target.x + 0.5)) < 0.06
+                and math.abs(body:getY() - (target.y + 0.5)) < 0.06 then
+            return nil, index
         end
-        return { x = row.home.x, y = row.home.y + 2, z = row.home.z }, 2
+        return target, index
     end
     local route = NLNeighbors.definitions[row.id].waypoints
     if not route or #route == 0 then return nil end
@@ -817,6 +881,7 @@ function NLNpcAuthority.update()
             retireBody(id, row, body, "DEATH")
             lifecycleChanged = true
         else
+            refreshRoutine(world, id, row, body)
             local threat, threatDistance = dangerNear(body, 4.0)
             if threat then
                 local previous = NLNpcAuthority.danger[id]
@@ -840,6 +905,7 @@ function NLNpcAuthority.update()
                 local target, index = nextWaypoint(row, body)
                 if target then
                     NLNpcAuthority.targets[id] = { x=target.x, y=target.y, z=target.z, waypoint=index,
+                        routine=row.routine or "home",
                         lastX=body:getX(), lastY=body:getY(), stall=0 }
                     behavior:pathToLocation(target.x, target.y, target.z)
                     emit(string.format("PATH id=%s from=%.2f,%.2f to=%.2f,%.2f waypoint=%d",
@@ -872,11 +938,9 @@ function NLNpcAuthority.update()
                         -- advance the persisted route and let the next update
                         -- choose the next authored waypoint.
                         behavior:cancel(); body:setPath2(nil)
-                        local next = (target.waypoint or 1) + 1
+                        local next = target.routine == "work" and 2 or 1
                         local route = NLNeighbors.definitions[id].waypoints
-                        if row.spawned then
-                            if next > 2 then next = 1 end
-                        elseif route and next > #route then next = 1 end
+                        if not row.spawned and route and next > #route then next = 1 end
                         NLNeighbors.position(world, id, currentX, currentY, body:getZ(), next)
                         NLNpcAuthority.targets[id] = nil
                         emit(string.format("BLOCKED id=%s x=%.2f,%.2f skippedWaypoint=%d",
@@ -897,11 +961,9 @@ function NLNpcAuthority.update()
                             and math.abs(body:getX()-(target.x+0.5))<0.06
                             and math.abs(body:getY()-(target.y+0.5))<0.06)) then
                     behavior:cancel(); body:setPath2(nil)
-                    local next = (target.waypoint or 1) + 1
+                    local next = target.routine == "work" and 2 or 1
                     local route = NLNeighbors.definitions[id].waypoints
-                    if row.spawned then
-                        if next > 2 then next = 1 end
-                    elseif route and next > #route then next = 1 end
+                    if not row.spawned and route and next > #route then next = 1 end
                     NLNeighbors.position(world, id, body:getX(), body:getY(), body:getZ(), next)
                     NLNpcAuthority.targets[id] = nil
                     emit(string.format("MOVE id=%s x=%.2f y=%.2f waypoint=%d",

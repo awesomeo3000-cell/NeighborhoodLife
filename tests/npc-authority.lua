@@ -10,7 +10,9 @@ function isServer() return false end
 local worldStore={}
 ModData={getOrCreate=function(key) worldStore[key]=worldStore[key] or {}; return worldStore[key] end}
 function getTimestampMs() return 1000 end
-function getGameTime() return {getWorldAgeHours=function() return 0 end} end
+local scheduleHour, scheduleDay = 7, 1
+function getGameTime() return {getWorldAgeHours=function() return 0 end,
+    getHour=function() return scheduleHour end, getDay=function() return scheduleDay end} end
 Perks={Tailoring='Tailoring',Woodwork='Woodwork',Doctor='Doctor'}
 local player={x=100,y=100,z=0,dead=false}
 function player:getX() return self.x end; function player:getY() return self.y end
@@ -92,6 +94,22 @@ local body=NLNpcAuthority.bodies.marisol
 assert(body and body:isNpc() and body:getModData().NeighborhoodNpcId=='marisol','production body created')
 assert(body:getOnlineID()==30001,'native NPC receives its stable authored online identity')
 assert(NLNpcAuthority.assignNativeOnlineId(body,30001),'online identity assignment verifies through the native getter')
+assert(NLNpcAuthority.routineForHour(NLNeighbors.definitions.marisol, 7)=='home',
+    'authored routine selects home before the work window')
+assert(NLNpcAuthority.routineForHour(NLNeighbors.definitions.marisol, 9)=='work',
+    'authored routine selects work inside the career window')
+scheduleHour=9
+NLNpcAuthority.update()
+local scheduledRow=NLAuthority.world().neighbors.marisol
+assert(scheduledRow.routine=='work' and scheduledRow.routineHour==9,
+    'server clock transition persists the NPC work routine')
+local scheduledPacket=NLNpcAuthority.presencePacket()
+local scheduledEntry
+for _, entry in ipairs(scheduledPacket.npcs or {}) do
+    if entry.id=='marisol' then scheduledEntry=entry; break end
+end
+assert(scheduledEntry and scheduledEntry.routine=='work' and scheduledEntry.schedule=='tailor',
+    'presence heartbeat carries the authoritative NPC routine and career')
 if NLNpcAuthority.presencePacket then
     NLNpcAuthority.targets.marisol={x=body:getX()+2,y=body:getY(),z=body:getZ(),waypoint=1}
     local motionPacket=NLNpcAuthority.presencePacket()

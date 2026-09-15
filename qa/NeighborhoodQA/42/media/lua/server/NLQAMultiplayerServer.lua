@@ -8,6 +8,7 @@ pcall(require, "NLQANpcMovementConfig")
 pcall(require, "NLQAPartnershipConfig")
 pcall(require, "NLQADateConfig")
 pcall(require, "NLQASocialBreadthConfig")
+pcall(require, "NLQANpcScheduleConfig")
 pcall(require, "NLQAZombieModeConfig")
 local ok,err=pcall(function() require "NL/Authority" end)
 print("NLQA MP SERVER BOOT: authority=" .. tostring(NLAuthority ~= nil) .. " requireOk=" .. tostring(ok)
@@ -60,6 +61,10 @@ local datePersistenceAnnouncementAttempts = 0
 local npcMovementSampleTick = 0
 local socialBreadthSeeded = false
 local socialBreadthClocked = false
+local npcScheduleProbeTick = 0
+local npcScheduleSeeded = false
+local npcScheduleHomeObserved = false
+local npcScheduleWorkObserved = false
 
 local function positionDateHost(host)
     local body = NLNpcAuthority and NLNpcAuthority.bodies and NLNpcAuthority.bodies.marisol
@@ -92,6 +97,55 @@ Events.OnTick.Add(function()
         end
     end
     if #rows > 0 then print("NLQA NPC MOTION SAMPLE: " .. table.concat(rows, " ")) end
+end)
+
+-- QA-only schedule observer. It advances the real Build 42 world clock from
+-- home hours into the authored career window, then records the production
+-- authority's persisted routine transition. No schedule state is implemented
+-- here; the server NPC authority owns it.
+Events.OnTick.Add(function()
+    if NLQANpcScheduleProbe ~= true or not NLNpcAuthority
+            or not NLNpcAuthority.started then return end
+    npcScheduleProbeTick = npcScheduleProbeTick + 1
+    local world = NLAuthority.world()
+    local row = world.neighbors and world.neighbors.marisol
+    if not row then return end
+    if not npcScheduleSeeded then
+        pcall(function()
+            getGameTime():setMultiplier(1)
+            getGameTime():setTimeOfDay(7)
+        end)
+        npcScheduleSeeded = true
+        print("NLQA NPC SCHEDULE SEED: hour=7 expected=home")
+        return
+    end
+    if row.routine == "home" and not npcScheduleHomeObserved then
+        npcScheduleHomeObserved = true
+        print("NLQA NPC SCHEDULE HOME: hour=" .. tostring(row.routineHour)
+            .. " routine=" .. tostring(row.routine))
+    end
+    if npcScheduleHomeObserved and not npcScheduleWorkObserved
+            and npcScheduleProbeTick >= 90 then
+        pcall(function() getGameTime():setTimeOfDay(9) end)
+    end
+    if npcScheduleHomeObserved and row.routine == "work" and not npcScheduleWorkObserved then
+        npcScheduleWorkObserved = true
+        local target = NLNpcAuthority.routineTarget(row, row.routine)
+        print("NLQA NPC SCHEDULE RESULT: id=marisol home=true work=true career="
+            .. tostring(NLNeighbors.definitions.marisol.schedule)
+            .. " hour=" .. tostring(row.routineHour)
+            .. " target=" .. tostring(target and (target.x .. "," .. target.y) or "nil"))
+        local playersOk, players = pcall(getOnlinePlayers)
+        if playersOk and players then
+            for index = 0, players:size() - 1 do
+                local player = players:get(index)
+                if player then
+                    sendServerCommand(player, "NeighborhoodQA", "npc_schedule_result",
+                        {id="marisol", routine="work", career=NLNeighbors.definitions.marisol.schedule})
+                end
+            end
+        end
+    end
 end)
 
 -- QA-only conversational-breadth fixture. It supplies a modest established

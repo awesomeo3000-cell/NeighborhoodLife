@@ -7,15 +7,18 @@ NLNeighbors = {
         marisol = { forename="Marisol", surname="Vega", name="Marisol Vega", female=true,
             onlineId=30001,
             outfit="Generic01", home={x=10780,y=10268,z=0},
-            waypoints={{x=10780,y=10268,z=0},{x=10784,y=10268,z=0}}, schedule="tailor" },
+            waypoints={{x=10780,y=10268,z=0},{x=10784,y=10268,z=0}},
+            schedule="tailor", workOffset={x=4,y=0}, workStart=8, workEnd=17 },
         kenji = { forename="Kenji", surname="Arakawa", name="Kenji Arakawa", female=false,
             onlineId=30002,
             outfit="Generic01", home={x=10786,y=10270,z=0},
-            waypoints={{x=10786,y=10270,z=0},{x=10790,y=10270,z=0}}, schedule="carpenter" },
+            waypoints={{x=10786,y=10270,z=0},{x=10790,y=10270,z=0}},
+            schedule="carpenter", workOffset={x=0,y=4}, workStart=8, workEnd=17 },
         amara = { forename="Amara", surname="Okonkwo", name="Amara Okonkwo", female=true,
             onlineId=30003,
             outfit="Generic01", home={x=10782,y=10274,z=0},
-            waypoints={{x=10782,y=10274,z=0},{x=10786,y=10274,z=0}}, schedule="medic" }
+            waypoints={{x=10782,y=10274,z=0},{x=10786,y=10274,z=0}},
+            schedule="medic", workOffset={x=-4,y=0}, workStart=8, workEnd=17 }
     }
 }
 
@@ -54,7 +57,8 @@ function NLNeighbors.ensure(world)
         local row = world.neighbors[id]
         if not row then
             row = { id=id, home=copy(def.home), position=copy(def.home), waypoint=1,
-                onlineId=def.onlineId, alive=true, inventory={}, inventoryMeta={}, revision=0 }
+                onlineId=def.onlineId, alive=true, inventory={}, inventoryMeta={}, revision=0,
+                routine="home", routineDay=-1, routineHour=-1, routineRevision=0 }
             world.neighbors[id] = row
         else
             row.id = id
@@ -64,6 +68,10 @@ function NLNeighbors.ensure(world)
             row.onlineId = row.onlineId or def.onlineId
             if row.alive == nil then row.alive = not row.dead end
             row.revision = row.revision or 0
+            row.routine = row.routine == "work" and "work" or (row.routine or "home")
+            row.routineDay = row.routineDay or -1
+            row.routineHour = row.routineHour or -1
+            row.routineRevision = row.routineRevision or 0
         end
         normalizeInventory(row)
     end
@@ -104,6 +112,21 @@ function NLNeighbors.position(world, id, x, y, z, waypoint)
     if waypoint then row.waypoint = waypoint end
     row.revision = row.revision + 1
     return true
+end
+
+function NLNeighbors.routine(world, id, state, day, hour)
+    local row = NLNeighbors.get(world, id)
+    if not row then return false end
+    state = state == "work" and "work" or "home"
+    local changed = row.routine ~= state
+    if changed then
+        row.routine = state
+        row.routineRevision = (row.routineRevision or 0) + 1
+        row.revision = (row.revision or 0) + 1
+    end
+    if day ~= nil then row.routineDay = day end
+    if hour ~= nil then row.routineHour = hour end
+    return changed
 end
 
 function NLNeighbors.dead(world, id)

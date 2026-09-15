@@ -94,7 +94,9 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
      dateSaveDue = 0, dateSaveAttempted = false, globalJournalRecoveryObserved = false,
      socialBreadthSeeded = false, socialBreadthPositioned = false,
      socialBreadthStage = 0, socialBreadthDue = 0, socialBreadthHostObserved = false,
-     socialBreadthGuestEvents = {}, socialBreadthGuestObserved = false }
+     socialBreadthGuestEvents = {}, socialBreadthGuestObserved = false,
+     npcScheduleHomeObserved = false, npcScheduleWorkObserved = false,
+     npcScheduleLast = nil }
 NLQAMultiplayer.deliveryRecoverySnapshot = false
 NLQAMultiplayer.deliveryRecoveryObserved = false
 -- Keep the hands-free probe bounded while retaining one full render-loop delay
@@ -1035,9 +1037,10 @@ Events.OnServerCommand.Add(function(module, command, args)
         for _,entry in ipairs(args.npcs) do
             local onlineId = tonumber(entry.onlineId)
             if onlineId and onlineId >= 0 then onlineHints = onlineHints + 1 end
-            rows[#rows+1]=string.format("%s@%.2f,%.2f,%.0f/w%d", tostring(entry.id),
+            rows[#rows+1]=string.format("%s@%.2f,%.2f,%.0f/w%d/routine=%s", tostring(entry.id),
                 tonumber(entry.x or 0), tonumber(entry.y or 0), tonumber(entry.z or 0),
-                tonumber(entry.waypoint or 0)) .. "/online=" .. tostring(entry.onlineId)
+                tonumber(entry.waypoint or 0), tostring(entry.routine or "unknown"))
+                .. "/online=" .. tostring(entry.onlineId)
         end
         emit("NPC PRESENCE", "revision="..tostring(args.revision)
             .." count="..tostring(#args.npcs).." onlineHints="..tostring(onlineHints)
@@ -1453,6 +1456,27 @@ Events.OnServerCommand.Add(function(module, command, args)
                 .. " storage=Base.RippedSheets/" .. tostring(home.storage["Base.RippedSheets"])
                 .. " furnishing=" .. tostring(home.furnishing.kind))
         end
+    end
+end)
+
+-- QA-only client observer for the production NPC routine replicated in the
+-- normal presence heartbeat. Both isolated clients must see home first and
+-- work afterward; neither client manufactures or changes the routine.
+Events.OnRenderTick.Add(function()
+    if not isClient() or qaIdentity().npcScheduleProbe ~= true
+            or not NLNpcClient or not NLNpcClient.states then return end
+    local state = NLNpcClient.states.marisol
+    local routine = state and tostring(state.routine or "") or ""
+    if routine == "home" and not NLQAMultiplayer.npcScheduleHomeObserved then
+        NLQAMultiplayer.npcScheduleHomeObserved = true
+        NLQAMultiplayer.npcScheduleLast = routine
+        emit("NPC SCHEDULE HOME", "id=marisol routine=home")
+    elseif routine == "work" and NLQAMultiplayer.npcScheduleHomeObserved
+            and not NLQAMultiplayer.npcScheduleWorkObserved then
+        NLQAMultiplayer.npcScheduleWorkObserved = true
+        NLQAMultiplayer.npcScheduleLast = routine
+        emit("NPC SCHEDULE OBSERVED", "id=marisol home=true state=work career="
+            .. tostring(state.schedule or "unknown"))
     end
 end)
 
