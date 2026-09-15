@@ -1,8 +1,24 @@
-# Neighborhood Life — full scope and evidence ledger (v1.89)
+# Neighborhood Life — full scope and evidence ledger (v1.90)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
 The original broad goal remains active. This ledger is not a reduced definition of done.
+
+## v1.90 blocked-corner NPC movement fix and actual regression
+
+The production fallback route now stores a two-stage free-side detour when a
+waypoint's next tile is blocked. The mock contract proves that the detour is
+selected and that the route resumes across the obstacle. The consolidated
+pipeline passes the Lua 5.1 and installed-game Kahlua engine-VM suites.
+
+The fresh hands-free Build 42.20.4 host-plus-guest capture in
+`evidence/v130/actual/npc-movement-disabled/` ran with zombies disabled and
+observed changing authoritative server coordinates plus `0.40`-tile Marisol
+motion on both host and guest. This is actual installed-game multiplayer
+evidence, not mock or Kahlua engine-VM evidence. It validates the production
+compatibility movement stream only; native vanilla server-body reannouncement
+remains open because the Build 42 Lua online-id bridge still emits setter/type
+errors. QA helpers and isolated profiles remain outside the production package.
 
 ## v1.89 actual host-plus-guest NPC movement regression
 

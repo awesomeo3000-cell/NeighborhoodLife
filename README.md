@@ -1,8 +1,26 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.89)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.90)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.90 blocked-corner NPC movement fix and actual regression
+
+The production fallback route now remembers a two-stage free-side detour when a
+waypoint's next tile is blocked. The NPC first reaches the selected side of the
+current tile, then exits around the obstacle instead of oscillating beside the
+same corner. The Lua contract suite covers detour selection and route resume,
+and the consolidated pipeline passes both Lua 5.1 and installed-game Kahlua
+engine-VM tests.
+
+A fresh isolated Build 42.20.4 host-plus-guest run with zombies disabled then
+observed changing authoritative server coordinates and `0.40`-tile Marisol
+motion on both clients. This is actual installed-game multiplayer evidence for
+the production compatibility movement stream, distinct from mock and engine-VM
+tests. It does not claim native vanilla server-body reannouncement; the Build
+42 Lua online-id bridge errors remain the next native-integration blocker. The
+capture is in `evidence/v130/actual/npc-movement-disabled/`, and QA helpers and
+profiles remain outside the production package.
 
 ## v1.89 actual host-plus-guest NPC movement regression
 
