@@ -28,6 +28,11 @@ function NLHouseholdClient.receive(module, command, args)
                 local oldRevision = old and old.householdRevision or -1
                 if (args.householdRevision or 0) >= oldRevision then
                     NLHouseholdClient.snapshots[i] = args
+                    if NLClient and NLClient.profiles[i]
+                            and (args.revision or 0) >= (NLClient.profiles[i].revision or 0) then
+                        NLClient.profiles[i].homeActivities = args.homeActivities
+                        NLClient.profiles[i].homeAspiration = args.homeAspiration
+                    end
                     if NLHouseholdFurnishingClient then
                         if args.household then NLHouseholdFurnishingClient.apply(args.household)
                         else NLHouseholdFurnishingClient.clear() end

@@ -20,6 +20,16 @@ p.careers.medic.delivered=21; p.careers.medic.rank=4
 assert(NLAspirations.advance(p)==60 and p.aspiration.stage==4)
 assert(NLAspirations.advance(p)==0)
 assert(NLAspirations.label(p)=='Aspiration complete: Neighborhood Pillar')
+local home=NLDomain.profile(NLDomain.newWorld(),'homebody')
+assert(NLAspirations.homeProgress(home)==0 and NLAspirations.advanceHome(home)==0)
+assert(NLAspirations.recordHomeActivity(home,'tidy')==5 and home.homeAspiration.stage==2,
+    'first household activity advances the home aspiration')
+assert(NLAspirations.recordHomeActivity(home,'meal')==0 and NLAspirations.recordHomeActivity(home,'social')==10,
+    'three distinct household activities award the shared-routine milestone')
+assert(home.homeActivities.total==3 and NLAspirations.homeProgress(home)==3,
+    'home activity counts persist by task and total')
+assert(NLAspirations.recordHomeActivity(home,'bogus')==0 and home.homeAspiration.stage==3,
+    'unknown household activity cannot advance the aspiration')
 local guest=NLDomain.profile(NLDomain.newWorld(),'guest')
 assert(NLAspirations.advance(guest)==0 and guest.credits==0,'player isolation')
 print('PASS: aspiration milestones, delivery hook, promotion gate, one-time rewards, reload and player isolation')

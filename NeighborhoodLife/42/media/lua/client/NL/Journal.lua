@@ -34,9 +34,9 @@ function NLJournal:initialise()
     end
     self.deliverButtons = {}
     for i=1,3 do self.deliverButtons[i] = self:button(455,162+(i-1)*48,115,"Deliver","deliver",i) end
-    self:button(16,325,180,"Check promotion","promote")
-    self:button(210,325,100,"Refresh","refresh")
-    self.workButton = self:button(320,325,150,"Work shift","work")
+    self:button(16,347,180,"Check promotion","promote")
+    self:button(210,347,100,"Refresh","refresh")
+    self.workButton = self:button(320,347,150,"Work shift","work")
 end
 
 function NLJournal:onButton(button)
@@ -83,14 +83,15 @@ function NLJournal:prerender()
     end
     if self.workButton then self.workButton:setEnable(not worked) end
     self:drawText(NLAspirations.label(p),16,284,0.12,0.38,0.63,1,UIFont.Small)
-    self:drawText("Delivery consumes items in your main inventory.",16,303,0.46,0.32,0.12,1,UIFont.Small)
+    self:drawText(NLAspirations.homeLabel(p),16,303,0.12,0.38,0.63,1,UIFont.Small)
+    self:drawText("Delivery consumes items in your main inventory.",16,322,0.46,0.32,0.12,1,UIFont.Small)
     local nextRank = NLDefinitions.promotions[progress.rank+1]
     local text = nextRank and ("Next: skill "..nextRank.skill..", "..nextRank.xp.." XP, "..nextRank.variety.." delivery types") or "Top career rank reached"
-    self:drawText(text,16,366,0.30,0.38,0.47,1,UIFont.Small)
+    self:drawText(text,16,389,0.30,0.38,0.47,1,UIFont.Small)
     -- Wrap status rather than drawing arbitrarily long server feedback off-panel.
     local message = p.message or ""
-    self:drawText(string.sub(message,1,72),16,392,0.12,0.38,0.63,1,UIFont.Small)
-    if #message>72 then self:drawText(string.sub(message,73,144),16,411,0.12,0.38,0.63,1,UIFont.Small) end
+    self:drawText(string.sub(message,1,72),16,415,0.12,0.38,0.63,1,UIFont.Small)
+    if #message>72 then self:drawText(string.sub(message,73,144),16,434,0.12,0.38,0.63,1,UIFont.Small) end
 end
 
 function NLJournal.open(index)

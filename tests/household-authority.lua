@@ -62,7 +62,10 @@ command(players[2], 'accept')
 assert(guestProfile.householdId == hostProfile.householdId, 'guest joined shared home')
 command(players[1], 'task', {task='tidy'})
 assert(world.households[hostProfile.householdId].tasks.tidy == 1, 'home activity completed at home')
-assert(hostProfile.credits == 5, 'shared activity reward credited')
+assert(hostProfile.credits == 10 and guestProfile.credits == 5
+    and hostProfile.homeActivities.tidy == 1 and guestProfile.homeActivities.tidy == 1
+    and hostProfile.homeAspiration.stage == 2 and guestProfile.homeAspiration.stage == 2,
+    'shared activity advances the home aspiration for every household member')
 local home = world.households[hostProfile.householdId]
 if NLHouseholds.storageCount then
     command(players[1], 'store', {item='Base.RippedSheets', amount=1})

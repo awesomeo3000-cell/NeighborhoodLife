@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.75)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.76)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -1122,3 +1122,20 @@ the verified compatibility movement channel; it does not close the real Build
 motion observed`; both clients observed a 1.68-tile Marisol displacement while
 the server recorded changing authoritative coordinates. QA helpers remain
 outside the production mod package.
+
+## v1.76 household-linked home aspiration
+
+Household activities now advance a shared, per-member home aspiration. The
+server records tidy, meal and social completions for every household member,
+awards milestone credits once per member, persists the activity totals, and
+includes the updated aspiration in the household snapshot. The career journal
+renders the home milestone beside the existing career aspiration, so the
+feature is visible in-game rather than only in world data.
+
+The actual isolated Build 42.20.4 host-plus-guest capture in
+`evidence/v111/actual/home-aspiration-e/` completed all three production home
+activities: the host completed tidy and social, the guest completed meal, both
+members received the shared activity snapshots, and the host reached
+`Household Heart: 3/6` with the `+10` milestone reward. This is actual
+installed-game multiplayer evidence; the QA fixture only supplies the normal
+career/partnership setup and remains outside the production package.

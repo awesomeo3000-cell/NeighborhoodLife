@@ -29,6 +29,9 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     householdFurnishingSent = false, householdFurnishingObserved = false,
     householdTransferSent = false, householdTransferObserved = false,
     householdTransferDue = 0, householdTaskDue = 0, householdResetSent = false,
+    homeAspirationMealSent = false, homeAspirationSocialSent = false,
+    homeAspirationSocialDue = 0,
+    homeAspirationResultLogged = false,
     -- Career seeding also clears the isolated household fixture. Wait for the
     -- production work result before creating the household, otherwise the
     -- delayed QA seed command can erase the newly-created home.
@@ -1227,6 +1230,29 @@ Events.OnServerCommand.Add(function(module, command, args)
             NLQAMultiplayer.householdResultLogged=true
             emit("HOUSEHOLD TASK RESULT", tostring(args.message))
         end
+        if qaIdentity().homeAspirationProbe == true and home and home.tasks then
+            if qaIdentity().username == "nl-guest" and not NLQAMultiplayer.homeAspirationMealSent
+                    and (home.tasks.tidy or 0) >= 1 then
+                NLQAMultiplayer.homeAspirationMealSent = true
+                NLHouseholdClient.request(0, "task", {task="meal"})
+                emit("HOME ASPIRATION TASK", "guest=nl-guest task=meal")
+            end
+            if qaIdentity().username == "nl-host" and not NLQAMultiplayer.homeAspirationSocialSent
+                    and NLQAMultiplayer.homeAspirationSocialDue == 0
+                    and (home.tasks.meal or 0) >= 1 then
+                NLQAMultiplayer.homeAspirationSocialDue = NLQAMultiplayer.socialFrame + 30
+                emit("HOME ASPIRATION ARMED", "host=nl-host task=social")
+            end
+        end
+        if qaIdentity().username == "nl-host" and qaIdentity().homeAspirationProbe == true
+                and not NLQAMultiplayer.homeAspirationResultLogged
+                and args.homeActivities and (args.homeActivities.total or 0) >= 3
+                and args.homeAspiration and (args.homeAspiration.stage or 0) >= 2 then
+            NLQAMultiplayer.homeAspirationResultLogged = true
+            emit("HOME ASPIRATION RESULT", "total=" .. tostring(args.homeActivities.total)
+                .. " stage=" .. tostring(args.homeAspiration.stage)
+                .. " label=" .. tostring(args.homeAspirationLabel))
+        end
         if qaIdentity().username=="nl-host" and qaIdentity().householdRestartCheck == true
                 and not NLQAMultiplayer.householdRestartObserved
                 and home and home.owner and #members >= 2
@@ -1903,6 +1929,16 @@ Events.OnRenderTick.Add(function()
         NLHouseholdClient.request(0,"task",{task="tidy"})
         emit("HOUSEHOLD TASK", "tidy")
     end
+end)
+
+Events.OnRenderTick.Add(function()
+    if qaIdentity().username ~= "nl-host" or qaIdentity().homeAspirationProbe ~= true
+            or NLQAMultiplayer.homeAspirationSocialSent
+            or NLQAMultiplayer.homeAspirationSocialDue == 0
+            or NLQAMultiplayer.socialFrame < NLQAMultiplayer.homeAspirationSocialDue then return end
+    NLQAMultiplayer.homeAspirationSocialSent = true
+    NLHouseholdClient.request(0, "task", {task="social"})
+    emit("HOME ASPIRATION TASK", "host=nl-host task=social")
 end)
 
 -- The crash probe verifies the recovered item in the fresh client's actual

@@ -13,12 +13,20 @@ function NLDomain.profile(world, key)
         world.players[key] = { career = "tailor", careers = {}, credits = 0,
             revision = 0, day = -1, claimed = {}, outfits = {},
             worked = {}, householdId = nil, householdInvite = nil,
-            appearance = { preset = "natural" } }
+            homeActivities = { tidy = 0, meal = 0, social = 0, total = 0 },
+            homeAspiration = { stage = 1 }, appearance = { preset = "natural" } }
     end
     local p = world.players[key]
     p.householdId = p.householdId or nil
     p.householdInvite = p.householdInvite or nil
     p.worked = p.worked or {}
+    p.homeActivities = p.homeActivities or {}
+    for _, task in ipairs({ "tidy", "meal", "social" }) do
+        p.homeActivities[task] = math.max(0, math.floor(tonumber(p.homeActivities[task]) or 0))
+    end
+    p.homeActivities.total = NLAspirations.homeProgress(p)
+    p.homeAspiration = p.homeAspiration or { stage = 1 }
+    p.homeAspiration.stage = math.max(1, math.floor(tonumber(p.homeAspiration.stage) or 1))
     p.appearance = p.appearance or { preset = "natural" }
     if not NLDefinitions.appearancePresets[p.appearance.preset] then
         p.appearance = { preset = "natural" }

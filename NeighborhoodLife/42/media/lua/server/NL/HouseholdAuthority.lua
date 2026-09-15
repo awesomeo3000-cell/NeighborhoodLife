@@ -39,6 +39,9 @@ local function snapshot(player, message)
     local result = {
         username = key, revision = profile.revision, householdRevision = household and household.revision or 0,
         message = message or "Updated", invite = NLDomain.copy(profile.householdInvite),
+        homeActivities = NLDomain.copy(profile.homeActivities),
+        homeAspiration = NLDomain.copy(profile.homeAspiration),
+        homeAspirationLabel = NLAspirations.homeLabel(profile),
         household = NLHouseholds.copySummary(household, online),
     }
     sendServerCommand(player, NLHouseholdAuthority.module, "snapshot", result)
@@ -50,6 +53,16 @@ local function notifyMembers(world, household, message)
     for key in pairs(household.members or {}) do
         if players[key] then snapshot(players[key], message) end
     end
+end
+
+local function recordSharedHomeActivity(world, household, task, actorKey)
+    local actorReward = 0
+    for memberKey in pairs(household.members or {}) do
+        local memberProfile = NLDomain.profile(world, memberKey)
+        local reward = NLAspirations.recordHomeActivity(memberProfile, task)
+        if memberKey == actorKey then actorReward = reward end
+    end
+    return actorReward
 end
 
 local function homeOf(player)
@@ -502,6 +515,10 @@ function NLHouseholdAuthority.command(module, command, player, args)
                 local definition = NLHouseholds.tasks[task]
                 profile.credits = profile.credits + definition.reward
                 profile.revision = profile.revision + 1
+                local homeReward = recordSharedHomeActivity(world, household, task, key)
+                if homeReward > 0 then
+                    message = message .. " / Home aspiration reward +" .. tostring(homeReward) .. " credits"
+                end
                 notifyMembers(world, household, message)
                 if NLQAMultiplayerServer then
                     print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key)
