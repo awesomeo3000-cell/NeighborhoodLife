@@ -270,11 +270,16 @@ function NLSocialAuthority.snapshot(player,message)
                 -- account key through a private relationship snapshot.
                 relation.status="Unavailable"
             end
+            local canPartner=not npc.partner and (tonumber(relation.dates or 0) or 0)>=2
+                and (tonumber(relation.trust or 0) or 0)>=30
+                and (tonumber(relation.attraction or 0) or 0)>=30
             local row={id=id,name=NLSocial.people[id].name,personality=NLSocial.people[id].personality,
                 age=NLSocial.people[id].age,dead=npc.dead or npc.alive==false,available=body~=nil,canInteract=false,
                 inventory=NLDomain.copy(npc.inventory or {}),
                 inventoryItems=NLDomain.copy(NLNeighbors.inventoryEntries(world,id)),
-                relation=relation, exclusive=exclusive, isPartner=npc.partner==key}
+                relation=relation, exclusive=exclusive, isPartner=npc.partner==key,
+                canPartner=canPartner, canBreakup=npc.partner==key,
+                canApologize=(tonumber(relation.friendship or 0) or 0)<0}
             if body then
                 if body:isDead() then NLNeighbors.dead(world,id) end
                 row.dead=npc.dead or npc.alive==false

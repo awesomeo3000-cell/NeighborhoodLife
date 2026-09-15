@@ -2,15 +2,25 @@ require "NL/Domain"
 NLSocial = {}
 NLSocial.people = {
     marisol = { name="Marisol Vega", age=31, personality="Creative, warm, protective",
-        career="tailor", female=true, friendly=6, humor=4, flirt=4 },
+        career="tailor", female=true, friendly=6, humor=4, flirt=4,
+        workLine="The tailoring bench keeps me grounded. Every repaired seam is one more useful thing in the world.",
+        homeLine="I want a home with bright windows, a worktable, and enough chairs for whoever needs shelter.",
+        complimentLine="That is kind of you to notice. You make this hard day feel a little lighter." },
     kenji = { name="Kenji Arakawa", age=36, personality="Reserved, practical, loyal",
-        career="carpenter", female=false, friendly=3, humor=2, flirt=3 },
+        career="carpenter", female=false, friendly=3, humor=2, flirt=3,
+        workLine="I reinforce what still stands. A sound door and a dry roof solve more problems than speeches do.",
+        homeLine="A household needs honest rules, a stocked cupboard, and people who show up when the weather turns.",
+        complimentLine="I appreciate the directness. You have a good eye for details." },
     amara = { name="Amara Okonkwo", age=29, personality="Outgoing, determined, candid",
-        career="medic", female=true, friendly=5, humor=6, flirt=5 }
+        career="medic", female=true, friendly=5, humor=6, flirt=5,
+        workLine="The clinic is all triage and small victories. I keep moving because somebody is always counting on me.",
+        homeLine="Home should feel like a place where you can exhale, even when the street outside is chaos.",
+        complimentLine="Keep talking like that and I might start believing you. I like your confidence." }
 }
 NLSocial.order={"marisol","kenji","amara"}
-NLSocial.actions={introduce=true,chat=true,joke=true,flirt=true,date=true,date_activity=true,
-    partner=true,breakup=true,apologize=true}
+NLSocial.actions={introduce=true,chat=true,joke=true,ask_work=true,talk_home=true,
+    compliment=true,flirt=true,date=true,date_activity=true,partner=true,breakup=true,
+    apologize=true}
 
 local function clamp(v,lo,hi) return math.max(lo,math.min(hi,v)) end
 
@@ -18,7 +28,8 @@ function NLSocial.relation(profile,id)
     profile.relationships=profile.relationships or {}
     if not profile.relationships[id] then
         profile.relationships[id]={met=false,friendship=0,trust=0,attraction=0,
-            status="Stranger",lastAction=-100,lastFlirt=-100,dates=0,completedDates=0,
+            status="Stranger",lastAction=-100,lastFlirt=-100,lastCompliment=-100,
+            dates=0,completedDates=0,workTalks=0,homeTalks=0,compliments=0,
             activeDate=nil,memories={}}
     end
     return profile.relationships[id]
@@ -46,6 +57,22 @@ function NLSocial.interact(profile,npc,action,hours,key)
     elseif action=="joke" then
         r.friendship=r.friendship+def.humor
         message=def.humor>=4 and "I needed that laugh today." or "That's terrible. ...All right, a little funny."
+    elseif action=="ask_work" then
+        r.workTalks=(r.workTalks or 0)+1
+        r.friendship=r.friendship+2; r.trust=r.trust+2
+        message=def.workLine or "Work keeps me moving. I am still figuring out what that means now."
+    elseif action=="talk_home" then
+        r.homeTalks=(r.homeTalks or 0)+1
+        r.friendship=r.friendship+2; r.trust=r.trust+3
+        message=def.homeLine or "I have been thinking about what makes a place feel like home."
+    elseif action=="compliment" then
+        if hours-(r.lastCompliment or -100)<4 then
+            return false,"Let's keep it sincere and give that a little time."
+        end
+        if r.friendship<20 then return false,"Let's get to know each other a little better first." end
+        r.lastCompliment=hours; r.compliments=(r.compliments or 0)+1
+        r.friendship=r.friendship+1; r.attraction=r.attraction+2
+        message=def.complimentLine or "That is kind of you to say."
     elseif action=="apologize" then
         if r.friendship>=0 then return false,"There is nothing to apologize for." end
         r.friendship=r.friendship+3; message="Thank you for saying that."

@@ -7,6 +7,7 @@ pcall(require, "NLQANativeReflectionConfig")
 pcall(require, "NLQANpcMovementConfig")
 pcall(require, "NLQAPartnershipConfig")
 pcall(require, "NLQADateConfig")
+pcall(require, "NLQASocialBreadthConfig")
 pcall(require, "NLQAZombieModeConfig")
 local ok,err=pcall(function() require "NL/Authority" end)
 print("NLQA MP SERVER BOOT: authority=" .. tostring(NLAuthority ~= nil) .. " requireOk=" .. tostring(ok)
@@ -57,6 +58,8 @@ local dateServerSaveAttempted = false
 local datePersistenceLoaded = false
 local datePersistenceAnnouncementAttempts = 0
 local npcMovementSampleTick = 0
+local socialBreadthSeeded = false
+local socialBreadthClocked = false
 
 local function positionDateHost(host)
     local body = NLNpcAuthority and NLNpcAuthority.bodies and NLNpcAuthority.bodies.marisol
@@ -89,6 +92,73 @@ Events.OnTick.Add(function()
         end
     end
     if #rows > 0 then print("NLQA NPC MOTION SAMPLE: " .. table.concat(rows, " ")) end
+end)
+
+-- QA-only conversational-breadth fixture. It supplies a modest established
+-- friendship to both accounts; the new work, home and compliment actions still
+-- travel through the production client, authority, snapshot and event paths.
+Events.OnTick.Add(function()
+    if NLQASocialBreadthProbe ~= true
+            or not NLNpcAuthority or not NLNpcAuthority.started
+            or type(getOnlinePlayers) ~= "function" then return end
+    local listOk, players = pcall(getOnlinePlayers)
+    if not listOk or not players or players:size() < 2 then return end
+    local host
+    for index = 0, players:size() - 1 do
+        local player = players:get(index)
+        if player and player:getUsername() == "nl-host" then host = player; break end
+    end
+    local body = NLNpcAuthority.bodies and NLNpcAuthority.bodies.marisol
+    if socialBreadthSeeded and host and body then
+        -- Hold the moving native body beside the QA host while the production
+        -- interaction gate is exercised. This keeps the probe hands-free and
+        -- does not ship because this file lives in NeighborhoodQA.
+        local x, y, z = math.floor(host:getX()), math.floor(host:getY()), math.floor(host:getZ())
+        pcall(function()
+            host:setX(x + 0.25); host:setY(y + 0.5); host:setZ(z)
+            body:setX(x + 0.75); body:setY(y + 0.5); body:setZ(z)
+        end)
+        if not socialBreadthClocked then
+            local profile = NLAuthority.world().players
+                and NLAuthority.world().players["nl-host"]
+            local relation = profile and profile.relationships
+                and profile.relationships.marisol
+            if relation and (tonumber(relation.compliments or 0) or 0) >= 1 then
+                pcall(function() getGameTime():setMultiplier(1) end)
+                socialBreadthClocked = true
+                print("NLQA SOCIAL BREADTH CLOCK: restored=1")
+            end
+        end
+        return
+    end
+    if socialBreadthSeeded then return end
+    local world = NLAuthority.world()
+    for _, username in ipairs({"nl-host", "nl-guest"}) do
+        local profile = NLDomain.profile(world, username)
+        local relation = NLSocial.relation(profile, "marisol")
+        relation.met = true
+        relation.friendship = 18
+        relation.trust = 8
+        relation.attraction = 0
+        relation.status = "Acquaintance"
+        relation.lastAction = -100
+        relation.lastCompliment = -100
+        relation.workTalks = 0
+        relation.homeTalks = 0
+        relation.compliments = 0
+        profile.revision = profile.revision + 1
+    end
+    socialBreadthSeeded = true
+    pcall(function() getGameTime():setMultiplier(60) end)
+    print("NLQA SOCIAL BREADTH CLOCK: accelerated=60")
+    for index = 0, players:size() - 1 do
+        local player = players:get(index)
+        if player then
+            sendServerCommand(player, "NeighborhoodQA", "social_breadth_seeded",
+                {target="marisol"})
+        end
+    end
+    print("NLQA SOCIAL BREADTH SEED: target=marisol met=true friendship=18 trust=8")
 end)
 
 -- QA-only persistence checkpoint. Build 42's normal world-save path owns the

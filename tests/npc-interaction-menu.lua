@@ -9,7 +9,7 @@ Events = { OnFillWorldObjectContextMenu = { Add = function(f) eventHook = f end 
 local panelStub = function() end
 package.preload['NL/SocialClient'] = function()
 NLSocialClient = { requests = {}, snapshots = { [0] = { neighbors = {
-    { id = 'marisol', relation = { activeDate = { status = 'active' } } },
+    { id = 'marisol', relation = { activeDate = { status = 'active' } }, canPartner = true },
 } } }, request = function(index, command, args)
         NLSocialClient.requests[#NLSocialClient.requests + 1] = {
             index = index, command = command, args = args,
@@ -60,8 +60,8 @@ eventHook(0, context, { object }, false)
 assert(#context.options == 1, 'world context menu discovers one authored NPC')
 local submenu = context.options[1].submenu
 assert(context.options[1].label == 'Neighborhood: Marisol Vega')
-assert(#submenu.options == 9,
-    'NPC menu exposes the date activity plus relationship profile and item actions')
+assert(#submenu.options == 13,
+    'NPC menu exposes richer conversations, date activity, partnership and item actions')
 
 local byLabel = {}
 for _, option in ipairs(submenu.options) do byLabel[option.label] = option end
@@ -81,6 +81,22 @@ byLabel['Spend time together'].callback(byLabel['Spend time together'].target,
 assert(NLSocialClient.requests[#NLSocialClient.requests].command == 'interact'
     and NLSocialClient.requests[#NLSocialClient.requests].args.action == 'date_activity',
     'active date activity routes through the production social client')
+byLabel['Ask about work'].callback(byLabel['Ask about work'].target,
+    unpack(byLabel['Ask about work'].args))
+assert(NLSocialClient.requests[#NLSocialClient.requests].args.action == 'ask_work',
+    'work conversation routes through the production social client')
+byLabel['Talk about home'].callback(byLabel['Talk about home'].target,
+    unpack(byLabel['Talk about home'].args))
+assert(NLSocialClient.requests[#NLSocialClient.requests].args.action == 'talk_home',
+    'home conversation routes through the production social client')
+byLabel['Compliment'].callback(byLabel['Compliment'].target,
+    unpack(byLabel['Compliment'].args))
+assert(NLSocialClient.requests[#NLSocialClient.requests].args.action == 'compliment',
+    'compliment routes through the production social client')
+byLabel['Commit to partnership'].callback(byLabel['Commit to partnership'].target,
+    unpack(byLabel['Commit to partnership'].args))
+assert(NLSocialClient.requests[#NLSocialClient.requests].args.action == 'partner',
+    'partnership commitment routes through the production social client')
 byLabel['Give 1 item'].callback(byLabel['Give 1 item'].target, unpack(byLabel['Give 1 item'].args))
 assert(NLSocialClient.requests[#NLSocialClient.requests].command == 'give'
     and NLSocialClient.requests[#NLSocialClient.requests].args.item == 'Base.Hammer',

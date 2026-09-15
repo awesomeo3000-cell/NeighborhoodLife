@@ -91,7 +91,10 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
      dateActivityObserved = false, dateGuestEventObserved = false,
      dateFrame = 0, datePositionedFrame = 0, dateActivityDue = 0, datePersistenceDue = 0,
      datePersistenceRefreshSent = false, datePersistenceObserved = false,
-     dateSaveDue = 0, dateSaveAttempted = false, globalJournalRecoveryObserved = false }
+     dateSaveDue = 0, dateSaveAttempted = false, globalJournalRecoveryObserved = false,
+     socialBreadthSeeded = false, socialBreadthPositioned = false,
+     socialBreadthStage = 0, socialBreadthDue = 0, socialBreadthHostObserved = false,
+     socialBreadthGuestEvents = {}, socialBreadthGuestObserved = false }
 NLQAMultiplayer.deliveryRecoverySnapshot = false
 NLQAMultiplayer.deliveryRecoveryObserved = false
 -- Keep the hands-free probe bounded while retaining one full render-loop delay
@@ -225,7 +228,8 @@ end
 -- callback itself. This remains QA-only: it supplies no UI or input and keeps
 -- the actual server-authoritative NLSocialClient request as the next hop.
 local function requestNpcInteraction(id, action)
-    if qaIdentity().npcInteractionProbe ~= true and qaIdentity().dateProbe ~= true then
+    if qaIdentity().npcInteractionProbe ~= true and qaIdentity().dateProbe ~= true
+            and qaIdentity().socialBreadthProbe ~= true then
         NLSocialClient.request(0, "interact", {id=id, action=action})
         return true
     end
@@ -831,6 +835,13 @@ Events.OnServerCommand.Add(function(module, command, args)
         NLSocialClient.request(0, "refresh")
         emit("PARTNERSHIP SEED ACK", "target=" .. tostring(args.target))
     end
+    if module == "NeighborhoodQA" and command == "social_breadth_seeded"
+            and type(args) == "table" and qaIdentity().socialBreadthProbe == true then
+        NLQAMultiplayer.socialBreadthSeeded = true
+        NLQAMultiplayer.socialBreadthStage = 0
+        NLSocialClient.request(0, "refresh")
+        emit("SOCIAL BREADTH SEED ACK", "target=" .. tostring(args.target))
+    end
     if module == "NeighborhoodQA" and command == "date_seeded"
             and type(args) == "table" and qaIdentity().username == "nl-host" then
         NLQAMultiplayer.dateProbeSeeded = true
@@ -1048,6 +1059,20 @@ Events.OnServerCommand.Add(function(module, command, args)
             emit("DATE GUEST EVENT", "actor=nl-host action=date_activity npc="
                 ..tostring(args.npcId))
         end
+        if qaIdentity().socialBreadthProbe == true and qaIdentity().username == "nl-guest"
+                and args.actor == "nl-host" and args.npcId == "marisol"
+                and (args.action == "ask_work" or args.action == "talk_home"
+                    or args.action == "compliment") then
+            NLQAMultiplayer.socialBreadthGuestEvents[#NLQAMultiplayer.socialBreadthGuestEvents + 1]
+                = args.action
+            if #NLQAMultiplayer.socialBreadthGuestEvents >= 3
+                    and not NLQAMultiplayer.socialBreadthGuestObserved then
+                NLQAMultiplayer.socialBreadthGuestObserved = true
+                emit("SOCIAL BREADTH GUEST EVENTS", "actor=nl-host actions="
+                    ..table.concat(NLQAMultiplayer.socialBreadthGuestEvents, ",")
+                    .." count="..tostring(#NLQAMultiplayer.socialBreadthGuestEvents))
+            end
+        end
     end
     if module == "NeighborhoodSocial" and command == "snapshot" and type(args) == "table" then
         local rows={}
@@ -1110,6 +1135,50 @@ Events.OnServerCommand.Add(function(module, command, args)
                         emit("PARTNERSHIP GUEST RESULT", "target=marisol status="..status
                             .." exclusive=true isPartner=false")
                     end
+                end
+            end
+        end
+        if qaIdentity().socialBreadthProbe == true and qaIdentity().username == "nl-host"
+                and NLQAMultiplayer.socialBreadthStage == 1 then
+            for _,entry in ipairs(args.neighbors or {}) do
+                if entry.id == "marisol" and entry.relation then
+                    local relation = entry.relation
+                    if (tonumber(relation.workTalks or 0) or 0) >= 1
+                            and NLQAMultiplayer.socialBreadthStage == 1 then
+                        NLQAMultiplayer.socialBreadthStage = 2
+                        NLQAMultiplayer.socialBreadthDue = NLQAMultiplayer.socialFrame
+                            + NLQAMultiplayer.socialCooldownFrames
+                        emit("SOCIAL BREADTH STEP", "ask_work complete; next=talk_home")
+                    end
+                end
+            end
+        elseif qaIdentity().socialBreadthProbe == true and qaIdentity().username == "nl-host"
+                and NLQAMultiplayer.socialBreadthStage == 3 then
+            for _,entry in ipairs(args.neighbors or {}) do
+                if entry.id == "marisol" and entry.relation then
+                    local relation = entry.relation
+                    if (tonumber(relation.homeTalks or 0) or 0) >= 1 then
+                        NLQAMultiplayer.socialBreadthStage = 4
+                        NLQAMultiplayer.socialBreadthDue = NLQAMultiplayer.socialFrame
+                            + NLQAMultiplayer.socialCooldownFrames
+                        emit("SOCIAL BREADTH STEP", "talk_home complete; next=compliment")
+                    end
+                end
+            end
+        elseif qaIdentity().socialBreadthProbe == true and qaIdentity().username == "nl-host"
+                and NLQAMultiplayer.socialBreadthStage == 5 then
+            for _,entry in ipairs(args.neighbors or {}) do
+                if entry.id == "marisol" and entry.relation
+                        and (tonumber(entry.relation.compliments or 0) or 0) >= 1
+                        and not NLQAMultiplayer.socialBreadthHostObserved then
+                    NLQAMultiplayer.socialBreadthHostObserved = true
+                    NLQAMultiplayer.socialBreadthStage = 4
+                    emit("SOCIAL BREADTH HOST RESULT", "target=marisol workTalks="
+                        ..tostring(entry.relation.workTalks)
+                        .." homeTalks="..tostring(entry.relation.homeTalks)
+                        .." compliments="..tostring(entry.relation.compliments)
+                        .." friendship="..tostring(entry.relation.friendship)
+                        .." attraction="..tostring(entry.relation.attraction))
                 end
             end
         end
@@ -1552,6 +1621,83 @@ Events.OnRenderTick.Add(function()
         NLQAMultiplayer.datePersistenceRefreshSent=true
         emit("DATE PERSISTENCE REFRESH", "production snapshot requested")
     end
+    -- QA-only conversational-breadth probe. Each action is dispatched through
+    -- the production world-context callback; the returned authoritative
+    -- counters determine the next action rather than a local fixture.
+    if qaIdentity().socialBreadthProbe == true
+            and NLQAMultiplayer.socialBreadthSeeded
+            and not NLQAMultiplayer.socialBreadthHostObserved then
+        local snapshot=NLSocialClient.snapshots[0]
+        local target
+        for _,entry in ipairs((snapshot and snapshot.neighbors) or {}) do
+            if entry.id == "marisol" then target=entry; break end
+        end
+        if not NLQAMultiplayer.socialBreadthPositioned then
+            local positioned
+            if qaIdentity().username == "nl-host" then
+                positioned = positionHostForSocial("marisol")
+            else
+                positioned = positionGuestForSocial("marisol")
+            end
+            if positioned then
+                NLQAMultiplayer.socialBreadthPositioned=true
+                NLQAMultiplayer.socialBreadthDue=NLQAMultiplayer.socialFrame+60
+                NLSocialClient.request(0, "refresh")
+                emit("SOCIAL BREADTH PREPARED", "target=marisol")
+            end
+        elseif qaIdentity().username == "nl-host"
+                and (not target or not target.canInteract)
+                and NLQAMultiplayer.socialFrame % 120 == 0 then
+            NLSocialClient.request(0, "refresh")
+        elseif qaIdentity().username == "nl-host" and target and target.canInteract
+            and NLQAMultiplayer.socialFrame >= NLQAMultiplayer.socialBreadthDue then
+            local relation=target.relation or {}
+            if NLQAMultiplayer.socialBreadthStage == 1
+                    and (tonumber(relation.workTalks or 0) or 0) == 0 then
+                requestNpcInteraction("marisol", "ask_work")
+                NLQAMultiplayer.socialBreadthDue=NLQAMultiplayer.socialFrame
+                    +NLQAMultiplayer.socialCooldownFrames
+                emit("SOCIAL BREADTH RETRY", "target=marisol action=ask_work")
+            elseif NLQAMultiplayer.socialBreadthStage == 3
+                    and (tonumber(relation.homeTalks or 0) or 0) == 0 then
+                requestNpcInteraction("marisol", "talk_home")
+                NLQAMultiplayer.socialBreadthDue=NLQAMultiplayer.socialFrame
+                    +NLQAMultiplayer.socialCooldownFrames
+                emit("SOCIAL BREADTH RETRY", "target=marisol action=talk_home")
+            elseif NLQAMultiplayer.socialBreadthStage == 5
+                    and (tonumber(relation.compliments or 0) or 0) == 0 then
+                requestNpcInteraction("marisol", "compliment")
+                NLQAMultiplayer.socialBreadthDue=NLQAMultiplayer.socialFrame
+                    +NLQAMultiplayer.socialCooldownFrames
+                emit("SOCIAL BREADTH RETRY", "target=marisol action=compliment")
+            elseif NLQAMultiplayer.socialBreadthStage == 0
+                    and (tonumber(relation.workTalks or 0) or 0) == 0 then
+                requestNpcInteraction("marisol", "ask_work")
+                NLQAMultiplayer.socialBreadthStage=1
+                NLQAMultiplayer.socialBreadthDue=NLQAMultiplayer.socialFrame
+                    +NLQAMultiplayer.socialCooldownFrames
+                emit("SOCIAL BREADTH ACTION", "target=marisol action=ask_work")
+            elseif NLQAMultiplayer.socialBreadthStage == 2
+                    and (tonumber(relation.homeTalks or 0) or 0) == 0 then
+                requestNpcInteraction("marisol", "talk_home")
+                NLQAMultiplayer.socialBreadthStage=3
+                NLQAMultiplayer.socialBreadthDue=NLQAMultiplayer.socialFrame
+                    +NLQAMultiplayer.socialCooldownFrames
+                emit("SOCIAL BREADTH ACTION", "target=marisol action=talk_home")
+            elseif NLQAMultiplayer.socialBreadthStage == 4
+                    and (tonumber(relation.compliments or 0) or 0) == 0 then
+                requestNpcInteraction("marisol", "compliment")
+                NLQAMultiplayer.socialBreadthStage=5
+                NLQAMultiplayer.socialBreadthDue=NLQAMultiplayer.socialFrame
+                    +NLQAMultiplayer.socialCooldownFrames
+                emit("SOCIAL BREADTH ACTION", "target=marisol action=compliment")
+            end
+        elseif qaIdentity().username == "nl-guest"
+                and not NLQAMultiplayer.socialBreadthGuestObserved
+                and NLQAMultiplayer.socialFrame % 120 == 0 then
+            NLSocialClient.request(0, "refresh")
+        end
+    end
     -- QA-only direct two-client partnership probe. The server seeds only the
     -- host's progression state; every relationship mutation and rejection
     -- below uses the production command and snapshot paths.
@@ -1635,14 +1781,16 @@ Events.OnRenderTick.Add(function()
     end
     if NLQAMultiplayer.socialFrame>=840 and not NLQAMultiplayer.socialPositioned
             and qaIdentity().promotionProbe ~= true
-            and qaIdentity().partnershipProbe ~= true then
+            and qaIdentity().partnershipProbe ~= true
+            and qaIdentity().socialBreadthProbe ~= true then
         if qaIdentity().username=="nl-host" then
             positionHostForSocial()
         else
             positionGuestForSocial("kenji")
         end
     end
-    if qaIdentity().username=="nl-host" and not NLQAMultiplayer.householdResetSent then
+    if qaIdentity().username=="nl-host" and qaIdentity().socialBreadthProbe ~= true
+            and not NLQAMultiplayer.householdResetSent then
         if qaIdentity().preserveHousehold then
             NLQAMultiplayer.householdResetSent=true
             emit("HOUSEHOLD RESET SKIPPED", "preserveHousehold=true")
@@ -1670,6 +1818,7 @@ Events.OnRenderTick.Add(function()
     if NLQAMultiplayer.socialFrame>=900 and NLQAMultiplayer.socialPositioned
             and qaIdentity().promotionProbe ~= true
             and qaIdentity().partnershipProbe ~= true
+            and qaIdentity().socialBreadthProbe ~= true
             and qaIdentity().dateProbe ~= true
             and not NLQAMultiplayer.socialConversationComplete
             and not NLQAMultiplayer.socialActionScheduled
@@ -1683,6 +1832,7 @@ Events.OnRenderTick.Add(function()
     end
     if NLQAMultiplayer.socialRefreshSent and not NLQAMultiplayer.socialActionSent
             and qaIdentity().partnershipProbe ~= true
+            and qaIdentity().socialBreadthProbe ~= true
             and not NLQAMultiplayer.socialConversationComplete
             and NLSocialClient.snapshots[0] then
         local snapshot=NLSocialClient.snapshots[0]
@@ -1778,7 +1928,8 @@ Events.OnRenderTick.Add(function()
                 .. " revision=" .. tostring(sentRevision))
         end
     end
-    if qaIdentity().username=="nl-host" and NLQAMultiplayer.snapshots > 0
+    if qaIdentity().username=="nl-host" and qaIdentity().socialBreadthProbe ~= true
+            and NLQAMultiplayer.snapshots > 0
             and not NLQAMultiplayer.wardrobeSeedSent then
         local player=getSpecificPlayer(0)
         if player then
@@ -1950,7 +2101,8 @@ Events.OnRenderTick.Add(function()
     -- conversation. Start the real production career path after the host has
     -- an authoritative profile snapshot, while the social pacing probe
     -- continues independently.
-    if qaIdentity().username=="nl-host" and NLQAMultiplayer.snapshots > 0
+    if qaIdentity().username=="nl-host" and qaIdentity().socialBreadthProbe ~= true
+            and NLQAMultiplayer.snapshots > 0
             and not (qaIdentity().deliveryCrashProbe == true
                 and NLQAMultiplayer.deliveryRecoverySnapshot)
             and (qaIdentity().verticalSliceProbe ~= true
@@ -2519,6 +2671,7 @@ Events.OnRenderTick.Add(function()
     if not isClient() or qaIdentity().username ~= "nl-host" or NLQAMultiplayer.streamWalkObserved
             or NLQAMultiplayer.streamProbeObserved
             or qaIdentity().promotionProbe == true
+            or qaIdentity().socialBreadthProbe == true
             or (NLQAMultiplayer.careerSeeded and not NLQAMultiplayer.careerPickupObserved) then return end
     if not NLQAMultiplayer.streamWalkSent then
         NLQAMultiplayer.streamWalkFrame = NLQAMultiplayer.streamWalkFrame + 1
@@ -2556,6 +2709,7 @@ end)
 Events.OnRenderTick.Add(function()
     if not isClient() or qaIdentity().username ~= "nl-host" then return end
     if qaIdentity().promotionProbe == true then return end
+    if qaIdentity().socialBreadthProbe == true then return end
     if NLQAMultiplayer.streamProbeObserved then return end
     if not NLQAMultiplayer.streamWalkSent
             or (not NLQAMultiplayer.streamWalkObserved and NLQAMultiplayer.streamWalkFrame < 1800) then return end

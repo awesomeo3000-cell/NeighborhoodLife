@@ -1,8 +1,29 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.96)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.97)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.97 richer neighborhood social action slice
+
+The first neighborhood slice now exposes three additional server-authoritative
+NPC conversations through the production world-object menu: `Ask about work`,
+`Talk about home`, and `Compliment`. Each authored neighbor has a personality
+line for the new topics; successful actions persist bounded friendship, trust,
+attraction, pacing and per-action counters, and the menu exposes partnership,
+breakup and apology actions only when the authoritative relationship snapshot
+allows them.
+
+`tests/social.lua`, `tests/npc-interaction-menu.lua` and the consolidated
+Lua 5.1/Kahlua engine-VM pipeline cover the new branches and routing. The
+hands-free Build 42.20.4 capture in
+`evidence/v138/actual/social-breadth/` records a real host sending all three
+production menu actions against Marisol and a real guest receiving the
+replicated `ask_work,talk_home,compliment` event sequence. This is actual
+host-plus-guest gameplay evidence for the social slice, not a mock or
+engine-VM claim. Broader social routines and native NPC server-body
+reannouncement remain open; QA helpers and profiles remain outside the release
+package.
 
 ## v1.96 actual global ModData crash recovery
 

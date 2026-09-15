@@ -13,6 +13,9 @@ local actions = {
     { label = "Introduce", action = "introduce" },
     { label = "Chat", action = "chat" },
     { label = "Tell a joke", action = "joke" },
+    { label = "Ask about work", action = "ask_work" },
+    { label = "Talk about home", action = "talk_home" },
+    { label = "Compliment", action = "compliment" },
     { label = "Flirt", action = "flirt" },
     { label = "Ask on a date", action = "date" },
     { label = "View relationship", action = "relationships" },
@@ -48,6 +51,15 @@ local function activeDateFor(index, id)
         end
     end
     return false
+end
+
+local function relationshipFor(index, id)
+    local snapshot = NLSocialClient and NLSocialClient.snapshots
+        and NLSocialClient.snapshots[index]
+    for _, neighbor in ipairs((snapshot and snapshot.neighbors) or {}) do
+        if neighbor.id == id then return neighbor end
+    end
+    return nil
 end
 
 local function npcLabel(id)
@@ -129,6 +141,15 @@ function NLNpcInteractionMenu.menu(index, context, worldobjects)
             end
             if activeDateFor(index, id) then
                 addAction(submenu, "Spend time together", player, id, "date_activity")
+            end
+            local relationship = relationshipFor(index, id)
+            if relationship and relationship.canPartner then
+                addAction(submenu, "Commit to partnership", player, id, "partner")
+            elseif relationship and relationship.canBreakup then
+                addAction(submenu, "End partnership", player, id, "breakup")
+            end
+            if relationship and relationship.canApologize then
+                addAction(submenu, "Apologize", player, id, "apologize")
             end
             addAction(submenu, "Give 1 item", player, id, "give")
             local requestType = firstNpcInventoryType(id)
