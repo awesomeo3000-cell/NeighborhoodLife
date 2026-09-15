@@ -413,27 +413,13 @@ Events.OnTick.Add(function()
         rereadSizeOk, rereadSize = pcall(reread.size, reread)
     end
     local arrayOk, playerArray = pcall(function() return IsoPlayer.players end)
-    local emptySlot = "none"
+    local emptySlot = "not-indexable"
     local arrayRead = "unavailable"
     if arrayOk and playerArray then
         arrayRead = type(playerArray)
-        for index = 0, 7 do
-            local slotOk, slot = pcall(function() return playerArray[index] end)
-            if slotOk and not slot then emptySlot = tostring(index); break end
-        end
     end
-    local arrayAdd = "unavailable"
+    local arrayAdd = "not-attempted"
     local body = NLNpcAuthority.bodies.marisol
-    if arrayOk and playerArray and body and emptySlot ~= "none" then
-        local index = tonumber(emptySlot)
-        if playerArray.set then
-            local setOk = pcall(playerArray.set, playerArray, index, body)
-            arrayAdd = setOk and "set" or "set-error"
-        else
-            local setOk = pcall(function() playerArray[index] = body end)
-            arrayAdd = setOk and "index" or "index-error"
-        end
-    end
     local postArrayOk, postArray = pcall(function() return IsoPlayer.getPlayers() end)
     local postArraySizeOk, postArraySize = false, "unavailable"
     if postArrayOk and postArray and postArray.size then
@@ -531,15 +517,10 @@ Events.OnTick.Add(function()
     local slots = {}
     local playerCountOk, playerCount = pcall(function() return IsoPlayer.numPlayers end)
     local playerArrayOk, playerArray = pcall(function() return IsoPlayer.players end)
-    if playerArrayOk and playerArray then
-        for index = 0, 7 do
-            local slotOk, slot = pcall(function() return playerArray[index] end)
-            if slotOk and slot then
-                local nameOk, name = pcall(slot.getUsername, slot)
-                slots[#slots + 1] = tostring(index) .. "=" .. tostring(nameOk and name or "body")
-            end
-        end
-    end
+    -- Build 42 exposes IsoPlayer.players as a Java array userdata. Kahlua's
+    -- numeric indexing logs an engine error instead of returning a slot, so
+    -- this probe records the surface type without touching the unsupported
+    -- index operation.
     nativeBridgeProbeDone = true
     print("NLQA NATIVE BRIDGE PROBE: IsoPlayerType=table members=" .. table.concat(members, ",")
         .. " getPlayers=" .. tostring(getPlayersOk) .. " count=" .. tostring(countResult)

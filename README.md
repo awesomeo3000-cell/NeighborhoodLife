@@ -13,7 +13,7 @@ player visual sync helpers are available, but `GameServer`,
 lookup are absent. A connected player and a production NPC both report a nil
 owner, while the info table contains only position/path/animation fields. The
 full filtered global surface is captured in
-`evidence/v135/actual/native-surface-clean/`. This is actual installed-game
+`evidence/v135/actual/native-surface-final/`. This is actual installed-game
 diagnostic evidence, not native replication completion; the compatibility
 movement stream remains the playable path while the per-connection bridge is
 open. The QA probe remains outside the production package.

@@ -7,7 +7,7 @@ The original broad goal remains active. This ledger is not a reduced definition 
 ## v1.94 native server-surface probe
 
 The fresh isolated Build 42.20.4 host-plus-guest diagnostic in
-`evidence/v135/actual/native-surface-clean/` enumerated the server's filtered
+`evidence/v135/actual/native-surface-final/` enumerated the server's filtered
 connection/player/server global surface. The real dedicated Kahlua host
 exposes `getOnlinePlayers`, `getPlayerInfo`, and direct visual-sync helpers,
 but it exposes no `GameServer`, `getConnectionFromPlayer`,
