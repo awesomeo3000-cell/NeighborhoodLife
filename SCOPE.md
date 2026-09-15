@@ -1,4 +1,4 @@
-# Neighborhood Life — full scope and evidence ledger (v1.78)
+# Neighborhood Life — full scope and evidence ledger (v1.79)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
@@ -1243,3 +1243,14 @@ exposes `GameServer=nil`, `Java=nil`, and `getClass=nil`.
 - Client-list admission would not by itself prove server reannouncement or
   vanilla network replication. The native server-body gate remains open, and
   the QA probe remains outside the production package.
+
+## v1.79 production install tooling
+
+- `tools/install-production-mod.ps1` now synchronizes the current
+  `NeighborhoodLife` source into the explicit Windows user mod directory used
+  by a normal Steam launch.
+- The installer validates the destination, stages the copy, removes only the
+  prior `NeighborhoodLife` mod folder, and rejects QA/test content before the
+  replacement is moved into place.
+- This improves repeatable local release installation; it does not change the
+  native NPC replication gate or count as multiplayer gameplay evidence.

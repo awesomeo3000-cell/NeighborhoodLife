@@ -2203,23 +2203,29 @@ Events.OnRenderTick.Add(function()
     local body = NLNpcClient and NLNpcClient.bodies and NLNpcClient.bodies.marisol
     if not body then return end
     NLQAMultiplayer.clientRosterProbeDone = true
-    local clientOk, client = pcall(function() return GameClient and GameClient.instance end)
-    if not clientOk or not client then
-        emit("NATIVE CLIENT ROSTER PROBE", "status=GameClient-unavailable")
-        return
+    local clientType = "nil"
+    local clientOk, client = pcall(function()
+        clientType = type(getGameClient)
+        if clientType == "function" then return getGameClient() end
+        return GameClient and GameClient.instance
+    end)
+    local clientSource = clientOk and client and "getGameClient" or "unavailable"
+    local connectedGetterOk, connectedGetter = pcall(function() return getConnectedPlayers end)
+    local connectedOk, connected = false, nil
+    if connectedGetterOk and type(connectedGetter) == "function" then
+        connectedOk, connected = pcall(connectedGetter)
     end
-    local mapOk, map = pcall(function() return GameClient.IDToPlayerMap end)
-    local connectedOk, connected = pcall(client.getConnectedPlayers, client)
-    local beforeOk, beforePlayers = pcall(client.getPlayers, client)
+    local onlineGetterOk, onlineGetter = pcall(function() return getOnlinePlayers end)
+    local beforeOk, beforePlayers = false, nil
+    if onlineGetterOk and type(onlineGetter) == "function" then
+        beforeOk, beforePlayers = pcall(onlineGetter)
+    end
     local before = beforeOk and beforePlayers and beforePlayers.size
             and beforePlayers:size() or -1
     local key = 30001
     local idOk = false
     if body.setOnlineID then idOk = pcall(body.setOnlineID, body, key) end
-    local mapPutOk = false
-    if mapOk and map and map.put then
-        mapPutOk = pcall(map.put, map, key, body)
-    end
+    local mapPutOk = "unavailable"
     local connectedAddOk = false
     if connectedOk and connected and connected.add then
         local containsOk, contains = pcall(connected.contains, connected, body)
@@ -2229,8 +2235,10 @@ Events.OnRenderTick.Add(function()
             connectedAddOk = true
         end
     end
-    pcall(function() client.idMapDirty = true end)
-    local afterOk, afterPlayers = pcall(client.getPlayers, client)
+    local afterOk, afterPlayers = false, nil
+    if onlineGetterOk and type(onlineGetter) == "function" then
+        afterOk, afterPlayers = pcall(onlineGetter)
+    end
     local after = afterOk and afterPlayers and afterPlayers.size
             and afterPlayers:size() or -1
     local found = false
@@ -2244,6 +2252,8 @@ Events.OnRenderTick.Add(function()
         .. " setOnlineID=" .. tostring(idOk) .. " mapPut=" .. tostring(mapPutOk)
         .. " connectedAdd=" .. tostring(connectedAddOk) .. " before=" .. tostring(before)
         .. " after=" .. tostring(after) .. " found=" .. tostring(found)
+        .. " clientSource=" .. tostring(clientSource)
+        .. " clientType=" .. tostring(clientType)
         .. " source=qa-local-replica")
 end)
 

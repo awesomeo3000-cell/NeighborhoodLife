@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.78)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.79)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -12,6 +12,15 @@ Build 42 client, `GameClient` is not exposed to Lua, so the probe records
 `status=GameClient-unavailable`; the visible NPCs continue through the
 production compatibility replica path. The probe does not claim server
 replication and remains outside the production package.
+
+## v1.79 production install tooling
+
+Run `pwsh -NoProfile -ExecutionPolicy Bypass -File
+tools/install-production-mod.ps1` after building to synchronize only the
+production `NeighborhoodLife` folder into `%USERPROFILE%\\Zomboid\\mods`.
+The installer validates the destination, stages the copy, and excludes QA
+helpers and test profiles, so a normal Steam launch uses the current local
+production mod rather than an older manually copied folder.
 
 ## Install and try
 Copy the NeighborhoodLife directory into your Windows user Zomboid/mods directory.
