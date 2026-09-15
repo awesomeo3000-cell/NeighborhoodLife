@@ -53,7 +53,7 @@ def suites(target: Path, engine: bool, record: list[str]) -> None:
         suite_names.append("neighbors")
     if (target / "42/media/lua/client/NL/Plumbob.lua").exists():
         suite_names.append("plumbob")
-    suite_names += ["interfaces", "wardrobe-panel", "wardrobe-authority", "aspirations", "replication"]
+    suite_names += ["interfaces", "wardrobe-panel", "wardrobe-authority", "aspirations", "replication", "world-journal"]
     if (target / "42/media/lua/shared/NL/Households.lua").exists():
         suite_names += ["households", "household-authority", "household-panel"]
     if (target / "42/media/lua/server/NL/HouseholdFurnishings.lua").exists():

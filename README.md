@@ -1,8 +1,24 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.94)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.95)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.95 global ModData mutation journal
+
+Production server commands that change only Neighborhood Life's shared ModData
+now prepare a deep world journal before profile, household, and social writes,
+then clear it at the response boundary. A reconnecting player can restore the
+pre-command world after a dedicated-server stop instead of inheriting a
+half-applied household, relationship, or profile mutation. Career delivery and
+inventory exchange keep their narrower journals because those transactions also
+span vanilla player-save inventory state.
+
+`tests/world-journal.lua` passes both the Lua 5.1 mock and installed Build 42
+Kahlua engine-VM suites. This closes a deterministic atomicity gap; it is not
+actual crash-restart gameplay evidence. Native NPC server-body reannouncement
+remains open, and the full multiplayer, career, customization, clothing,
+relationship, household, and optional-zombie scope remains active.
 
 ## v1.94 native server-surface probe
 

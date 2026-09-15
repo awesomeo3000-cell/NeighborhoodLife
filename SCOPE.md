@@ -1,8 +1,25 @@
-# Neighborhood Life — full scope and evidence ledger (v1.94)
+# Neighborhood Life — full scope and evidence ledger (v1.95)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
 The original broad goal remains active. This ledger is not a reduced definition of done.
+
+## v1.95 global ModData mutation journal
+
+The production server now journals a deep copy of the shared Neighborhood Life
+ModData before profile, household, and social commands mutate it. The journal
+clears only after the command reaches its response boundary; a later command
+from the same account restores the pre-command world when a dedicated server
+stopped during the mutation. Career delivery and player/NPC inventory exchange
+retain their dedicated cross-owner journals because they also cover vanilla
+player-save inventory state.
+
+`tests/world-journal.lua` passes the Lua 5.1 mock suite and the installed Build
+42.20.4 Kahlua engine-VM suite. These are deterministic mock/engine-VM tests,
+not actual crash-restart gameplay evidence. The next evidence gate is a fresh
+hands-free forced-stop run proving this journal repairs a real household or
+social mutation after reconnect; native NPC server-body reannouncement remains
+separately open.
 
 ## v1.94 native server-surface probe
 

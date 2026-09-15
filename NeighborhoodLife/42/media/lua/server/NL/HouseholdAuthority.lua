@@ -400,7 +400,15 @@ function NLHouseholdAuthority.command(module, command, player, args)
     local key, now = NLAuthority.key(player), getTimestampMs()
     if NLHouseholdAuthority.lastRequest[key] and now - NLHouseholdAuthority.lastRequest[key] < 200 then return end
     NLHouseholdAuthority.lastRequest[key] = now
-    local world, profile = NLAuthority.world(), NLDomain.profile(NLAuthority.world(), key)
+    local world = NLAuthority.world()
+    local globalRecovered, globalState = NLAuthority.recoverWorldJournal(world, player)
+    if not globalRecovered then
+        snapshot(player, "Global data recovery pending: " .. tostring(globalState))
+        return
+    end
+    if globalState == "repaired" and NLQAMultiplayerServer then
+        print("NLQA GLOBAL JOURNAL RECOVERY: state=repaired player=" .. tostring(key))
+    end
     local recovered, recoveryState = recoverStorageJournal(world, player)
     if not recovered then
         snapshot(player, "Household storage recovery pending: " .. tostring(recoveryState))
@@ -410,11 +418,15 @@ function NLHouseholdAuthority.command(module, command, player, args)
         print("NLQA HOUSEHOLD JOURNAL RECOVERY: state=" .. tostring(recoveryState)
             .. " player=" .. tostring(key))
     end
-    NLDomain.day(profile, math.floor(getGameTime():getWorldAgeHours() / 24))
     local message = recoveryState == "repaired" and "Household storage recovery repaired"
         or recoveryState == "completed" and "Household storage recovery completed"
         or recoveryState == "rolled-back" and "Household storage recovery rolled back"
+        or globalState == "repaired" and "Global data recovery repaired"
         or "Updated"
+    local journal = command ~= "refresh" and command ~= "store" and command ~= "retrieve"
+        and command ~= "furnishing" and NLAuthority.beginWorldJournal(world, player, command) or nil
+    local profile = NLDomain.profile(world, key)
+    NLDomain.day(profile, math.floor(getGameTime():getWorldAgeHours() / 24))
     local household = profile.householdId and NLHouseholds.get(world, profile.householdId) or nil
 
     if command == "create" then
@@ -456,6 +468,7 @@ function NLHouseholdAuthority.command(module, command, player, args)
             local ok
             ok, message = NLHouseholds.transferOwner(household, key, targetName)
             if ok then
+                NLAuthority.commitWorldJournal(world, journal)
                 notifyMembers(world, household, message)
                 if NLQAMultiplayerServer then
                     print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key)
@@ -476,6 +489,7 @@ function NLHouseholdAuthority.command(module, command, player, args)
             if ok then
                 profile.householdId, profile.householdInvite = invited.id, nil
                 profile.revision = profile.revision + 1
+                NLAuthority.commitWorldJournal(world, journal)
                 notifyMembers(world, invited, key .. " joined the household")
                 if NLQAMultiplayerServer then
                     print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key)
@@ -519,6 +533,7 @@ function NLHouseholdAuthority.command(module, command, player, args)
                 if homeReward > 0 then
                     message = message .. " / Home aspiration reward +" .. tostring(homeReward) .. " credits"
                 end
+                NLAuthority.commitWorldJournal(world, journal)
                 notifyMembers(world, household, message)
                 if NLQAMultiplayerServer then
                     print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key)
@@ -558,6 +573,7 @@ function NLHouseholdAuthority.command(module, command, player, args)
             end
         end
     end
+    NLAuthority.commitWorldJournal(world, journal)
     snapshot(player, message)
     if NLQAMultiplayerServer then
         print("NLQA HOUSEHOLD RESULT: username=" .. tostring(key) .. " command=" .. tostring(command)

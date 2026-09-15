@@ -18,6 +18,62 @@ function NLAuthority.key(player)
     return name
 end
 
+-- Commands that change only Neighborhood Life's ModData still need a durable
+-- boundary: a dedicated-server stop between two table writes must not leave a
+-- household, relationship, or profile half-applied. The journal stores a deep
+-- copy of the complete world before the command and is cleared only once the
+-- command has reached its response boundary. Cross-owner inventory and career
+-- delivery commands keep their narrower journals below because those also
+-- cover vanilla player-save state.
+function NLAuthority.beginWorldJournal(world, player, command)
+    if type(world) ~= "table" or not player then return nil end
+    local before = NLDomain.copy(world)
+    local journal = {
+        version = 1,
+        state = "prepared",
+        player = NLAuthority.key(player),
+        command = command,
+        before = before,
+    }
+    world.mutationJournal = journal
+    return journal
+end
+
+local function clearWorldJournal(world, journal)
+    if world and (not journal or world.mutationJournal == journal) then
+        world.mutationJournal = nil
+        return true
+    end
+    return false
+end
+
+local function restoreWorld(world, before)
+    for key in pairs(world) do world[key] = nil end
+    for key, value in pairs(before) do world[key] = NLDomain.copy(value) end
+end
+
+function NLAuthority.recoverWorldJournal(world, player)
+    local journal = world and world.mutationJournal
+    if type(journal) ~= "table" then return true, "none" end
+    if not player or NLAuthority.key(player) ~= journal.player then
+        return false, "Global data recovery belongs to another account"
+    end
+    if type(journal.before) ~= "table" then
+        return false, "Global data recovery record is incomplete"
+    end
+    restoreWorld(world, journal.before)
+    world.mutationJournal = nil
+    if NLQAMultiplayerServer then
+        print("NLQA GLOBAL JOURNAL RECOVERY: state=repaired player=" .. tostring(journal.player)
+            .. " command=" .. tostring(journal.command))
+    end
+    return true, "repaired"
+end
+
+function NLAuthority.commitWorldJournal(world, journal)
+    return clearWorldJournal(world, journal)
+end
+
 function NLAuthority.broadcastPresence()
     if not isServer() or type(getOnlinePlayers) ~= "function" then return 0 end
     local ok, players = pcall(getOnlinePlayers)
@@ -322,26 +378,41 @@ function NLAuthority.command(module, command, player, args)
     local world = NLAuthority.world()
     local recoveryMessage = "Updated"
     local recoveryState = "none"
+    local worldRecovered, worldState = NLAuthority.recoverWorldJournal(world, player)
+    if not worldRecovered then
+        NLAuthority.snapshot(player, NLDomain.profile(world, key),
+            "Global data recovery pending: " .. tostring(worldState))
+        return
+    end
+    if worldState ~= "none" and NLQAMultiplayerServer then
+        print("NLQA GLOBAL JOURNAL RECOVERY: state=" .. tostring(worldState)
+            .. " player=" .. tostring(key))
+    end
+    if worldState == "repaired" then
+        recoveryMessage = "Global data recovery repaired"
+        recoveryState = worldState
+    end
     if command ~= "presence" then
         local recovered, state = recoverDeliveryJournal(world, player)
-        recoveryState = state
+        if state ~= "none" then recoveryState = state end
         if not recovered then
             NLAuthority.snapshot(player, NLDomain.profile(world, key),
                 "Career delivery recovery pending: " .. tostring(recoveryState))
             return
         end
-        if recoveryState ~= "none" and NLQAMultiplayerServer then
-            print("NLQA DELIVERY JOURNAL RECOVERY: state=" .. tostring(recoveryState)
+        if state ~= "none" and NLQAMultiplayerServer then
+            print("NLQA DELIVERY JOURNAL RECOVERY: state=" .. tostring(state)
                 .. " player=" .. tostring(key))
         end
-        if recoveryState == "repaired" then
+        if state == "repaired" then
             recoveryMessage = "Career delivery recovery repaired"
-        elseif recoveryState == "completed" then
+        elseif state == "completed" then
             recoveryMessage = "Career delivery recovery confirmed"
-        elseif recoveryState == "rolled-back" then
+        elseif state == "rolled-back" then
             recoveryMessage = "Career delivery recovery rolled back"
         end
     end
+    local journal = command ~= "deliver" and NLAuthority.beginWorldJournal(world, player, command) or nil
     local profile = NLDomain.profile(world, key)
     NLDomain.day(profile, math.floor(getGameTime():getWorldAgeHours() / 24))
     local ok, message = true, recoveryMessage
@@ -356,6 +427,7 @@ function NLAuthority.command(module, command, player, args)
         ok, message = NLAuthority.selectAppearance(profile, args.preset)
     end
     if not ok then message = "Not completed: " .. message end
+    NLAuthority.commitWorldJournal(world, journal)
     NLAuthority.snapshot(player, profile, message, recoveryState)
 end
 

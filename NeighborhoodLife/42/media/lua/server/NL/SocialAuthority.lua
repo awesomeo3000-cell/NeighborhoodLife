@@ -305,6 +305,14 @@ function NLSocialAuthority.command(module,command,player,args)
             and now-NLSocialAuthority.lastRequest[key]<200 then return end
     if command~="refresh" then NLSocialAuthority.lastRequest[key]=now end
     local world=NLAuthority.world()
+    local globalRecovered,globalState=NLAuthority.recoverWorldJournal(world,player)
+    if not globalRecovered then
+        NLSocialAuthority.snapshot(player,"Global data recovery pending: "..tostring(globalState))
+        return
+    end
+    if globalState=="repaired" and NLQAMultiplayerServer then
+        print("NLQA GLOBAL JOURNAL RECOVERY: state=repaired player="..tostring(key))
+    end
     local recovered,recoveryState=NLSocialAuthority.recoverInventoryJournal(world,player)
     if not recovered then
         NLSocialAuthority.snapshot(player,"Inventory recovery pending: "..tostring(recoveryState))
@@ -317,8 +325,10 @@ function NLSocialAuthority.command(module,command,player,args)
         end
     end
     local message="Updated"
+    if globalState=="repaired" then message="Global data recovery repaired" end
     if recoveryState=="repaired" then message="Inventory recovery repaired" end
     local completed=command~="interact"
+    local journal=command=="interact" and NLAuthority.beginWorldJournal(world,player,command) or nil
     if command=="interact" then
         local npc=(NLAuthority.world().neighbors or {})[args.id]
         local body=NLSocialAuthority.bodies[args.id]
@@ -349,6 +359,7 @@ function NLSocialAuthority.command(module,command,player,args)
             if not completed then message="Not completed: "..message end
         end
     end
+    NLAuthority.commitWorldJournal(world,journal)
     NLSocialAuthority.snapshot(player,message)
     if completed and (command=="interact" or command=="give" or command=="request") then
         local eventAction=command
