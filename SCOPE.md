@@ -1,4 +1,4 @@
-# Neighborhood Life — full scope and evidence ledger (v1.79)
+# Neighborhood Life — full scope and evidence ledger (v1.80)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
@@ -1256,3 +1256,18 @@ exposes `GameServer=nil`, `Java=nil`, and `getClass=nil`.
   replacement is moved into place.
 - This improves repeatable local release installation; it does not change the
   native NPC replication gate or count as multiplayer gameplay evidence.
+
+## v1.80 native packet-route probe
+
+- The QA-only native roster run now invokes the public server-side
+  `sendSyncPlayerFields`, `syncVisuals` and `sendHumanVisual` helpers against
+  each authored native body. In the actual Build 42.20.4 capture at
+  `evidence/v115/actual/native-packet/`, every helper call returned, but all
+  three Lua-created bodies still reported the default `onlineId=1`.
+- Neither connected client gained an engine-native NPC in its derived online
+  player list. The host and guest client probes still report `found=false`, so
+  these public sync routes do not replace the missing connected-player packet
+  and server-roster bridge.
+- This narrows the native replication investigation without changing the
+  production compatibility route or claiming native body replication. The QA
+  helper and isolated profiles remain outside the production package.

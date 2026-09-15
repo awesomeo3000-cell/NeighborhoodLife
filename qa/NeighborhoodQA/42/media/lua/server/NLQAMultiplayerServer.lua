@@ -32,6 +32,7 @@ local householdViewpointMoved = false
 local inventoryFaultArmed = false
 local householdRestartProbeSent = false
 local nativeRosterProbeDone = false
+local nativePacketProbeDone = false
 local nativeBridgeProbeDone = false
 local partnershipProbeSeeded = false
 local partnershipSnapshotAttempts = 0
@@ -222,6 +223,46 @@ Events.OnTick.Add(function()
     print("NLQA NATIVE ROSTER PROBE: before=" .. tostring(before)
         .. " after=" .. tostring(players:size()) .. " added=" .. tostring(added)
         .. " bodies=" .. table.concat(details, ","))
+end)
+
+-- QA-only packet-route experiment.  GlobalObject exposes a small set of
+-- server-side player sync helpers even when GameServer itself is hidden from
+-- Lua.  Invoke only the routes that accept an IsoPlayer directly, then use
+-- the existing client native-roster assertion to see whether any route can
+-- create an engine-owned body.  This remains diagnostic and never enters the
+-- production package.
+local function invokeNativePacketGlobal(name, body)
+    local globalOk, fn = pcall(function() return _G[name] end)
+    if not globalOk or type(fn) ~= "function" then return "unavailable" end
+    local callOk, result
+    if name == "sendSyncPlayerFields" then
+        callOk, result = pcall(fn, body, 0)
+    else
+        callOk, result = pcall(fn, body)
+    end
+    if callOk then return "called" end
+    return "error:" .. tostring(result)
+end
+
+Events.OnTick.Add(function()
+    if nativePacketProbeDone or NLQANativeRosterProbe ~= true
+            or not NLNpcAuthority or not NLNpcAuthority.started
+            or type(getOnlinePlayers) ~= "function" then return end
+    local listOk, players = pcall(getOnlinePlayers)
+    if not listOk or not players or not players.size or players:size() < 2 then return end
+    local details = {}
+    for _, id in ipairs({"marisol", "kenji", "amara"}) do
+        local body = NLNpcAuthority.bodies[id]
+        if body then
+            local onlineOk, onlineId = pcall(body.getOnlineID, body)
+            details[#details + 1] = id .. "=onlineId=" .. tostring(onlineOk and onlineId or "error")
+                .. " syncFields=" .. invokeNativePacketGlobal("sendSyncPlayerFields", body)
+                .. " visuals=" .. invokeNativePacketGlobal("syncVisuals", body)
+                .. " humanVisual=" .. invokeNativePacketGlobal("sendHumanVisual", body)
+        end
+    end
+    nativePacketProbeDone = true
+    print("NLQA NATIVE PACKET PROBE: " .. table.concat(details, " "))
 end)
 
 -- QA-only bridge discovery. The installed dedicated server may publish the

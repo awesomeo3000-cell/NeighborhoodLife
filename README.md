@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.79)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.80)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -23,6 +23,18 @@ production `NeighborhoodLife` folder into `%USERPROFILE%\\Zomboid\\mods`.
 The installer validates the destination, stages the copy, and excludes QA
 helpers and test profiles, so a normal Steam launch uses the current local
 production mod rather than an older manually copied folder.
+
+## v1.80 native packet-route probe
+
+The QA-only native roster run now invokes the public server-side
+`sendSyncPlayerFields`, `syncVisuals` and `sendHumanVisual` helpers against all
+three production NPC bodies. The actual Build 42.20.4 capture in
+`evidence/v115/actual/native-packet/` reports every helper call returned, but
+each Lua-created body still had the default `onlineId=1` and neither client's
+derived online-player list gained an NPC. The public sync helpers therefore do
+not replace the missing connected-player packet/registry bridge. This is
+diagnostic evidence only; production NPCs continue through the authoritative
+`npc_presence` compatibility route and QA remains outside the package.
 
 ## Install and try
 Copy the NeighborhoodLife directory into your Windows user Zomboid/mods directory.
