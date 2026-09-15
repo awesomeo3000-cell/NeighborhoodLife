@@ -39,12 +39,21 @@ local function hasOnlineId(body, onlineId)
     return ok and tonumber(value) == tonumber(onlineId)
 end
 
--- Some Build 42 server Lua environments publish IsoPlayer getters but omit
--- the public setter from their Kahlua method table. Try the public method and
--- then the public field, but only treat the slot as assigned after a getter
--- round-trip verifies it.
+-- Build 42's dedicated Kahlua host exposes IsoPlayer.setOnlineID(short), but
+-- Lua numbers arrive as Double and the field proxy is not writable there. Do
+-- not invoke either unsupported route on that host: it produces an engine
+-- error for every authored body without changing the id. A future engine
+-- bridge can provide a typed setter explicitly; the older GameServer-exposed
+-- host keeps the original best-effort calls for compatibility.
 local function assignNativeOnlineId(body, onlineId)
     if not body or onlineId == nil then return false end
+    local typedOk, typedSetter = pcall(function() return NLNativeOnlineIdSetter end)
+    if typedOk and type(typedSetter) == "function" then
+        local callOk = pcall(typedSetter, body, tonumber(onlineId))
+        if callOk and hasOnlineId(body, onlineId) then return true end
+    end
+    local serverOk, serverApi = pcall(function() return GameServer end)
+    if not serverOk or type(serverApi) ~= "table" then return false end
     local methodOk, setter = pcall(function() return body.setOnlineID end)
     if methodOk and setter then pcall(setter, body, onlineId) end
     if hasOnlineId(body, onlineId) then return true end

@@ -1,8 +1,27 @@
-# Neighborhood Life — full scope and evidence ledger (v1.92)
+# Neighborhood Life — full scope and evidence ledger (v1.93)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
 The original broad goal remains active. This ledger is not a reduced definition of done.
+
+## v1.93 native online-id runtime cleanup and movement regression
+
+The production NPC authority now skips Build 42's unsupported Lua calls to
+`IsoPlayer.setOnlineID(short)` and the non-writable field proxy when the
+dedicated host does not expose a `GameServer` table. A future typed bridge may
+provide `NLNativeOnlineIdSetter`, while the GameServer-backed compatibility
+fixture keeps the older best-effort setter behavior. The fresh installed-game
+host run produced zero `assignNativeOnlineId`, `expected argument`, or
+`attempted index` matches, removing the repeated runtime noise without claiming
+native server-body reannouncement.
+
+The actual Build 42.20.4 host-plus-guest run with zombies disabled recorded
+changing authoritative server coordinates and `0.40`-tile Marisol motion on
+both clients. This is actual gameplay evidence for the production compatibility
+movement stream, separate from mock/unit and Kahlua engine-VM tests. Capture:
+`evidence/v134/actual/npc-movement-disabled/`. Native per-connection body
+registration and reannouncement remain open; QA helpers and profiles remain
+outside the production package.
 
 ## v1.92 IsoPlayer static-slot probe
 

@@ -1,8 +1,27 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.92)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.93)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.93 native online-id runtime cleanup and movement regression
+
+The production NPC authority now leaves the Build 42 dedicated Kahlua host's
+unsupported `IsoPlayer.setOnlineID(short)` and field-proxy routes untouched when
+the exposed `GameServer` bridge is unavailable. A future typed bridge can opt in
+through `NLNativeOnlineIdSetter`; the existing GameServer-backed compatibility
+fixture retains its best-effort setter behavior. This removes the repeated
+`expected argument of type short` and `attempted index of non-table` errors from
+the actual host without pretending that native server-body reannouncement is
+implemented.
+
+A fresh isolated Build 42.20.4 host-plus-guest run with zombies disabled still
+observed changing authoritative server coordinates and `0.40`-tile Marisol
+motion on both clients, with zero matches for those native online-id errors.
+This is actual installed-game multiplayer evidence, distinct from mock/unit and
+Kahlua engine-VM tests. The capture is in
+`evidence/v134/actual/npc-movement-disabled/`; QA helpers and profiles remain
+outside the production package.
 
 ## v1.92 IsoPlayer static-slot probe
 
