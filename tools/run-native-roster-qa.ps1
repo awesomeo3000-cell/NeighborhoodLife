@@ -1,4 +1,5 @@
 param(
+    [switch]$NativeReflectionProbe,
     [string]$ProfileRoot = 'E:\pzmod\test-profile-v100-native-roster',
     [string]$EvidenceRoot = 'E:\pzmod\evidence\v100\actual\native-roster'
 )
@@ -42,7 +43,7 @@ function Wait-LogPattern($path, $pattern, $seconds) {
 Stop-IsolatedProcesses
 & pwsh -NoProfile -ExecutionPolicy Bypass -File `
     (Join-Path $root 'tools\launch-multiplayer-qa.ps1') `
-    -NativeRosterProbe -ProfileRoot $base -EvidenceRoot $evidence
+    -NativeRosterProbe -NativeReflectionProbe:$NativeReflectionProbe -ProfileRoot $base -EvidenceRoot $evidence
 $launcherExit = $LASTEXITCODE
 "QA launcher exit=$launcherExit" | Set-Content (Join-Path $evidence 'launcher.stdout.log')
 if ($launcherExit -ne 0) { throw "QA launcher failed with exit $launcherExit" }

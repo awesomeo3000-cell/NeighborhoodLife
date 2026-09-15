@@ -3,13 +3,15 @@
 NLQAMultiplayerServer = true
 if isClient() then return end
 pcall(require, "NLQANativeRosterConfig")
+pcall(require, "NLQANativeReflectionConfig")
 pcall(require, "NLQANpcMovementConfig")
 pcall(require, "NLQAPartnershipConfig")
 local ok,err=pcall(function() require "NL/Authority" end)
 print("NLQA MP SERVER BOOT: authority=" .. tostring(NLAuthority ~= nil) .. " requireOk=" .. tostring(ok)
     .. " error=" .. tostring(err))
 for _, name in ipairs({"getClass", "importClass", "Java", "luautils", "GameServer", "GameClient",
-    "addZombiesInOutfit", "createZombie", "IsoZombie", "IsoDirections"}) do
+    "getNumClassFunctions", "getClassFunction", "getNumClassFields", "getClassField",
+    "getClassFieldVal", "addZombiesInOutfit", "createZombie", "IsoZombie", "IsoDirections"}) do
     print("NLQA MP SERVER BRIDGE: " .. name .. "=" .. tostring(type(_G[name])))
 end
 if type(luautils) == "table" then
@@ -34,6 +36,7 @@ local householdRestartProbeSent = false
 local nativeRosterProbeDone = false
 local nativePacketProbeDone = false
 local nativeBridgeProbeDone = false
+local nativeReflectionProbeDone = false
 local partnershipProbeSeeded = false
 local partnershipSnapshotAttempts = 0
 local npcMovementSampleTick = 0
@@ -294,9 +297,24 @@ Events.OnTick.Add(function()
     elseif not getPlayersOk then
         countResult = "call-error"
     end
+    local slots = {}
+    local playerCountOk, playerCount = pcall(function() return IsoPlayer.numPlayers end)
+    local playerArrayOk, playerArray = pcall(function() return IsoPlayer.players end)
+    if playerArrayOk and playerArray then
+        for index = 0, 7 do
+            local slotOk, slot = pcall(function() return playerArray[index] end)
+            if slotOk and slot then
+                local nameOk, name = pcall(slot.getUsername, slot)
+                slots[#slots + 1] = tostring(index) .. "=" .. tostring(nameOk and name or "body")
+            end
+        end
+    end
     nativeBridgeProbeDone = true
     print("NLQA NATIVE BRIDGE PROBE: IsoPlayerType=table members=" .. table.concat(members, ",")
-        .. " getPlayers=" .. tostring(getPlayersOk) .. " count=" .. tostring(countResult))
+        .. " getPlayers=" .. tostring(getPlayersOk) .. " count=" .. tostring(countResult)
+        .. " numPlayers=" .. tostring(playerCountOk and playerCount or "error")
+        .. " playersArray=" .. tostring(playerArrayOk and type(playerArray) or "error")
+        .. " slots=" .. table.concat(slots, ","))
 end)
 
 -- The restart tool adds this QA-only server config after the initial household
@@ -324,8 +342,52 @@ end)
 -- class loader.  Try the public Java methods through that loader before
 -- declaring native server-body reannouncement unavailable.  This probe never
 -- enters the production mod package.
+local function reflectionMemberName(value)
+    local text = tostring(value)
+    local methodName = string.match(text, "%.([%w_]+)%(")
+    if methodName then return methodName end
+    return string.match(text, "%.([%w_]+)$") or text
+end
+
+local function reflectionCall(value, methodName, ...)
+    local args = {...}
+    local directOk, directResult = pcall(function()
+        return value[methodName](value, unpack(args))
+    end)
+    if directOk then return true, directResult, "colon" end
+    local staticOk, staticResult = pcall(function()
+        return value[methodName](unpack(args))
+    end)
+    if staticOk then return true, staticResult, "static" end
+    return false, directResult, tostring(staticResult)
+end
+
+local function findReflectiveMethod(target, needle)
+    if type(getNumClassFunctions) ~= "function" or type(getClassFunction) ~= "function" then
+        return nil, "helpers-unavailable"
+    end
+    local countOk, count = pcall(getNumClassFunctions, target)
+    if not countOk or not count then return nil, "method-count-error" end
+    for index = 0, math.min(count - 1, 520) do
+        local methodOk, method = pcall(getClassFunction, target, index)
+        if methodOk and method and string.find(tostring(method), needle, 1, true) then
+            return method, tostring(method)
+        end
+    end
+    return nil, "method-not-found:" .. needle
+end
+
+local function invokeReflectiveMethod(method, target, ...)
+    if not method then return false, "method-unavailable" end
+    local args = {...}
+    local ok, result = pcall(function() return method:invoke(target, unpack(args)) end)
+    return ok, result
+end
+
 local function tryReflectiveNpcReannounce(players)
-    if not NLNpcAuthority or not NLNpcAuthority.bodies then
+    if nativeReflectionProbeDone or NLQANativeReflectionProbe ~= true
+            or not players or not players.size or players:size() < 2 then return 0 end
+    if not NLNpcAuthority or not NLNpcAuthority.started or not NLNpcAuthority.bodies then
         print("NLQA MP REFLECTION: npc-authority-unavailable")
         return 0
     end
@@ -340,16 +402,131 @@ local function tryReflectiveNpcReannounce(players)
         print("NLQA MP REFLECTION: no-native-npc-body")
         return 0
     end
-    -- The dedicated server's `getClass()` result is a Kahlua class proxy, not
-    -- a reflection table. Calling Java reflection methods on that proxy emits
-    -- engine errors and cannot reach the static GameServer class. Keep this
-    -- probe diagnostic-only; the global bridge report above is authoritative.
+    nativeReflectionProbeDone = true
+
     local classOk, bodyClass = pcall(function() return source:getClass() end)
+    local classText = classOk and tostring(bodyClass) or "error:" .. tostring(bodyClass)
+    local loadOk, gameServerClass, loadRoute = false, nil, "unavailable"
+    local bridgeErrors = {}
+    if classOk and bodyClass then
+        local loaderMethod, loaderMethodText = findReflectiveMethod(bodyClass, ".getClassLoader()")
+        local loaderOk, loader = invokeReflectiveMethod(loaderMethod, bodyClass)
+        if loaderOk and loader then
+            local loadMethod, loadMethodText = findReflectiveMethod(loader, ".loadClass(java.lang.String)")
+            loadOk, gameServerClass = invokeReflectiveMethod(loadMethod, loader, "zombie.network.GameServer")
+            if loadOk then loadRoute = "class-loader" end
+            if not loadOk then bridgeErrors[#bridgeErrors + 1] = "loadClass=" .. tostring(loadMethodText) end
+        end
+        if not loaderOk or not loader then bridgeErrors[#bridgeErrors + 1] = "loader=" .. tostring(loaderMethodText) end
+        if not loadOk then
+            local forNameMethod, forNameMethodText = findReflectiveMethod(bodyClass, ".forName(java.lang.String)")
+            loadOk, gameServerClass = invokeReflectiveMethod(forNameMethod, nil, "zombie.network.GameServer")
+            if loadOk then loadRoute = "class-for-name" end
+            if not loadOk then bridgeErrors[#bridgeErrors + 1] = "forName=" .. tostring(forNameMethodText) end
+        end
+    end
+
+    local instanceOk, gameServer = false, nil
+    local fieldNames, methodNames = {}, {}
+    if loadOk and gameServerClass then
+        local newInstanceMethod, newInstanceMethodText = findReflectiveMethod(gameServerClass, ".newInstance()")
+        instanceOk, gameServer = invokeReflectiveMethod(newInstanceMethod, gameServerClass)
+        if not instanceOk then bridgeErrors[#bridgeErrors + 1] = "newInstance=" .. tostring(newInstanceMethodText) end
+    end
+    if not instanceOk then
+        local ctorOk, ctor = pcall(function() return GameServer() end)
+        if ctorOk and ctor then instanceOk, gameServer = true, ctor end
+    end
+
+    local function enumerateReflection()
+        if not instanceOk or not gameServer then return end
+        if type(getNumClassFields) == "function" and type(getClassField) == "function" then
+            local countOk, count = pcall(getNumClassFields, gameServer)
+            if countOk and count then
+                for index = 0, math.min(count - 1, 220) do
+                    local fieldOk, field = pcall(getClassField, gameServer, index)
+                    if fieldOk and field then
+                        local name = reflectionMemberName(field)
+                        if name == "Players" or name == "IDToPlayerMap" or name == "PlayerToAddressMap"
+                                or name == "UserNameToPlayerMap" then
+                            fieldNames[#fieldNames + 1] = name
+                        end
+                    end
+                end
+            end
+        end
+        if type(getNumClassFunctions) == "function" and type(getClassFunction) == "function" then
+            local countOk, count = pcall(getNumClassFunctions, gameServer)
+            if countOk and count then
+                for index = 0, math.min(count - 1, 420) do
+                    local methodOk, method = pcall(getClassFunction, gameServer, index)
+                    if methodOk and method then
+                        local name = reflectionMemberName(method)
+                        if name == "sendPlayerConnected" or name == "getConnectionFromPlayer"
+                                or name == "sendSyncPlayerFields" or name == "syncVisuals"
+                                or name == "syncHumanVisual" then
+                            methodNames[#methodNames + 1] = name
+                        end
+                    end
+                end
+            end
+        end
+    end
+    local enumerateOk, enumerateError = pcall(enumerateReflection)
+    local sent = 0
+    local invokeStatus = "unavailable"
+    if enumerateOk and instanceOk and gameServer and #methodNames > 0
+            and type(getNumClassFunctions) == "function" and type(getClassFunction) == "function" then
+        local countOk, count = pcall(getNumClassFunctions, gameServer)
+        if countOk and count then
+            for index = 0, math.min(count - 1, 420) do
+                local methodOk, method = pcall(getClassFunction, gameServer, index)
+                local name = methodOk and method and reflectionMemberName(method) or ""
+                if methodOk and method and name == "sendPlayerConnected" then
+                    local target = players:get(0)
+                    if target == source and players:size() > 1 then target = players:get(1) end
+                    local connectionOk, connection = pcall(function()
+                        return GameServer.getConnectionFromPlayer(target)
+                    end)
+                    if not connectionOk then
+                        connectionOk, connection = pcall(function()
+                            return getConnectionFromPlayer(target)
+                        end)
+                    end
+                    if connectionOk and connection then
+                        local callOk = pcall(function() return method:invoke(nil, source, connection) end)
+                        if callOk then sent = sent + 1; invokeStatus = "called" else invokeStatus = "error" end
+                    else
+                        invokeStatus = "connection-unavailable"
+                    end
+                    break
+                end
+            end
+        end
+    elseif not enumerateOk then
+        invokeStatus = "enumerate-error"
+    end
     print("NLQA MP REFLECTION: classOk=" .. tostring(classOk)
-        .. " classProxy=" .. tostring(bodyClass)
-        .. " methods=unavailable")
-    return 0
+        .. " classProxy=" .. classText .. " loadOk=" .. tostring(loadOk)
+        .. " loadRoute=" .. loadRoute .. " instanceOk=" .. tostring(instanceOk)
+        .. " fields=" .. table.concat(fieldNames, ",")
+        .. " methods=" .. table.concat(methodNames, ",")
+        .. " invoke=" .. invokeStatus .. " sent=" .. tostring(sent)
+        .. " error=" .. tostring(enumerateError)
+        .. " bridgeErrors=" .. table.concat(bridgeErrors, ";"))
+    return sent
 end
+
+-- The first production refresh can arrive before the guest has completed the
+-- connection handshake. Retry the diagnostic only after the real server has
+-- two connected players, without changing the production refresh behavior.
+Events.OnTick.Add(function()
+    if nativeReflectionProbeDone or NLQANativeReflectionProbe ~= true
+            or not NLNpcAuthority or not NLNpcAuthority.started
+            or type(getOnlinePlayers) ~= "function" then return end
+    local listOk, players = pcall(getOnlinePlayers)
+    if listOk and players then tryReflectiveNpcReannounce(players) end
+end)
 
 -- QA-only viewpoint setup: after the real invite/accept flow, place the guest
 -- at the shared home so the production client can exercise streamed-in tile

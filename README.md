@@ -1183,3 +1183,20 @@ adding the three authored NPC bodies to that copy did not create an
 engine-native NPC body on either connected client. The production compatibility
 `npc_presence` route therefore remains authoritative until Build 42 exposes a
 real server roster or a native player-connected packet bridge.
+
+## v1.81 debug-gated reflection boundary
+
+The QA-only multiplayer launcher now passes Build 42's actual Java debug
+property (`-Ddebug=true`) instead of the invalid server program argument
+(`-debug`). This exposes the installed server's reflection helper functions,
+which the QA probe uses to test the remaining native reannouncement route.
+
+The actual host-plus-guest capture in
+`evidence/v116/actual/native-reflection/` reached the probe with
+`getNumClassFunctions=function`, `getClassFunction=function`,
+`getNumClassFields=function`, `getClassField=function`, and
+`getClassFieldVal=function`. Build 42 still reports `GameServer=nil`, and its
+reflection guard rejects `java.lang.Class`/`ClassLoader` targets, so no
+native server-body reannouncement was produced. The production
+`npc_presence` compatibility path remains unchanged; QA helpers stay outside
+the production package.

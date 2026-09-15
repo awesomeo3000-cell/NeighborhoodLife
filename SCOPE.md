@@ -1,4 +1,4 @@
-# Neighborhood Life — full scope and evidence ledger (v1.80)
+# Neighborhood Life — full scope and evidence ledger (v1.81)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
@@ -1271,3 +1271,24 @@ exposes `GameServer=nil`, `Java=nil`, and `getClass=nil`.
 - This narrows the native replication investigation without changing the
   production compatibility route or claiming native body replication. The QA
   helper and isolated profiles remain outside the production package.
+
+## v1.81 debug-gated reflection boundary
+
+- The QA-only multiplayer launcher now passes `-Ddebug=true`, the Java system
+  property read by Build 42's `GameServer.main`, instead of the invalid
+  `-debug` program argument. The roster runner accepts
+  `-NativeReflectionProbe` and writes its config only into the isolated QA
+  server profile.
+- The actual Build 42.20.4 host-plus-guest capture in
+  `evidence/v116/actual/native-reflection/` exposed the reflection helper
+  functions (`getNumClassFunctions`, `getClassFunction`, `getNumClassFields`,
+  `getClassField`, and `getClassFieldVal`) and exercised the diagnostic
+  reflection route. The loaded `GameServer` class still could not be acquired:
+  Build 42 reports `GameServer=nil`, and `LuaManager` rejects
+  `java.lang.Class` and `ClassLoader` reflection targets. The capture therefore
+  remains a negative native-reannouncement result, not a native-replication
+  claim.
+- Mock/unit and installed-game Kahlua suites remain separate from this actual
+  engine evidence. The production `NeighborhoodLife` tree is unchanged, and
+  the QA helper, isolated profiles, and evidence remain outside the release
+  package.
