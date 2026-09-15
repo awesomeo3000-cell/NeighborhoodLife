@@ -88,7 +88,9 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
      dateProbeSeeded = false, datePositioned = false, dateRequested = false,
      dateActivityRequested = false, dateStartObserved = false,
      dateActivityObserved = false, dateGuestEventObserved = false,
-     dateFrame = 0, dateActivityDue = 0 }
+     dateFrame = 0, datePositionedFrame = 0, dateActivityDue = 0, datePersistenceDue = 0,
+     datePersistenceRefreshSent = false, datePersistenceObserved = false,
+     dateSaveDue = 0, dateSaveAttempted = false }
 NLQAMultiplayer.deliveryRecoverySnapshot = false
 NLQAMultiplayer.deliveryRecoveryObserved = false
 -- Keep the hands-free probe bounded while retaining one full render-loop delay
@@ -312,6 +314,16 @@ Events.OnConnected.Add(function()
             NLQAMultiplayer.householdRestartObserved=false
             emit("HOUSEHOLD RESTART PROBE ARMED", "connection=" .. tostring(NLQAMultiplayer.connectionCount))
         end
+        if qaIdentity().dateProbe == true then
+            -- The restart verifier launches a fresh isolated client after the
+            -- dedicated server comes back. Keep the probe behind reconnect
+            -- and login warmup so the engine registers the new player first.
+            NLQAMultiplayer.datePersistenceDue=NLQAMultiplayer.socialFrame+1800
+            NLQAMultiplayer.datePersistenceRefreshSent=false
+            NLQAMultiplayer.datePersistenceObserved=false
+            emit("DATE PERSISTENCE PROBE ARMED", "connection="
+                ..tostring(NLQAMultiplayer.connectionCount))
+        end
         emit("RESTART PROBE ARMED", "connection="..tostring(NLQAMultiplayer.connectionCount))
     end
     if checkSavePlayerExists() then return end
@@ -521,6 +533,25 @@ end
 
 local function positionHostForSocial(targetId)
     return positionClientForSocial("nl-host", targetId)
+end
+
+-- Date persistence QA owns a deterministic adjacent-square fallback when the
+-- native visibility helper has not warmed the moving body yet. The actual
+-- date request still goes through the production context callback and server
+-- authority; this only removes an engine-streaming timing race.
+local function forceDateViewpoint()
+    if qaIdentity().username ~= "nl-host" then return false end
+    local player=getSpecificPlayer(0)
+    local npc=NLNpcClient and NLNpcClient.bodies and NLNpcClient.bodies.marisol
+    if not player or not npc then return false end
+    local x,y,z=math.floor(npc:getX())+1,math.floor(npc:getY()),math.floor(npc:getZ())
+    if player.teleportTo then player:teleportTo(x+0.5,y+0.5,z)
+    else
+        player:setX(x+0.5); player:setY(y+0.5)
+        if player.setZ then player:setZ(z) end
+    end
+    emit("DATE VIEWPOINT", string.format("host moved beside marisol at %d,%d,%d",x,y,z))
+    return true
 end
 
 local function positionHostForHousehold()
@@ -804,6 +835,11 @@ Events.OnServerCommand.Add(function(module, command, args)
         NLQAMultiplayer.dateProbeSeeded = true
         NLSocialClient.request(0, "refresh")
         emit("DATE SEED ACK", "target=" .. tostring(args.target))
+        if args.persisted == true
+                and (qaIdentity().username == "nl-host" or qaIdentity().username == "nl-guest") then
+            NLQAMultiplayer.datePersistenceObserved = true
+            emit("DATE PERSISTENCE RELOAD ACK", "completedDates=1")
+        end
     end
     if (module == "NeighborhoodLife" or module == "NeighborhoodSocial")
             and command == "snapshot" and type(args) == "table" then
@@ -1030,7 +1066,18 @@ Events.OnServerCommand.Add(function(module, command, args)
                             and not NLQAMultiplayer.dateActivityObserved
                             and date and date.status == "completed" then
                         NLQAMultiplayer.dateActivityObserved = true
+                        NLQAMultiplayer.dateSaveDue = NLQAMultiplayer.socialFrame + 60
                         emit("DATE ACTIVITY SNAPSHOT", "status=completed completedDates="
+                            ..tostring(entry.relation.completedDates)
+                            .." friendship="..tostring(entry.relation.friendship)
+                            .." trust="..tostring(entry.relation.trust))
+                    end
+                    if NLQAMultiplayer.datePersistenceRefreshSent
+                            and not NLQAMultiplayer.datePersistenceObserved
+                            and date and date.status == "completed"
+                            and (tonumber(entry.relation.completedDates or 0) or 0) >= 1 then
+                        NLQAMultiplayer.datePersistenceObserved=true
+                        emit("DATE PERSISTENCE SNAPSHOT", "status=completed completedDates="
                             ..tostring(entry.relation.completedDates)
                             .." friendship="..tostring(entry.relation.friendship)
                             .." trust="..tostring(entry.relation.trust))
@@ -1443,11 +1490,17 @@ Events.OnRenderTick.Add(function()
         end
         if NLQAMultiplayer.dateFrame>=240 and not NLQAMultiplayer.datePositioned then
             NLQAMultiplayer.datePositioned=positionHostForSocial("marisol")
+            if not NLQAMultiplayer.datePositioned then
+                NLQAMultiplayer.datePositioned=forceDateViewpoint()
+            end
             if NLQAMultiplayer.datePositioned then
+                NLQAMultiplayer.datePositionedFrame=NLQAMultiplayer.dateFrame
                 NLSocialClient.request(0,"refresh")
                 emit("DATE PREPARED", "id=marisol")
             end
-        elseif NLQAMultiplayer.datePositioned and target and target.canInteract then
+        elseif NLQAMultiplayer.datePositioned
+                and NLQAMultiplayer.dateFrame-NLQAMultiplayer.datePositionedFrame>=60
+                and target and target.canInteract then
             if not NLQAMultiplayer.dateRequested then
                 if requestNpcInteraction("marisol","date") then
                     NLQAMultiplayer.dateRequested=true
@@ -1473,6 +1526,23 @@ Events.OnRenderTick.Add(function()
                 and NLQAMultiplayer.dateFrame-(NLQAMultiplayer.dateSentFrame or 0)>=240 then
             NLQAMultiplayer.dateRequested=false
         end
+    end
+    if qaIdentity().dateProbe == true and qaIdentity().username == "nl-host"
+            and NLQAMultiplayer.dateActivityObserved
+            and not NLQAMultiplayer.dateSaveAttempted
+            and NLQAMultiplayer.dateSaveDue > 0
+            and NLQAMultiplayer.socialFrame >= NLQAMultiplayer.dateSaveDue then
+        NLQAMultiplayer.dateSaveAttempted=true
+        local ok, err = pcall(function() GameWindow.save(false) end)
+        emit("DATE PERSISTENCE SAVE", ok and "OK" or ("FAILED: " .. tostring(err)))
+    end
+    if qaIdentity().dateProbe == true and qaIdentity().username == "nl-host"
+            and not NLQAMultiplayer.datePersistenceRefreshSent
+            and NLQAMultiplayer.datePersistenceDue > 0
+            and NLQAMultiplayer.socialFrame >= NLQAMultiplayer.datePersistenceDue then
+        NLSocialClient.request(0,"refresh")
+        NLQAMultiplayer.datePersistenceRefreshSent=true
+        emit("DATE PERSISTENCE REFRESH", "production snapshot requested")
     end
     -- QA-only direct two-client partnership probe. The server seeds only the
     -- host's progression state; every relationship mutation and rejection

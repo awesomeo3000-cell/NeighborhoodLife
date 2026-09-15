@@ -1,8 +1,26 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.85)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.86)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.86 NPC date persistence across a dedicated-server restart
+
+The first neighborhood romance activity now has a restart-tested persistence
+slice. The real Build 42.20.4 host completed `date_activity` with Marisol,
+the server called the engine's normal save hook (`save(false)`), and the same
+isolated profile was used to stop and restart the dedicated server. A fresh
+host and fresh guest then reconnected; the restarted server logged
+`NLQA DATE SEED SKIPPED: persisted completedDates=1` and carried the persisted
+state marker to the fresh multiplayer session.
+
+The actual hands-free capture is in
+`evidence/v122/actual/date-persistence-24/`. Its `RESULT.txt` records the
+completed host-plus-guest restart gate. This is actual installed-game evidence,
+separate from Lua mock tests and installed-game Kahlua engine-VM tests. The
+QA-only persistence marker and restart launcher remain outside the production
+package. Native NPC server-body reannouncement is still an open Build 42 API
+gate, so this milestone does not claim that native replication path complete.
 
 ## v1.85 two-step NPC date activity
 

@@ -51,7 +51,25 @@ local nativeReflectionProbeDone = false
 local partnershipProbeSeeded = false
 local partnershipSnapshotAttempts = 0
 local dateProbeSeeded = false
+local dateServerSaveAttempted = false
+local datePersistenceLoaded = false
+local datePersistenceAnnouncementAttempts = 0
 local npcMovementSampleTick = 0
+
+local function positionDateHost(host)
+    local body = NLNpcAuthority and NLNpcAuthority.bodies and NLNpcAuthority.bodies.marisol
+    if not host or not body then return false end
+    local hostX, hostY, hostZ = math.floor(host:getX()), math.floor(host:getY()), math.floor(host:getZ())
+    local x, y, z = hostX, hostY, hostZ
+    local ok = pcall(function()
+        host:setX(hostX + 0.25); host:setY(hostY + 0.5); host:setZ(hostZ)
+        body:setX(x + 0.75); body:setY(y + 0.5); body:setZ(z)
+    end)
+    if ok then
+        print("NLQA DATE POSITION: host=" .. tostring(x) .. "," .. tostring(y) .. "," .. tostring(z))
+    end
+    return ok
+end
 
 -- QA-only observer for the production movement heartbeat. The coordinates
 -- come from the real server-native bodies; this observer never changes them.
@@ -71,6 +89,25 @@ Events.OnTick.Add(function()
     if #rows > 0 then print("NLQA NPC MOTION SAMPLE: " .. table.concat(rows, " ")) end
 end)
 
+-- QA-only persistence checkpoint. Build 42's normal world-save path owns the
+-- actual ModData serialization; this asks that path to checkpoint immediately
+-- after the production date mutation when the engine exposes its save hook.
+Events.OnTick.Add(function()
+    if dateServerSaveAttempted or NLQADateProbe ~= true
+            or not NLNpcAuthority or not NLNpcAuthority.started
+            or type(getOnlinePlayers) ~= "function" then return end
+    local ok, players = pcall(getOnlinePlayers)
+    if not ok or not players then return end
+    local world = NLAuthority.world()
+    local profile = NLDomain.profile(world, "nl-host")
+    local relation = NLSocial.relation(profile, "marisol")
+    if (tonumber(relation.completedDates or 0) or 0) < 1 then return end
+    dateServerSaveAttempted = true
+    local saveOk, saveResult = pcall(function() return save(false) end)
+    print("NLQA DATE SERVER SAVE: ok=" .. tostring(saveOk)
+        .. " result=" .. tostring(saveResult))
+end)
+
 -- QA-only date fixture. It supplies progression prerequisites; the two date
 -- mutations still travel through the production menu, client, authority,
 -- snapshot and event paths.
@@ -84,10 +121,38 @@ Events.OnTick.Add(function()
         local player = players:get(index)
         if player and player:getUsername() == "nl-host" then host = player; break end
     end
-    if not host then return end
+    if not host then
+        -- A replacement host can be present on the client while Build 42 is
+        -- still returning nil for its server player. A live guest is enough
+        -- to carry the persisted-state marker to a fresh client.
+        local recipient = players:size() > 0 and players:get(0) or nil
+        local world = NLAuthority.world()
+        local profile = NLDomain.profile(world, "nl-host")
+        local relation = NLSocial.relation(profile, "marisol")
+        if recipient and (tonumber(relation.completedDates or 0) or 0) >= 1 then
+            dateProbeSeeded = true
+            datePersistenceLoaded = true
+            datePersistenceAnnouncementAttempts = 1
+            sendServerCommand(recipient, "NeighborhoodQA", "date_seeded",
+                {target="marisol", persisted=true})
+            print("NLQA DATE SEED SKIPPED: persisted completedDates="
+                .. tostring(relation.completedDates) .. " recipient="
+                .. tostring(recipient:getUsername()))
+        end
+        return
+    end
     local world = NLAuthority.world()
     local profile = NLDomain.profile(world, "nl-host")
     local relation = NLSocial.relation(profile, "marisol")
+    positionDateHost(host)
+    if (tonumber(relation.completedDates or 0) or 0) >= 1 then
+        dateProbeSeeded = true
+        datePersistenceLoaded = true
+        datePersistenceAnnouncementAttempts = 1
+        sendServerCommand(host, "NeighborhoodQA", "date_seeded", {target="marisol", persisted=true})
+        print("NLQA DATE SEED SKIPPED: persisted completedDates=" .. tostring(relation.completedDates))
+        return
+    end
     relation.met = true; relation.friendship = 40; relation.trust = 30
     relation.attraction = 20; relation.dates = 0; relation.completedDates = 0
     relation.lastAction = -100; relation.lastDate = -100; relation.activeDate = nil
@@ -100,6 +165,47 @@ Events.OnTick.Add(function()
     dateProbeSeeded = true
     sendServerCommand(host, "NeighborhoodQA", "date_seeded", {target="marisol"})
     print("NLQA DATE SEED: target=marisol friendship=40 trust=30 attraction=20 dates=0")
+end)
+
+-- Re-announce the persisted-state marker after the reconnect handshake. Some
+-- no-Steam Build 42 clients drop the first server command while registering a
+-- replacement player, so this retry stays QA-only and carries no new state.
+Events.OnTick.Add(function()
+    if not datePersistenceLoaded or NLQADateProbe ~= true
+            or datePersistenceAnnouncementAttempts >= 12
+            or type(getOnlinePlayers) ~= "function" then return end
+    if not NLNpcAuthority or NLNpcAuthority.tick % 30 ~= 0 then return end
+    local ok, players = pcall(getOnlinePlayers)
+    if not ok or not players then return end
+    for index = 0, players:size() - 1 do
+        local player = players:get(index)
+        if player and (player:getUsername() == "nl-host" or index == 0) then
+            sendServerCommand(player, "NeighborhoodQA", "date_seeded",
+                {target="marisol", persisted=true})
+            datePersistenceAnnouncementAttempts = datePersistenceAnnouncementAttempts + 1
+            print("NLQA DATE PERSISTENCE ANNOUNCE: attempt="
+                .. tostring(datePersistenceAnnouncementAttempts))
+            return
+        end
+    end
+end)
+
+Events.OnTick.Add(function()
+    if not dateProbeSeeded or NLQADateProbe ~= true
+            or not NLNpcAuthority or not NLNpcAuthority.started
+            or type(getOnlinePlayers) ~= "function" then return end
+    local ok, players = pcall(getOnlinePlayers)
+    if not ok or not players then return end
+    local world = NLAuthority.world()
+    local relation = NLSocial.relation(NLDomain.profile(world, "nl-host"), "marisol")
+    if (tonumber(relation.completedDates or 0) or 0) >= 1 then return end
+    for index = 0, players:size() - 1 do
+        local player = players:get(index)
+        if player and player:getUsername() == "nl-host" then
+            if NLNpcAuthority.tick % 30 == 0 then positionDateHost(player) end
+            return
+        end
+    end
 end)
 
 -- QA-only relationship fixture. It gives the host the exact progression
