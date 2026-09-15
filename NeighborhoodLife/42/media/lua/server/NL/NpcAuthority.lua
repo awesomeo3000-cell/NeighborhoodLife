@@ -149,6 +149,30 @@ local function gameServerApi()
 end
 NLNpcAuthority.resolveGameServer = gameServerApi
 
+-- A QA or future engine bridge may expose the typed server registration path as
+-- a JavaFunction. Prefer that path over Lua's optional GameServer surface: the
+-- bridge owns the per-connection UdpConnection slot, server registries and
+-- ConnectedPlayer packet, while this module keeps the compatibility packet as
+-- the fallback for unbridged installations.
+local function nativeNpcBridge()
+    local bridgeOk, bridge = pcall(function() return NLNativeNpcBridge end)
+    if bridgeOk and type(bridge) == "function" then return bridge end
+    return nil
+end
+NLNpcAuthority.resolveNativeNpcBridge = nativeNpcBridge
+
+-- An unowned server IsoPlayer can have its public position reset by the
+-- engine's network update unless the authoritative real-position fields are
+-- updated alongside the visible coordinates. A typed bridge may provide that
+-- write without relying on Build 42's restricted Lua field proxy.
+local function syncNativePosition(body, x, y, z)
+    local setterOk, setter = pcall(function() return NLNativeNpcPositionSync end)
+    if not setterOk or type(setter) ~= "function" then return false end
+    local callOk, result = pcall(setter, body, x, y, z)
+    return callOk and result ~= false
+end
+NLNpcAuthority.syncNativePosition = syncNativePosition
+
 local function javaCall(receiver, methodName, ...)
     if not receiver then return false, nil end
     local methodOk, method = pcall(function() return receiver[methodName] end)
@@ -197,6 +221,21 @@ NLNpcAuthority.registerNativeBody = registerNativeBody
 
 function NLNpcAuthority.reannounceTo(player)
     if not player then return 0 end
+    local typedBridge = nativeNpcBridge()
+    if typedBridge then
+        local sent = 0
+        for _, body in pairs(NLNpcAuthority.bodies) do
+            if body then
+                local bridgeOk, bridgeResult = pcall(typedBridge, body, player)
+                if bridgeOk and bridgeResult ~= false then
+                    sent = sent + 1
+                    emit("ROSTER source=typed id=" .. tostring(body:getOnlineID()))
+                end
+            end
+        end
+        if sent > 0 then emit("REANNOUNCE source=typed sent=" .. tostring(sent)) end
+        return sent
+    end
     local api, source = gameServerApi()
     if not api then return 0 end
     local connectionOk, connection = pcall(api.getConnectionFromPlayer, player)
@@ -512,13 +551,17 @@ local function npcReservedSquares()
 end
 
 local function setBodyPosition(body, square, x, y, z)
-    body:setX(x or square:getX() + 0.5)
-    body:setY(y or square:getY() + 0.5)
-    if z and body.setZ then body:setZ(z) end
+    local targetX = x or square:getX() + 0.5
+    local targetY = y or square:getY() + 0.5
+    local targetZ = z or square:getZ()
+    body:setX(targetX)
+    body:setY(targetY)
+    if body.setZ then body:setZ(targetZ) end
     body:setCurrent(square)
     body:setSceneCulled(false)
     body:setAlphaAndTarget(1, 1)
     body:resetModelNextFrame()
+    syncNativePosition(body, targetX, targetY, targetZ)
 end
 
 local function anchorPlayer()
@@ -890,6 +933,7 @@ function NLNpcAuthority.update()
                 if nextX then
                     body:setX(nextX); body:setY(nextY)
                     if square and square ~= true then body:setCurrent(square) end
+                    syncNativePosition(body, nextX, nextY, body:getZ())
                     NLNeighbors.position(world, id, nextX, nextY, body:getZ(), row.waypoint)
                 end
                 NLNpcAuthority.danger[id] = { zombie=threat, distance=threatDistance }
@@ -932,6 +976,12 @@ function NLNpcAuthority.update()
                     if nextX then
                         body:setX(nextX); body:setY(nextY)
                         if square and square ~= true then body:setCurrent(square) end
+                        syncNativePosition(body, nextX, nextY, body:getZ())
+                        -- The typed position bridge has already committed the
+                        -- authoritative step. Do not immediately run the
+                        -- unowned body's update frame, which can restore its
+                        -- previous network sample before the next heartbeat.
+                        rerouted = true
                     else
                         -- A blocked fallback route must not keep hammering the
                         -- same target forever.  Cancel the native behavior,
@@ -950,8 +1000,12 @@ function NLNpcAuthority.update()
                 end
                 local ok, result = true, nil
                 if not rerouted then
+                    local positionBridged = syncNativePosition(body, currentX, currentY, body:getZ())
                     ok, result = pcall(function()
-                        body:preupdate(); body:update(); local r = behavior:update(); body:postupdate(); return r
+                        if not positionBridged then body:preupdate(); body:update() end
+                        local r = behavior:update()
+                        if not positionBridged then body:postupdate() end
+                        return r
                     end)
                 end
                 if not ok then

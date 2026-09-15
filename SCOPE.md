@@ -1,8 +1,28 @@
-# Neighborhood Life — full scope and evidence ledger (v1.98)
+# Neighborhood Life — full scope and evidence ledger (v1.99)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
 The original broad goal remains active. This ledger is not a reduced definition of done.
+
+## v1.99 typed native NPC bridge and movement gate
+
+The production NPC authority now discovers two optional typed engine hooks:
+`NLNativeNpcBridge` registers an authored body in the connected server roster,
+while `NLNativeNpcPositionSync` commits authoritative coordinates for each
+native movement step. The normal mod remains compatible with the existing
+`npc_presence` replica route when those hooks are absent.
+
+The QA-only Java agent installs those hooks in the isolated dedicated server;
+the agent, launcher switch, profiles and logs remain outside the production
+mod. Lua 5.1 mocks and the installed-game Kahlua engine-VM suite pass
+separately. The actual Build 42.20.4 capture in
+`evidence/v140/actual/native-bridge-motion-3/` proves all three authored NPCs
+were registered as native online-player bodies, both real clients observed the
+three-body native roster, and both clients observed Marisol move by 0.40 tiles
+from server-authoritative coordinates. This closes the tested native
+server-body reannouncement and native movement gate under the typed bridge;
+ordinary Steam launching still lacks that optional bridge, and native-body
+restart persistence plus natural streamed-cell behavior remain open.
 
 ## v1.98 persistent NPC career routines
 
@@ -15,9 +35,9 @@ routine and career label to each client. Lua 5.1 mocks, the installed-game
 Kahlua engine-VM suite and a fresh hands-free Build 42.20.4 host-plus-guest run
 all pass. The actual capture in
 `evidence/v139/actual/npc-schedule/` records Marisol's home-to-tailor
-transition on the dedicated server and on both connected clients. The native
-server-body reannouncement gate and naturally streamed-cell movement remain
-open.
+transition on the dedicated server and on both connected clients. The v1.99
+typed bridge now covers native roster admission and movement; native-body
+restart persistence and naturally streamed-cell behavior remain open.
 
 ## v1.97 richer neighborhood social action slice
 

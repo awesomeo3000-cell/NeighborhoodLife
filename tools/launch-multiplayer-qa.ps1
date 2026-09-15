@@ -5,6 +5,7 @@ param(
     [switch]$DeliveryCrashProbe,
     [switch]$PromotionProbe,
     [switch]$NativeRosterProbe,
+    [switch]$NativeBridgeProbe,
     [switch]$NpcMovementProbe,
     [switch]$PartnershipProbe,
     [switch]$HomeAspirationProbe,
@@ -85,6 +86,7 @@ $deliveryCrashProbeValue = if ($DeliveryCrashProbe) { 'true' } else { 'false' }
 $globalJournalCrashProbeValue = if ($GlobalJournalCrashProbe) { 'true' } else { 'false' }
 $promotionProbeValue = if ($PromotionProbe) { 'true' } else { 'false' }
 $nativeRosterProbeValue = if ($NativeRosterProbe) { 'true' } else { 'false' }
+$nativeBridgeProbeValue = if ($NativeBridgeProbe) { 'true' } else { 'false' }
 $npcMovementProbeValue = if ($NpcMovementProbe) { 'true' } else { 'false' }
 $partnershipProbeValue = if ($PartnershipProbe) { 'true' } else { 'false' }
 $homeAspirationProbeValue = if ($HomeAspirationProbe) { 'true' } else { 'false' }
@@ -97,6 +99,9 @@ $npcScheduleProbeValue = if ($NpcScheduleProbe) { 'true' } else { 'false' }
 $zombiesDisabledProbeValue = if ($ZombiesDisabledProbe) { 'true' } else { 'false' }
 if ($NativeRosterProbe) {
     "NLQANativeRosterProbe = true" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQANativeRosterConfig.lua"
+}
+if ($NativeBridgeProbe) {
+    "NLQANativeBridgeProbe = true" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQANativeBridgeConfig.lua"
 }
 if ($NativeReflectionProbe) {
     "NLQANativeReflectionProbe = true" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQANativeReflectionConfig.lua"
@@ -117,8 +122,8 @@ if ($SocialBreadthProbe) {
 if ($NpcScheduleProbe) {
     "NLQANpcScheduleProbe = true" | Set-Content "$serverProfile\mods\NeighborhoodQA\42\media\lua\server\NLQANpcScheduleConfig.lua"
 }
-"NLQAIdentity = { username = `"nl-host`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, globalJournalCrashProbe = $globalJournalCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, nativeReflectionProbe = $nativeReflectionProbeValue, npcInteractionProbe = $npcInteractionProbeValue, dateProbe = $dateProbeValue, socialBreadthProbe = $socialBreadthProbeValue, npcScheduleProbe = $npcScheduleProbeValue, zombiesDisabledProbe = $zombiesDisabledProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, homeAspirationProbe = $homeAspirationProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$hostProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
-"NLQAIdentity = { username = `"nl-guest`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, globalJournalCrashProbe = $globalJournalCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, nativeReflectionProbe = $nativeReflectionProbeValue, npcInteractionProbe = $npcInteractionProbeValue, dateProbe = $dateProbeValue, socialBreadthProbe = $socialBreadthProbeValue, npcScheduleProbe = $npcScheduleProbeValue, zombiesDisabledProbe = $zombiesDisabledProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, homeAspirationProbe = $homeAspirationProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$guestProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+"NLQAIdentity = { username = `"nl-host`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, globalJournalCrashProbe = $globalJournalCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, nativeBridgeProbe = $nativeBridgeProbeValue, nativeReflectionProbe = $nativeReflectionProbeValue, npcInteractionProbe = $npcInteractionProbeValue, dateProbe = $dateProbeValue, socialBreadthProbe = $socialBreadthProbeValue, npcScheduleProbe = $npcScheduleProbeValue, zombiesDisabledProbe = $zombiesDisabledProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, homeAspirationProbe = $homeAspirationProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$hostProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
+"NLQAIdentity = { username = `"nl-guest`", address = `"127.0.0.1:16261`", password = `"qa-account-password`", reconnect = true, preserveHousehold = $preserveHouseholdValue, metadataProbe = $metadataProbeValue, deliveryCrashProbe = $deliveryCrashProbeValue, globalJournalCrashProbe = $globalJournalCrashProbeValue, promotionProbe = $promotionProbeValue, nativeRosterProbe = $nativeRosterProbeValue, nativeBridgeProbe = $nativeBridgeProbeValue, nativeReflectionProbe = $nativeReflectionProbeValue, npcInteractionProbe = $npcInteractionProbeValue, dateProbe = $dateProbeValue, socialBreadthProbe = $socialBreadthProbeValue, npcScheduleProbe = $npcScheduleProbeValue, zombiesDisabledProbe = $zombiesDisabledProbeValue, npcMovementProbe = $npcMovementProbeValue, partnershipProbe = $partnershipProbeValue, homeAspirationProbe = $homeAspirationProbeValue, verticalSliceProbe = $verticalSliceProbeValue }" | Set-Content "$guestProfile\mods\NeighborhoodQA\42\media\lua\client\NLQAIdentity.lua"
 
 # Keep both QA client windows windowed and silent; never leave a fullscreen QA window.
 function Set-WindowedOptions($path) {
@@ -174,6 +179,9 @@ $serverArgs = @('-Ddebug=true','--enable-native-access=ALL-UNNAMED','--add-expor
     '-Xmx2048m','-Dzomboid.steam=0','-Djava.library.path=./win64/;./','-cp','projectzomboid.jar',
     'zombie.network.GameServer','-servername','servertest',"-cachedir=$serverProfile",
     '-adminusername','admin','-adminpassword','qa-admin-password','-nosteam')
+if ($NativeBridgeProbe) {
+    $serverArgs = @('-javaagent:E:/pzmod/tests/native-bridge-qa.jar=' + $serverProfile) + $serverArgs
+}
 Set-Content "$serverProfile\server.stdout.log" ''
 Set-Content "$serverProfile\server.stderr.log" ''
 $server = Start-Process $java -ArgumentList $serverArgs -WorkingDirectory $game -RedirectStandardOutput "$serverProfile\server.stdout.log" -RedirectStandardError "$serverProfile\server.stderr.log" -PassThru

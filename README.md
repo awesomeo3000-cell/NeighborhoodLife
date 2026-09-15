@@ -1,8 +1,22 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.98)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.99)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.99 typed native NPC bridge and movement gate
+
+Production NPC authority discovers optional typed engine hooks for native roster
+admission and authoritative position synchronization. With the QA-only Java
+bridge installed in the isolated dedicated server, the actual Build 42.20.4
+capture in `evidence/v140/actual/native-bridge-motion-3/` registered all three
+authored NPCs as native online-player bodies; both real clients observed the
+same three-body native roster and Marisol's 0.40-tile movement. Lua 5.1 mocks,
+the installed-game Kahlua engine-VM suite and this actual host-plus-guest run
+are recorded separately. The bridge agent and launcher remain QA-only and are
+not shipped in the production mod. Ordinary Steam launching still uses the
+compatibility replica route unless an equivalent typed bridge is supplied;
+native-body restart persistence and natural cell streaming remain open.
 
 ## v1.98 persistent NPC career routines
 
@@ -13,8 +27,9 @@ routine is persisted in the NPC row and included in the normal presence
 heartbeat, so both multiplayer clients receive the same state. A fresh hands-free
 Build 42.20.4 capture records the real dedicated server and both clients seeing
 Marisol transition from home to her tailor routine:
-`evidence/v139/actual/npc-schedule/`. Native server-body reannouncement and
-natural streamed-cell movement remain open.
+`evidence/v139/actual/npc-schedule/`. The v1.99 typed bridge now covers native
+roster admission and movement; native-body restart persistence and natural
+streamed-cell behavior remain open.
 
 ## v1.97 richer neighborhood social action slice
 
@@ -306,8 +321,8 @@ position instead of snapping to the tile center.
 
 ## Roadmap
 1. In-game host/guest HUD verification and layout polish.
-2. Complete the persistent server-controlled NPC gate: native body
-   reannouncement, natural streamed-cell gameplay and danger handling. v1.32
+2. Complete the persistent server-controlled NPC gate: native-body restart
+   persistence, natural streamed-cell gameplay and danger handling. v1.32
    now retires native deaths persistently and schedules offscreen recovery
    without player-position fallback; v1.31 refuses blocked tiles and reroutes
    safely.

@@ -3,6 +3,7 @@
 NLQAMultiplayerServer = true
 if isClient() then return end
 pcall(require, "NLQANativeRosterConfig")
+pcall(require, "NLQANativeBridgeConfig")
 pcall(require, "NLQANativeReflectionConfig")
 pcall(require, "NLQANpcMovementConfig")
 pcall(require, "NLQAPartnershipConfig")
@@ -52,6 +53,7 @@ local nativePacketProbeDone = false
 local nativeBridgeProbeDone = false
 local nativeReflectionProbeDone = false
 local nativeSurfaceProbeDone = false
+local nativeTypedBridgeProbeDone = false
 local partnershipProbeSeeded = false
 local partnershipSnapshotAttempts = 0
 local dateProbeSeeded = false
@@ -83,6 +85,33 @@ end
 
 -- QA-only observer for the production movement heartbeat. The coordinates
 -- come from the real server-native bodies; this observer never changes them.
+Events.OnTick.Add(function()
+    if nativeTypedBridgeProbeDone or NLQANativeBridgeProbe ~= true
+            or not NLNpcAuthority or not NLNpcAuthority.started
+            or type(getOnlinePlayers) ~= "function" then return end
+    local bridgeOk, bridge = pcall(function() return NLNativeNpcBridge end)
+    if not bridgeOk or type(bridge) ~= "function" then return end
+    local playersOk, players = pcall(getOnlinePlayers)
+    if not playersOk or not players or not players.size or players:size() < 2 then return end
+    local target = players:get(0)
+    local body = NLNpcAuthority.bodies and NLNpcAuthority.bodies.marisol
+    if not target or not body then return end
+    local callOk, result = pcall(bridge, body, target)
+    local idOk, onlineId = pcall(body.getOnlineID, body)
+    nativeTypedBridgeProbeDone = true
+    print("NLQA NATIVE TYPED BRIDGE: available=function call=" .. tostring(callOk)
+        .. " result=" .. tostring(result) .. " id=" .. tostring(idOk and onlineId or "error")
+        .. " target=" .. tostring(target:getUsername()))
+    for index = 0, players:size() - 1 do
+        local player = players:get(index)
+        if player then
+            sendServerCommand(player, "NeighborhoodQA", "native_bridge_result", {
+                call=callOk, result=result, onlineId=idOk and onlineId or nil,
+            })
+        end
+    end
+end)
+
 Events.OnTick.Add(function()
     if NLQANpcMovementProbe ~= true or not NLNpcAuthority
             or not NLNpcAuthority.started then return end

@@ -87,11 +87,19 @@ NLAuthority={module='NeighborhoodLife',world=function() local w=ModData.getOrCre
 package.preload['NL/Authority']=function() return NLAuthority end
 package.preload['NL/SocialAuthority']=function() NLSocialAuthority={bodies={},register=function(id,b,h) NLSocialAuthority.bodies[id]=b; return true end}; return NLSocialAuthority end
 NLQANpc=true
+local nativePositionSyncCalls=0
+NLNativeNpcPositionSync=function(body,x,y,z)
+    nativePositionSyncCalls=nativePositionSyncCalls+1
+    body.realx=x; body.realy=y; body.realz=z
+    return true
+end
 require 'NL/NpcAuthority'
 assert(NLNpcAuthority and type(NLNpcAuthority.start)=='function')
 NLNpcAuthority.start()
 local body=NLNpcAuthority.bodies.marisol
 assert(body and body:isNpc() and body:getModData().NeighborhoodNpcId=='marisol','production body created')
+assert(nativePositionSyncCalls>=1,
+    'typed native position bridge receives authoritative spawn coordinates')
 assert(body:getOnlineID()==30001,'native NPC receives its stable authored online identity')
 assert(NLNpcAuthority.assignNativeOnlineId(body,30001),'online identity assignment verifies through the native getter')
 assert(NLNpcAuthority.routineForHour(NLNeighbors.definitions.marisol, 7)=='home',
@@ -189,6 +197,22 @@ if NLNpcAuthority.dangerNear and NLNpcAuthority.safeDangerStep then
 end
 local expectedBodies=#NLNpcAuthority.definitions
 if NLNpcAuthority.reannounceTo then
+    if NLNpcAuthority.resolveNativeNpcBridge then
+        local typedCalls=0
+        local previousBridge=NLNativeNpcBridge
+        NLNativeNpcBridge=function(source, recipient)
+            typedCalls=typedCalls+1
+            assert(source and recipient,'typed native bridge receives body and recipient')
+            return true
+        end
+        assert(NLNpcAuthority.resolveNativeNpcBridge() ~= nil,
+            'typed native bridge is discoverable from the server environment')
+        local beforeTyped=#reannounced
+        assert(NLNpcAuthority.reannounceTo(player)==expectedBodies
+            and typedCalls==expectedBodies and #reannounced==beforeTyped,
+            'typed native bridge reannounces every authored body without Lua GameServer')
+        NLNativeNpcBridge=previousBridge
+    end
     assert(NLNpcAuthority.reannounceTo(player)==expectedBodies
         and #reannounced==expectedBodies,
         'native reannounce adapter sends authored bodies to a connected player')

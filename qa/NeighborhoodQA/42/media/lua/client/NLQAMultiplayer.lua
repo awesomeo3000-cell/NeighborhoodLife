@@ -96,6 +96,7 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
      socialBreadthStage = 0, socialBreadthDue = 0, socialBreadthHostObserved = false,
      socialBreadthGuestEvents = {}, socialBreadthGuestObserved = false,
      npcScheduleHomeObserved = false, npcScheduleWorkObserved = false,
+     nativeBridgeObserved = false,
      npcScheduleLast = nil }
 NLQAMultiplayer.deliveryRecoverySnapshot = false
 NLQAMultiplayer.deliveryRecoveryObserved = false
@@ -1017,6 +1018,13 @@ Events.OnServerCommand.Add(function(module, command, args)
                 NLQAMultiplayer.careerDue=NLQAMultiplayer.socialFrame+30
             end
         end
+    end
+    if module == "NeighborhoodQA" and command == "native_bridge_result"
+            and type(args) == "table" and not NLQAMultiplayer.nativeBridgeObserved then
+        NLQAMultiplayer.nativeBridgeObserved = true
+        emit("NATIVE TYPED BRIDGE RESULT", "call=" .. tostring(args.call)
+            .. " result=" .. tostring(args.result)
+            .. " onlineId=" .. tostring(args.onlineId))
     end
     if module == "NeighborhoodLife" and command == "presence" and type(args) == "table"
             and type(args.players) == "table" then
@@ -2584,12 +2592,23 @@ Events.OnRenderTick.Add(function()
     local listOk, players = pcall(getOnlinePlayers)
     if not listOk or not players or not players.size or not players.get then return end
     local names = {}
+    local hintedIds = {}
+    if NLClient and NLClient.npcPresence and type(NLClient.npcPresence.npcs) == "table" then
+        for _, entry in ipairs(NLClient.npcPresence.npcs) do
+            local onlineId = tonumber(entry.onlineId)
+            if onlineId and onlineId >= 0 then hintedIds[onlineId] = tostring(entry.id) end
+        end
+    end
     for index = 0, players:size() - 1 do
         local object = players:get(index)
         local data = object and object.getModData and object:getModData() or nil
-        if data and data.NeighborhoodNpcId and data.NeighborhoodNpcReplica ~= true then
+        local onlineId = object and object.getOnlineID and object:getOnlineID() or nil
+        local hintedId = hintedIds[tonumber(onlineId)]
+        if ((data and data.NeighborhoodNpcId) or hintedId)
+                and (not data or data.NeighborhoodNpcReplica ~= true) then
             local name = object.getUsername and object:getUsername() or "?"
-            names[#names + 1] = tostring(data.NeighborhoodNpcId) .. "=" .. tostring(name)
+            names[#names + 1] = tostring((data and data.NeighborhoodNpcId) or hintedId)
+                .. "=" .. tostring(name) .. "/online=" .. tostring(onlineId)
         end
     end
     if #names > 0 then
