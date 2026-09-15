@@ -1213,3 +1213,16 @@ and requires the production retreat response in the enabled run. The captures
 in `evidence/v117/actual/zombie-modes/` are actual installed-game evidence;
 mock and Kahlua VM tests remain separately labeled, and QA helpers stay outside
 the production package.
+
+## v1.83 direct NPC world interaction
+
+Authored NPC bodies now expose a production world-object context menu. Selecting
+an NPC offers Introduce, Chat, Tell a joke, Flirt, Ask on a date, Give 1 item,
+and Request 1 item; each callback routes through `NLSocialClient` and the
+existing server-authoritative proximity, visibility, cooldown, relationship,
+and inventory checks. The new Lua/Kahlua contract proves discovery, social
+command routing, unequipped-item selection, NPC-inventory selection, and the
+dead-player guard. The menu contract is distinct from actual mouse gameplay;
+the hands-free vertical-slice regression capture is in
+`evidence/v118/actual/npc-context-regression/`, and QA helpers remain outside
+the production package.

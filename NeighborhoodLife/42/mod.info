@@ -1,4 +1,4 @@
 name=Neighborhood Life - Needs HUD
 id=NeighborhoodLifeHUD
-description=Life sim vertical slice: needs HUD, careers, outfit presets, relationships, three persistent native neighbors and server-authoritative household routines with an interactable storage furnishing. Native server-body reannouncement and broader household progression remain in development.
+description=Life sim vertical slice: needs HUD, careers, outfit presets, direct in-world NPC interactions, relationships, three persistent native neighbors and server-authoritative household routines with an interactable storage furnishing. Native server-body reannouncement and broader household progression remain in development.
 versionMin=42.0

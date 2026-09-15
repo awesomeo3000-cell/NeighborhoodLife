@@ -66,6 +66,8 @@ def suites(target: Path, engine: bool, record: list[str]) -> None:
         suite_names.append("npc-authority")
     if (target / "42/media/lua/client/NL/NpcClient.lua").exists():
         suite_names.append("npc-client")
+    if (target / "42/media/lua/client/NL/NpcInteractionMenu.lua").exists():
+        suite_names.append("npc-interaction-menu")
     if (target / "42/media/lua/client/NL/RemotePlayerClient.lua").exists():
         suite_names.append("remote-player-client")
     if (target / "42/media/lua/client/NL/Appearance.lua").exists():

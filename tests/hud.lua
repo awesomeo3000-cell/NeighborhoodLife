@@ -5,6 +5,7 @@ package.preload['NL/Relationships'] = function() NLRelationships={open=function(
 package.preload['NL/WardrobePanel'] = function() NLWardrobePanel={open=function() end} end
 package.preload['NL/HouseholdPanel'] = function() NLHouseholdPanel={open=function() end} end
 package.preload['NL/Plumbob'] = function() NLPlumbob={} return NLPlumbob end
+package.preload['NL/NpcInteractionMenu'] = function() return {} end
 ISPanel = {}
 function ISPanel:derive() local t = {}; t.__index = t; setmetatable(t, {__index=self}); return t end
 function ISPanel:new(x,y,w,h) return setmetatable({x=x,y=y,width=w,height=h}, self) end

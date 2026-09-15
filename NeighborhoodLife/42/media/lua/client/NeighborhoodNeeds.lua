@@ -4,6 +4,7 @@ require "NL/Relationships"
 require "NL/WardrobePanel"
 require "NL/HouseholdPanel"
 require "NL/Plumbob"
+require "NL/NpcInteractionMenu"
 if Events.OnTick then
     Events.OnTick.Add(function()
         if NLNpcAuthority and NLNpcAuthority.update then NLNpcAuthority.update() end
