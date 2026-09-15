@@ -1,8 +1,20 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.90)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.91)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.91 native roster surface probe
+
+The isolated Build 42.20.4 native-roster probe tested the `IsoPlayer` static
+surface in addition to the exposed online-player list. `IsoPlayer.getPlayers()`
+reported four native bodies, accepted three temporary additions, then returned
+four again on a fresh read; the `IsoPlayer.players` userdata exposed no writable
+empty slot. Both clients therefore continued to identify the rendered neighbor
+as `source=qa-local-replica`. This is actual installed-game host-plus-guest
+diagnostic evidence, not a native replication pass. It narrows the remaining
+server-body work to an engine-owned registration or packet bridge. The capture
+is in `evidence/v131/actual/native-roster-array/`, and the probe remains QA-only.
 
 ## v1.90 blocked-corner NPC movement fix and actual regression
 

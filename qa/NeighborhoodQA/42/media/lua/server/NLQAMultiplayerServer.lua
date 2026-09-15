@@ -45,6 +45,7 @@ local householdViewpointMoved = false
 local inventoryFaultArmed = false
 local householdRestartProbeSent = false
 local nativeRosterProbeDone = false
+local nativeStaticRosterProbeDone = false
 local nativePacketProbeDone = false
 local nativeBridgeProbeDone = false
 local nativeReflectionProbeDone = false
@@ -375,6 +376,73 @@ Events.OnTick.Add(function()
     print("NLQA NATIVE ROSTER PROBE: before=" .. tostring(before)
         .. " after=" .. tostring(players:size()) .. " added=" .. tostring(added)
         .. " bodies=" .. table.concat(details, ","))
+end)
+
+-- QA-only static-list experiment.  IsoPlayer.getPlayers() is a different
+-- exposed surface from getOnlinePlayers(); test whether its returned native
+-- list is the registry consumed by the server loop.  The mutation is limited
+-- to this isolated profile and is never part of the production mod.
+Events.OnTick.Add(function()
+    if nativeStaticRosterProbeDone or NLQANativeRosterProbe ~= true
+            or type(IsoPlayer) ~= "table" or not IsoPlayer.getPlayers
+            or not NLNpcAuthority or not NLNpcAuthority.started then return end
+    local listOk, players = pcall(IsoPlayer.getPlayers)
+    nativeStaticRosterProbeDone = true
+    if not listOk or not players then
+        print("NLQA ISO-PLAYER LIST PROBE: getPlayers=false")
+        return
+    end
+    local sizeOk, before = false, "unavailable"
+    if players.size then sizeOk, before = pcall(players.size, players) end
+    local added, addErrors = 0, 0
+    if players.add then
+        for _, id in ipairs({"marisol", "kenji", "amara"}) do
+            local body = NLNpcAuthority.bodies[id]
+            if body then
+                local addOk = pcall(players.add, players, body)
+                if addOk then added = added + 1 else addErrors = addErrors + 1 end
+            end
+        end
+    end
+    local afterOk, after = false, "unavailable"
+    if players.size then afterOk, after = pcall(players.size, players) end
+    local rereadOk, reread = pcall(IsoPlayer.getPlayers)
+    local rereadSizeOk, rereadSize = false, "unavailable"
+    if rereadOk and reread and reread.size then
+        rereadSizeOk, rereadSize = pcall(reread.size, reread)
+    end
+    local arrayOk, playerArray = pcall(function() return IsoPlayer.players end)
+    local emptySlot = "none"
+    local arrayRead = "unavailable"
+    if arrayOk and playerArray then
+        arrayRead = type(playerArray)
+        for index = 0, 7 do
+            local slotOk, slot = pcall(function() return playerArray[index] end)
+            if slotOk and not slot then emptySlot = tostring(index); break end
+        end
+    end
+    local arrayAdd = "unavailable"
+    local body = NLNpcAuthority.bodies.marisol
+    if arrayOk and playerArray and body and emptySlot ~= "none" then
+        local index = tonumber(emptySlot)
+        if playerArray.set then
+            local setOk = pcall(playerArray.set, playerArray, index, body)
+            arrayAdd = setOk and "set" or "set-error"
+        else
+            local setOk = pcall(function() playerArray[index] = body end)
+            arrayAdd = setOk and "index" or "index-error"
+        end
+    end
+    local postArrayOk, postArray = pcall(function() return IsoPlayer.getPlayers() end)
+    local postArraySizeOk, postArraySize = false, "unavailable"
+    if postArrayOk and postArray and postArray.size then
+        postArraySizeOk, postArraySize = pcall(postArray.size, postArray)
+    end
+    print("NLQA ISO-PLAYER LIST PROBE: getPlayers=true before=" .. tostring(sizeOk and before or "error")
+        .. " after=" .. tostring(afterOk and after or "error") .. " added=" .. tostring(added)
+        .. " addErrors=" .. tostring(addErrors) .. " reread=" .. tostring(rereadSizeOk and rereadSize or "error")
+        .. " array=" .. tostring(arrayRead) .. " emptySlot=" .. tostring(emptySlot)
+        .. " arrayAdd=" .. tostring(arrayAdd) .. " postArray=" .. tostring(postArraySizeOk and postArraySize or "error"))
 end)
 
 -- QA-only packet-route experiment.  GlobalObject exposes a small set of

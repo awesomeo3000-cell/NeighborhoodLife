@@ -1,8 +1,20 @@
-# Neighborhood Life — full scope and evidence ledger (v1.90)
+# Neighborhood Life — full scope and evidence ledger (v1.91)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
 The original broad goal remains active. This ledger is not a reduced definition of done.
+
+## v1.91 native roster surface probe
+
+The fresh hands-free Build 42.20.4 native-roster capture in
+`evidence/v131/actual/native-roster-array/` tested the `IsoPlayer` static
+surface as well as `getOnlinePlayers()`. `IsoPlayer.getPlayers()` reported four
+bodies, accepted three temporary additions, and returned four on a fresh read;
+the `IsoPlayer.players` userdata exposed no writable empty slot. Both clients
+continued to report `source=qa-local-replica`. This is actual installed-game
+diagnostic evidence, not native multiplayer completion, and narrows the open
+server-body work to an engine-owned registration or packet bridge. The probe is
+QA-only and remains outside the production package.
 
 ## v1.90 blocked-corner NPC movement fix and actual regression
 
