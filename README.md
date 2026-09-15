@@ -1214,15 +1214,18 @@ in `evidence/v117/actual/zombie-modes/` are actual installed-game evidence;
 mock and Kahlua VM tests remain separately labeled, and QA helpers stay outside
 the production package.
 
-## v1.83 direct NPC world interaction
+## v1.84 direct NPC world interaction evidence
 
 Authored NPC bodies now expose a production world-object context menu. Selecting
-an NPC offers Introduce, Chat, Tell a joke, Flirt, Ask on a date, Give 1 item,
-and Request 1 item; each callback routes through `NLSocialClient` and the
+an NPC offers Introduce, Chat, Tell a joke, Flirt, Ask on a date, View
+relationship, Give 1 item, and Request 1 item; each callback routes through
+`NLSocialClient` and the
 existing server-authoritative proximity, visibility, cooldown, relationship,
 and inventory checks. The new Lua/Kahlua contract proves discovery, social
 command routing, unequipped-item selection, NPC-inventory selection, and the
-dead-player guard. The menu contract is distinct from actual mouse gameplay;
-the hands-free vertical-slice regression capture is in
-`evidence/v118/actual/npc-context-regression/`, and QA helpers remain outside
-the production package.
+dead-player guard. The menu contract is distinct from actual mouse gameplay.
+The QA-only `tools/run-npc-context-qa.ps1` now invokes the production callback
+hands-free for both clients and requires the server's social-result records.
+The actual Build 42.20.4 capture is in
+`evidence/v119/actual/direct-npc-context/`; QA helpers remain outside the
+production package.

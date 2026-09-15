@@ -5,6 +5,7 @@
 -- of sight, cooldown and relationship state.
 require "NL/SocialClient"
 pcall(require, "NL/NpcClient")
+pcall(require, "NL/Relationships")
 
 NLNpcInteractionMenu = {}
 
@@ -14,6 +15,7 @@ local actions = {
     { label = "Tell a joke", action = "joke" },
     { label = "Flirt", action = "flirt" },
     { label = "Ask on a date", action = "date" },
+    { label = "View relationship", action = "relationships" },
 }
 
 local function idFromObject(object)
@@ -77,7 +79,9 @@ end
 function NLNpcInteractionMenu.activate(player, id, action)
     if not player or not id or not action or not NLSocialClient then return end
     local index = player.getPlayerNum and player:getPlayerNum() or 0
-    if action == "give" then
+    if action == "relationships" then
+        if NLRelationships and NLRelationships.open then NLRelationships.open(index) end
+    elseif action == "give" then
         local itemType = firstInventoryType(player)
         if itemType then
             NLSocialClient.request(index, "give", { id = id, item = itemType, amount = 1 })

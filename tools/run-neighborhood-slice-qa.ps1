@@ -1,4 +1,5 @@
 param(
+    [switch]$NpcInteractionProbe,
     [string]$ProfileRoot = 'E:\pzmod\test-profile-v104-neighborhood-slice',
     [string]$EvidenceRoot = 'E:\pzmod\evidence\v104\actual\neighborhood-slice'
 )
@@ -46,7 +47,8 @@ $failure = $null
 try {
     Stop-IsolatedProcesses
     & pwsh -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'tools\launch-multiplayer-qa.ps1') `
-        -PromotionProbe -PartnershipProbe -VerticalSliceProbe -ProfileRoot $base -EvidenceRoot $evidence
+        -PromotionProbe -PartnershipProbe -VerticalSliceProbe -NpcInteractionProbe:$NpcInteractionProbe `
+        -ProfileRoot $base -EvidenceRoot $evidence
     if ($LASTEXITCODE -ne 0) { throw "QA launcher failed with exit $LASTEXITCODE" }
 
     $serverLog = Join-Path $serverProfile 'server.stdout.log'
@@ -78,6 +80,17 @@ try {
             throw "$($check.name) did not arrive in $($check.path)"
         }
     }
+    if ($NpcInteractionProbe) {
+        $directChecks = @(
+            @{ name='HOST_NPC_CONTEXT_CALLBACK'; path=$hostLog.FullName; pattern='NLQA MP NPC CONTEXT CALLBACK: id=marisol action=(introduce|chat)' },
+            @{ name='GUEST_NPC_CONTEXT_CALLBACK'; path=$guestLog.FullName; pattern='NLQA MP NPC CONTEXT CALLBACK: id=kenji action=(introduce|chat)' }
+        )
+        foreach ($check in $directChecks) {
+            if (-not (Wait-LogPattern $check.path $check.pattern 480)) {
+                throw "$($check.name) did not arrive in $($check.path)"
+            }
+        }
+    }
     $passed = $true
 } catch {
     $failure = $_.Exception.Message
@@ -90,9 +103,13 @@ try {
     if ($hostLog) { Copy-Item $hostLog.FullName (Join-Path $evidence 'host.DebugLog.txt') -Force }
     if ($guestLog) { Copy-Item $guestLog.FullName (Join-Path $evidence 'guest.DebugLog.txt') -Force }
     if ($passed) {
-        'PASS: actual host-plus-guest neighborhood vertical slice completed (household, furnishing, career promotion, partnership)' |
-            Set-Content (Join-Path $evidence 'RESULT.txt')
-        Write-Output 'PASS: actual host-plus-guest neighborhood vertical slice completed (household, furnishing, career promotion, partnership)'
+        $successMessage = if ($NpcInteractionProbe) {
+            'PASS: actual host-plus-guest neighborhood vertical slice and direct NPC context callbacks completed'
+        } else {
+            'PASS: actual host-plus-guest neighborhood vertical slice completed (household, furnishing, career promotion, partnership)'
+        }
+        $successMessage | Set-Content (Join-Path $evidence 'RESULT.txt')
+        Write-Output $successMessage
     } else {
         "RESULT: neighborhood vertical slice incomplete: $failure" | Set-Content (Join-Path $evidence 'RESULT.txt')
     }

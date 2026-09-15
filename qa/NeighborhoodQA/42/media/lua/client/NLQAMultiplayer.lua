@@ -214,6 +214,29 @@ local function queueHostWalk()
     end
 end
 
+-- When enabled by the isolated launcher, invoke the production world-context
+-- callback itself. This remains QA-only: it supplies no UI or input and keeps
+-- the actual server-authoritative NLSocialClient request as the next hop.
+local function requestNpcInteraction(id, action)
+    if qaIdentity().npcInteractionProbe ~= true then
+        NLSocialClient.request(0, "interact", {id=id, action=action})
+        return true
+    end
+    local player = getSpecificPlayer(0)
+    local loaded, loadError = pcall(require, "NL/NpcInteractionMenu")
+    if not loaded or not NLNpcInteractionMenu or not NLNpcInteractionMenu.activate then
+        emit("NPC CONTEXT CALLBACK FAILED", tostring(loadError or "menu unavailable"))
+        return false
+    end
+    local called, callError = pcall(NLNpcInteractionMenu.activate, player, id, action)
+    if called then
+        emit("NPC CONTEXT CALLBACK", "id=" .. tostring(id) .. " action=" .. tostring(action))
+    else
+        emit("NPC CONTEXT CALLBACK FAILED", tostring(callError))
+    end
+    return called
+end
+
 Events.OnMainMenuEnter.Add(armConnect)
 
 -- Wait a moment after the menu so the engine finishes tearing down any previous
@@ -1326,6 +1349,45 @@ end)
 Events.OnRenderTick.Add(function()
     if not isClient() or not NLSocialClient then return end
     NLQAMultiplayer.socialFrame=NLQAMultiplayer.socialFrame+1
+    -- Direct world-context callback probe. The launcher positions each client
+    -- beside its authored neighbor, refreshes the authoritative proximity
+    -- snapshot, then invokes the production menu callback without desktop
+    -- input. The callback itself still sends the normal social command.
+    if qaIdentity().npcInteractionProbe == true
+            and not NLQAMultiplayer.npcContextDone then
+        NLQAMultiplayer.npcContextFrame=(NLQAMultiplayer.npcContextFrame or 0)+1
+        local targetId=qaIdentity().username=="nl-host" and "marisol" or "kenji"
+        local partnershipReady=qaIdentity().username~="nl-host"
+            or qaIdentity().partnershipProbe~=true
+            or NLQAMultiplayer.partnershipHostObserved
+        if NLQAMultiplayer.npcContextFrame>=240 and partnershipReady then
+            local snapshot=NLSocialClient.snapshots[0]
+            local target
+            for _,entry in ipairs((snapshot and snapshot.neighbors) or {}) do
+                if entry.id==targetId then target=entry; break end
+            end
+            if not NLQAMultiplayer.npcContextPositioned then
+                local positioned
+                if qaIdentity().username=="nl-host" then
+                    positioned=positionHostForSocial(targetId)
+                else
+                    positioned=positionGuestForSocial(targetId)
+                end
+                if positioned then
+                    NLQAMultiplayer.npcContextPositioned=true
+                    NLSocialClient.request(0,"refresh")
+                    emit("NPC CONTEXT PREPARED", "id="..targetId)
+                end
+            elseif target and target.canInteract then
+                local action=(target.relation and target.relation.met) and "chat" or "introduce"
+                if requestNpcInteraction(targetId,action) then
+                    NLQAMultiplayer.npcContextDone=true
+                end
+            elseif NLQAMultiplayer.npcContextFrame%60==0 then
+                NLSocialClient.request(0,"refresh")
+            end
+        end
+    end
     -- QA-only direct two-client partnership probe. The server seeds only the
     -- host's progression state; every relationship mutation and rejection
     -- below uses the production command and snapshot paths.
@@ -1471,8 +1533,8 @@ Events.OnRenderTick.Add(function()
                     NLQAMultiplayer.socialTarget)
             elseif NLQAMultiplayer.socialActionPrepared
                     and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.socialActionDue then
-                NLSocialClient.request(0,"interact",
-                    {id=NLQAMultiplayer.socialTarget,action=NLQAMultiplayer.socialActionName})
+                requestNpcInteraction(NLQAMultiplayer.socialTarget,
+                    NLQAMultiplayer.socialActionName)
                 NLQAMultiplayer.socialActionSent=true
                 NLQAMultiplayer.socialActionSentFrame=NLQAMultiplayer.socialFrame
                 NLQAMultiplayer.socialActionSnapshotRevision=tonumber(
@@ -1509,8 +1571,8 @@ Events.OnRenderTick.Add(function()
                     NLQAMultiplayer.socialTarget)
             elseif NLQAMultiplayer.socialActionPrepared
                     and NLQAMultiplayer.socialFrame>=NLQAMultiplayer.socialActionDue then
-                NLSocialClient.request(0,"interact",
-                    {id=NLQAMultiplayer.socialTarget,action=NLQAMultiplayer.socialActionName})
+                requestNpcInteraction(NLQAMultiplayer.socialTarget,
+                    NLQAMultiplayer.socialActionName)
                 NLQAMultiplayer.socialActionSent=true
                 NLQAMultiplayer.socialActionSentFrame=NLQAMultiplayer.socialFrame
                 NLQAMultiplayer.socialActionSnapshotRevision=tonumber(
@@ -1533,10 +1595,8 @@ Events.OnRenderTick.Add(function()
         local currentRevision = tonumber(retrySnapshot and retrySnapshot.revision or 0) or 0
         local sentRevision = tonumber(NLQAMultiplayer.socialActionSnapshotRevision or 0) or 0
         if currentRevision <= sentRevision then
-            NLSocialClient.request(0, "interact", {
-                id = NLQAMultiplayer.socialTarget,
-                action = NLQAMultiplayer.socialActionName,
-            })
+            requestNpcInteraction(NLQAMultiplayer.socialTarget,
+                NLQAMultiplayer.socialActionName)
             NLQAMultiplayer.socialActionSentFrame = NLQAMultiplayer.socialFrame
             emit("SOCIAL ACTION RETRY", tostring(NLQAMultiplayer.socialActionName)
                 .. " id=" .. tostring(NLQAMultiplayer.socialTarget)

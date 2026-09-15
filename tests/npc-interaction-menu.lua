@@ -15,6 +15,9 @@ package.preload['NL/SocialClient'] = function()
     end }
     return NLSocialClient
 end
+NLRelationships = { opens = {}, open = function(index)
+    NLRelationships.opens[#NLRelationships.opens + 1] = index
+end }
 package.preload['NL/NpcClient'] = function() return NLNpcClient end
 
 local player = { dead = false, playerNum = 0 }
@@ -55,7 +58,8 @@ eventHook(0, context, { object }, false)
 assert(#context.options == 1, 'world context menu discovers one authored NPC')
 local submenu = context.options[1].submenu
 assert(context.options[1].label == 'Neighborhood: Marisol Vega')
-assert(#submenu.options == 7, 'NPC menu exposes five social actions plus give/request')
+assert(#submenu.options == 7 or #submenu.options == 8,
+    'NPC menu exposes the baseline seven actions or the v1.84 relationship profile extension')
 
 local byLabel = {}
 for _, option in ipairs(submenu.options) do byLabel[option.label] = option end
@@ -64,6 +68,12 @@ assert(NLSocialClient.requests[#NLSocialClient.requests].command == 'interact'
     and NLSocialClient.requests[#NLSocialClient.requests].args.id == 'marisol'
     and NLSocialClient.requests[#NLSocialClient.requests].args.action == 'introduce',
     'introduce action routes through the production social client')
+if byLabel['View relationship'] then
+    byLabel['View relationship'].callback(byLabel['View relationship'].target,
+        unpack(byLabel['View relationship'].args))
+    assert(#NLRelationships.opens == 1 and NLRelationships.opens[1] == 0,
+        'relationship profile action opens for the current player')
+end
 byLabel['Give 1 item'].callback(byLabel['Give 1 item'].target, unpack(byLabel['Give 1 item'].args))
 assert(NLSocialClient.requests[#NLSocialClient.requests].command == 'give'
     and NLSocialClient.requests[#NLSocialClient.requests].args.item == 'Base.Hammer',
@@ -78,4 +88,4 @@ player.dead = true
 local deadContext = newMenu()
 eventHook(0, deadContext, { object }, false)
 assert(#deadContext.options == 0, 'dead local players receive no NPC context actions')
-print('PASS: world-context NPC discovery, social actions, item routing and dead-player guard')
+print('PASS: world-context NPC discovery, social actions, relationship profile, item routing and dead-player guard')
