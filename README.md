@@ -1,4 +1,4 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.76)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.77)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
@@ -1139,3 +1139,15 @@ members received the shared activity snapshots, and the host reached
 `Household Heart: 3/6` with the `+10` milestone reward. This is actual
 installed-game multiplayer evidence; the QA fixture only supplies the normal
 career/partnership setup and remains outside the production package.
+
+## v1.77 native bridge surface discovery
+
+The v112 actual dedicated-server probe records the remaining native NPC
+replication boundary instead of treating a mutable-looking list as proof. The
+server exposes the `IsoPlayer` class table and its static `getPlayers()` method,
+but that method returned the engine's fixed four local-player slots. The
+exposed `getOnlinePlayers()` method returns a fresh server-side `ArrayList` copy;
+adding the three authored NPC bodies to that copy did not create an
+engine-native NPC body on either connected client. The production compatibility
+`npc_presence` route therefore remains authoritative until Build 42 exposes a
+real server roster or a native player-connected packet bridge.

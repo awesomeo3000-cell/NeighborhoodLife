@@ -32,6 +32,7 @@ local householdViewpointMoved = false
 local inventoryFaultArmed = false
 local householdRestartProbeSent = false
 local nativeRosterProbeDone = false
+local nativeBridgeProbeDone = false
 local partnershipProbeSeeded = false
 local partnershipSnapshotAttempts = 0
 local npcMovementSampleTick = 0
@@ -224,6 +225,40 @@ Events.OnTick.Add(function()
     print("NLQA NATIVE ROSTER PROBE: before=" .. tostring(before)
         .. " after=" .. tostring(players:size()) .. " added=" .. tostring(added)
         .. " bodies=" .. table.concat(details, ","))
+end)
+
+-- QA-only bridge discovery. The installed dedicated server may publish the
+-- IsoPlayer class table even when it withholds GameServer. Record the exact
+-- static surface and whether it can return a native player collection before
+-- the roster experiment mutates its exposed online-player list.
+Events.OnTick.Add(function()
+    if nativeBridgeProbeDone or NLQANativeRosterProbe ~= true then return end
+    if type(IsoPlayer) ~= "table" then
+        nativeBridgeProbeDone = true
+        print("NLQA NATIVE BRIDGE PROBE: IsoPlayerType=" .. tostring(type(IsoPlayer)))
+        return
+    end
+    local members = {}
+    for _, name in ipairs({"new", "getPlayers", "getPlayerCount", "getPlayer", "players",
+        "setLocalPlayer", "getLocalPlayerByOnlineID"}) do
+        local ok, value = pcall(function() return IsoPlayer[name] end)
+        members[#members + 1] = name .. "=" .. tostring(ok and type(value) or "error")
+    end
+    local countResult = "unavailable"
+    local getPlayersOk, nativePlayers = pcall(function() return IsoPlayer.getPlayers() end)
+    if getPlayersOk and nativePlayers then
+        if nativePlayers.size then
+            local sizeOk, size = pcall(nativePlayers.size, nativePlayers)
+            countResult = sizeOk and tostring(size) or "size-error"
+        else
+            countResult = "no-size"
+        end
+    elseif not getPlayersOk then
+        countResult = "call-error"
+    end
+    nativeBridgeProbeDone = true
+    print("NLQA NATIVE BRIDGE PROBE: IsoPlayerType=table members=" .. table.concat(members, ",")
+        .. " getPlayers=" .. tostring(getPlayersOk) .. " count=" .. tostring(countResult))
 end)
 
 -- The restart tool adds this QA-only server config after the initial household

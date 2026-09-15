@@ -68,6 +68,9 @@ Copy-Item (Join-Path $serverProfile 'server.stdout.log') (Join-Path $evidence 's
 Copy-Item $serverDebug.FullName (Join-Path $evidence 'server.DebugLog.txt') -Force
 if ($hostLog) { Copy-Item $hostLog.FullName (Join-Path $evidence 'host.DebugLog.txt') -Force }
 if ($guestLog) { Copy-Item $guestLog.FullName (Join-Path $evidence 'guest.DebugLog.txt') -Force }
+$bridgeResult = Select-String -Path $serverDebug.FullName -Pattern 'NLQA NATIVE BRIDGE PROBE:' |
+    Select-Object -Last 1
+if ($bridgeResult) { $bridgeResult.Line | Set-Content (Join-Path $evidence 'server-bridge-result.txt') }
 
 $nativePattern = 'NATIVE ROSTER RESULT: count=[1-9][0-9]* entries=.*source=engine-online-players'
 $hostNative = $hostLog -and (Select-String -Path $hostLog.FullName -Pattern $nativePattern -Quiet)
