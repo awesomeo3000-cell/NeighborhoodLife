@@ -1,8 +1,25 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.80)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.85)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v1.85 two-step NPC date activity
+
+The first neighborhood romance activity now runs as a real two-step interaction:
+`Ask on a date` creates a server-owned active date, and `Spend time together`
+completes it after the normal network pacing window. Completion increments
+`completedDates` and applies bounded friendship, trust and attraction gains. The
+Relationships panel shows the active/completed state, and the direct NPC context
+menu exposes `Spend time together` only while the selected NPC has an active date.
+Lua tests, installed-game Kahlua tests and the actual host-plus-guest Build 42.20.4
+capture are separate evidence classes.
+
+`evidence/v121/actual/date2/RESULT.txt` records the hands-free run: the host
+invoked both production menu callbacks against Marisol, the server accepted both
+authoritative social commands, and the guest received the replicated
+`date_activity` event. QA helpers and isolated profiles remain outside the
+production package.
 
 ## v1.78 client-native roster bridge probe
 
@@ -66,7 +83,7 @@ Household store/retrieve operations also keep a recoverable world journal across
 the player save and household ModData writes; the isolated crash probe proves an
 interrupted transaction is repaired after a forced dedicated-server stop.
 Relationships use separate friendship, trust and attraction bars, with introductions,
-chat, jokes, flirting, dates, partnerships and breakups. They only operate on a neighbor
+chat, jokes, flirting, dates, date activities, partnerships and breakups. They only operate on a neighbor
 registered with a real server-side body. In a new or loaded single-player world,
 Neighborhood Life now creates the persistent Marisol native body, gives her a small
 two-point route, and anchors a compact plumbob just above her model. The dedicated
@@ -78,11 +95,12 @@ server-body reannouncement is still an open Build 42 API gate. The server now sa
 the latest NPC position through `OnSave`, and a restart restores the fractional tile
 position instead of snapping to the tile center.
 
-## Required game checks (not yet performed)
-- Host and guest join: each sees one panel with their own six current stats.
+## Remaining manual gameplay checks
+- Host and guest join: each sees one panel with their own current stats.
 - Eat, drink, rest and read: observe appropriate values changing.
 - Resize window, change UI font size, collapse and expand; inspect overlap.
-- Die/respawn, disconnect/rejoin, return to menu and host again: no duplicates.
+- Die/respawn, disconnect/rejoin, return to menu and host again: no duplicates;
+  hands-free regression already covers the disposable reconnect paths.
 - Repeat with zombies disabled. Confirm vanilla UI and gameplay remain intact.
 - Test other HUD mods before combining them; controller navigation is not implemented.
 
@@ -95,11 +113,12 @@ position instead of snapping to the tile center.
    safely.
 3. Individual friendship/trust, server-validated requests and exactly-once rewards.
 4. Tailoring career, clothing variants and wardrobe; new meshes are separate art work.
-5. Adult NPC mutual-interest romance, routines and shared households.
+5. Adult NPC mutual-interest romance, richer date activities, routines and shared households.
 6. Richer customization, aspirations and optional zombie-free life-sim balance.
 
-NPC breadth, portraits and households remain unfinished. Relationship/romance
-logic is implemented and unit-tested, but its full world/multiplayer integration is pending.
+NPC breadth, portraits and households remain unfinished. Relationship/romance logic is
+implemented and the first date activity now has actual host/guest callback and event
+evidence; richer date activities and direct two-client romance state remain open.
 The v1.1 production adapter proves single-player native spawning, path-following,
 plumbob anchoring and ModData save/reload restoration in `evidence/v18/`. The v1.2
 run in `evidence/v19/` proves a dedicated server moving the authoritative native body

@@ -9,7 +9,8 @@ NLSocial.people = {
         career="medic", female=true, friendly=5, humor=6, flirt=5 }
 }
 NLSocial.order={"marisol","kenji","amara"}
-NLSocial.actions={introduce=true,chat=true,joke=true,flirt=true,date=true,partner=true,breakup=true,apologize=true}
+NLSocial.actions={introduce=true,chat=true,joke=true,flirt=true,date=true,date_activity=true,
+    partner=true,breakup=true,apologize=true}
 
 local function clamp(v,lo,hi) return math.max(lo,math.min(hi,v)) end
 
@@ -17,7 +18,8 @@ function NLSocial.relation(profile,id)
     profile.relationships=profile.relationships or {}
     if not profile.relationships[id] then
         profile.relationships[id]={met=false,friendship=0,trust=0,attraction=0,
-            status="Stranger",lastAction=-100,lastFlirt=-100,dates=0,memories={}}
+            status="Stranger",lastAction=-100,lastFlirt=-100,dates=0,completedDates=0,
+            activeDate=nil,memories={}}
     end
     return profile.relationships[id]
 end
@@ -27,7 +29,11 @@ function NLSocial.interact(profile,npc,action,hours,key)
     if not def or not NLSocial.actions[action] then return false,"Unknown interaction" end
     if npc.dead then return false,"They have died." end
     local r=NLSocial.relation(profile,npc.id)
-    if hours-r.lastAction<0.25 then return false,"Give the conversation a little time." end
+    -- The second step of a date is an intentional immediate follow-up. Other
+    -- interactions retain the normal pacing guard.
+    if action~="date_activity" and hours-r.lastAction<0.25 then
+        return false,"Give the conversation a little time."
+    end
     if action~="introduce" and not r.met then return false,"Introduce yourself first." end
     local message
     if action=="introduce" then
@@ -55,9 +61,24 @@ function NLSocial.interact(profile,npc,action,hours,key)
     elseif action=="date" then
         if npc.partner and npc.partner~=key then return false,"I'm seeing someone." end
         if r.friendship<35 or r.attraction<15 then return false,"I'm not ready for a date." end
+        if r.activeDate and r.activeDate.status=="active" then
+            return false,"Finish your current date first."
+        end
         if r.lastDate and hours-r.lastDate<24 then return false,"Let's plan another day." end
         r.lastDate=hours; r.dates=r.dates+1; r.attraction=r.attraction+5; r.trust=r.trust+5
+        r.activeDate={status="active",startedAt=hours}
         message="I'd like that. Let's spend a quiet moment together."
+    elseif action=="date_activity" then
+        if not r.activeDate or r.activeDate.status~="active" then
+            return false,"There is no active date to continue."
+        end
+        if hours-r.activeDate.startedAt>2 then
+            return false,"The date opportunity has passed."
+        end
+        r.activeDate.completedAt=hours; r.activeDate.status="completed"
+        r.completedDates=(r.completedDates or 0)+1
+        r.friendship=r.friendship+4; r.trust=r.trust+6; r.attraction=r.attraction+3
+        message="That was lovely. I feel closer to you already."
     elseif action=="partner" then
         if npc.partner then return false,"Already in a partnership." end
         if r.dates<2 or r.trust<30 or r.attraction<30 then return false,"I'm not ready to make that commitment." end

@@ -8,7 +8,9 @@ local eventHook
 Events = { OnFillWorldObjectContextMenu = { Add = function(f) eventHook = f end } }
 local panelStub = function() end
 package.preload['NL/SocialClient'] = function()
-    NLSocialClient = { requests = {}, request = function(index, command, args)
+NLSocialClient = { requests = {}, snapshots = { [0] = { neighbors = {
+    { id = 'marisol', relation = { activeDate = { status = 'active' } } },
+} } }, request = function(index, command, args)
         NLSocialClient.requests[#NLSocialClient.requests + 1] = {
             index = index, command = command, args = args,
         }
@@ -58,8 +60,8 @@ eventHook(0, context, { object }, false)
 assert(#context.options == 1, 'world context menu discovers one authored NPC')
 local submenu = context.options[1].submenu
 assert(context.options[1].label == 'Neighborhood: Marisol Vega')
-assert(#submenu.options == 7 or #submenu.options == 8,
-    'NPC menu exposes the baseline seven actions or the v1.84 relationship profile extension')
+assert(#submenu.options == 9,
+    'NPC menu exposes the date activity plus relationship profile and item actions')
 
 local byLabel = {}
 for _, option in ipairs(submenu.options) do byLabel[option.label] = option end
@@ -74,6 +76,11 @@ if byLabel['View relationship'] then
     assert(#NLRelationships.opens == 1 and NLRelationships.opens[1] == 0,
         'relationship profile action opens for the current player')
 end
+byLabel['Spend time together'].callback(byLabel['Spend time together'].target,
+    unpack(byLabel['Spend time together'].args))
+assert(NLSocialClient.requests[#NLSocialClient.requests].command == 'interact'
+    and NLSocialClient.requests[#NLSocialClient.requests].args.action == 'date_activity',
+    'active date activity routes through the production social client')
 byLabel['Give 1 item'].callback(byLabel['Give 1 item'].target, unpack(byLabel['Give 1 item'].args))
 assert(NLSocialClient.requests[#NLSocialClient.requests].command == 'give'
     and NLSocialClient.requests[#NLSocialClient.requests].args.item == 'Base.Hammer',

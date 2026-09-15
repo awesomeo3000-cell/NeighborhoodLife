@@ -42,6 +42,7 @@ end
 
 function NLRelationships:new(index)
     local o=NLJournal.new(self,index)
+    o.height=500
     o.selected=1
     return o
 end
@@ -52,12 +53,15 @@ function NLRelationships:initialise()
     self:button(112,48,85,"Next","next")
     self:button(209,48,95,"Refresh","refresh")
     self.actions={}
+    self.actionButtons={}
     local labels={{"Introduce","introduce"},{"Chat","chat"},{"Joke","joke"},
-        {"Flirt","flirt"},{"Ask on a date","date"},{"Become partners","partner"},{"Break up","breakup"},
+        {"Flirt","flirt"},{"Ask on a date","date"},{"Spend time together","date_activity"},
+        {"Become partners","partner"},{"Break up","breakup"},
         {"Give item","give"},{"Request item","request"}}
     for i,v in ipairs(labels) do
         local col=(i-1)%3; local row=math.floor((i-1)/3)
         self.actions[i]=self:button(16+col*186,250+row*35,176,v[1],v[2],v[3])
+        self.actionButtons[v[2]]=self.actions[i]
     end
 end
 function NLRelationships:onButton(button)
@@ -85,8 +89,13 @@ function NLRelationships:prerender()
     local npc=data and data.neighbors[self.selected]
     local nearby=npc and npc.available and not npc.dead and npc.canInteract==true
     for _,b in ipairs(self.actions) do b:setEnable(nearby==true) end
-    if self.actions[6] then
-        self.actions[6]:setEnable(nearby==true and (npc.exclusive~=true or npc.isPartner==true))
+    if self.actionButtons.partner then
+        self.actionButtons.partner:setEnable(nearby==true and (npc.exclusive~=true or npc.isPartner==true))
+    end
+    if self.actionButtons.date_activity then
+        local activeDate=npc and npc.relation and npc.relation.activeDate
+        self.actionButtons.date_activity:setEnable(nearby==true and activeDate
+            and activeDate.status=="active")
     end
     if not npc then
         self.selected=1
@@ -111,6 +120,12 @@ function NLRelationships:prerender()
     local location=npc.dead and "Deceased" or npc.available and ("Distance: "..math.floor(npc.distance or 0).." tiles") or "Away"
     if relationshipLocation then location=location.." | "..relationshipLocation end
     self:drawText(location.." | Conversations require proximity and line of sight.",16,231,0.30,0.38,0.47,1,UIFont.Small)
+    local date=npc.relation.activeDate
+    local dateText=date and date.status=="active" and "Date in progress: choose Spend time together"
+        or date and date.status=="completed" and ("Last date complete | total completed: "
+            ..tostring(npc.relation.completedDates or 0))
+        or "No date in progress"
+    self:drawText(dateText,16,248,0.12,0.38,0.63,1,UIFont.Small)
     local giveChoice=playerGiveChoice(self.playerIndex)
     local requestChoice=(npc.inventoryItems and npc.inventoryItems[1])
     if not requestChoice then
@@ -118,8 +133,8 @@ function NLRelationships:prerender()
             requestChoice={item=item,amount=amount,label=item}; break
         end
     end
-    local giveButton=self.actions[8]
-    local requestButton=self.actions[9]
+    local giveButton=self.actionButtons.give
+    local requestButton=self.actionButtons.request
     giveButton.value=giveChoice and {item=giveChoice.item,amount=1} or nil
     requestButton.value=requestChoice and {item=requestChoice.item,amount=1} or nil
     setButtonText(giveButton,giveChoice and ("Give 1 "..giveChoice.label) or "Give item")
@@ -132,15 +147,15 @@ function NLRelationships:prerender()
         if #inventoryParts==2 then break end
     end
     local inventoryText=#inventoryParts>0 and ("NPC inventory: "..table.concat(inventoryParts,", ")) or "NPC inventory: empty"
-    self:drawText(inventoryText,16,350,0.30,0.38,0.47,1,UIFont.Small)
-    self:drawText(string.sub(data.message or "",1,78),16,373,0.12,0.38,0.63,1,UIFont.Small)
+    self:drawText(inventoryText,16,397,0.30,0.38,0.47,1,UIFont.Small)
+    self:drawText(string.sub(data.message or "",1,78),16,420,0.12,0.38,0.63,1,UIFont.Small)
     local memories=npc.relation.memories
     local latest=memories[#memories]
-    if latest then self:drawText("Memory: "..string.sub(latest.text,1,70),16,400,0.30,0.38,0.47,1,UIFont.Small) end
+    if latest then self:drawText("Memory: "..string.sub(latest.text,1,70),16,447,0.30,0.38,0.47,1,UIFont.Small) end
     local event=NLSocialClient.lastEvent
     if event then
         self:drawText("Shared event: "..tostring(event.actor).." "
-            ..tostring(event.action).." with "..tostring(event.npcName),16,427,
+            ..tostring(event.action).." with "..tostring(event.npcName),16,474,
             0.30,0.38,0.47,1,UIFont.Small)
     end
 end

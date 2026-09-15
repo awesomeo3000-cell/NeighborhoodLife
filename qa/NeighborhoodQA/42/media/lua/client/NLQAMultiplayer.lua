@@ -84,7 +84,11 @@ NLQAMultiplayer = { snapshots = 0, refreshAttempts = 0, refreshSent = false,
     partnershipGuestRefreshDue = 0, partnershipGuestRefreshSent = false,
     partnershipGuestRefreshSentFrame = 0,
      partnershipGuestRepositioned = false, partnershipGuestRejectSent = false,
-     partnershipGuestRejectObserved = false, dangerProbeSkipped = false }
+     partnershipGuestRejectObserved = false, dangerProbeSkipped = false,
+     dateProbeSeeded = false, datePositioned = false, dateRequested = false,
+     dateActivityRequested = false, dateStartObserved = false,
+     dateActivityObserved = false, dateGuestEventObserved = false,
+     dateFrame = 0, dateActivityDue = 0 }
 NLQAMultiplayer.deliveryRecoverySnapshot = false
 NLQAMultiplayer.deliveryRecoveryObserved = false
 -- Keep the hands-free probe bounded while retaining one full render-loop delay
@@ -218,7 +222,7 @@ end
 -- callback itself. This remains QA-only: it supplies no UI or input and keeps
 -- the actual server-authoritative NLSocialClient request as the next hop.
 local function requestNpcInteraction(id, action)
-    if qaIdentity().npcInteractionProbe ~= true then
+    if qaIdentity().npcInteractionProbe ~= true and qaIdentity().dateProbe ~= true then
         NLSocialClient.request(0, "interact", {id=id, action=action})
         return true
     end
@@ -230,7 +234,8 @@ local function requestNpcInteraction(id, action)
     end
     local called, callError = pcall(NLNpcInteractionMenu.activate, player, id, action)
     if called then
-        emit("NPC CONTEXT CALLBACK", "id=" .. tostring(id) .. " action=" .. tostring(action))
+        emit("NPC CONTEXT CALLBACK", "id=" .. tostring(id) .. " action=" .. tostring(action)
+            .. " source=production-menu-callback")
     else
         emit("NPC CONTEXT CALLBACK FAILED", tostring(callError))
     end
@@ -267,7 +272,8 @@ Events.OnGameStart.Add(function()
 end)
 
 Events.OnRenderTick.Add(function()
-    if not isClient() or NLQAMultiplayer.movementSent then return end
+    if not isClient() or NLQAMultiplayer.movementSent
+            or qaIdentity().dateProbe == true then return end
     NLQAMultiplayer.movementFrame = NLQAMultiplayer.movementFrame + 1
     if NLQAMultiplayer.movementFrame >= 420 then
         NLQAMultiplayer.movementSent = true
@@ -793,6 +799,12 @@ Events.OnServerCommand.Add(function(module, command, args)
         NLSocialClient.request(0, "refresh")
         emit("PARTNERSHIP SEED ACK", "target=" .. tostring(args.target))
     end
+    if module == "NeighborhoodQA" and command == "date_seeded"
+            and type(args) == "table" and qaIdentity().username == "nl-host" then
+        NLQAMultiplayer.dateProbeSeeded = true
+        NLSocialClient.request(0, "refresh")
+        emit("DATE SEED ACK", "target=" .. tostring(args.target))
+    end
     if (module == "NeighborhoodLife" or module == "NeighborhoodSocial")
             and command == "snapshot" and type(args) == "table" then
         NLQAMultiplayer.snapshots = NLQAMultiplayer.snapshots + 1
@@ -986,6 +998,12 @@ Events.OnServerCommand.Add(function(module, command, args)
             NLQAMultiplayer.partnershipGuestRefreshDue = NLQAMultiplayer.socialFrame + 60
             emit("PARTNERSHIP GUEST EVENT", "refresh=scheduled")
         end
+        if qaIdentity().dateProbe == true and qaIdentity().username == "nl-guest"
+                and args.actor == "nl-host" and args.action == "date_activity" then
+            NLQAMultiplayer.dateGuestEventObserved = true
+            emit("DATE GUEST EVENT", "actor=nl-host action=date_activity npc="
+                ..tostring(args.npcId))
+        end
     end
     if module == "NeighborhoodSocial" and command == "snapshot" and type(args) == "table" then
         local rows={}
@@ -997,6 +1015,29 @@ Events.OnServerCommand.Add(function(module, command, args)
         end
         emit("SOCIAL SNAPSHOT", "message="..tostring(args.message)
             .." username="..tostring(args.username).." entries="..table.concat(rows, ","))
+        if qaIdentity().dateProbe == true and qaIdentity().username == "nl-host"
+                and args.username == "nl-host" then
+            for _,entry in ipairs(args.neighbors or {}) do
+                if entry.id == "marisol" and entry.relation then
+                    local date = entry.relation.activeDate
+                    if NLQAMultiplayer.dateRequested and not NLQAMultiplayer.dateStartObserved
+                            and date and date.status == "active" then
+                        NLQAMultiplayer.dateStartObserved = true
+                        NLQAMultiplayer.dateActivityDue = NLQAMultiplayer.dateFrame + 30
+                        emit("DATE START SNAPSHOT", "status=active dates="
+                            ..tostring(entry.relation.dates))
+                    elseif NLQAMultiplayer.dateActivityRequested
+                            and not NLQAMultiplayer.dateActivityObserved
+                            and date and date.status == "completed" then
+                        NLQAMultiplayer.dateActivityObserved = true
+                        emit("DATE ACTIVITY SNAPSHOT", "status=completed completedDates="
+                            ..tostring(entry.relation.completedDates)
+                            .." friendship="..tostring(entry.relation.friendship)
+                            .." trust="..tostring(entry.relation.trust))
+                    end
+                end
+            end
+        end
         if qaIdentity().partnershipProbe == true then
             for _,entry in ipairs(args.neighbors or {}) do
                 if entry.id == "marisol" and entry.relation then
@@ -1388,6 +1429,51 @@ Events.OnRenderTick.Add(function()
             end
         end
     end
+    -- QA-only two-step date probe. The fixture supplies progression state, but
+    -- both mutations use the production world-context callback and the second
+    -- snapshot proves that the activity state reached the host client.
+    if qaIdentity().dateProbe == true and qaIdentity().username == "nl-host"
+            and NLQAMultiplayer.dateProbeSeeded
+            and not NLQAMultiplayer.dateActivityObserved then
+        NLQAMultiplayer.dateFrame=NLQAMultiplayer.dateFrame+1
+        local snapshot=NLSocialClient.snapshots[0]
+        local target
+        for _,entry in ipairs((snapshot and snapshot.neighbors) or {}) do
+            if entry.id=="marisol" then target=entry; break end
+        end
+        if NLQAMultiplayer.dateFrame>=240 and not NLQAMultiplayer.datePositioned then
+            NLQAMultiplayer.datePositioned=positionHostForSocial("marisol")
+            if NLQAMultiplayer.datePositioned then
+                NLSocialClient.request(0,"refresh")
+                emit("DATE PREPARED", "id=marisol")
+            end
+        elseif NLQAMultiplayer.datePositioned and target and target.canInteract then
+            if not NLQAMultiplayer.dateRequested then
+                if requestNpcInteraction("marisol","date") then
+                    NLQAMultiplayer.dateRequested=true
+                    NLQAMultiplayer.dateSentFrame=NLQAMultiplayer.dateFrame
+                    emit("DATE ACTION", "id=marisol action=date")
+                end
+            elseif NLQAMultiplayer.dateStartObserved and not NLQAMultiplayer.dateActivityRequested
+                    and NLQAMultiplayer.dateFrame >= NLQAMultiplayer.dateActivityDue then
+                if requestNpcInteraction("marisol","date_activity") then
+                    NLQAMultiplayer.dateActivityRequested=true
+                    NLQAMultiplayer.dateActivitySentFrame=NLQAMultiplayer.dateFrame
+                    emit("DATE ACTION", "id=marisol action=date_activity")
+                end
+            elseif NLQAMultiplayer.dateActivityRequested
+                    and not NLQAMultiplayer.dateActivityObserved
+                    and NLQAMultiplayer.dateFrame%60==0 then
+                NLSocialClient.request(0,"refresh")
+            end
+        elseif NLQAMultiplayer.dateFrame%60==0 then
+            NLSocialClient.request(0,"refresh")
+        end
+        if NLQAMultiplayer.dateRequested and not NLQAMultiplayer.dateStartObserved
+                and NLQAMultiplayer.dateFrame-(NLQAMultiplayer.dateSentFrame or 0)>=240 then
+            NLQAMultiplayer.dateRequested=false
+        end
+    end
     -- QA-only direct two-client partnership probe. The server seeds only the
     -- host's progression state; every relationship mutation and rejection
     -- below uses the production command and snapshot paths.
@@ -1496,6 +1582,7 @@ Events.OnRenderTick.Add(function()
     if NLQAMultiplayer.socialFrame>=900 and NLQAMultiplayer.socialPositioned
             and qaIdentity().promotionProbe ~= true
             and qaIdentity().partnershipProbe ~= true
+            and qaIdentity().dateProbe ~= true
             and not NLQAMultiplayer.socialConversationComplete
             and not NLQAMultiplayer.socialActionScheduled
             and not NLQAMultiplayer.socialActionSent

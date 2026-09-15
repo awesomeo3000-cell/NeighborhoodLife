@@ -63,6 +63,17 @@ check(last.args.neighbors[1].canInteract==false,'different floor disables intera
 body.z=0; p.visible=false; cmd(p,'chat'); check(r.friendship==before,'line of sight gate')
 check(last.args.neighbors[1].canInteract==false,'occluded snapshot disables interaction')
 p.visible=true; cmd(p,'chat'); check(r.friendship>before,'near visible conversation')
+-- The vertical-slice date is a two-step server-authoritative interaction:
+-- asking starts the activity and the immediate follow-up completes it.
+r.met=true; r.friendship=40; r.trust=30; r.attraction=20; r.dates=0
+r.completedDates=0; r.activeDate=nil; r.lastAction=-100; r.lastDate=-100
+cmd(p,'date')
+check(r.activeDate and r.activeDate.status=='active','date starts an active activity')
+check(last.args.neighbors[1].relation.activeDate.status=='active','active date is snapshotted')
+cmd(p,'date_activity')
+check(r.activeDate.status=='completed' and r.completedDates==1,'date activity completes on authority')
+check(last.args.neighbors[1].relation.activeDate.status=='completed','completed date is snapshotted')
+check(last.args.message=='That was lovely. I feel closer to you already.','date result reaches client snapshot')
 local sheetsBefore=p:itemCount('Base.RippedSheets')
 if NLSocialAuthority.inventoryExchange then
     NLSocialAuthority.command('NeighborhoodSocial','give',p,{id='marisol',item='Base.RippedSheets',amount=1})

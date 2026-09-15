@@ -38,6 +38,18 @@ local function stateFor(id)
     return NLNpcClient and NLNpcClient.states and NLNpcClient.states[id] or nil
 end
 
+local function activeDateFor(index, id)
+    local snapshot = NLSocialClient and NLSocialClient.snapshots
+        and NLSocialClient.snapshots[index]
+    for _, neighbor in ipairs((snapshot and snapshot.neighbors) or {}) do
+        if neighbor.id == id then
+            local date = neighbor.relation and neighbor.relation.activeDate
+            return date and date.status == "active"
+        end
+    end
+    return false
+end
+
 local function npcLabel(id)
     local state = stateFor(id)
     return state and tostring(state.name or id) or tostring(id)
@@ -114,6 +126,9 @@ function NLNpcInteractionMenu.menu(index, context, worldobjects)
             context:addSubMenu(option, submenu)
             for _, entry in ipairs(actions) do
                 addAction(submenu, entry.label, player, id, entry.action)
+            end
+            if activeDateFor(index, id) then
+                addAction(submenu, "Spend time together", player, id, "date_activity")
             end
             addAction(submenu, "Give 1 item", player, id, "give")
             local requestType = firstNpcInventoryType(id)

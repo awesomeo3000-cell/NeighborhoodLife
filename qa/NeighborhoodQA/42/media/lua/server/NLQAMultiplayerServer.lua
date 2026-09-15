@@ -6,6 +6,7 @@ pcall(require, "NLQANativeRosterConfig")
 pcall(require, "NLQANativeReflectionConfig")
 pcall(require, "NLQANpcMovementConfig")
 pcall(require, "NLQAPartnershipConfig")
+pcall(require, "NLQADateConfig")
 pcall(require, "NLQAZombieModeConfig")
 local ok,err=pcall(function() require "NL/Authority" end)
 print("NLQA MP SERVER BOOT: authority=" .. tostring(NLAuthority ~= nil) .. " requireOk=" .. tostring(ok)
@@ -49,6 +50,7 @@ local nativeBridgeProbeDone = false
 local nativeReflectionProbeDone = false
 local partnershipProbeSeeded = false
 local partnershipSnapshotAttempts = 0
+local dateProbeSeeded = false
 local npcMovementSampleTick = 0
 
 -- QA-only observer for the production movement heartbeat. The coordinates
@@ -67,6 +69,37 @@ Events.OnTick.Add(function()
         end
     end
     if #rows > 0 then print("NLQA NPC MOTION SAMPLE: " .. table.concat(rows, " ")) end
+end)
+
+-- QA-only date fixture. It supplies progression prerequisites; the two date
+-- mutations still travel through the production menu, client, authority,
+-- snapshot and event paths.
+Events.OnTick.Add(function()
+    if dateProbeSeeded or NLQADateProbe ~= true or not NLNpcAuthority
+            or not NLNpcAuthority.started or type(getOnlinePlayers) ~= "function" then return end
+    local listOk, players = pcall(getOnlinePlayers)
+    if not listOk or not players then return end
+    local host
+    for index = 0, players:size() - 1 do
+        local player = players:get(index)
+        if player and player:getUsername() == "nl-host" then host = player; break end
+    end
+    if not host then return end
+    local world = NLAuthority.world()
+    local profile = NLDomain.profile(world, "nl-host")
+    local relation = NLSocial.relation(profile, "marisol")
+    relation.met = true; relation.friendship = 40; relation.trust = 30
+    relation.attraction = 20; relation.dates = 0; relation.completedDates = 0
+    relation.lastAction = -100; relation.lastDate = -100; relation.activeDate = nil
+    relation.status = "Friend"
+    profile.revision = profile.revision + 1
+    local guestProfile = NLDomain.profile(world, "nl-guest")
+    local guestRelation = NLSocial.relation(guestProfile, "marisol")
+    guestRelation.met = true; guestRelation.status = "Acquaintance"; guestRelation.lastAction = -100
+    guestProfile.revision = guestProfile.revision + 1
+    dateProbeSeeded = true
+    sendServerCommand(host, "NeighborhoodQA", "date_seeded", {target="marisol"})
+    print("NLQA DATE SEED: target=marisol friendship=40 trust=30 attraction=20 dates=0")
 end)
 
 -- QA-only relationship fixture. It gives the host the exact progression
