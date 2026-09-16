@@ -1,9 +1,12 @@
 # Disposable engine profiles and generated QA output
-test-profile/
+test-profile*/
 evidence/*/MODIFIED_FILE.zip
 evidence/*/rollback-test/
 evidence/*/*-engine.log
 evidence/*/qa-process-id.txt
+evidence/*-*.txt
+evidence/*-*.log
+evidence/*-*.tar
 
 # Generated Java test classes
 tests/classes/

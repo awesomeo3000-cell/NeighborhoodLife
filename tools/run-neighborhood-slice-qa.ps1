@@ -46,9 +46,12 @@ $passed = $false
 $failure = $null
 try {
     Stop-IsolatedProcesses
-    & pwsh -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'tools\launch-multiplayer-qa.ps1') `
-        -PromotionProbe -PartnershipProbe -VerticalSliceProbe -NpcInteractionProbe:$NpcInteractionProbe `
-        -ProfileRoot $base -EvidenceRoot $evidence
+    $launcherArgs = @(
+        '-PromotionProbe', '-PartnershipProbe', '-VerticalSliceProbe',
+        '-ProfileRoot', $base, '-EvidenceRoot', $evidence
+    )
+    if ($NpcInteractionProbe) { $launcherArgs += '-NpcInteractionProbe' }
+    & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'tools\launch-multiplayer-qa.ps1') @launcherArgs
     if ($LASTEXITCODE -ne 0) { throw "QA launcher failed with exit $LASTEXITCODE" }
 
     $serverLog = Join-Path $serverProfile 'server.stdout.log'
