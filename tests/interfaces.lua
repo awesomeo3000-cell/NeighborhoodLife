@@ -17,7 +17,9 @@ function ISPanel:setX(v) self.x=v end
 function ISPanel:setY(v) self.y=v end
 ISButton={}
 function ISButton:new(x,y,w,h,label,target,callback)
-    return {target=target,callback=callback,initialise=function() end,setEnable=function(self,v) self.enabled=v end}
+    return {target=target,callback=callback,title=label,initialise=function() end,
+        setEnable=function(self,v) self.enabled=v end,setVisible=function(self,v) self.visible=v end,
+        setTitle=function(self,v) self.title=v end}
 end
 Events={OnServerCommand={Add=function() end},OnRenderTick={Add=function() end},OnMainMenuEnter={Add=function() end}}
 UIFont={Small=1}
@@ -33,61 +35,45 @@ local requests={}
 NLSocialClient.request=function(index,command,args) requests[#requests+1]={index=index,command=command,args=args} end
 NLRelationships.open(0)
 local panel=NLRelationships.instances[0]
-panel:prerender()
-assert(panel.actions[1].enabled==false)
+panel:prerender(); assert(panel.actions[1].enabled==false)
 local world=NLDomain.newWorld(); local p=NLDomain.profile(world,'host'); local rel=NLSocial.relation(p,'marisol')
-NLSocialClient.snapshots[0]={neighbors={{id='marisol',name='Marisol Vega',age=31,personality='Creative',
-    relation=rel,available=true,dead=false,distance=2,canInteract=true}},message='Hello',revision=1}
+NLSocialClient.snapshots[0]={neighbors={{id='marisol',name='Marisol Vega',age=31,personality='Creative',relation=rel,available=true,dead=false,distance=2,canInteract=true}},message='Hello',revision=1}
 panel:prerender(); assert(panel.actions[1].enabled)
 panel.actions[1].callback(panel,panel.actions[1])
 assert(requests[#requests].command=='interact' and requests[#requests].args.action=='introduce')
 assert(requests[#requests].args.id=='marisol')
 NLRelationships.open(0); assert(NLRelationships.instances[0]==panel and panel.attached)
-NLSocialClient.snapshots[0].neighbors[1].distance=5
-NLSocialClient.snapshots[0].neighbors[1].canInteract=false
+NLSocialClient.snapshots[0].neighbors[1].distance=5; NLSocialClient.snapshots[0].neighbors[1].canInteract=false
 panel:prerender(); assert(not panel.actions[1].enabled)
-NLSocialClient.snapshots[0].neighbors[1].distance=2
-NLSocialClient.snapshots[0].neighbors[1].canInteract=true
-NLSocialClient.snapshots[0].neighbors[1].dead=true
+NLSocialClient.snapshots[0].neighbors[1].distance=2; NLSocialClient.snapshots[0].neighbors[1].canInteract=true; NLSocialClient.snapshots[0].neighbors[1].dead=true
 panel:prerender(); assert(not panel.actions[1].enabled)
 NLSocialClient.snapshots[0].neighbors[1].dead=false
 NLSocialClient.snapshots[0].neighbors[1].inventoryItems={{item='Base.Hammer',amount=1,label='Hammer'}}
-local giveItem={getFullType=function() return 'Base.RippedSheets' end,
-    getDisplayName=function() return 'Ripped Sheets' end}
-local givePlayer={isDead=function() return false end,isEquipped=function() return false end,
-    getInventory=function() return {getItems=function() return {size=function() return 1 end,get=function() return giveItem end} end} end}
+local giveItem={getFullType=function() return 'Base.RippedSheets' end,getDisplayName=function() return 'Ripped Sheets' end}
+local givePlayer={isDead=function() return false end,isEquipped=function() return false end,getInventory=function() return {getItems=function() return {size=function() return 1 end,get=function() return giveItem end} end} end}
 function getSpecificPlayer() return givePlayer end
 panel:prerender()
 if panel.actions[9].value and panel.actions[9].value.item=='Base.Hammer' then
-    assert(panel.actions[8].enabled and panel.actions[8].value.item=='Base.RippedSheets')
-    assert(panel.actions[9].enabled)
-    panel.actions[8].callback(panel,panel.actions[8])
-    assert(requests[#requests].command=='give' and requests[#requests].args.item=='Base.RippedSheets')
-    panel.actions[9].callback(panel,panel.actions[9])
-    assert(requests[#requests].command=='request' and requests[#requests].args.item=='Base.Hammer')
+    assert(panel.actions[8].enabled and panel.actions[8].value.item=='Base.RippedSheets'); assert(panel.actions[9].enabled)
+    panel.actions[8].callback(panel,panel.actions[8]); assert(requests[#requests].command=='give' and requests[#requests].args.item=='Base.RippedSheets')
+    panel.actions[9].callback(panel,panel.actions[9]); assert(requests[#requests].command=='request' and requests[#requests].args.item=='Base.Hammer')
 end
 function getSpecificPlayer() return nil end
 NLClient.profiles[0]=p; p.skill=0
 NLJournal.open(0); NLJournal.instances[0]:prerender()
-assert(NLJournal.instances[0].careerButtons.tailor.backgroundColor.g==0.88)
+assert(NLJournal.instances[0].careerButtons.tailor.backgroundColor.g==0.27,'selected career uses repaired active theme')
 if NLJournal.instances[0].workButton then
-    assert(NLJournal.instances[0].workButton.enabled,
-        'career journal exposes a ready work-shift action')
-    local originalJournalRequest=NLClient.request
-    local workCommand
+    assert(NLJournal.instances[0].workButton.enabled,'career journal exposes a ready work-shift action')
+    local originalJournalRequest=NLClient.request; local workCommand
     NLClient.request=function(_,command) workCommand=command end
-    NLJournal.instances[0]:onButton(NLJournal.instances[0].workButton)
-    NLClient.request=originalJournalRequest
+    NLJournal.instances[0]:onButton(NLJournal.instances[0].workButton); NLClient.request=originalJournalRequest
     assert(workCommand=='work','career journal routes work shift')
 end
-print('PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme')
+print('PASS: relationship UI empty/populated/deceased states, callbacks, reopen and career selection theme')
 if arg[2]=='wardrobe-panel' then
     package.preload['NL/Wardrobe']=function()
         NLWardrobe={save=function(p,slot) p.data.NeighborhoodOutfits[slot]={'Base.Shirt'} end,
-            requestSave=function(p,slot)
-                NLWardrobe.save(p,slot)
-                if NLClient.profiles[0] then NLClient.profiles[0].outfits=p.data.NeighborhoodOutfits end
-            end,
+            requestSave=function(p,slot) NLWardrobe.save(p,slot); if NLClient.profiles[0] then NLClient.profiles[0].outfits=p.data.NeighborhoodOutfits end end,
             wear=function(p,slot) p.worn=slot end}
     end
     require 'NL/WardrobePanel'
@@ -98,8 +84,7 @@ if arg[2]=='wardrobe-panel' then
     NLWardrobePanel.open(0)
     local w=NLWardrobePanel.instances[0]
     w:prerender(); assert(not w.slots[1].wear.enabled and w.slots[1].save.enabled)
-    w.slots[1].save.callback(w,w.slots[1].save)
-    w:prerender(); assert(w.slots[1].wear.enabled)
+    w.slots[1].save.callback(w,w.slots[1].save); w:prerender(); assert(w.slots[1].wear.enabled)
     w.slots[1].wear.callback(w,w.slots[1].wear); assert(wearer.worn==1)
     wearer.dead=true; w:prerender(); assert(not w.slots[1].save.enabled and not w.slots[1].wear.enabled)
     NLWardrobePanel.open(0); assert(w==NLWardrobePanel.instances[0] and w.attached)
