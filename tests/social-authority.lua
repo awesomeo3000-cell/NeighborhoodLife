@@ -82,6 +82,8 @@ if NLSocialAuthority.inventoryExchange then
         'give persists one item in the NPC inventory')
     check(last.args.neighbors[1].inventory['Base.RippedSheets']==1,
         'snapshot exposes authoritative NPC inventory state')
+    check(last.args.neighbors[1].relation.giftsGiven==1,
+        'give increments giftsGiven on authoritative relationship')
     NLSocialAuthority.command('NeighborhoodSocial','request',p,{id='marisol',item='Base.RippedSheets',amount=1})
     check(p:itemCount('Base.RippedSheets')==sheetsBefore,'request returns the stored item to the player')
     check(world.neighbors.marisol.inventory['Base.RippedSheets']==nil,

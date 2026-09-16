@@ -361,7 +361,15 @@ function NLSocialAuthority.command(module,command,player,args)
         elseif not player:CanSee(body) then message="You need a clear line of sight."
         else
             completed,message=inventoryExchange(world,player,args.id,args,command)
-            if not completed then message="Not completed: "..message end
+            if completed and command=="give" then
+                local profile=NLDomain.profile(world,key)
+                local gameTime=getGameTime and getGameTime()
+                local hours=(gameTime and gameTime.getWorldAgeHours and gameTime:getWorldAgeHours()) or 0
+                local giftOk,giftMessage=NLSocial.giveGift(profile,npc,args.item,hours,key)
+                if giftOk and giftMessage then message=giftMessage end
+            elseif not completed then
+                message="Not completed: "..message
+            end
         end
     end
     NLAuthority.commitWorldJournal(world,journal)

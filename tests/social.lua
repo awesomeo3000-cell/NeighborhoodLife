@@ -39,9 +39,35 @@ check(not act(q,'flirt',73,'guest'),'partner conflict across players')
 check(not act(q,'breakup',74,'guest'),'other player cannot end partnership')
 check(act(p,'breakup',75),'partners can separate')
 check(npc.partner==nil and NLSocial.relation(p,'marisol').status=='Former partner','breakup clears shared state')
+
+-- Favorite gift checks
+check(NLSocial.isFavorite('marisol','Base.Thread'),'thread is a favorite for marisol')
+check(not NLSocial.isFavorite('marisol','Base.Hammer'),'hammer is not a favorite for marisol')
+check(NLSocial.isFavorite('kenji','Base.Hammer'),'hammer is a favorite for kenji')
+check(NLSocial.isFavorite('amara','Base.Bandage'),'bandage is a favorite for amara')
+
+-- Gift giving mechanics
+local marisolRel = NLSocial.relation(p,'marisol')
+local friendBefore = marisolRel.friendship
+local trustBefore = marisolRel.trust
+local giftOk, giftMsg = NLSocial.giveGift(p, npc, 'Base.Apple', 76, 'host')
+check(giftOk and marisolRel.friendship == friendBefore + 2 and marisolRel.trust == trustBefore + 1,
+    'standard gift awards baseline relationship points')
+local giftOk2, giftMsg2 = NLSocial.giveGift(p, npc, 'Base.Thread', 77, 'host')
+check(giftOk2 and marisolRel.friendship == friendBefore + 8 and marisolRel.trust == trustBefore + 5,
+    'favorite gift awards bonus relationship gains and custom appreciation')
+check(string.find(giftMsg2, 'tailoring supplies') ~= nil, 'favorite gift generates tailored response')
+
+-- Apology flow
+marisolRel.friendship = -10
+check(act(p, 'apologize', 78), 'apology accepted when friendship is negative')
+check(marisolRel.friendship == -7, 'apology increases negative friendship')
+marisolRel.friendship = 10
+check(not act(p, 'apologize', 79), 'apology rejected when friendship is non-negative')
+
 check(#NLSocial.relation(p,'marisol').memories<=12,'bounded memory')
 npc.dead=true; check(not act(p,'chat',90),'dead NPC does not interact')
 local copy=NLDomain.copy(w)
 check(copy.players.host.relationships.marisol.status=='Former partner','serializable relationship data')
 check(not NLSocial.interact(p,{id='unknown'},'chat',100,'host'),'unknown NPC rejected')
-print('PASS: '..n..' social assertions (individual relationships, pacing, mutual interest, partnership conflict, breakup, memories)')
+print('PASS: '..n..' social assertions (individual relationships, pacing, mutual interest, partnership conflict, breakup, favorites, gifts, apology, memories)')

@@ -42,6 +42,15 @@ Any developer or AI agent picking up this project can review this file to immedi
   - Added unit test suite in `tests/gameplay.lua`.
   - 100% test pass on Lua 5.1 and B42.20.4 Kahlua VM.
 
+- **Phase 3 (Completed)**: **Social & Romance Breadth**.
+  - Added favorite gift catalogs to `Social.lua` for Marisol (tailoring goods/textiles), Kenji (tools/timber/glue), and Amara (medical supplies/books).
+  - Implemented `NLSocial.isFavorite` and `NLSocial.giveGift` with custom appreciative dialogue lines, bonus relationship gains (+6 friendship, +4 trust, +3 attraction), and memory journaling.
+  - Wired gift giving reaction into `SocialAuthority.command('NeighborhoodSocial', 'give')` so giving items authoritatively triggers character responses and relationship progression.
+  - Expanded `Relationships.lua` with the full action suite (14 actions including `ask_work`, `talk_home`, `compliment`, `apologize`), context-aware button states, and `(Fav!)` gift indicators.
+  - Added unit test suites in `tests/social.lua` and `tests/social-authority.lua`.
+  - 100% test pass on Lua 5.1 and B42.20.4 Kahlua VM.
+
+
 
 ---
 

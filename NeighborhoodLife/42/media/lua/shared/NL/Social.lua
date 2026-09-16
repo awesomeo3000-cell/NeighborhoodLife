@@ -22,6 +22,53 @@ NLSocial.actions={introduce=true,chat=true,joke=true,ask_work=true,talk_home=tru
     compliment=true,flirt=true,date=true,date_activity=true,partner=true,breakup=true,
     apologize=true}
 
+NLSocial.favorites = {
+    marisol = {
+        items = {
+            ["Base.Thread"] = true,
+            ["Base.Needle"] = true,
+            ["Base.Scissors"] = true,
+            ["Base.RippedSheets"] = true,
+            ["Base.DenimStrips"] = true,
+            ["Base.LeatherStrips"] = true,
+            ["Base.BookTailoring1"] = true,
+            ["Base.BookTailoring2"] = true,
+        },
+        bonusLine = "Marisol's eyes light up. 'Quality tailoring supplies! You have no idea how much this helps with my work.'"
+    },
+    kenji = {
+        items = {
+            ["Base.Hammer"] = true,
+            ["Base.Saw"] = true,
+            ["Base.NailsBox"] = true,
+            ["Base.Nails"] = true,
+            ["Base.Woodglue"] = true,
+            ["Base.DuctTape"] = true,
+            ["Base.BookCarpentry1"] = true,
+            ["Base.BookCarpentry2"] = true,
+        },
+        bonusLine = "Kenji examines the tool with a nod. 'Solid, dependable gear. I can put this to work immediately. Thank you.'"
+    },
+    amara = {
+        items = {
+            ["Base.Bandage"] = true,
+            ["Base.FirstAidKit"] = true,
+            ["Base.Disinfectant"] = true,
+            ["Base.SutureNeedle"] = true,
+            ["Base.AlcoholWipes"] = true,
+            ["Base.Antibiotics"] = true,
+            ["Base.BookFirstAid1"] = true,
+            ["Base.BookFirstAid2"] = true,
+        },
+        bonusLine = "Amara smiles warmly. 'Proper medical supplies save lives out here. I'm grateful you brought this to me.'"
+    }
+}
+
+function NLSocial.isFavorite(npcId, itemType)
+    if not npcId or not itemType or not NLSocial.favorites[npcId] then return false end
+    return NLSocial.favorites[npcId].items[itemType] == true
+end
+
 local function clamp(v,lo,hi) return math.max(lo,math.min(hi,v)) end
 
 function NLSocial.relation(profile,id)
@@ -125,4 +172,44 @@ function NLSocial.interact(profile,npc,action,hours,key)
     profile.revision=profile.revision+1
     return true,message
 end
+
+function NLSocial.giveGift(profile, npc, itemType, hours, key)
+    local def = NLSocial.people[npc.id]
+    if not def then return false, "Unknown neighbor" end
+    if npc.dead then return false, "They have died." end
+    local r = NLSocial.relation(profile, npc.id)
+    if not r.met then
+        r.met = true
+        r.friendship = def.friendly
+        r.trust = 2
+        r.status = "Acquaintance"
+    end
+    local fav = NLSocial.favorites[npc.id]
+    local isFav = fav and fav.items and fav.items[itemType] == true
+    local message
+    if isFav then
+        r.friendship = r.friendship + 6
+        r.trust = r.trust + 4
+        r.attraction = r.attraction + 3
+        message = fav.bonusLine or (def.name .. " loves this gift!")
+    else
+        r.friendship = r.friendship + 2
+        r.trust = r.trust + 1
+        message = def.name .. " accepts the gift with thanks. 'Thank you, this will be put to good use.'"
+    end
+    r.friendship = clamp(r.friendship, -100, 100)
+    r.trust = clamp(r.trust, 0, 100)
+    r.attraction = clamp(r.attraction, 0, 100)
+    if r.status ~= "Partner" and r.status ~= "Former partner" then
+        r.status = r.friendship >= 40 and "Friend" or "Acquaintance"
+    end
+    r.lastAction = hours
+    r.giftsGiven = (r.giftsGiven or 0) + 1
+    r.memories[#r.memories + 1] = { action = "give", hour = hours, text = message }
+    if #r.memories > 12 then table.remove(r.memories, 1) end
+    profile.revision = profile.revision + 1
+    return true, message
+end
+
 return NLSocial
+

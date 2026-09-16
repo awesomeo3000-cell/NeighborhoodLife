@@ -42,7 +42,7 @@ end
 
 function NLRelationships:new(index)
     local o=NLJournal.new(self,index)
-    o.height=500
+    o.height=525
     o.selected=1
     return o
 end
@@ -57,10 +57,12 @@ function NLRelationships:initialise()
     local labels={{"Introduce","introduce"},{"Chat","chat"},{"Joke","joke"},
         {"Flirt","flirt"},{"Ask on a date","date"},{"Spend time together","date_activity"},
         {"Become partners","partner"},{"Break up","breakup"},
-        {"Give item","give"},{"Request item","request"}}
+        {"Give item","give"},{"Request item","request"},
+        {"Ask about work","ask_work"},{"Talk about home","talk_home"},
+        {"Compliment","compliment"},{"Apologize","apologize"}}
     for i,v in ipairs(labels) do
         local col=(i-1)%3; local row=math.floor((i-1)/3)
-        self.actions[i]=self:button(16+col*186,250+row*35,176,v[1],v[2],v[3])
+        self.actions[i]=self:button(16+col*186,250+row*32,176,v[1],v[2],v[3])
         self.actionButtons[v[2]]=self.actions[i]
     end
 end
@@ -91,6 +93,15 @@ function NLRelationships:prerender()
     for _,b in ipairs(self.actions) do b:setEnable(nearby==true) end
     if self.actionButtons.partner then
         self.actionButtons.partner:setEnable(nearby==true and (npc.exclusive~=true or npc.isPartner==true))
+    end
+    if self.actionButtons.breakup then
+        self.actionButtons.breakup:setEnable(nearby==true and npc.isPartner==true)
+    end
+    if self.actionButtons.apologize then
+        self.actionButtons.apologize:setEnable(nearby==true and npc.relation and (tonumber(npc.relation.friendship or 0) or 0)<0)
+    end
+    if self.actionButtons.compliment then
+        self.actionButtons.compliment:setEnable(nearby==true and npc.relation and (tonumber(npc.relation.friendship or 0) or 0)>=20)
     end
     if self.actionButtons.date_activity then
         local activeDate=npc and npc.relation and npc.relation.activeDate
@@ -137,7 +148,8 @@ function NLRelationships:prerender()
     local requestButton=self.actionButtons.request
     giveButton.value=giveChoice and {item=giveChoice.item,amount=1} or nil
     requestButton.value=requestChoice and {item=requestChoice.item,amount=1} or nil
-    setButtonText(giveButton,giveChoice and ("Give 1 "..giveChoice.label) or "Give item")
+    local isFav=giveChoice and NLSocial and NLSocial.isFavorite and NLSocial.isFavorite(npc.id, giveChoice.item)
+    setButtonText(giveButton,giveChoice and ("Give 1 "..giveChoice.label..(isFav and " (Fav!)" or "")) or "Give item")
     setButtonText(requestButton,requestChoice and ("Request 1 "..(requestChoice.label or requestChoice.item)) or "Request item")
     giveButton:setEnable(nearby and giveChoice~=nil)
     requestButton:setEnable(nearby and requestChoice~=nil)
@@ -147,15 +159,15 @@ function NLRelationships:prerender()
         if #inventoryParts==2 then break end
     end
     local inventoryText=#inventoryParts>0 and ("NPC inventory: "..table.concat(inventoryParts,", ")) or "NPC inventory: empty"
-    self:drawText(inventoryText,16,397,0.30,0.38,0.47,1,UIFont.Small)
-    self:drawText(string.sub(data.message or "",1,78),16,420,0.12,0.38,0.63,1,UIFont.Small)
+    self:drawText(inventoryText,16,415,0.30,0.38,0.47,1,UIFont.Small)
+    self:drawText(string.sub(data.message or "",1,78),16,438,0.12,0.38,0.63,1,UIFont.Small)
     local memories=npc.relation.memories
     local latest=memories[#memories]
-    if latest then self:drawText("Memory: "..string.sub(latest.text,1,70),16,447,0.30,0.38,0.47,1,UIFont.Small) end
+    if latest then self:drawText("Memory: "..string.sub(latest.text,1,70),16,460,0.30,0.38,0.47,1,UIFont.Small) end
     local event=NLSocialClient.lastEvent
     if event then
         self:drawText("Shared event: "..tostring(event.actor).." "
-            ..tostring(event.action).." with "..tostring(event.npcName),16,474,
+            ..tostring(event.action).." with "..tostring(event.npcName),16,482,
             0.30,0.38,0.47,1,UIFont.Small)
     end
 end
