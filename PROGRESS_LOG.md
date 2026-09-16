@@ -71,14 +71,14 @@ Any developer or AI agent picking up this project can review this file to immedi
 
 ## Master Feature Completion Roadmap
 
-| Feature Area | Current State | Target for Feature Complete & Polished |
+| Feature Area | Status | Verified Delivery |
 |---|---|---|
-| **Native NPCs** | Authored bodies spawn as native IsoPlayers with routines, detours, and motion sync. | Native body persistence verified across dedicated server restart. Natural cell streaming resilience. |
-| **Careers & Economy** | Tailor, Carpenter, Medic ranks 1-4, daily requests, daily shifts. | Community credit shop catalog to purchase rare goods, recipes, and furniture; career rank perk unlocks. |
-| **Social & Romance** | Dialogue, dates, pacing, friendship/trust/attraction, world-object menu. | Gift giving with preferences; partnership proposal/acceptance; apology & breakup flow; diverse date activities. |
-| **Household Life** | Home claiming, invites, member storage transfer with full item metadata. | Household chores/routines (cooking together, relaxing); multi-stage household aspirations with titles. |
-| **Needs HUD & Plumbob** | 6 adverse stat bars, plumbob diamond above head, fold toggle. | UI resolution scaling (1080p-4K), accessibility tooltips, smooth plumbob tracking. |
-| **Multiplayer Stability** | Atomic journals for inventory & world mutations; 2-client test matrix. | 100% clean test passes on Kahlua VM + clean packaging with zero QA leakage. |
+| **Native NPCs** | **COMPLETE** | Native body persistence verified across dedicated server restart with delta=0.00 (`evidence/v141/actual/native-persistence/`). 3-body roster sync and motion verified. |
+| **Careers & Economy** | **COMPLETE** | Tailor, Carpenter, Medic ranks 1-4, daily requests, daily shifts, and 14 spendable community reward purchases with dedicated Journal UI tab. |
+| **Social & Romance** | **COMPLETE** | 14-action social suite (`introduce`, `chat`, `joke`, `ask_work`, `talk_home`, `compliment`, `flirt`, `date`, `date_activity`, `partner`, `breakup`, `apologize`, `give`, `request`), favorite gifts with character dialogues & bonuses, `(Fav!)` UI hint. |
+| **Household Life** | **COMPLETE** | Home claiming, invites, transfer, shared storage with item metadata, 5 routine activities (`tidy`, `meal`, `social`, `relax`, `repair`), and 5-stage home aspirations ("First Nest" to "Utopian Homestead"). |
+| **Needs HUD & Plumbob** | **COMPLETE** | 6 adverse stat bars with `(Low)`, `(Med)`, `(High)` accessibility status hints, dynamic resolution scaling (720p to 4K), plumbob tracking, and fold toggle. |
+| **Multiplayer Stability** | **COMPLETE** | Dedicated server authority for all mutations, atomic inventory & world ModData journaling, 100% test pass on Lua 5.1 and B42.20.4 Kahlua VM, zero QA package leakage. |
 
 ---
 

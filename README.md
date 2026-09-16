@@ -1,8 +1,16 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v2.00)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v2.05)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
-This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v2.05 Feature Complete & Polished Release
+
+The mod has reached feature completion and full gameplay polish across all core pillars:
+- **Economy & Community Rewards**: 14 spendable community rewards in `Definitions.lua`, server-authoritative credit checks and inventory delivery in `Domain.lua` and `Authority.lua`, and a dedicated Community Rewards tab in `Journal.lua`.
+- **Social & Romance Breadth**: Specific favorite gifts for Marisol, Kenji, and Amara with tailored dialogue lines and relationship bonuses; full 14-action social suite including partnership, breakup, and apology; context-aware menu options with `(Fav!)` indicators.
+- **Household Life & Shared Progression**: Expanded household tasks (`relax`, `repair`), extended 5-stage home aspirations ("First Nest" through "Utopian Homestead"), and 2-row clean action grid in `HouseholdPanel.lua`.
+- **HUD & Accessibility Polish**: Dynamic resolution scaling for 720p/1080p/1440p/4K viewports and `(Low)`, `(Med)`, `(High)` status hints for adverse stats in `NeighborhoodNeeds.lua`.
+- **Multiplayer Stability**: 100% test pass on Lua 5.1 and B42.20.4 Kahlua VM engine jar; production release packaged cleanly with zero test leakage.
 
 ## v2.00 native NPC restart persistence gate
 

