@@ -1,0 +1,37 @@
+name: Lua contract tests
+
+on:
+  push:
+    branches: [master, "chatgpt/**"]
+  pull_request:
+
+jobs:
+  lua-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.1
+      - name: Syntax check production Lua
+        run: |
+          find NeighborhoodLife -name '*.lua' -print0 | xargs -0 -n1 luac5.1 -p
+      - name: HUD contract
+        run: lua5.1 tests/hud.lua NeighborhoodLife/42/media/lua/client/NeighborhoodNeeds.lua enabled
+      - name: Gameplay contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          suites=(
+            gameplay wardrobe social social-authority neighbors plumbob interfaces
+            wardrobe-panel wardrobe-authority aspirations replication world-journal
+            households household-authority household-panel household-furnishings
+            household-furnishing-client household-furnishing-menu npc-authority
+            npc-client npc-interaction-menu remote-player-client appearance
+            appearance-panel social-events
+          )
+          for suite in "${suites[@]}"; do
+            echo "== $suite =="
+            lua5.1 "tests/${suite}.lua" NeighborhoodLife
+          done
