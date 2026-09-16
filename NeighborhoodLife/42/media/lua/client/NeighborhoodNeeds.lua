@@ -6,6 +6,7 @@ require "NL/WardrobePanel"
 require "NL/HouseholdPanel"
 require "NL/Plumbob"
 require "NL/NpcInteractionMenu"
+require "NL/NpcSinglePlayer"
 
 if Events.OnTick then
     Events.OnTick.Add(function()
