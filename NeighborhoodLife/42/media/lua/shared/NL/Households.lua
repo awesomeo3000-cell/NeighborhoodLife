@@ -1,9 +1,11 @@
 NLHouseholds = {
-    taskOrder = { "tidy", "meal", "social" },
+    taskOrder = { "tidy", "meal", "social", "relax", "repair" },
     tasks = {
         tidy = { label = "Tidy shared home", reward = 5 },
         meal = { label = "Prepare a household meal", reward = 5 },
         social = { label = "Spend time together", reward = 5 },
+        relax = { label = "Relax together at home", reward = 5 },
+        repair = { label = "Maintain home fixtures", reward = 5 },
     },
 }
 

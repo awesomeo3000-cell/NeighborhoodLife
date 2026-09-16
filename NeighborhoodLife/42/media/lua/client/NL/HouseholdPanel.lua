@@ -7,7 +7,7 @@ NLHouseholdPanel = ISPanel:derive("NLHouseholdPanel")
 NLHouseholdPanel.instances = {}
 
 function NLHouseholdPanel:new(index)
-    local o = ISPanel.new(self, 330, 130, 590, 490)
+    local o = ISPanel.new(self, 330, 130, 590, 520)
     o.playerIndex = index
     o.backgroundColor = { r = 0.96, g = 0.98, b = 1, a = 0.98 }
     o.borderColor = { r = 0.62, g = 0.76, b = 0.88, a = 1 }
@@ -36,14 +36,16 @@ function NLHouseholdPanel:initialise()
     self:button(500, 48, 74, "Refresh", "refresh")
     self.transferButton = self:button(16, 82, 135, "Transfer owner", "transfer")
     self.storageButtons = {
-        store = self:button(16, 370, 175, "Store 1 RippedSheet", "store",
+        store = self:button(16, 368, 175, "Store 1 RippedSheet", "store",
             { item = "Base.RippedSheets", amount = 1 }),
-        retrieve = self:button(200, 370, 175, "Take 1 RippedSheet", "retrieve",
+        retrieve = self:button(200, 368, 175, "Take 1 RippedSheet", "retrieve",
             { item = "Base.RippedSheets", amount = 1 }),
     }
     self.taskButtons = {}
     for i, task in ipairs(NLHouseholds.taskOrder) do
-        self.taskButtons[task] = self:button(16 + (i - 1) * 185, 410, 170,
+        local col = (i - 1) % 3
+        local row = math.floor((i - 1) / 3)
+        self.taskButtons[task] = self:button(16 + col * 185, 404 + row * 32, 175,
             NLHouseholds.tasks[task].label, "task", task)
     end
 end
@@ -115,9 +117,16 @@ function NLHouseholdPanel:prerender()
                 16, y, 0.18, 0.24, 0.32, 1, UIFont.Small)
             y = y + 24
         end
-        self:drawText("Activities today: tidy " .. tostring(h.tasks.tidy or 0)
-            .. " | meal " .. tostring(h.tasks.meal or 0)
-            .. " | social " .. tostring(h.tasks.social or 0), 16, 304,
+        if state.homeAspirationLabel then
+            self:drawText("Home aspiration: " .. tostring(state.homeAspirationLabel), 16, 282,
+                0.12, 0.38, 0.63, 1, UIFont.Small)
+        end
+        local actParts = {}
+        for _, taskKey in ipairs(NLHouseholds.taskOrder) do
+            local count = h.tasks and h.tasks[taskKey] or 0
+            actParts[#actParts + 1] = taskKey .. " " .. tostring(count)
+        end
+        self:drawText("Activities today: " .. table.concat(actParts, " | "), 16, 304,
             0.30, 0.38, 0.47, 1, UIFont.Small)
         local stored = {}
         for itemType, amount in pairs(h.storage or {}) do
@@ -154,7 +163,7 @@ function NLHouseholdPanel:prerender()
     if self.transferButton then
         self.transferButton:setEnable(self:transferTarget() ~= nil)
     end
-    self:drawText(state.message or "", 16, 464, 0.12, 0.38, 0.63, 1, UIFont.Small)
+    self:drawText(state.message or "", 16, 478, 0.12, 0.38, 0.63, 1, UIFont.Small)
 end
 
 function NLHouseholdPanel.open(index)

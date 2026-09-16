@@ -5,8 +5,10 @@ NLAspirations={milestones={
 },homeMilestones={
     {name="First Nest",tasks=1,reward=5},
     {name="Shared Routine",tasks=3,reward=10},
-    {name="Household Heart",tasks=6,reward=20}
-},homeTasks={tidy=true,meal=true,social=true}}
+    {name="Household Heart",tasks=6,reward=20},
+    {name="Sanctuary Keepers",tasks=12,reward=35},
+    {name="Utopian Homestead",tasks=20,reward=50}
+},homeTasks={tidy=true,meal=true,social=true,relax=true,repair=true}}
 function NLAspirations.progress(profile)
     local deliveries,ranks=0,0
     for _,career in pairs(profile.careers) do
@@ -82,7 +84,7 @@ function NLAspirations.homeLabel(profile)
     local stage = profile and profile.homeAspiration and profile.homeAspiration.stage or 1
     local milestone = NLAspirations.homeMilestones[stage]
     local tasks = NLAspirations.homeProgress(profile)
-    if not milestone then return "Home aspiration complete: Household Heart" end
+    if not milestone then return "Home aspiration complete: Utopian Homestead" end
     return milestone.name..": "..math.min(tasks, milestone.tasks).."/"..milestone.tasks
         .." household activities (+"..milestone.reward.." credits)"
 end

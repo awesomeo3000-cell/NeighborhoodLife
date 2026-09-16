@@ -50,6 +50,14 @@ Any developer or AI agent picking up this project can review this file to immedi
   - Added unit test suites in `tests/social.lua` and `tests/social-authority.lua`.
   - 100% test pass on Lua 5.1 and B42.20.4 Kahlua VM.
 
+- **Phase 4 (Completed)**: **Household Life & Shared Progression**.
+  - Expanded shared household routine tasks in `Households.lua` to include `relax` ("Relax together at home") and `repair` ("Maintain home fixtures").
+  - Extended multi-stage home aspirations in `Aspirations.lua` from 3 to 5 progression milestones: "First Nest", "Shared Routine", "Household Heart", "Sanctuary Keepers", and "Utopian Homestead" (with up to +50 credit rewards).
+  - Updated `HouseholdPanel.lua` UI with 2-row clean action grid, home aspiration milestone tracker, and dynamic activity tally.
+  - Added test coverage in `tests/households.lua`.
+  - 100% test pass on Lua 5.1 and B42.20.4 Kahlua VM.
+
+
 
 
 ---
