@@ -1,52 +1,589 @@
-Neighborhood Life v0.4 milestone verification
-
-Changed branch/field:
-- production world registry: NeighborhoodLife/42/media/lua/shared/NL/Neighbors.lua (new)
-- authoritative social integration: NeighborhoodLife/42/media/lua/server/NL/SocialAuthority.lua now calls NLNeighbors.ensure/get/register/position/dead-compatible state
-- tooling: tools/pipeline.py, tools/launch-multiplayer-qa.ps1, tests/HandsFreeQA.java
-- Git baseline commit: 0efe2225e5e03d18f92ef6e97b4f1a19de11b741
-
-BASELINE COMMAND: python tools/pipeline.py test --target E:/pzmod/evidence/v10/baseline
-BASELINE INPUT: E:/pzmod/evidence/v10/baseline (HEAD production snapshot before NLNeighbors)
-BASELINE OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
-BASELINE EXIT: 0
-
-MODIFIED COMMAND: python tools/pipeline.py test
-MODIFIED INPUT: E:/pzmod/NeighborhoodLife
-MODIFIED OUTPUT: PASS: consolidated Lua 5.1, syntax and installed-game Kahlua suites
-MODIFIED EXIT: 0
-MODIFIED TEST CLASSIFICATION: Lua 5.1 and installed-game Kahlua VM tests; no multiplayer or native NPC movement claim.
-
-PACKAGE COMMAND: python tools/pipeline.py package --version v10
-PACKAGE INPUT: E:/pzmod/NeighborhoodLife
-PACKAGE OUTPUT: PASS: release package E:/pzmod/evidence/v10/MODIFIED_FILE.zip; PACKAGE_ENTRIES=16; QA_INCLUDED=False
-PACKAGE EXIT: 0
-
-ROLLBACK COMMAND: "C:/Program Files/Git/bin/bash.exe" E:/pzmod/evidence/v10/ROLLBACK.sh E:/pzmod/evidence/v10/rollback-test
-ROLLBACK INPUT: separate copy E:/pzmod/evidence/v10/rollback-test
-ROLLBACK OUTPUT: PASS: restored NeighborhoodLife from baseline commit 0efe222
-ROLLBACK EXIT: 0
-RESTORED COMMAND: python tools/verify.py modified
-RESTORED INPUT: E:/pzmod/evidence/v10/rollback-test via the verification target used by the rollback check
-RESTORED OUTPUT: PASS: HUD, syntax, 60 gameplay/social assertions, wardrobe; Lua 5.1 and game Kahlua
-RESTORED EXIT: 0
-RESTORED STATUS: NLNeighbors.lua absent; baseline SocialAuthority.lua syntax and behavior restored; working NeighborhoodLife remains modified.
-
-REAL ENGINE MULTIPLAYER COMMAND: powershell -NoProfile -ExecutionPolicy Bypass -File tools/launch-multiplayer-qa.ps1
-REAL ENGINE MULTIPLAYER INPUT: E:/pzmod/test-profile/mp-server, E:/pzmod/test-profile/mp-host, E:/pzmod/test-profile/mp-guest
-REAL ENGINE MULTIPLAYER OUTPUT: QA multiplayer processes started: server=29224 host=19328 guest=29924
-REAL ENGINE MULTIPLAYER EXIT: 0
-REAL ENGINE MULTIPLAYER RESULT: dedicated server reached *** SERVER STARTED ****; both client JVMs loaded NeighborhoodLifeHUD and NeighborhoodQA; hands-free agent output was PASS: OnSteamGameJoin invoked with engine client identity nl-host (twice in the reused isolated log) and PASS: OnSteamGameJoin invoked with engine client identity nl-guest (twice in the reused isolated log); server recorded no player connections; clients produced no NLQA MP CLIENT START or NLQA MP SNAPSHOT. Host+guest gameplay is not verified.
-
-NATIVE NPC ENGINE RESULT: evidence/v09/modified-engine.log records PATH RESULT: Working then PATH RESULT: Failed and movement distance=0. Native NPC movement remains open.
-
-HASHES:
-- MODIFIED_FILE.zip: C3510D90C30C31896C8F9635CF22F8C818E15FF9720FBD39B9774CD7C90106D2
-- DIFF_FILE.patch: 81795A1D9541B9CA9CE65448133D16F65D7750FF8FD1194E36B547C24CA97680
-- Neighbors.lua: D4367C579CB8ACF1F6B662290C9C53E53552EB0B783D02F5F1E2FF4C0500F363
-- SocialAuthority.lua: 6C58954DF4218DCCA9ACDA34783BEBF83666A962E9EA74ACA7C20EF2236F586E
-
-ARTIFACT: E:/pzmod/evidence/v10/MODIFIED_FILE.zip
-ARTIFACT: E:/pzmod/evidence/v10/DIFF_FILE.patch
-ARTIFACT: E:/pzmod/evidence/v10/VERIFICATION.txt
-ARTIFACT: E:/pzmod/evidence/v10/ROLLBACK.sh
+Changed: consolidated build/test/release entry point; production package excludes QA helpers and test profiles.
+QA classification: Lua tests and Kahlua engine-VM tests are not multiplayer or native NPC gameplay evidence.
+TEST COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\hud.lua E:\pzmod\NeighborhoodLife\42\media\lua\client\NeighborhoodNeeds.lua enabled
+TEST INPUT: E:\pzmod
+TEST OUTPUT: PASS: normalization, clamping, missing/NaN, isolated players, duplicate prevention, fold, render, reconnect, cleanup
+TEST STDERR: 
+TEST EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NeighborhoodNeeds.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\server\NeighborhoodLifeServer.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\shared\NL\Aspirations.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\shared\NL\Definitions.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\shared\NL\Domain.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\shared\NL\Households.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\shared\NL\Neighbors.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\shared\NL\Social.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\server\NL\Authority.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\server\NL\HouseholdAuthority.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\server\NL\HouseholdFurnishings.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\server\NL\NpcAuthority.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\server\NL\SocialAuthority.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Appearance.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\AppearancePanel.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Client.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\HouseholdClient.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\HouseholdFurnishingClient.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\HouseholdFurnishingMenu.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\HouseholdPanel.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Journal.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\NpcClient.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\NpcInteractionMenu.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Plumbob.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Relationships.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\RemotePlayerClient.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\SocialClient.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Wardrobe.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\WardrobePanel.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\gameplay.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: 35 gameplay assertions (authority, deliveries, promotions, routing, persistence, replay and malformed input)
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\wardrobe.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: exact garment identity, replacement removal, fallback, legacy presets and duplicate exclusion
+PASS: wardrobe save, replacement unequip/wear queue, missing pieces and empty slot
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\social.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: 45 social assertions (individual relationships, pacing, mutual interest, partnership conflict, breakup, favorites, gifts, apology, memories)
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\social-authority.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: 41 social authority assertions (proximity, visibility, private snapshots, death and absent bodies)
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\neighbors.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: 10 persistent-neighbor identity, route position, death and per-player isolation assertions
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\plumbob.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: plumbob asset lookup, screen anchoring, dead-character hide, registration and cleanup
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\interfaces.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\wardrobe-panel.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+PASS: wardrobe panel empty/saved/dead states, save/wear callbacks and reopen
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\wardrobe-authority.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: server-authoritative wardrobe capture, validation, persistence and snapshot
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\aspirations.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: aspiration milestones, delivery hook, promotion gate, one-time rewards, reload and player isolation
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\replication.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: authoritative player presence plus native-NPC state broadcast and client storage
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\world-journal.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: global world mutation journal restores nested ModData, protects account ownership and commits cleanly
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\households.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: household membership, shared activities, daily replay guard, persistence and isolation
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\household-authority.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: household authority create/invite/accept, shared storage deposit/withdrawal when available, activity, reward, replay guard and private packets
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\household-panel.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: household panel empty/shared states, member activity controls and client routing load
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\household-furnishings.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: household furnishing creation, identity, reuse, snapshot persistence and removal
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\household-furnishing-client.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: client household furnishing replica, identity, reuse and cleanup
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\household-furnishing-menu.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: household furnishing world menu identity and action routing
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\npc-authority.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: NLQA NPC PRODUCTION SPAWN id=marisol x=98.50 y=100.50 z=0 onlineId=30001 assigned=true
+NLQA NPC PRODUCTION SPAWN id=kenji x=100.50 y=98.50 z=0 onlineId=30002 assigned=true
+NLQA NPC PRODUCTION SPAWN id=amara x=100.50 y=102.50 z=0 onlineId=30003 assigned=true
+NLQA NPC PRODUCTION ROUTINE id=kenji state=work hour=9 target=100,102
+NLQA NPC PRODUCTION PATH id=kenji from=100.50,98.50 to=100.00,102.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=kenji x=100.50 y=98.50 waypoint=2
+NLQA NPC PRODUCTION ROUTINE id=amara state=work hour=9 target=96,102
+NLQA NPC PRODUCTION PATH id=amara from=100.50,102.50 to=96.00,102.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=amara x=100.50 y=102.50 waypoint=2
+NLQA NPC PRODUCTION ROUTINE id=marisol state=work hour=9 target=102,100
+NLQA NPC PRODUCTION PATH id=marisol from=98.50,100.50 to=102.00,100.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=marisol x=98.50 y=100.50 waypoint=2
+NLQA NPC PRODUCTION DANGER id=kenji distance=3.61 moved=true
+NLQA NPC PRODUCTION DANGER id=amara distance=3.61 moved=true
+NLQA NPC PRODUCTION DANGER id=marisol distance=1.00 moved=true
+NLQA NPC PRODUCTION ROSTER source=typed id=30002
+NLQA NPC PRODUCTION ROSTER source=typed id=30003
+NLQA NPC PRODUCTION ROSTER source=typed id=30001
+NLQA NPC PRODUCTION REANNOUNCE source=typed sent=3
+NLQA NPC PRODUCTION ROSTER source=global id=30002 fields=3
+NLQA NPC PRODUCTION ROSTER source=global id=30003 fields=3
+NLQA NPC PRODUCTION ROSTER source=global id=30001 fields=3
+NLQA NPC PRODUCTION REANNOUNCE source=global sent=3
+NLQA NPC PRODUCTION ROSTER source=getClass id=30002 fields=2
+NLQA NPC PRODUCTION ROSTER source=getClass id=30003 fields=2
+NLQA NPC PRODUCTION ROSTER source=getClass id=30001 fields=2
+NLQA NPC PRODUCTION REANNOUNCE source=getClass sent=3
+NLQA NPC PRODUCTION PATH id=kenji from=100.60,98.43 to=100.00,102.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=kenji x=100.60 y=98.43 waypoint=2
+NLQA NPC PRODUCTION PATH id=amara from=100.60,102.57 to=96.00,102.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=amara x=100.60 y=102.57 waypoint=2
+NLQA NPC PRODUCTION PATH id=marisol from=98.99,100.73 to=102.00,100.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=marisol x=98.99 y=100.73 waypoint=2
+NLQA NPC PRODUCTION RESTORE id=marisol x=98.99 y=100.73 revision=6
+NLQA NPC PRODUCTION SPAWN id=marisol x=98.99 y=100.73 z=0 onlineId=30001 assigned=true
+NLQA NPC PRODUCTION RESTORE id=kenji x=100.60 y=98.43 revision=6
+NLQA NPC PRODUCTION SPAWN id=kenji x=100.60 y=98.43 z=0 onlineId=30002 assigned=true
+NLQA NPC PRODUCTION RESTORE id=amara x=100.60 y=102.57 revision=6
+NLQA NPC PRODUCTION SPAWN id=amara x=100.60 y=102.57 z=0 onlineId=30003 assigned=true
+NLQA NPC PRODUCTION RESTORE id=marisol x=101.50 y=101.50 revision=1
+NLQA NPC PRODUCTION SPAWN id=marisol x=101.50 y=101.50 z=0 onlineId=30001 assigned=true
+NLQA NPC PRODUCTION RESTORE id=kenji x=101.50 y=101.50 revision=1
+NLQA NPC PRODUCTION RELOCATE id=kenji from=101,101,0 to=100,101,0
+NLQA NPC PRODUCTION SPAWN id=kenji x=100.50 y=101.50 z=0 onlineId=30002 assigned=true
+NLQA NPC PRODUCTION RESTORE id=amara x=101.50 y=101.50 revision=1
+NLQA NPC PRODUCTION RELOCATE id=amara from=101,101,0 to=101,100,0
+NLQA NPC PRODUCTION SPAWN id=amara x=101.50 y=100.50 z=0 onlineId=30003 assigned=true
+NLQA NPC PRODUCTION OFFSCREEN id=kenji retryTick=31
+NLQA NPC PRODUCTION PATH id=amara from=101.50,100.50 to=97.00,100.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=amara x=101.50 y=100.50 waypoint=2
+NLQA NPC PRODUCTION PATH id=marisol from=101.50,101.50 to=105.00,101.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=marisol x=101.50 y=101.50 waypoint=2
+NLQA NPC PRODUCTION SPAWN id=kenji x=100.50 y=101.50 z=0 onlineId=30002 assigned=true
+NLQA NPC PRODUCTION RECOVER id=kenji x=100.50 y=101.50
+NLQA NPC PRODUCTION DEATH id=amara
+NLQA NPC PRODUCTION PATH id=kenji from=100.50,101.50 to=100.00,105.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=kenji x=100.50 y=101.50 waypoint=2
+NLQA NPC PRODUCTION PATH id=marisol from=101.50,101.50 to=105.00,101.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=marisol x=101.50 y=101.50 waypoint=2
+PASS: production NPC identity, native body adapter, route tick and save/reload position restoration
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\npc-client.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: client NPC native replica creation, authoritative interpolation, plumbob and cleanup
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\npc-interaction-menu.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: world-context NPC discovery, social actions, relationship profile, item routing and dead-player guard
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\remote-player-client.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: remote player replica creation, authoritative movement, native promotion, stale rejection and cleanup
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\appearance.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: authoritative appearance presets, revisioned snapshot, native HumanVisual application and validation
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\appearance-panel.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: appearance panel rendering, preset callbacks, reopen and dead-state gating
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\social-events.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: replicated social event feed, bounded history, disconnect and menu cleanup
+LUA STDERR: 
+LUA EXIT: 0
+JAVAC COMMAND: javac -cp E:\SteamLibrary\steamapps\common\ProjectZomboid\projectzomboid.jar -d E:\pzmod\tests\classes E:\pzmod\tests\EngineLua.java
+JAVAC INPUT: E:\pzmod
+JAVAC OUTPUT: 
+JAVAC STDERR: 
+JAVAC EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\gameplay.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: 35 gameplay assertions (authority, deliveries, promotions, routing, persistence, replay and malformed input)
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\wardrobe.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: exact garment identity, replacement removal, fallback, legacy presets and duplicate exclusion
+PASS: wardrobe save, replacement unequip/wear queue, missing pieces and empty slot
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\social.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: 45 social assertions (individual relationships, pacing, mutual interest, partnership conflict, breakup, favorites, gifts, apology, memories)
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\social-authority.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: 41 social authority assertions (proximity, visibility, private snapshots, death and absent bodies)
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\neighbors.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: 10 persistent-neighbor identity, route position, death and per-player isolation assertions
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\plumbob.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: plumbob asset lookup, screen anchoring, dead-character hide, registration and cleanup
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\interfaces.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\wardrobe-panel.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+PASS: wardrobe panel empty/saved/dead states, save/wear callbacks and reopen
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\wardrobe-authority.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: server-authoritative wardrobe capture, validation, persistence and snapshot
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\aspirations.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: aspiration milestones, delivery hook, promotion gate, one-time rewards, reload and player isolation
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\replication.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: authoritative player presence plus native-NPC state broadcast and client storage
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\world-journal.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: global world mutation journal restores nested ModData, protects account ownership and commits cleanly
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\households.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: household membership, shared activities, daily replay guard, persistence and isolation
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\household-authority.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: household authority create/invite/accept, shared storage deposit/withdrawal when available, activity, reward, replay guard and private packets
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\household-panel.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: household panel empty/shared states, member activity controls and client routing load
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\household-furnishings.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: household furnishing creation, identity, reuse, snapshot persistence and removal
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\household-furnishing-client.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: client household furnishing replica, identity, reuse and cleanup
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\household-furnishing-menu.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: household furnishing world menu identity and action routing
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\npc-authority.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: NLQA NPC PRODUCTION SPAWN id=marisol x=98.50 y=100.50 z=0 onlineId=30001 assigned=true
+NLQA NPC PRODUCTION SPAWN id=kenji x=100.50 y=98.50 z=0 onlineId=30002 assigned=true
+NLQA NPC PRODUCTION SPAWN id=amara x=100.50 y=102.50 z=0 onlineId=30003 assigned=true
+NLQA NPC PRODUCTION ROUTINE id=marisol state=work hour=9 target=102,100
+NLQA NPC PRODUCTION PATH id=marisol from=98.50,100.50 to=102.00,100.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=marisol x=98.50 y=100.50 waypoint=2
+NLQA NPC PRODUCTION ROUTINE id=kenji state=work hour=9 target=100,102
+NLQA NPC PRODUCTION PATH id=kenji from=100.50,98.50 to=100.00,102.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=kenji x=100.50 y=98.50 waypoint=2
+NLQA NPC PRODUCTION ROUTINE id=amara state=work hour=9 target=96,102
+NLQA NPC PRODUCTION PATH id=amara from=100.50,102.50 to=96.00,102.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=amara x=100.50 y=102.50 waypoint=2
+NLQA NPC PRODUCTION DANGER id=marisol distance=1.00 moved=true
+NLQA NPC PRODUCTION DANGER id=kenji distance=3.61 moved=true
+NLQA NPC PRODUCTION DANGER id=amara distance=3.61 moved=true
+NLQA NPC PRODUCTION ROSTER source=typed id=30001
+NLQA NPC PRODUCTION ROSTER source=typed id=30002
+NLQA NPC PRODUCTION ROSTER source=typed id=30003
+NLQA NPC PRODUCTION REANNOUNCE source=typed sent=3
+NLQA NPC PRODUCTION ROSTER source=global id=30001 fields=3
+NLQA NPC PRODUCTION ROSTER source=global id=30002 fields=3
+NLQA NPC PRODUCTION ROSTER source=global id=30003 fields=3
+NLQA NPC PRODUCTION REANNOUNCE source=global sent=3
+NLQA NPC PRODUCTION ROSTER source=getClass id=30001 fields=2
+NLQA NPC PRODUCTION ROSTER source=getClass id=30002 fields=2
+NLQA NPC PRODUCTION ROSTER source=getClass id=30003 fields=2
+NLQA NPC PRODUCTION REANNOUNCE source=getClass sent=3
+NLQA NPC PRODUCTION PATH id=marisol from=98.99,100.73 to=102.00,100.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=marisol x=98.99 y=100.73 waypoint=2
+NLQA NPC PRODUCTION PATH id=kenji from=100.60,98.43 to=100.00,102.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=kenji x=100.60 y=98.43 waypoint=2
+NLQA NPC PRODUCTION PATH id=amara from=100.60,102.57 to=96.00,102.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=amara x=100.60 y=102.57 waypoint=2
+NLQA NPC PRODUCTION RESTORE id=marisol x=98.99 y=100.73 revision=6
+NLQA NPC PRODUCTION SPAWN id=marisol x=98.99 y=100.73 z=0 onlineId=30001 assigned=true
+NLQA NPC PRODUCTION RESTORE id=kenji x=100.60 y=98.43 revision=6
+NLQA NPC PRODUCTION SPAWN id=kenji x=100.60 y=98.43 z=0 onlineId=30002 assigned=true
+NLQA NPC PRODUCTION RESTORE id=amara x=100.60 y=102.57 revision=6
+NLQA NPC PRODUCTION SPAWN id=amara x=100.60 y=102.57 z=0 onlineId=30003 assigned=true
+NLQA NPC PRODUCTION RESTORE id=marisol x=101.50 y=101.50 revision=1
+NLQA NPC PRODUCTION SPAWN id=marisol x=101.50 y=101.50 z=0 onlineId=30001 assigned=true
+NLQA NPC PRODUCTION RESTORE id=kenji x=101.50 y=101.50 revision=1
+NLQA NPC PRODUCTION RELOCATE id=kenji from=101,101,0 to=100,101,0
+NLQA NPC PRODUCTION SPAWN id=kenji x=100.50 y=101.50 z=0 onlineId=30002 assigned=true
+NLQA NPC PRODUCTION RESTORE id=amara x=101.50 y=101.50 revision=1
+NLQA NPC PRODUCTION RELOCATE id=amara from=101,101,0 to=101,100,0
+NLQA NPC PRODUCTION SPAWN id=amara x=101.50 y=100.50 z=0 onlineId=30003 assigned=true
+NLQA NPC PRODUCTION OFFSCREEN id=kenji retryTick=31
+NLQA NPC PRODUCTION PATH id=marisol from=101.50,101.50 to=105.00,101.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=marisol x=101.50 y=101.50 waypoint=2
+NLQA NPC PRODUCTION PATH id=amara from=101.50,100.50 to=97.00,100.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=amara x=101.50 y=100.50 waypoint=2
+NLQA NPC PRODUCTION SPAWN id=kenji x=100.50 y=101.50 z=0 onlineId=30002 assigned=true
+NLQA NPC PRODUCTION RECOVER id=kenji x=100.50 y=101.50
+NLQA NPC PRODUCTION DEATH id=amara
+NLQA NPC PRODUCTION PATH id=marisol from=101.50,101.50 to=105.00,101.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=marisol x=101.50 y=101.50 waypoint=2
+NLQA NPC PRODUCTION PATH id=kenji from=100.50,101.50 to=100.00,105.00 waypoint=2
+NLQA NPC PRODUCTION MOVE id=kenji x=100.50 y=101.50 waypoint=2
+PASS: production NPC identity, native body adapter, route tick and save/reload position restoration
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\npc-client.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: client NPC native replica creation, authoritative interpolation, plumbob and cleanup
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\npc-interaction-menu.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: world-context NPC discovery, social actions, relationship profile, item routing and dead-player guard
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\remote-player-client.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: remote player replica creation, authoritative movement, native promotion, stale rejection and cleanup
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\appearance.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: authoritative appearance presets, revisioned snapshot, native HumanVisual application and validation
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\appearance-panel.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: appearance panel rendering, preset callbacks, reopen and dead-state gating
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\social-events.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: replicated social event feed, bounded history, disconnect and menu cleanup
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+HASH 42/media/lua/client/NL/Appearance.lua BASELINE ABSENT MODIFIED 42d63300654aa8ad9c603ffebbc019ca4366d6e8aab7ef5793b6343ecda8bec8
+HASH 42/media/lua/client/NL/AppearancePanel.lua BASELINE ABSENT MODIFIED 4238586aa77c54411e8b0e3105dcbdd79bfd37232c423d67e5c748fe5cfa3756
+HASH 42/media/lua/client/NL/Client.lua BASELINE ABSENT MODIFIED 0c2cc105a98aea85edf9e7e880b9403253db9a3dc4d074d3ef197b9a2ee22d36
+HASH 42/media/lua/client/NL/HouseholdClient.lua BASELINE ABSENT MODIFIED dfcdb96249fbade125b48c43f18b7022ba97420f0cd1eae7615742b04d69ba36
+HASH 42/media/lua/client/NL/HouseholdFurnishingClient.lua BASELINE ABSENT MODIFIED 000acb7d30e5c25d392c71a727c2b01caf1155b0ba1efe92a0c43d39abfe4ff1
+HASH 42/media/lua/client/NL/HouseholdFurnishingMenu.lua BASELINE ABSENT MODIFIED 4443256ab799056601b1592cdbb6aab3cd108b54be4d2dea7c86a7b1bae11c77
+HASH 42/media/lua/client/NL/HouseholdPanel.lua BASELINE ABSENT MODIFIED 3100cd206b717f1a468cda7d1a5aee8b4fd80decc9ce6f897c6ee74f57bd3952
+HASH 42/media/lua/client/NL/Journal.lua BASELINE ABSENT MODIFIED d08a6274139563471d19891cd17c4fdca5533afa142a29e58cefccd63f703e4e
+HASH 42/media/lua/client/NL/NpcClient.lua BASELINE ABSENT MODIFIED 77351950ca0693aeb2ca74097759713423cc2cb8cc892d145a744a8ad47f5f3d
+HASH 42/media/lua/client/NL/NpcInteractionMenu.lua BASELINE ABSENT MODIFIED 2a02309d0e08fe75939cb3f6f8b68ec4e54c82e9e94d052d1b5d94c945252b46
+HASH 42/media/lua/client/NL/Plumbob.lua BASELINE ABSENT MODIFIED b5bacaac808a5f6089638fadac8279adec0d1357a9f9b834c500d0ed427e32ce
+HASH 42/media/lua/client/NL/Relationships.lua BASELINE ABSENT MODIFIED 31ebca4d0ab00116bc15ff5c65fc4825f54a61dc72003e0e7f5319bb39b38ac7
+HASH 42/media/lua/client/NL/RemotePlayerClient.lua BASELINE ABSENT MODIFIED 62d8ed23a34069b878d074db5024852a8158958ea7fa94cfa23f4a4ad5340de4
+HASH 42/media/lua/client/NL/SocialClient.lua BASELINE ABSENT MODIFIED da61103f1918460eb5026fc05aa67668cbaae04040594417c8a8e929218f144d
+HASH 42/media/lua/client/NL/Wardrobe.lua BASELINE ABSENT MODIFIED 98922bfe5f1b179ae44297c87ddaaa110a95516b513d8fe89b0821620ac93bd8
+HASH 42/media/lua/client/NL/WardrobePanel.lua BASELINE ABSENT MODIFIED 9d337a5344fca70a4f4d941ca3636469f753879093c26eeab5cc89b6dcc1c2c3
+HASH 42/media/lua/client/NeighborhoodNeeds.lua BASELINE ABSENT MODIFIED 265a45e48d8379ce9f0d5247a11a03e2c6f9868fdc16c9cec4af6156b8264130
+HASH 42/media/lua/server/NL/Authority.lua BASELINE ABSENT MODIFIED 218e1965f7f5447ce3c86f01bd97baf4453e79c65c1341f5e0676d2c925e016f
+HASH 42/media/lua/server/NL/HouseholdAuthority.lua BASELINE ABSENT MODIFIED 10cadf959a933dac661e3921745c4316385782d197a6437e5d963b9d9ce99700
+HASH 42/media/lua/server/NL/HouseholdFurnishings.lua BASELINE ABSENT MODIFIED eed421a40f95a9e4f191ba83b887333d01cb9872acf98bcb25ec50c926fba777
+HASH 42/media/lua/server/NL/NpcAuthority.lua BASELINE ABSENT MODIFIED 9771bc390c20dd1a114f785a65a63c1e7cefa8f0fb12d84dd7e4ed03882fa126
+HASH 42/media/lua/server/NL/SocialAuthority.lua BASELINE ABSENT MODIFIED c1fea53764fffb4f23819cd9c33e33b69aa9752b7d76a696dd4f0130d07a79d3
+HASH 42/media/lua/server/NeighborhoodLifeServer.lua BASELINE ABSENT MODIFIED 62545c168b829cc5cf192641b1580666004aa1b5c8d1a4f384f77b8d8416ace4
+HASH 42/media/lua/shared/NL/Aspirations.lua BASELINE ABSENT MODIFIED f6d3c7b8faa92ed9177771e1ffbab038ab70d895a83d0e57aca0542ce887a856
+HASH 42/media/lua/shared/NL/Definitions.lua BASELINE ABSENT MODIFIED 4b2d9e404a1f36b7bb50a8f7f584f38278b0eb5f53eef83ec0be1266694a5a2d
+HASH 42/media/lua/shared/NL/Domain.lua BASELINE ABSENT MODIFIED 152bf4f64ca45876290a1c48b86fe32bac672029c6c06eb61f30ea824d9f9e99
+HASH 42/media/lua/shared/NL/Households.lua BASELINE ABSENT MODIFIED b6985a31f7024b03b016a1786f43fe853f64e6e5ab0aa01a42654a914234b3d1
+HASH 42/media/lua/shared/NL/Neighbors.lua BASELINE ABSENT MODIFIED 173357750bf8816be3f2ae3c895eeecfdc9e8f31925dd427be5b5db86b0d47a5
+HASH 42/media/lua/shared/NL/Social.lua BASELINE ABSENT MODIFIED 6579f88a4cb2b2d1035f3db5bbe10e1e5a16f032e32f7c13db22444fb12a3360
+HASH 42/media/textures/NL_Plumbob.png BASELINE ABSENT MODIFIED 0aadab6fc3038665f90fdc25671f1a738b6062dc3b838f9e80aab3b51c8fa19a
+HASH 42/mod.info BASELINE ABSENT MODIFIED 49389fd118c9fee35aaf3024e6507030595923c712df75d7a6ee20285bd09aba
+ARTIFACT: E:\pzmod\evidence\v10\MODIFIED_FILE.zip
+ARTIFACT: E:\pzmod\evidence\v10\DIFF_FILE.patch
+ARTIFACT: E:\pzmod\evidence\v10\VERIFICATION.txt
+ARTIFACT: E:\pzmod\evidence\v10\ROLLBACK.sh
