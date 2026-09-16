@@ -1,8 +1,10 @@
-[CmdletBinding()]
 param(
-    [string]$SourceRoot = (Join-Path $PSScriptRoot '..\NeighborhoodLife'),
-    [string]$DestinationRoot = (Join-Path $env:USERPROFILE 'Zomboid\mods\NeighborhoodLife')
+    [string]$SourceRoot,
+    [string]$DestinationRoot
 )
+
+if (-not $SourceRoot) { $SourceRoot = Join-Path $PSScriptRoot '..\NeighborhoodLife' }
+if (-not $DestinationRoot) { $DestinationRoot = Join-Path $env:USERPROFILE 'Zomboid\mods\NeighborhoodLife' }
 
 $source = (Resolve-Path -LiteralPath $SourceRoot -ErrorAction Stop).Path
 $destination = [System.IO.Path]::GetFullPath($DestinationRoot)
