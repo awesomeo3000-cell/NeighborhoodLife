@@ -125,6 +125,27 @@ function NLDomain.promote(profile, skill)
     return true, "Promoted to " .. NLDefinitions.careers[profile.career].ranks[progress.rank]
 end
 
+function NLDomain.findReward(rewardId)
+    if not rewardId or not NLDefinitions.rewards then return nil end
+    for _, reward in ipairs(NLDefinitions.rewards) do
+        if reward.id == rewardId then return reward end
+    end
+    return nil
+end
+
+function NLDomain.purchase(profile, rewardId)
+    local reward = NLDomain.findReward(rewardId)
+    if not reward then return false, "Reward not found" end
+    if (profile.credits or 0) < reward.credits then
+        return false, "Insufficient community credits (" .. tostring(profile.credits or 0) .. "/" .. tostring(reward.credits) .. ")"
+    end
+    profile.credits = profile.credits - reward.credits
+    profile.purchases = profile.purchases or {}
+    profile.purchases[rewardId] = (profile.purchases[rewardId] or 0) + 1
+    profile.revision = profile.revision + 1
+    return true, "Purchased " .. reward.name .. " for " .. tostring(reward.credits) .. " credits"
+end
+
 function NLDomain.copy(value)
     if type(value) ~= "table" then return value end
     local result = {}

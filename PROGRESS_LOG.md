@@ -35,6 +35,14 @@ Any developer or AI agent picking up this project can review this file to immedi
   - Both host and guest reconnected and observed the full engine native player roster (`source=engine-online-players`).
   - Resolved drive-letter case-sensitivity check in `HandsFreeQA.java` / `NativeBridgeQA.java` and array string argument formatting in `tools/run-native-bridge-persistence-qa.ps1`.
 
+- **Phase 2 (Completed)**: **Economy & Community Rewards Store**.
+  - Added 14 spendable community rewards catalog in `Definitions.lua` (`supplies`, `medical`, `tailoring`, `carpentry`, `books`).
+  - Implemented authoritative `NLDomain.purchase` and `NLAuthority.purchaseReward` with credit validation, inventory addition, and transaction journaling.
+  - Added dedicated tab "Community Rewards" to player Journal UI with pagination, credit balance check, and one-click purchasing.
+  - Added unit test suite in `tests/gameplay.lua`.
+  - 100% test pass on Lua 5.1 and B42.20.4 Kahlua VM.
+
+
 ---
 
 ## Master Feature Completion Roadmap

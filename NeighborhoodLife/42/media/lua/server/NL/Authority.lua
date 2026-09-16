@@ -374,11 +374,35 @@ function NLAuthority.captureOutfit(player, profile, slot)
     return true, "Outfit " .. tostring(slot) .. " saved (" .. tostring(#saved) .. " pieces)."
 end
 
+function NLAuthority.purchaseReward(player, profile, rewardId)
+    local reward = NLDomain.findReward(rewardId)
+    if not reward then return false, "Reward not found" end
+    if (profile.credits or 0) < reward.credits then
+        return false, "Insufficient community credits"
+    end
+    if not player or not player.getInventory then
+        return false, "Player inventory unavailable"
+    end
+    local inv = player:getInventory()
+    if not inv then return false, "Inventory unavailable" end
+    local ok, message = NLDomain.purchase(profile, rewardId)
+    if not ok then return false, message end
+    local count = reward.amount or 1
+    for i = 1, count do
+        local item = inv:AddItem(reward.item)
+        if item and sendAddItemToContainer then
+            sendAddItemToContainer(inv, item)
+        end
+    end
+    return true, message
+end
+
 function NLAuthority.command(module, command, player, args)
     if module ~= NLAuthority.module or not player or player:isDead() then return end
     if command ~= "refresh" and command ~= "presence" and command ~= "select"
             and command ~= "deliver" and command ~= "promote" and command ~= "work"
-            and command ~= "wardrobe_save" and command ~= "appearance_select" then return end
+            and command ~= "wardrobe_save" and command ~= "appearance_select"
+            and command ~= "purchase" then return end
     -- Build 42's dedicated-server callback can omit the empty packet table for
     -- no-argument commands. Treat that as an empty request instead of dropping
     -- an otherwise valid refresh from a real client.
@@ -448,6 +472,8 @@ function NLAuthority.command(module, command, player, args)
         ok, message = NLAuthority.captureOutfit(player, profile, args.slot)
     elseif command == "appearance_select" then
         ok, message = NLAuthority.selectAppearance(profile, args.preset)
+    elseif command == "purchase" then
+        ok, message = NLAuthority.purchaseReward(player, profile, args.rewardId)
     end
     if not ok then message = "Not completed: " .. message end
     NLAuthority.commitWorldJournal(world, journal)

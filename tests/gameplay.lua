@@ -113,6 +113,20 @@ persisted=NLDomain.copy(saved); NLAuthority.lastRequest={}
         'delivery recovery restores the player inventory and clears the journal')
     check(profile(b).credits==guestBeforeCredits and not profile(b).claimed[guestContract.id],
         'delivery recovery rolls the career profile back')
+    -- Community Rewards Catalog purchase tests:
+    NLAuthority.lastRequest={}; cmd(b,'refresh'); NLAuthority.lastRequest={}
+    local bCredits=profile(b).credits
+    cmd(b,'purchase',{rewardId='unknown_reward'}); check(profile(b).credits==bCredits,'unknown reward rejected')
+    NLAuthority.lastRequest={}
+    cmd(b,'purchase',{rewardId='book_first_aid_1'}); check(profile(b).credits==bCredits,'insufficient credits rejected')
+    NLAuthority.lastRequest={}
+    local bItemCount=#b.items
+    cmd(b,'purchase',{rewardId='ripped_sheets'})
+    check(profile(b).credits==bCredits-10 and #b.items==bItemCount+10 and profile(b).purchases.ripped_sheets==1,
+        'community reward purchase deducts credits, awards items, and records purchase')
+    NLAuthority.lastRequest={}
+    cmd(b,'purchase',{rewardId='ripped_sheets'})
+    check(profile(b).credits==bCredits-10,'purchase rejected after credits exhausted')
     NLAuthority.lastRequest={}; cmd(a,'refresh')
     local original=getTimestampMs
 function getTimestampMs() return time end
