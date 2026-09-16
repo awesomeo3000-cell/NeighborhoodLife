@@ -1,70 +1,71 @@
 require "NL/Domain"
 require "NL/Appearance"
-pcall(require, "NL/NpcClient")
-pcall(require, "NL/RemotePlayerClient")
-NLClient = { profiles = {}, presence = nil, npcPresence = nil, presenceFrame = 0 }
 
-function NLClient.receive(module, command, args)
-    if module ~= "NeighborhoodLife" or type(args) ~= "table" then return end
-    if command == "npc_presence" then
-        local old = NLClient.npcPresence
-        if not old or (args.revision or 0) >= (old.revision or 0) then
-            NLClient.npcPresence = args
+local function loadOptional(name)
+    local ok,result=pcall(require,name)
+    if not ok then print("[NeighborhoodLife] Failed to load "..tostring(name)..": "..tostring(result)) end
+    return ok,result
+end
+
+loadOptional("NL/NpcClient")
+loadOptional("NL/RemotePlayerClient")
+NLClient={profiles={},presence=nil,npcPresence=nil,presenceFrame=0}
+
+function NLClient.receive(module,command,args)
+    if module~="NeighborhoodLife" or type(args)~="table" then return end
+    if command=="npc_presence" then
+        local old=NLClient.npcPresence
+        if not old or (args.revision or 0)>=(old.revision or 0) then
+            NLClient.npcPresence=args
             if NLNpcClient then NLNpcClient.apply(args) end
         end
         return
     end
-    if command == "presence" then
-        local old = NLClient.presence
-        if not old or (args.revision or 0) >= (old.revision or 0) then
-            NLClient.presence = args
+    if command=="presence" then
+        local old=NLClient.presence
+        if not old or (args.revision or 0)>=(old.revision or 0) then
+            NLClient.presence=args
             if NLPlumbob and NLPlumbob.applyPresence then NLPlumbob.applyPresence(args) end
             if NLRemotePlayerClient then NLRemotePlayerClient.apply(args) end
         end
         return
     end
-    if command ~= "snapshot" then return end
-    -- Route only to local characters matching the server snapshot. No global getPlayer().
-    for i = 0, getNumActivePlayers() - 1 do
-        local player = getSpecificPlayer(i)
+    if command~="snapshot" then return end
+    for i=0,getNumActivePlayers()-1 do
+        local player=getSpecificPlayer(i)
         if player then
-            local key = player:getUsername()
-            if not key or key == "" then key = "local:" .. i end
-            if key == args.username then
-            local old = NLClient.profiles[i]
-            if not old or args.revision >= old.revision then
-                NLClient.profiles[i] = args
-                if NLAppearance and NLAppearance.applyProfile then
-                    NLAppearance.applyProfile(player, args.appearance)
+            local key=player:getUsername()
+            if not key or key=="" then key="local:"..i end
+            if key==args.username then
+                local old=NLClient.profiles[i]
+                if not old or args.revision>=old.revision then
+                    NLClient.profiles[i]=args
+                    if NLAppearance and NLAppearance.applyProfile then NLAppearance.applyProfile(player,args.appearance) end
+                    if NLWardrobe and NLWardrobe.applyProfile then NLWardrobe.applyProfile(player,args.outfits) end
                 end
-                if NLWardrobe and NLWardrobe.applyProfile then
-                    NLWardrobe.applyProfile(player, args.outfits)
-                end
-            end
             end
         end
     end
 end
 
-function NLClient.request(index, command, args)
-    local player = getSpecificPlayer(index)
+function NLClient.request(index,command,args)
+    local player=getSpecificPlayer(index)
     if not player or player:isDead() then return end
-    if isClient() then sendClientCommand(player, "NeighborhoodLife", command, args or {})
-    elseif NLAuthority then NLAuthority.command("NeighborhoodLife", command, player, args or {}) end
+    if isClient() then sendClientCommand(player,"NeighborhoodLife",command,args or {})
+    elseif NLAuthority then NLAuthority.command("NeighborhoodLife",command,player,args or {}) end
 end
 
 Events.OnServerCommand.Add(NLClient.receive)
 Events.OnRenderTick.Add(function()
     if not isClient() then return end
-    NLClient.presenceFrame = NLClient.presenceFrame + 1
-    if NLClient.presenceFrame < 300 then return end
-    NLClient.presenceFrame = 0
-    for i = 0, getNumActivePlayers() - 1 do
-        NLClient.request(i, "presence")
-    end
+    NLClient.presenceFrame=NLClient.presenceFrame+1
+    if NLClient.presenceFrame<300 then return end
+    NLClient.presenceFrame=0
+    for i=0,getNumActivePlayers()-1 do NLClient.request(i,"presence") end
 end)
+
 local function resetClientState()
-    NLClient.profiles = {}; NLClient.presence = nil; NLClient.npcPresence = nil; NLClient.presenceFrame = 0
+    NLClient.profiles={}; NLClient.presence=nil; NLClient.npcPresence=nil; NLClient.presenceFrame=0
     if NLPlumbob and NLPlumbob.clearPresence then NLPlumbob.clearPresence() end
 end
 Events.OnMainMenuEnter.Add(resetClientState)
