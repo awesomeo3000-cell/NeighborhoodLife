@@ -7,8 +7,11 @@ NLAppearancePanel=NLJournal:derive("NLAppearancePanel")
 NLAppearancePanel.instances={}
 
 function NLAppearancePanel:new(index)
-    local o=NLJournal.new(self,index)
-    o.height=440
+    local o=ISPanel.new(self,330,130,620,440)
+    o.playerIndex=index
+    o.backgroundColor={r=0.055,g=0.060,b=0.065,a=0.97}
+    o.borderColor={r=0.30,g=0.30,b=0.28,a=1}
+    o.moveWithMouse=true
     return o
 end
 
