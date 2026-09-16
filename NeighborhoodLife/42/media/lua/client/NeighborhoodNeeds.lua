@@ -78,7 +78,9 @@ function NeighborhoodNeeds:prerender()
     self.player = player
     local left, top = getPlayerScreenLeft(self.playerIndex), getPlayerScreenTop(self.playerIndex)
     local width, height = getPlayerScreenWidth(self.playerIndex), getPlayerScreenHeight(self.playerIndex)
-    self:setWidth(math.min(300, math.max(180, width - 24)))
+    local uiScale = math.max(1.0, math.min(2.0, (width or 1920) / 1920))
+    local targetWidth = math.floor(300 * uiScale)
+    self:setWidth(math.min(targetWidth, math.max(180, width - 24)))
     self:setX(left + 12)
     self:setY(top + math.max(12, height - self.height - 84))
     ISPanel.prerender(self)
@@ -89,7 +91,13 @@ function NeighborhoodNeeds:prerender()
     for i, row in ipairs(self.rows) do
         local y = self.headerHeight + (i - 1) * self.rowHeight
         local value = self.read(player, row[2])
-        local label = value and (tostring(math.floor(value * 100 + 0.5)) .. "%") or "N/A"
+        local statusHint = ""
+        if value then
+            if value >= 0.70 then statusHint = " (High)"
+            elseif value >= 0.35 then statusHint = " (Med)"
+            else statusHint = " (Low)" end
+        end
+        local label = value and (tostring(math.floor(value * 100 + 0.5)) .. "%" .. statusHint) or "N/A"
         self:drawText(row[1], 12, y, 0.18, 0.24, 0.32, 1, UIFont.Small)
         self:drawTextRight(label, self.width - 12, y, 0.18, 0.24, 0.32, 1, UIFont.Small)
         local by = y + self.rowHeight - 10

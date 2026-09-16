@@ -62,6 +62,11 @@ assert(NeighborhoodNeeds.read(players[0],'MISSING')==nil)
 assert(NeighborhoodNeeds.read(player(0/0),'HUNGER')==nil)
 local panel=NeighborhoodNeeds.instances[0]
 panel:prerender(); assert(panel.x==12 and panel.y>=0)
+local origWidth = getPlayerScreenWidth
+getPlayerScreenWidth = function() return 2560 end
+panel:prerender(); assert(panel.width == 400, 'HUD scales width appropriately on higher resolutions')
+getPlayerScreenWidth = origWidth
+panel:prerender(); assert(panel.width == 300, 'HUD restores baseline width on 1080p')
 panel:onMouseDown(5,5); assert(panel.collapsed and panel.height==panel.headerHeight)
 panel:prerender(); panel:onMouseDown(5,5); assert(not panel.collapsed)
 players[0]=player(0.4); panel:prerender(); assert(panel.player==players[0])

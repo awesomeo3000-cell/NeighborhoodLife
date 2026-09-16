@@ -57,6 +57,13 @@ Any developer or AI agent picking up this project can review this file to immedi
   - Added test coverage in `tests/households.lua`.
   - 100% test pass on Lua 5.1 and B42.20.4 Kahlua VM.
 
+- **Phase 5 (Completed)**: **HUD & Accessibility Polish**.
+  - Added dynamic resolution scaling to `NeighborhoodNeeds.lua` supporting viewports from 720p/1080p up to 1440p and 4K (`uiScale = width / 1920` clamped).
+  - Added accessibility status hints `(Low)`, `(Med)`, `(High)` next to percentages to clarify adverse intensity.
+  - Added test coverage in `tests/hud.lua` verifying 2560px screen width scaling.
+  - 100% test pass on Lua 5.1 and B42.20.4 Kahlua VM.
+
+
 
 
 
