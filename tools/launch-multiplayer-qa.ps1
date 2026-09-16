@@ -186,7 +186,7 @@ Set-Content "$serverProfile\server.stdout.log" ''
 Set-Content "$serverProfile\server.stderr.log" ''
 $server = Start-Process $java -ArgumentList $serverArgs -WorkingDirectory $game -RedirectStandardOutput "$serverProfile\server.stdout.log" -RedirectStandardError "$serverProfile\server.stderr.log" -PassThru
 $server.Id | Set-Content "$evidence\mp-server.pid"
-$deadline = (Get-Date).AddSeconds(120)
+$deadline = (Get-Date).AddSeconds(240)
 do {
     Start-Sleep -Seconds 2
     $started = Select-String -Path "$serverProfile\server.stdout.log" -Pattern '\*\*\* SERVER STARTED' -Quiet -ErrorAction SilentlyContinue

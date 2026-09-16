@@ -9,10 +9,10 @@ public final class HandsFreeQA {
     }
     public static void premain(String profile, Instrumentation ignored) {
         profile = profile.replace('\\', '/');
-        if (!profile.startsWith("E:/pzmod/test-profile")) throw new IllegalArgumentException("isolated QA profile required");
+        if (!profile.toLowerCase().startsWith("e:/pzmod/test-profile")) throw new IllegalArgumentException("isolated QA profile required: received '" + profile + "'");
         final String qaProfile = profile;
         String command=System.getProperty("sun.java.command","").replace('\\','/');
-        if (!command.contains("-cachedir="+qaProfile)) throw new IllegalArgumentException("Isolated cachedir required");
+        if (!command.toLowerCase().contains("-cachedir="+qaProfile.toLowerCase())) throw new IllegalArgumentException("Isolated cachedir required");
         Thread worker=new Thread(() -> {
             try {
                 ClassLoader cl=ClassLoader.getSystemClassLoader();

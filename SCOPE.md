@@ -1,8 +1,23 @@
-# Neighborhood Life — full scope and evidence ledger (v1.99)
+# Neighborhood Life — full scope and evidence ledger (v2.00)
 
 Target: Project Zomboid **42.20.4**, confirmed in the isolated game window.
 Host/invite multiplayer is a release requirement, not an optional add-on.
 The original broad goal remains active. This ledger is not a reduced definition of done.
+
+## v2.00 native NPC restart persistence gate
+
+The fresh hands-free Build 42.20.4 host-plus-guest capture in
+`evidence/v141/actual/native-persistence/` recorded changing authoritative
+Marisol coordinates on the dedicated server (`8472.84, 11556.24`), saved the
+world state via `SaveAll` and `Saving GlobalModData`, stopped the dedicated server,
+and restarted it with the typed native bridge active.
+
+The restarted server restored Marisol's exact coordinates (`8472.84, 11556.24`,
+`delta = 0.00`) and reannounced all three authored NPCs via the typed bridge.
+Both the host and guest clients reconnected and observed the engine-native online
+player roster (`source=engine-online-players`). `RESULT.txt` records the
+unconditional pass: `PASS: native NPC position restored across dedicated-server restart delta=0`.
+This closes the open native NPC server-body restart persistence gate.
 
 ## v1.99 typed native NPC bridge and movement gate
 

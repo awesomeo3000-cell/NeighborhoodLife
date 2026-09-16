@@ -1,8 +1,18 @@
-# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v1.99)
+# Neighborhood Life: careers, appearance, wardrobe and relationship prototype (v2.00)
 
 Target: installed B42.20.4 CharacterStat API; Steam build ID 24909800.
 Full scope, outstanding work and evidence requirements are tracked in SCOPE.md.
 This is a work-in-progress life simulation, not a completed neighborhood overhaul.
+
+## v2.00 native NPC restart persistence gate
+
+With the typed native bridge active on the dedicated server, the fresh Build 42.20.4
+host-plus-guest capture in `evidence/v141/actual/native-persistence/` saved the world
+state during authoritative Marisol motion, stopped the server, and restarted it.
+The restarted server restored Marisol's exact coordinates (`8472.84, 11556.24`,
+`delta = 0.00`), reannounced all three authored NPCs via the typed bridge, and both
+clients reconnected and observed the engine-native online roster (`source=engine-online-players`).
+This closes the open native NPC server-body restart persistence gate.
 
 ## v1.99 typed native NPC bridge and movement gate
 

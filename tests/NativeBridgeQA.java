@@ -33,10 +33,10 @@ public final class NativeBridgeQA {
     public static void premain(String profileArg, Instrumentation ignored) {
         profile = Path.of(profileArg.replace('\\', '/'));
         String command = System.getProperty("sun.java.command", "").replace('\\', '/');
-        if (!profile.toString().replace('\\', '/').startsWith("E:/pzmod/test-profile")) {
+        if (!profile.toString().replace('\\', '/').toLowerCase().startsWith("e:/pzmod/test-profile")) {
             throw new IllegalArgumentException("isolated QA profile required");
         }
-        if (!command.contains("-cachedir=" + profile.toString().replace('\\', '/'))
+        if (!command.toLowerCase().contains("-cachedir=" + profile.toString().replace('\\', '/').toLowerCase())
                 || !command.contains("zombie.network.GameServer")) {
             throw new IllegalArgumentException("typed native bridge requires the isolated dedicated server");
         }
