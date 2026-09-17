@@ -1,17 +1,17 @@
 -- Single-player presentation bridge for authored Neighborhood Life NPCs.
 --
--- Build 42 can keep a server-created IsoPlayer out of the local presentation
--- path in solo play. Multiplayer continues to use NLNpcAuthority + NLNpcClient;
--- this bridge only runs when the game itself reports a non-multiplayer world.
-local multiplayer = false
-if type(isMultiplayer) == "function" then
-    local ok, value = pcall(isMultiplayer)
-    multiplayer = ok and value == true
-elseif type(isClient) == "function" then
-    local ok, value = pcall(isClient)
-    multiplayer = ok and value == true
+-- Build 42 can create an IsoPlayer Lua object without presenting it in the
+-- active world. Solo play therefore owns a small local bridge that explicitly
+-- attaches authored neighbors to the world. Multiplayer keeps the existing
+-- NLNpcAuthority + NLNpcClient replication path.
+local function flag(name)
+    local fn = _G[name]
+    if type(fn) ~= "function" then return false end
+    local ok, value = pcall(fn)
+    return ok and value == true
 end
-if multiplayer then return end
+
+if flag("isClient") or flag("isServer") then return end
 
 require "NL/Neighbors"
 require "NL/Plumbob"
@@ -23,9 +23,13 @@ NLNpcSinglePlayer = {
     tick = 0,
 }
 
+local IDS = { "marisol", "kenji", "amara" }
+
 local function log(message)
     print("[NeighborhoodLife] NPC/SP " .. tostring(message))
 end
+
+log("bridge loaded")
 
 local function safeCall(object, method, ...)
     if not object then return false, nil end
@@ -35,16 +39,16 @@ local function safeCall(object, method, ...)
 end
 
 local function cell()
+    if type(getCell) == "function" then
+        local ok, value = pcall(getCell)
+        if ok and value then return value end
+    end
     if type(getWorld) == "function" then
         local okWorld, world = pcall(getWorld)
         if okWorld and world and world.getCell then
             local okCell, value = pcall(world.getCell, world)
             if okCell and value then return value end
         end
-    end
-    if type(getCell) == "function" then
-        local ok, value = pcall(getCell)
-        if ok then return value end
     end
     return nil
 end
@@ -150,16 +154,23 @@ local function createDescriptor(definition)
     return desc
 end
 
-local function prepareBody(id, definition, body)
+local function prepareBody(id, definition, body, square)
     if not body then return nil end
     safeCall(body, "setNpc", true)
+    safeCall(body, "setGhostMode", false)
     safeCall(body, "setSceneCulled", false)
-    safeCall(body, "setForname", definition.forename or id)
-    safeCall(body, "setSurname", definition.surname or "Neighbor")
     safeCall(body, "setUsername", (definition.name or id) .. " [Neighborhood Life]")
     safeCall(body, "setGodMod", true)
     safeCall(body, "setAlphaAndTarget", 1, 1)
-    safeCall(body, "resetModelNextFrame")
+    if square then
+        local x, y, z = square:getX() + 0.5, square:getY() + 0.5, square:getZ()
+        safeCall(body, "setX", x)
+        safeCall(body, "setY", y)
+        safeCall(body, "setZ", z)
+        safeCall(body, "setCurrent", square)
+    end
+    if definition.outfit then safeCall(body, "dressInNamedOutfit", definition.outfit) end
+    if not safeCall(body, "resetModel") then safeCall(body, "resetModelNextFrame") end
     if body.getModData then
         local ok, data = pcall(body.getModData, body)
         if ok and data then
@@ -176,18 +187,35 @@ local function createBody(id, definition, square)
     if not IsoPlayer or not IsoPlayer.new then return nil, "IsoPlayer constructor unavailable" end
     local desc, descError = createDescriptor(definition)
     if not desc then return nil, descError end
+
     local ok, body = pcall(function()
         return IsoPlayer.new(c, desc, square:getX(), square:getY(), square:getZ())
     end)
-    if not ok or not body then return nil, tostring(body) end
-    prepareBody(id, definition, body)
-    if c.getObjectList then
-        local okList, list = pcall(c.getObjectList, c)
-        if okList and list and list.contains and list.add then
-            local okContains, contains = pcall(list.contains, list, body)
-            if okContains and contains ~= true then pcall(list.add, list, body) end
+    if not ok or not body then return nil, "IsoPlayer.new failed: " .. tostring(body) end
+
+    prepareBody(id, definition, body, square)
+
+    -- Critical for Build 42: constructing an IsoPlayer does not guarantee the
+    -- object is registered for world presentation. Working NPC frameworks call
+    -- addToWorld() explicitly. Without it the Lua body can exist while no model
+    -- is rendered and no world interaction can discover it.
+    local added, addError = safeCall(body, "addToWorld")
+    if not added then
+        return nil, "addToWorld failed: " .. tostring(addError)
+    end
+
+    -- Verify/repair the current square after world registration. Some builds
+    -- overwrite the constructor position while attaching the object.
+    prepareBody(id, definition, body, square)
+
+    local currentOk, current = safeCall(body, "getCurrentSquare")
+    if not currentOk or not current then
+        local squareOk, fallbackSquare = safeCall(body, "getSquare")
+        if not squareOk or not fallbackSquare then
+            return nil, "world registration succeeded but body has no current square"
         end
     end
+
     return body
 end
 
@@ -228,13 +256,14 @@ function NLNpcSinglePlayer.start(_, player)
     local reserved = {}
     local count = 0
 
-    for _, id in ipairs({ "marisol", "kenji", "amara" }) do
+    for _, id in ipairs(IDS) do
         local definition = NLNeighbors.definitions[id]
         local row = rows and rows[id] or nil
         local body = findExistingBody(id)
         if body then
-            prepareBody(id, definition, body)
-            log("reusing visible body for " .. id)
+            local current = body.getCurrentSquare and body:getCurrentSquare() or nil
+            prepareBody(id, definition, body, current)
+            log("reusing world body for " .. id)
         else
             local preferred = row and row.position or nil
             local square = freeSquareNear(player, reserved, preferred)
@@ -251,7 +280,7 @@ function NLNpcSinglePlayer.start(_, player)
                 body, err = createBody(id, definition, square)
                 if body then
                     NLNpcSinglePlayer.owned[id] = true
-                    log(string.format("spawned %s at %d,%d,%d", id,
+                    log(string.format("spawned %s at %d,%d,%d and added to world", id,
                         square:getX(), square:getY(), square:getZ()))
                 else
                     log("SPAWN FAILED " .. id .. ": " .. tostring(err))
@@ -270,15 +299,15 @@ function NLNpcSinglePlayer.start(_, player)
         end
     end
 
-    if count == 3 then
+    if count == #IDS then
         NLNpcSinglePlayer.started = true
         if NLNpcAuthority then
             NLNpcAuthority.started = true
             NLNpcAuthority.startAttempts = 0
         end
-        log("ready: 3/3 NPCs visible")
+        log("ready: 3/3 NPCs registered in world")
     else
-        log("incomplete: " .. tostring(count) .. "/3 NPCs visible; retrying")
+        log("incomplete: " .. tostring(count) .. "/3 NPCs registered; retrying")
     end
     return count
 end
