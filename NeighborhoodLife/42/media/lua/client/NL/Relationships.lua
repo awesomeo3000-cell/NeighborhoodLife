@@ -111,7 +111,19 @@ function NLRelationships:prerender()
         self:drawText(tostring(v[3]),525,y,0.66,0.67,0.63,1,UIFont.Small)
     end
     local relationshipLocation=npc.exclusive and (npc.isPartner and "Your partner" or "In a partnership") or nil
-    local location=npc.dead and "Deceased" or npc.available and ("Distance: "..math.floor(npc.distance or 0).." tiles") or "Away"
+    local location
+    if npc.dead then
+        location = "Deceased"
+    elseif npc.available then
+        local dist = math.floor(npc.distance or 0)
+        if nearby then
+            location = "Nearby (" .. dist .. " tiles) - Ready to interact! (Or right-click in world)"
+        else
+            location = "Distance: " .. dist .. " tiles (Walk within 4 tiles to interact or right-click)"
+        end
+    else
+        location = "Away / Not in current cell"
+    end
     if relationshipLocation then location=location.." | "..relationshipLocation end
     self:drawText(location,16,248,0.66,0.67,0.63,1,UIFont.Small)
     local date=npc.relation.activeDate

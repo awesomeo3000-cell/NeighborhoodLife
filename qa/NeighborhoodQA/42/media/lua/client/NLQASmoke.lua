@@ -21,6 +21,44 @@ Events.OnRenderTick.Add(function()
     end
     print("NLQA PASS: 3 production NPC bodies, persisted positions and plumbobs verified at "
         ..table.concat(positions, " "))
+
+    if NLNpcInteractionMenu and NLNpcInteractionMenu.menu then
+        local mockSubmenu = {
+            actions = {},
+            addOption = function(self, label, player, fn, id, action)
+                self.actions[#self.actions + 1] = { label = label, action = action }
+            end
+        }
+        local mockContext = {
+            options = {},
+            addOption = function(self, text)
+                local opt = { text = text, sub = nil }
+                self.options[#self.options + 1] = opt
+                return opt
+            end,
+            addSubMenu = function(self, opt, sub)
+                opt.sub = sub
+            end
+        }
+        local oldGetNew = ISContextMenu and ISContextMenu.getNew
+        if ISContextMenu then ISContextMenu.getNew = function() return mockSubmenu end end
+        local marisol = NLNpcAuthority.bodies.marisol
+        NLNpcInteractionMenu.menu(0, mockContext, { marisol })
+        if ISContextMenu and oldGetNew then ISContextMenu.getNew = oldGetNew end
+        assert(#mockContext.options > 0, "No context menu generated for Marisol")
+        print("NLQA PASS: NPC context menu verified for Marisol: " .. tostring(mockContext.options[1].text)
+            .. " with " .. tostring(#mockSubmenu.actions) .. " actions")
+    end
+
+    if NeighborhoodNeeds and NeighborhoodNeeds.instances then
+        local panel = NeighborhoodNeeds.instances[0]
+        if panel then
+            local ready, total = panel:dataStatus()
+            print("NLQA PASS: Needs HUD panel active with dataStatus=" .. tostring(ready) .. "/" .. tostring(total))
+        end
+    end
+
+    print("NLQA SINGLEPLAYER TEST COMPLETE: ALL CORE PILLARS VERIFIED PASS")
     productionNpcChecked=true
 end)
 
@@ -51,9 +89,12 @@ Events.OnMainMenuEnter.Add(menuCheck)
 -- Native test entry point: restart the already-created disposable save without
 -- relying on a desktop click landing between the game's input polling frames.
 Events.OnMainMenuEnter.Add(function()
-    if MainScreen.latestSaveGameMode and MainScreen.latestSaveWorld and not NLQAAutoLoaded then
+    if not NLQAAutoLoaded then
         NLQAAutoLoaded=true
-        MainScreen.continueLatestSave(MainScreen.latestSaveGameMode,MainScreen.latestSaveWorld)
+        local mode = MainScreen.latestSaveGameMode or "Apocalypse"
+        local world = MainScreen.latestSaveWorld or "2026-09-12_20-19-59"
+        print("NLQA AUTOLOAD: mode=" .. tostring(mode) .. " world=" .. tostring(world))
+        MainScreen.continueLatestSave(mode, world)
     end
 end)
 

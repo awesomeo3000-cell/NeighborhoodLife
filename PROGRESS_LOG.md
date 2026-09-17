@@ -63,11 +63,25 @@ Any developer or AI agent picking up this project can review this file to immedi
   - Added test coverage in `tests/hud.lua` verifying 2560px screen width scaling.
   - 100% test pass on Lua 5.1 and B42.20.4 Kahlua VM.
 
-
-
-
+- **Phase 6 (Completed)**: **In-Game Singleplayer Engine Verification & NPC Spawning Fix**.
+  - **Root Cause & Fix for In-Game NPC Spawning**:
+    - Removed non-existent `addToWorld()` call on `IsoPlayer` (Build 42.20.4 bytecode verified); replaced with `cell:addMovingObject(body)` and `body:setMovingSquareNow()`.
+    - Fixed ground floor detection so outdoor grass/dirt tiles at level 0 are accepted as valid spawn locations.
+    - Switched `IsoCell.getObjectList()` (Java `Set`) to `getObjectListForLua()` (Java `List`) in body lookup.
+    - Prevented premature `row.spawned = true` state mutation before body is successfully created.
+    - Added simulation frame execution (`preupdate()`, `update()`, `behavior:update()`, `postupdate()`) and singleplayer tick delegation to `NLNpcAuthority.update()` so NPCs walk, animate, follow career schedules, and flee zombies.
+  - **HUD & Interaction Polish**:
+    - Ensured `NeighborhoodNeeds` HUD initializes on loaded games via `Events.OnGameStart` and tick watchdog; added periodic auto-retry for feature data sync until `DATA READY` is reached.
+    - Updated `NpcInteractionMenu` to display friendly neighbor names (e.g. "Neighborhood: Marisol Vega") instead of raw IDs.
+    - Added clear distance and proximity feedback in `Relationships` window instructing player when within 4 tiles to interact or right-click.
+  - **Live Game Verification**:
+    - Created `tools/run-singleplayer-qa.ps1` launching the real Build 42.20.4 engine (`javaw.exe`).
+    - Verified 3 production NPC bodies spawned and persisted in-world (Marisol, Kenji, Amara).
+    - Verified overhead plumbobs, right-click context menu (11 actions), Needs HUD (`DATA READY`), and autonomous career pathfinding.
+    - Deployed production release to `C:\Users\clare\Zomboid\mods\NeighborhoodLife`.
 
 ---
+
 
 ## Master Feature Completion Roadmap
 

@@ -64,7 +64,12 @@ end
 
 local function npcLabel(id)
     local state = stateFor(id)
-    return state and tostring(state.name or id) or tostring(id)
+    if state and state.name then return tostring(state.name) end
+    if NLNeighbors and NLNeighbors.definitions and NLNeighbors.definitions[id] then
+        local def = NLNeighbors.definitions[id]
+        if def.name then return tostring(def.name) end
+    end
+    return tostring(id)
 end
 
 local function firstInventoryType(player)

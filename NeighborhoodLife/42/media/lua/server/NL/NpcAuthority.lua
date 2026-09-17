@@ -618,6 +618,7 @@ local function spawnBody(id, row, player)
     desc:setFemale(definition.female ~= false)
     local body = IsoPlayer.new(cell, desc, square:getX(), square:getY(), square:getZ())
     body:setNpc(true)
+    if body.setGhostMode then pcall(body.setGhostMode, body, false) end
     -- IsoPlayer defaults every Lua-created body to online id 1. Assign the
     -- stable authored slot before any presence packet is built so a future
     -- native server reannouncement can identify each neighbor unambiguously.
@@ -634,7 +635,13 @@ local function spawnBody(id, row, player)
         exactX, exactY, exactZ = row.position.x, row.position.y, row.position.z
     end
     setBodyPosition(body, square, exactX, exactY, exactZ)
+    if cell.addMovingObject then pcall(cell.addMovingObject, cell, body) end
     if not cell:getObjectList():contains(body) then cell:getObjectList():add(body) end
+    if body.setMovingSquareNow then
+        pcall(body.setMovingSquareNow, body)
+    elseif body.setMovingSquare then
+        pcall(body.setMovingSquare, body, square)
+    end
     NLNpcAuthority.bodies[id] = body
     NLSocialAuthority.register(id, body, row.home)
     NLNeighbors.position(NLAuthority.world(), id, body:getX(), body:getY(), body:getZ(), row.waypoint)
@@ -1058,7 +1065,7 @@ end
 -- Dedicated servers own their simulation cadence.  In single-player the
 -- client-side HUD bridge owns the cadence because Build 42 keeps server and
 -- client event queues separate even though the world body is shared.
-if isServer() then
+if not isClient() then
     Events.OnTick.Add(NLNpcAuthority.update)
 end
 Events.OnMainMenuEnter.Add(NLNpcAuthority.reset)

@@ -8,6 +8,7 @@ package.preload['NL/WardrobePanel']=function() NLWardrobePanel={open=function() 
 package.preload['NL/HouseholdPanel']=function() NLHouseholdPanel={open=function() opened.home=opened.home+1 end} end
 package.preload['NL/Plumbob']=function() NLPlumbob={} return NLPlumbob end
 package.preload['NL/NpcInteractionMenu']=function() return {} end
+package.preload['NL/NpcSinglePlayer']=function() return {} end
 ISPanel={}
 function ISPanel:derive() local t={}; t.__index=t; setmetatable(t,{__index=self}); return t end
 function ISPanel:new(x,y,w,h) return setmetatable({x=x,y=y,width=w,height=h,children={}},self) end

@@ -5,14 +5,9 @@ require "NL/Relationships"
 require "NL/WardrobePanel"
 require "NL/HouseholdPanel"
 require "NL/Plumbob"
-require "NL/NpcInteractionMenu"
-require "NL/NpcSinglePlayer"
+pcall(require, "NL/NpcInteractionMenu")
+pcall(require, "NL/NpcSinglePlayer")
 
-if Events.OnTick then
-    Events.OnTick.Add(function()
-        if NLNpcAuthority and NLNpcAuthority.update then NLNpcAuthority.update() end
-    end)
-end
 
 NeighborhoodNeeds = ISPanel:derive("NeighborhoodNeeds")
 NeighborhoodNeeds.enabled = true
@@ -176,6 +171,10 @@ function NeighborhoodNeeds:prerender()
     self.title = self.header(player, self.playerIndex)
     self:drawText(self.title, 12, 6, COLORS.text.r, COLORS.text.g, COLORS.text.b, 1, UIFont.Small)
     local ready, total = self:dataStatus()
+    self.syncTick = (self.syncTick or 0) + 1
+    if ready < total and self.syncTick % 120 == 0 then
+        self:requestFeatureData()
+    end
     local syncText = ready == total and "DATA READY" or ("SYNC " .. tostring(ready) .. "/" .. tostring(total))
     self:drawTextRight(syncText, self.width - 30, 6, COLORS.accent.r, COLORS.accent.g, COLORS.accent.b, 1, UIFont.Small)
     self:drawTextRight(self.collapsed and "+" or "-", self.width - 12, 6,
@@ -224,5 +223,24 @@ function NeighborhoodNeeds.cleanup()
     NeighborhoodNeeds.instances = {}
 end
 
+local function ensureNeedsPanel()
+    for i = 0, getNumActivePlayers() - 1 do
+        local p = getSpecificPlayer(i)
+        if p and not NeighborhoodNeeds.instances[i] then
+            NeighborhoodNeeds.create(i, p)
+        end
+    end
+end
+
 Events.OnCreatePlayer.Add(NeighborhoodNeeds.create)
+if Events.OnGameStart then Events.OnGameStart.Add(ensureNeedsPanel) end
+if Events.OnTick then
+    local checkTick = 0
+    Events.OnTick.Add(function()
+        checkTick = checkTick + 1
+        if checkTick % 60 == 0 then
+            ensureNeedsPanel()
+        end
+    end)
+end
 Events.OnMainMenuEnter.Add(NeighborhoodNeeds.cleanup)

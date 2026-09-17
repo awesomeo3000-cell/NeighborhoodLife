@@ -68,23 +68,26 @@ end
 local function findExistingBody(id)
     local c = cell()
     if not c then return nil end
-    local lists = {}
+    local list = nil
     if c.getObjectListForLua then
-        local ok, list = pcall(c.getObjectListForLua, c)
-        if ok and list then lists[#lists + 1] = list end
+        local ok, l = pcall(c.getObjectListForLua, c)
+        if ok and l then list = l end
     end
-    if c.getObjectList then
-        local ok, list = pcall(c.getObjectList, c)
-        if ok and list then lists[#lists + 1] = list end
+    if not list and c.getObjectList then
+        local ok, s = pcall(c.getObjectList, c)
+        if ok and s and s.toArray then
+            local okArr, arr = pcall(s.toArray, s)
+            if okArr and arr then list = arr end
+        end
     end
-    for _, list in ipairs(lists) do
-        for index = 0, listSize(list) - 1 do
-            local object = listGet(list, index)
-            if object and object.getModData then
-                local ok, data = pcall(object.getModData, object)
-                if ok and data and tostring(data.NeighborhoodNpcId or "") == tostring(id) then
-                    return object
-                end
+    if not list then return nil end
+    local size = listSize(list)
+    for index = 0, size - 1 do
+        local object = listGet(list, index)
+        if object and object.getModData then
+            local ok, data = pcall(object.getModData, object)
+            if ok and data and tostring(data.NeighborhoodNpcId or "") == tostring(id) then
+                return object
             end
         end
     end
@@ -100,7 +103,7 @@ local function squareUsable(square, reserved)
     if not square then return false end
     local freeOk, free = pcall(square.isFree, square, false)
     if not freeOk or free ~= true then return false end
-    if square.isSolidFloor then
+    if square:getZ() > 0 and square.isSolidFloor then
         local floorOk, solid = pcall(square.isSolidFloor, square)
         if floorOk and solid ~= true then return false end
     end
@@ -195,17 +198,26 @@ local function createBody(id, definition, square)
 
     prepareBody(id, definition, body, square)
 
-    -- Critical for Build 42: constructing an IsoPlayer does not guarantee the
-    -- object is registered for world presentation. Working NPC frameworks call
-    -- addToWorld() explicitly. Without it the Lua body can exist while no model
-    -- is rendered and no world interaction can discover it.
-    local added, addError = safeCall(body, "addToWorld")
-    if not added then
-        return nil, "addToWorld failed: " .. tostring(addError)
+    -- Register moving object in cell so Build 42 renders and processes it
+    if c.addMovingObject then
+        safeCall(c, "addMovingObject", body)
+    end
+    if c.getObjectList then
+        local okList, list = pcall(c.getObjectList, c)
+        if okList and list and list.contains and list.add then
+            local okContains, contains = pcall(list.contains, list, body)
+            if okContains and contains ~= true then pcall(list.add, list, body) end
+        end
     end
 
-    -- Verify/repair the current square after world registration. Some builds
-    -- overwrite the constructor position while attaching the object.
+    -- Register on current square so context menus and collisions detect the NPC
+    if body.setMovingSquareNow then
+        safeCall(body, "setMovingSquareNow")
+    elseif body.setMovingSquare then
+        safeCall(body, "setMovingSquare", square)
+    end
+
+    -- Verify/repair the current square and appearance after world attachment
     prepareBody(id, definition, body, square)
 
     local currentOk, current = safeCall(body, "getCurrentSquare")
@@ -242,6 +254,7 @@ local function registerBody(id, body, row)
 end
 
 function NLNpcSinglePlayer.start(_, player)
+    if flag("isClient") or flag("isServer") then return 0 end
     if NLNpcSinglePlayer.started then return 0 end
     player = player or (getSpecificPlayer and getSpecificPlayer(0))
     if not player or player:isDead() then return 0 end
@@ -270,15 +283,15 @@ function NLNpcSinglePlayer.start(_, player)
             if not square then
                 log("SPAWN FAILED " .. id .. ": no free square within 2-4 tiles")
             else
-                if row then
-                    row.home = { x=square:getX(), y=square:getY(), z=square:getZ() }
-                    row.position = { x=square:getX(), y=square:getY(), z=square:getZ() }
-                    row.waypoint = 1
-                    row.spawned = true
-                end
                 local err
                 body, err = createBody(id, definition, square)
                 if body then
+                    if row then
+                        row.home = { x=square:getX(), y=square:getY(), z=square:getZ() }
+                        row.position = { x=square:getX(), y=square:getY(), z=square:getZ() }
+                        row.waypoint = 1
+                        row.spawned = true
+                    end
                     NLNpcSinglePlayer.owned[id] = true
                     log(string.format("spawned %s at %d,%d,%d and added to world", id,
                         square:getX(), square:getY(), square:getZ()))
@@ -313,10 +326,30 @@ function NLNpcSinglePlayer.start(_, player)
 end
 
 function NLNpcSinglePlayer.update()
-    if NLNpcSinglePlayer.started then return end
-    NLNpcSinglePlayer.tick = NLNpcSinglePlayer.tick + 1
-    if NLNpcSinglePlayer.tick == 1 or NLNpcSinglePlayer.tick % 60 == 0 then
-        NLNpcSinglePlayer.start()
+    if flag("isClient") or flag("isServer") then return end
+    if not NLNpcSinglePlayer.started then
+        NLNpcSinglePlayer.tick = NLNpcSinglePlayer.tick + 1
+        if NLNpcSinglePlayer.tick == 1 or NLNpcSinglePlayer.tick % 60 == 0 then
+            NLNpcSinglePlayer.start()
+        end
+        return
+    end
+
+    -- In single-player, drive the native simulation frame for each authored body
+    if NLNpcAuthority and NLNpcAuthority.update then
+        pcall(NLNpcAuthority.update)
+    else
+        for id, body in pairs(NLNpcSinglePlayer.bodies) do
+            if body and not body:isDead() then
+                pcall(function()
+                    body:preupdate()
+                    body:update()
+                    local pfb = body:getPathFindBehavior2()
+                    if pfb then pfb:update() end
+                    body:postupdate()
+                end)
+            end
+        end
     end
 end
 
