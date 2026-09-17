@@ -161,10 +161,18 @@ local function prepareBody(id, definition, body, square)
     if not body then return nil end
     safeCall(body, "setNpc", true)
     safeCall(body, "setGhostMode", false)
+    safeCall(body, "setInvisible", false)
     safeCall(body, "setSceneCulled", false)
     safeCall(body, "setUsername", (definition.name or id) .. " [Neighborhood Life]")
     safeCall(body, "setGodMod", true)
-    safeCall(body, "setAlphaAndTarget", 1, 1)
+    for p = 0, 3 do
+        safeCall(body, "setAlphaAndTarget", p, 1.0)
+        safeCall(body, "setTargetAlpha", p, 1.0)
+        safeCall(body, "setAlpha", p, 1.0)
+    end
+    safeCall(body, "setAlphaAndTarget", 1.0)
+    safeCall(body, "setTargetAlpha", 1.0)
+    safeCall(body, "setAlpha", 1.0)
     if square then
         local x, y, z = square:getX() + 0.5, square:getY() + 0.5, square:getZ()
         safeCall(body, "setX", x)
@@ -172,7 +180,10 @@ local function prepareBody(id, definition, body, square)
         safeCall(body, "setZ", z)
         safeCall(body, "setCurrent", square)
     end
-    if definition.outfit then safeCall(body, "dressInNamedOutfit", definition.outfit) end
+    if definition.outfit then
+        safeCall(body, "dressInPersistentOutfit", definition.outfit)
+        safeCall(body, "dressInNamedOutfit", definition.outfit)
+    end
     if not safeCall(body, "resetModel") then safeCall(body, "resetModelNextFrame") end
     if body.getModData then
         local ok, data = pcall(body.getModData, body)
@@ -182,6 +193,34 @@ local function prepareBody(id, definition, body, square)
         end
     end
     return body
+end
+
+local function ensureBodyRender(body, definition)
+    if not body or body:isDead() then return end
+    for p = 0, 3 do
+        safeCall(body, "setAlphaAndTarget", p, 1.0)
+        safeCall(body, "setTargetAlpha", p, 1.0)
+        safeCall(body, "setAlpha", p, 1.0)
+    end
+    safeCall(body, "setAlphaAndTarget", 1.0)
+    safeCall(body, "setTargetAlpha", 1.0)
+    safeCall(body, "setAlpha", 1.0)
+    safeCall(body, "setGhostMode", false)
+    safeCall(body, "setInvisible", false)
+
+    local legsSprite = body.getLegsSprite and body:getLegsSprite()
+    local hasModel = false
+    if legsSprite and legsSprite.hasActiveModel then
+        local okM, active = pcall(legsSprite.hasActiveModel, legsSprite)
+        if okM and active then hasModel = true end
+    end
+
+    if not hasModel then
+        safeCall(body, "setSceneCulled", true)
+        safeCall(body, "setSceneCulled", false)
+        if body.resetModel then safeCall(body, "resetModel") end
+        if body.resetModelNextFrame then safeCall(body, "resetModelNextFrame") end
+    end
 end
 
 local function createBody(id, definition, square)
@@ -335,21 +374,30 @@ function NLNpcSinglePlayer.update()
         return
     end
 
-    -- In single-player, drive the native simulation frame for each authored body
-    if NLNpcAuthority and NLNpcAuthority.update then
-        pcall(NLNpcAuthority.update)
-    else
-        for id, body in pairs(NLNpcSinglePlayer.bodies) do
-            if body and not body:isDead() then
+    -- Keep every NPC body rendered, visible, and animated in single-player
+    for id, body in pairs(NLNpcSinglePlayer.bodies) do
+        if body and not body:isDead() then
+            local definition = NLNeighbors.definitions[id]
+            ensureBodyRender(body, definition)
+
+            if body.setMovingSquareNow then
+                safeCall(body, "setMovingSquareNow")
+            end
+
+            local hasTarget = NLNpcAuthority and NLNpcAuthority.targets and NLNpcAuthority.targets[id]
+            if not hasTarget then
                 pcall(function()
                     body:preupdate()
                     body:update()
-                    local pfb = body:getPathFindBehavior2()
-                    if pfb then pfb:update() end
                     body:postupdate()
                 end)
             end
         end
+    end
+
+    -- In single-player, drive career schedules, routines, and pathfinding
+    if NLNpcAuthority and NLNpcAuthority.update then
+        pcall(NLNpcAuthority.update)
     end
 end
 
@@ -368,8 +416,16 @@ function NLNpcSinglePlayer.cleanup()
 end
 
 if Events.OnCreatePlayer then Events.OnCreatePlayer.Add(NLNpcSinglePlayer.start) end
-if Events.OnGameStart then Events.OnGameStart.Add(function() NLNpcSinglePlayer.start() end) end
+if Events.OnGameStart then
+    Events.OnGameStart.Add(function()
+        NLNpcSinglePlayer.start()
+        for id, body in pairs(NLNpcSinglePlayer.bodies) do
+            ensureBodyRender(body, NLNeighbors.definitions[id])
+        end
+    end)
+end
 if Events.OnTick then Events.OnTick.Add(NLNpcSinglePlayer.update) end
 if Events.OnMainMenuEnter then Events.OnMainMenuEnter.Add(NLNpcSinglePlayer.cleanup) end
 
 return NLNpcSinglePlayer
+

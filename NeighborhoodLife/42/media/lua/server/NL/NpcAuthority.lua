@@ -619,6 +619,20 @@ local function spawnBody(id, row, player)
     local body = IsoPlayer.new(cell, desc, square:getX(), square:getY(), square:getZ())
     body:setNpc(true)
     if body.setGhostMode then pcall(body.setGhostMode, body, false) end
+    if body.setInvisible then pcall(body.setInvisible, body, false) end
+    if body.setSceneCulled then pcall(body.setSceneCulled, body, false) end
+    if body.setAlphaAndTarget then
+        for p = 0, 3 do pcall(body.setAlphaAndTarget, body, p, 1.0) end
+        pcall(body.setAlphaAndTarget, body, 1.0)
+    end
+    if body.setTargetAlpha then
+        for p = 0, 3 do pcall(body.setTargetAlpha, body, p, 1.0) end
+        pcall(body.setTargetAlpha, body, 1.0)
+    end
+    if body.setAlpha then
+        for p = 0, 3 do pcall(body.setAlpha, body, p, 1.0) end
+        pcall(body.setAlpha, body, 1.0)
+    end
     -- IsoPlayer defaults every Lua-created body to online id 1. Assign the
     -- stable authored slot before any presence packet is built so a future
     -- native server reannouncement can identify each neighbor unambiguously.

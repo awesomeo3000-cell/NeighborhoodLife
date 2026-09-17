@@ -17,6 +17,13 @@ Events.OnRenderTick.Add(function()
             assert(NLPlumbob.instances["npc:"..id]:positionOverCharacter(),
                 "production NPC plumbob did not anchor: "..id)
         end
+        local legsSprite = body.getLegsSprite and body:getLegsSprite()
+        if legsSprite and legsSprite.hasActiveModel then
+            assert(legsSprite:hasActiveModel(), "production NPC 3D model active in ModelManager: "..id)
+        end
+        if body.getAlpha then
+            assert(body:getAlpha(0) > 0.5, "production NPC alpha visible for player 0: "..id)
+        end
         positions[#positions+1]=id.."="..string.format("%.2f,%.2f",body:getX(),body:getY())
     end
     print("NLQA PASS: 3 production NPC bodies, persisted positions and plumbobs verified at "

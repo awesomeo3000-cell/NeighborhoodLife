@@ -77,10 +77,20 @@ Any developer or AI agent picking up this project can review this file to immedi
   - **Live Game Verification**:
     - Created `tools/run-singleplayer-qa.ps1` launching the real Build 42.20.4 engine (`javaw.exe`).
     - Verified 3 production NPC bodies spawned and persisted in-world (Marisol, Kenji, Amara).
-    - Verified overhead plumbobs, right-click context menu (11 actions), Needs HUD (`DATA READY`), and autonomous career pathfinding.
-    - Deployed production release to `C:\Users\clare\Zomboid\mods\NeighborhoodLife`.
+- **Phase 7 (Completed)**: **In-Game 3D Mesh Visibility, Alpha Indexing & Plumbob Scale Fix**.
+  - **Root Cause & Diagnosis for In-Game Invisibility**:
+    - The debug log confirmed NPCs spawned into the world (`[NeighborhoodLife] NPC/SP ready: 3/3 NPCs registered in world`), but were visually invisible on screen due to two engine-level rendering guards.
+    - **Alpha Indexing Bug**: `body:setAlphaAndTarget(1, 1)` set `alpha` for `playerIndex = 1` (splitscreen player 2). For local player 0, `alpha[0]` remained 0.0 (`isAlphaZero(0) == true`), causing `IsoGameCharacter.render` to immediately abort rendering the character. Fixed to set alpha = 1.0 across all player indices 0..3 and base alpha.
+    - **ModelManager Timing Bug**: During `OnCreatePlayer`, `ModelManager.instance:isCreated()` is false (`GameLoadingState`). Attempts to attach 3D model slots silently fail, leaving `legsSprite.modelSlot` null. Added `ensureBodyRender()` running on `OnGameStart` and every tick, which detects uninitialized models and triggers `ModelManager.Add(body)` and `body:resetModel()`.
+    - **Idle Animation Ticking**: Fixed idle bodies so `preupdate()`, `update()`, and `postupdate()` run continuously even without active pathfinding targets, keeping character animation and skeletal stances active.
+    - **Plumbob Scale & Placement**: Increased `NLPlumbob` dimensions from 2x3 pixels with 8px lift to 12x16 pixels with 64px lift so the glowing diamond hovers visibly above neighbor heads on high-resolution displays (1080p/1440p).
+  - **Live Game Verification**:
+    - Ran live Build 42.20.4 client engine test (`tools/run-singleplayer-qa.ps1`).
+    - Both `legsSprite:hasActiveModel()` and `body:getAlpha(0) > 0.5` asserted and passed.
+    - Reinstalled production mod to `C:\Users\clare\Zomboid\mods\NeighborhoodLife`.
 
 ---
+
 
 
 ## Master Feature Completion Roadmap

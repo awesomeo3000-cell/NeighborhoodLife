@@ -14,9 +14,9 @@ NLPlumbob.remoteColor = { r = 0.28, g = 0.86, b = 0.95 }
 -- Keep the player silhouette dominant. The marker is deliberately tiny and
 -- close, while the 8x11 source texture also protects the size if Build 42
 -- draws a texture at native dimensions instead of honoring a scaled panel.
-NLPlumbob.baseWidth = 2
-NLPlumbob.baseHeight = 3
-NLPlumbob.baseLift = 8
+NLPlumbob.baseWidth = 12
+NLPlumbob.baseHeight = 16
+NLPlumbob.baseLift = 64
 
 function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, lift)
     return math.floor(screenX - left - width / 2), math.floor(screenY - top - height - lift)
