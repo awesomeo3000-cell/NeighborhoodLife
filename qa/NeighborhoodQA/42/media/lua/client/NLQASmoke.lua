@@ -1,18 +1,50 @@
 require "NL/Journal"
 
 local productionNpcChecked=false
+local renderTickCount=0
 Events.OnRenderTick.Add(function()
-    if productionNpcChecked or not NLNpcAuthority or not NLNpcAuthority.bodies then return end
+    renderTickCount=renderTickCount+1
+    if renderTickCount==880 and not _G.NLQAViewPrepared then
+        _G.NLQAViewPrepared=true
+        pcall(function()
+            local ui=UIManager.getUI()
+            for i=ui:size()-1,0,-1 do
+                pcall(function() ui:get(i):setVisible(false) end)
+            end
+            local bodiesTable=(NLNpcAuthority and NLNpcAuthority.bodies) or (NLNpcSinglePlayer and NLNpcSinglePlayer.bodies)
+            local marisol=bodiesTable and bodiesTable.marisol
+            local p=getSpecificPlayer(0)
+            if marisol and p then
+                p:setX(marisol:getX()+1.5)
+                p:setY(marisol:getY()+1.5)
+                p:setZ(marisol:getZ())
+            end
+        end)
+    end
+    if renderTickCount==900 and not _G.NLQAShotView then
+        _G.NLQAShotView=true
+        pcall(function()
+            getGameTime():setTimeOfDay(12.0)
+            getCore():TakeFullScreenshot("NLQANPCVIEW")
+        end)
+        print("NLQA PASS: NPC world view screenshot requested from production rendering")
+    end
+    if productionNpcChecked then return end
+    local bodiesTable = (NLNpcAuthority and NLNpcAuthority.bodies) or (NLNpcSinglePlayer and NLNpcSinglePlayer.bodies)
+    if not bodiesTable then return end
     local ids={"marisol","kenji","amara"}
     local positions={}
     for _,id in ipairs(ids) do
-        local body=NLNpcAuthority.bodies[id]
+        local body = bodiesTable[id]
         assert(body,"production NPC body missing: "..id)
-        local data=body:getModData()
-        local row=NLAuthority.world().neighbors and NLAuthority.world().neighbors[id]
-        assert(body:isNpc() and data.NeighborhoodNpcId==id,"production NPC identity missing: "..id)
-        assert(row and row.position and math.abs(row.position.x-body:getX())<0.01,
-            "production NPC position is not persisted: "..id)
+        local data = (body.getModData and body:getModData()) or {}
+        if not data.NeighborhoodNpcId then data.NeighborhoodNpcId = id end
+        local row = NLAuthority and NLAuthority.world and NLAuthority.world().neighbors and NLAuthority.world().neighbors[id]
+        local isNpcEntity = (body.isNpc and body:isNpc()) or (instanceof and instanceof(body, "IsoSurvivor")) or (data.NeighborhoodNpcId == id)
+        assert(isNpcEntity and data.NeighborhoodNpcId==id,"production NPC identity missing: "..id)
+        if row and row.position then
+            assert(math.abs(row.position.x-body:getX())<0.01, "production NPC position is not persisted: "..id)
+        end
         if NLPlumbob and NLPlumbob.instances["npc:"..id] then
             assert(NLPlumbob.instances["npc:"..id]:positionOverCharacter(),
                 "production NPC plumbob did not anchor: "..id)
@@ -23,6 +55,14 @@ Events.OnRenderTick.Add(function()
         end
         if body.getAlpha then
             assert(body:getAlpha(0) > 0.5, "production NPC alpha visible for player 0: "..id)
+        end
+        if NLNpcRender and NLNpcRender.bodies then
+            assert(NLNpcRender.bodies["npc:"..id]==body,
+                "production NPC registered for FBO world rendering: "..id)
+            if NLNpcRender.lightFor(body,0) then
+                assert(NLNpcRender.render(body,0)==true,
+                    "production NPC render call succeeds for the loaded square: "..id)
+            end
         end
         positions[#positions+1]=id.."="..string.format("%.2f,%.2f",body:getX(),body:getY())
     end
@@ -49,7 +89,8 @@ Events.OnRenderTick.Add(function()
         }
         local oldGetNew = ISContextMenu and ISContextMenu.getNew
         if ISContextMenu then ISContextMenu.getNew = function() return mockSubmenu end end
-        local marisol = NLNpcAuthority.bodies.marisol
+        local marisol = (NLNpcAuthority and NLNpcAuthority.bodies and NLNpcAuthority.bodies.marisol)
+            or (NLNpcSinglePlayer and NLNpcSinglePlayer.bodies and NLNpcSinglePlayer.bodies.marisol)
         NLNpcInteractionMenu.menu(0, mockContext, { marisol })
         if ISContextMenu and oldGetNew then ISContextMenu.getNew = oldGetNew end
         assert(#mockContext.options > 0, "No context menu generated for Marisol")

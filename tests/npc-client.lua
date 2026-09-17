@@ -64,6 +64,8 @@ assert(NLNpcClient.apply({revision=1,npcs={
 local body=NLNpcClient.bodies.marisol
 assert(body and body.npc and body:getModData().NeighborhoodNpcId=='marisol','native replica created')
 assert(plumbobs['npc:marisol']==body,'replica plumbob registered')
+assert(NLNpcRender and NLNpcRender.bodies['npc:marisol']==body,
+    'replica registered for FBO world rendering')
 assert(NLNpcClient.bodies.kenji and plumbobs['npc:kenji']==NLNpcClient.bodies.kenji,
     'second authored replica and plumbob registered')
 assert(NLNpcClient.assignReplicaOnlineId(NLNpcClient.bodies.marisol,30001)
@@ -159,6 +161,8 @@ NLNpcClient.apply({revision=8,npcs={}})
 assert(NLNpcClient.bodies.marisol==nil and NLNpcClient.bodies.kenji==nil
     and plumbobs['npc:marisol']==nil and plumbobs['npc:kenji']==nil,
     'replica cleanup follows authoritative roster')
+assert(NLNpcRender.bodies['npc:marisol']==nil and NLNpcRender.bodies['npc:kenji']==nil,
+    'replica cleanup clears the world-render registry')
 if disconnectHook then
     assert(disconnectHook,'disconnect cleanup hook registered')
     disconnectHook('server restart','qa')

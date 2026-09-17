@@ -615,9 +615,21 @@ local function spawnBody(id, row, player)
     local desc = SurvivorFactory.CreateSurvivor()
     desc:setForename(definition.forename or id)
     desc:setSurname(definition.surname or "Neighbor")
-    desc:setFemale(definition.female ~= false)
-    local body = IsoPlayer.new(cell, desc, square:getX(), square:getY(), square:getZ())
-    body:setNpc(true)
+    local body = nil
+    if IsoPlayer and IsoPlayer.new then
+        local okP, pBody = pcall(function()
+            return IsoPlayer.new(cell, desc, square:getX(), square:getY(), square:getZ())
+        end)
+        if okP and pBody then body = pBody end
+    end
+    if not body and IsoSurvivor and IsoSurvivor.new then
+        local okS, sBody = pcall(function()
+            return IsoSurvivor.new(desc, cell, square:getX(), square:getY(), square:getZ())
+        end)
+        if okS and sBody then body = sBody end
+    end
+    if not body then return nil, "character instantiation failed" end
+    if body.setNpc then pcall(body.setNpc, body, true) end
     if body.setGhostMode then pcall(body.setGhostMode, body, false) end
     if body.setInvisible then pcall(body.setInvisible, body, false) end
     if body.setSceneCulled then pcall(body.setSceneCulled, body, false) end
@@ -637,10 +649,19 @@ local function spawnBody(id, row, player)
     -- stable authored slot before any presence packet is built so a future
     -- native server reannouncement can identify each neighbor unambiguously.
     local onlineAssigned = assignNativeOnlineId(body, definition.onlineId)
-    body:setUsername((definition.name or id) .. " [Neighborhood Life]")
-    body:setGodMod(true)
+    local displayName = (definition.name or id) .. " [Neighborhood Life]"
+    if body.setName then pcall(body.setName, body, displayName) end
+    if body.SetName then pcall(body.SetName, body, displayName) end
+    if body.setUsername then pcall(body.setUsername, body, displayName) end
+    if body.setGodMod then pcall(body.setGodMod, body, true) end
     body:getModData().NeighborhoodNpcId = id
-    body:dressInNamedOutfit(definition.outfit or "Generic01")
+    if body.dressInPersistentOutfit then
+        pcall(body.dressInPersistentOutfit, body, definition.outfit or "Generic01")
+    end
+    if body.dressInNamedOutfit then
+        pcall(body.dressInNamedOutfit, body, definition.outfit or "Generic01")
+    end
+    if body.resetModel then pcall(body.resetModel, body) end
     local exactX, exactY, exactZ
     if row.revision > 0 and row.position
             and math.floor(row.position.x) == square:getX()

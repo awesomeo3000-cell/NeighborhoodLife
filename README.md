@@ -328,6 +328,12 @@ server-body reannouncement is still an open Build 42 API gate. The server now sa
 the latest NPC position through `OnSave`, and a restart restores the fractional tile
 position instead of snapping to the tile center.
 
+Build 42's FBO world renderer draws only engine-roster players and explicitly skips
+other `IsoPlayer` objects, so `NL/NpcRender.lua` queues the engine's own
+`render`/`renderShadow` calls for every locally created NPC and presentation replica
+from `Events.OnPostRender`. Without that bridge the neighbors existed, moved and had
+active models but were never drawn (plumbob-only).
+
 ## Remaining manual gameplay checks
 - Host and guest join: each sees one panel with their own current stats.
 - Eat, drink, rest and read: observe appropriate values changing.

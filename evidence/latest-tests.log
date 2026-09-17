@@ -1,7 +1,7 @@
 Neighborhood Life consolidated verification
 TEST COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\hud.lua E:\pzmod\NeighborhoodLife\42\media\lua\client\NeighborhoodNeeds.lua enabled
 TEST INPUT: E:\pzmod
-TEST OUTPUT: PASS: normalization, clamping, missing/NaN, isolated players, duplicate prevention, fold, render, reconnect, cleanup
+TEST OUTPUT: PASS: normalization, visible feature navigation, scaling, fold, reconnect and cleanup
 TEST STDERR: 
 TEST EXIT: 0
 SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NeighborhoodNeeds.lua
@@ -119,6 +119,16 @@ SYNTAX INPUT: E:\pzmod
 SYNTAX OUTPUT: 
 SYNTAX STDERR: 
 SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\NpcRender.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\NpcSinglePlayer.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
 SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\Plumbob.lua
 SYNTAX INPUT: E:\pzmod
 SYNTAX OUTPUT: 
@@ -182,12 +192,12 @@ LUA STDERR:
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\interfaces.lua E:\pzmod\NeighborhoodLife
 LUA INPUT: E:\pzmod
-LUA OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+LUA OUTPUT: PASS: relationship UI empty/populated/deceased states, callbacks, reopen and career selection theme
 LUA STDERR: 
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\wardrobe-panel.lua E:\pzmod\NeighborhoodLife
 LUA INPUT: E:\pzmod
-LUA OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+LUA OUTPUT: PASS: relationship UI empty/populated/deceased states, callbacks, reopen and career selection theme
 PASS: wardrobe panel empty/saved/dead states, save/wear callbacks and reopen
 LUA STDERR: 
 LUA EXIT: 0
@@ -223,7 +233,8 @@ LUA STDERR:
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\household-panel.lua E:\pzmod\NeighborhoodLife
 LUA INPUT: E:\pzmod
-LUA OUTPUT: PASS: household panel empty/shared states, member activity controls and client routing load
+LUA OUTPUT: [NeighborhoodLife] Failed to load NL/HouseholdFurnishingMenu: ...e/42/media/lua/client/NL/HouseholdFurnishingMenu.lua:91: attempt to index field 'OnFillWorldObjectContextMenu' (a nil value)
+PASS: household panel empty/shared states, member activity controls and client routing load
 LUA STDERR: 
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\household-furnishings.lua E:\pzmod\NeighborhoodLife
@@ -307,7 +318,14 @@ LUA STDERR:
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\npc-client.lua E:\pzmod\NeighborhoodLife
 LUA INPUT: E:\pzmod
-LUA OUTPUT: PASS: client NPC native replica creation, authoritative interpolation, plumbob and cleanup
+LUA OUTPUT: [NeighborhoodLife] NPC/RENDER bridge loaded
+PASS: client NPC native replica creation, authoritative interpolation, plumbob and cleanup
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\npc-render.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: [NeighborhoodLife] NPC/RENDER bridge loaded
+PASS: NPC FBO world-render registration, lighting, shadow and cleanup
 LUA STDERR: 
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\npc-interaction-menu.lua E:\pzmod\NeighborhoodLife
@@ -317,7 +335,8 @@ LUA STDERR:
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\remote-player-client.lua E:\pzmod\NeighborhoodLife
 LUA INPUT: E:\pzmod
-LUA OUTPUT: PASS: remote player replica creation, authoritative movement, native promotion, stale rejection and cleanup
+LUA OUTPUT: [NeighborhoodLife] NPC/RENDER bridge loaded
+PASS: remote player replica creation, authoritative movement, native promotion, stale rejection and cleanup
 LUA STDERR: 
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\appearance.lua E:\pzmod\NeighborhoodLife
@@ -327,7 +346,9 @@ LUA STDERR:
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\appearance-panel.lua E:\pzmod\NeighborhoodLife
 LUA INPUT: E:\pzmod
-LUA OUTPUT: PASS: appearance panel rendering, preset callbacks, reopen and dead-state gating
+LUA OUTPUT: [NeighborhoodLife] Failed to load NL/NpcClient: ...\NeighborhoodLife/42/media/lua/client/NL/Plumbob.lua:282: attempt to index field 'OnCreatePlayer' (a nil value)
+[NeighborhoodLife] Failed to load NL/RemotePlayerClient: ...odLife/42/media/lua/client/NL/RemotePlayerClient.lua:9: loop or previous error loading module 'NL/Plumbob'
+PASS: appearance panel rendering, preset callbacks, reopen and dead-state gating
 LUA STDERR: 
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\social-events.lua E:\pzmod\NeighborhoodLife
@@ -379,13 +400,13 @@ KAHLUA STDERR:
 KAHLUA EXIT: 0
 KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\interfaces.lua
 KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
-KAHLUA OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+KAHLUA OUTPUT: PASS: relationship UI empty/populated/deceased states, callbacks, reopen and career selection theme
 PASS: installed Project Zomboid Kahlua VM execution
 KAHLUA STDERR: 
 KAHLUA EXIT: 0
 KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\wardrobe-panel.lua
 KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
-KAHLUA OUTPUT: PASS: relationship UI empty/populated/deceased states, correct derived callbacks, reopen and career selection theme
+KAHLUA OUTPUT: PASS: relationship UI empty/populated/deceased states, callbacks, reopen and career selection theme
 PASS: wardrobe panel empty/saved/dead states, save/wear callbacks and reopen
 PASS: installed Project Zomboid Kahlua VM execution
 KAHLUA STDERR: 
@@ -428,7 +449,8 @@ KAHLUA STDERR:
 KAHLUA EXIT: 0
 KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\household-panel.lua
 KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
-KAHLUA OUTPUT: PASS: household panel empty/shared states, member activity controls and client routing load
+KAHLUA OUTPUT: [NeighborhoodLife] Failed to load NL/HouseholdFurnishingMenu: attempted index: Add of non-table: null java.lang.RuntimeException
+PASS: household panel empty/shared states, member activity controls and client routing load
 PASS: installed Project Zomboid Kahlua VM execution
 KAHLUA STDERR: 
 KAHLUA EXIT: 0
@@ -517,7 +539,15 @@ KAHLUA STDERR:
 KAHLUA EXIT: 0
 KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\npc-client.lua
 KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
-KAHLUA OUTPUT: PASS: client NPC native replica creation, authoritative interpolation, plumbob and cleanup
+KAHLUA OUTPUT: [NeighborhoodLife] NPC/RENDER bridge loaded
+PASS: client NPC native replica creation, authoritative interpolation, plumbob and cleanup
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\npc-render.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: [NeighborhoodLife] NPC/RENDER bridge loaded
+PASS: NPC FBO world-render registration, lighting, shadow and cleanup
 PASS: installed Project Zomboid Kahlua VM execution
 KAHLUA STDERR: 
 KAHLUA EXIT: 0
@@ -529,7 +559,8 @@ KAHLUA STDERR:
 KAHLUA EXIT: 0
 KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\remote-player-client.lua
 KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
-KAHLUA OUTPUT: PASS: remote player replica creation, authoritative movement, native promotion, stale rejection and cleanup
+KAHLUA OUTPUT: [NeighborhoodLife] NPC/RENDER bridge loaded
+PASS: remote player replica creation, authoritative movement, native promotion, stale rejection and cleanup
 PASS: installed Project Zomboid Kahlua VM execution
 KAHLUA STDERR: 
 KAHLUA EXIT: 0
@@ -541,7 +572,9 @@ KAHLUA STDERR:
 KAHLUA EXIT: 0
 KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\appearance-panel.lua
 KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
-KAHLUA OUTPUT: PASS: appearance panel rendering, preset callbacks, reopen and dead-state gating
+KAHLUA OUTPUT: [NeighborhoodLife] Failed to load NL/NpcClient: attempted index: Add of non-table: null java.lang.RuntimeException
+[NeighborhoodLife] Failed to load NL/RemotePlayerClient: attempted index: Add of non-table: null java.lang.RuntimeException
+PASS: appearance panel rendering, preset callbacks, reopen and dead-state gating
 PASS: installed Project Zomboid Kahlua VM execution
 KAHLUA STDERR: 
 KAHLUA EXIT: 0

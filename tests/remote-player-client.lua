@@ -58,6 +58,8 @@ check(NLRemotePlayerClient.apply({revision=1,players={{username='nl-host',x=10,y
 local replica=NLRemotePlayerClient.bodies['nl-host']
 check(replica and replica:getModData().NeighborhoodRemotePlayerId=='nl-host',
     'missing native peer gets a local native replica')
+check(NLNpcRender and NLNpcRender.bodies['remote:nl-host']==replica,
+    'remote replica registered for FBO world rendering')
 check(NLRemotePlayerClient.modes['nl-host']=='replica','replica mode recorded')
 NLRemotePlayerClient.apply({revision=2,players={{username='nl-host',x=12,y=11,z=0}}})
 NLRemotePlayerClient.update()
@@ -74,6 +76,8 @@ NLRemotePlayerClient.apply({revision=3,players={{username='nl-host',x=20,y=21,z=
 check(NLRemotePlayerClient.bodies['nl-host']==native,'native engine body wins when available')
 check(NLRemotePlayerClient.modes['nl-host']=='engine','engine mode recorded')
 check(not objects:contains(replica),'fallback replica removed after native body appears')
+check(NLNpcRender.bodies['remote:nl-host']==nil,
+    'engine-owned native peer leaves the local render registry')
 online={localPlayer}
 local cellNative={name='nl-host',x=30,y=31,z=0,data={}}
 function cellNative:getUsername() return self.name end

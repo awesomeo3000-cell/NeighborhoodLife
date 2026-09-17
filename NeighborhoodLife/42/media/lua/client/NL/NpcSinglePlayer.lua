@@ -15,6 +15,7 @@ if flag("isClient") or flag("isServer") then return end
 
 require "NL/Neighbors"
 require "NL/Plumbob"
+require "NL/NpcRender"
 
 NLNpcSinglePlayer = {
     bodies = {},
@@ -163,7 +164,13 @@ local function prepareBody(id, definition, body, square)
     safeCall(body, "setGhostMode", false)
     safeCall(body, "setInvisible", false)
     safeCall(body, "setSceneCulled", false)
-    safeCall(body, "setUsername", (definition.name or id) .. " [Neighborhood Life]")
+    if body.spottedByPlayer ~= nil then
+        pcall(function() body.spottedByPlayer = true end)
+    end
+    local displayName = (definition.name or id) .. " [Neighborhood Life]"
+    safeCall(body, "setName", displayName)
+    safeCall(body, "SetName", displayName)
+    safeCall(body, "setUsername", displayName)
     safeCall(body, "setGodMod", true)
     for p = 0, 3 do
         safeCall(body, "setAlphaAndTarget", p, 1.0)
@@ -179,10 +186,18 @@ local function prepareBody(id, definition, body, square)
         safeCall(body, "setY", y)
         safeCall(body, "setZ", z)
         safeCall(body, "setCurrent", square)
+        safeCall(body, "setMovingSquare", square)
+        safeCall(body, "setMovingSquareNow")
     end
     if definition.outfit then
         safeCall(body, "dressInPersistentOutfit", definition.outfit)
         safeCall(body, "dressInNamedOutfit", definition.outfit)
+    end
+    if ModelManager and ModelManager.instance and ModelManager.instance.isCreated then
+        local okC, created = pcall(ModelManager.instance.isCreated, ModelManager.instance)
+        if okC and created and ModelManager.instance.Add then
+            pcall(ModelManager.instance.Add, ModelManager.instance, body)
+        end
     end
     if not safeCall(body, "resetModel") then safeCall(body, "resetModelNextFrame") end
     if body.getModData then
@@ -207,6 +222,10 @@ local function ensureBodyRender(body, definition)
     safeCall(body, "setAlpha", 1.0)
     safeCall(body, "setGhostMode", false)
     safeCall(body, "setInvisible", false)
+    safeCall(body, "setSceneCulled", false)
+    if body.spottedByPlayer ~= nil then
+        pcall(function() body.spottedByPlayer = true end)
+    end
 
     local legsSprite = body.getLegsSprite and body:getLegsSprite()
     local hasModel = false
@@ -216,7 +235,17 @@ local function ensureBodyRender(body, definition)
     end
 
     if not hasModel then
-        safeCall(body, "setSceneCulled", true)
+        if ModelManager and ModelManager.instance and ModelManager.instance.isCreated then
+            local okC, created = pcall(ModelManager.instance.isCreated, ModelManager.instance)
+            if okC and created then
+                local okAdded, isAdded = pcall(body.isAddedToModelManager, body)
+                if not okAdded or not isAdded then
+                    if ModelManager.instance.Add then
+                        pcall(ModelManager.instance.Add, ModelManager.instance, body)
+                    end
+                end
+            end
+        end
         safeCall(body, "setSceneCulled", false)
         if body.resetModel then safeCall(body, "resetModel") end
         if body.resetModelNextFrame then safeCall(body, "resetModelNextFrame") end
@@ -226,14 +255,39 @@ end
 local function createBody(id, definition, square)
     local c = cell()
     if not c or not square then return nil, "cell or spawn square unavailable" end
-    if not IsoPlayer or not IsoPlayer.new then return nil, "IsoPlayer constructor unavailable" end
     local desc, descError = createDescriptor(definition)
     if not desc then return nil, descError end
 
-    local ok, body = pcall(function()
-        return IsoPlayer.new(c, desc, square:getX(), square:getY(), square:getZ())
-    end)
-    if not ok or not body then return nil, "IsoPlayer.new failed: " .. tostring(body) end
+    local body = nil
+    local bodyKind = nil
+
+    -- IsoPlayer is the fully supported human character class in Build 42,
+    -- containing initialized BodyDamage, Moodles, XP, Nutrition and Fitness.
+    if IsoPlayer and IsoPlayer.new then
+        local okP, pBody = pcall(function()
+            return IsoPlayer.new(c, desc, square:getX(), square:getY(), square:getZ())
+        end)
+        if okP and pBody then
+            body = pBody
+            bodyKind = "IsoPlayer"
+        else
+            log("IsoPlayer.new failed: " .. tostring(pBody))
+        end
+    end
+
+    if not body and IsoSurvivor and IsoSurvivor.new then
+        local okS, sBody = pcall(function()
+            return IsoSurvivor.new(desc, c, square:getX(), square:getY(), square:getZ())
+        end)
+        if okS and sBody then
+            body = sBody
+            bodyKind = "IsoSurvivor"
+        else
+            log("IsoSurvivor.new fallback failed: " .. tostring(sBody))
+        end
+    end
+
+    if not body then return nil, "Neither IsoPlayer nor IsoSurvivor constructor succeeded" end
 
     prepareBody(id, definition, body, square)
 
@@ -267,6 +321,7 @@ local function createBody(id, definition, square)
         end
     end
 
+    log(string.format("instantiated %s as %s", id, tostring(bodyKind)))
     return body
 end
 
@@ -289,6 +344,9 @@ local function registerBody(id, body, row)
     end
     if NLPlumbob and NLPlumbob.register then
         pcall(NLPlumbob.register, "npc:" .. id, body, 0, NLPlumbob.remoteColor)
+    end
+    if NLNpcRender and NLNpcRender.register then
+        pcall(NLNpcRender.register, "npc:" .. id, body)
     end
 end
 
@@ -404,6 +462,7 @@ end
 function NLNpcSinglePlayer.cleanup()
     for id, body in pairs(NLNpcSinglePlayer.bodies) do
         if NLPlumbob and NLPlumbob.unregister then pcall(NLPlumbob.unregister, "npc:" .. id) end
+        if NLNpcRender and NLNpcRender.unregister then pcall(NLNpcRender.unregister, "npc:" .. id) end
         if NLNpcSinglePlayer.owned[id] and body then
             safeCall(body, "removeFromSquare")
             safeCall(body, "removeFromWorld")

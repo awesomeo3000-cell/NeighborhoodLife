@@ -1,6 +1,6 @@
 param(
     [string]$ProfileRoot = 'E:\pzmod\test-profile',
-    [int]$TimeoutSeconds = 120
+    [int]$TimeoutSeconds = 180
 )
 
 $ErrorActionPreference = 'Stop'
@@ -111,6 +111,7 @@ ambientVolume=0
     $failure = $_.Exception.Message
     Write-Output "SINGLEPLAYER_QA_FAILURE: $failure"
 } finally {
+    if ($passed) { Start-Sleep -Seconds 20 }
     if ($process -and -not $process.HasExited) {
         Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
     }

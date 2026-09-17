@@ -7,6 +7,7 @@
 if not isClient or not isClient() then return end
 
 require "NL/Plumbob"
+require "NL/NpcRender"
 
 NLRemotePlayerClient = {
     bodies = {}, targets = {}, paths = {}, modes = {}, states = {}, revision = 0,
@@ -80,33 +81,70 @@ local function removeReplica(username, body)
     if not body then return end
     local data = body.getModData and body:getModData() or nil
     if not data or not data.NeighborhoodRemotePlayerId then return end
+    if NLNpcRender and NLNpcRender.unregister then
+        pcall(NLNpcRender.unregister, "remote:" .. tostring(username))
+    end
     local cell = getCell and getCell()
     local list = cell and cell:getObjectList()
     if list and list.remove then list:remove(body) end
 end
 
 local function createReplica(username, entry)
-    if not IsoPlayer or not SurvivorFactory or not getCell then return nil end
+    if not SurvivorFactory or not getCell then return nil end
     local cell = getCell()
     if not cell then return nil end
     local desc = SurvivorFactory.CreateSurvivor()
     desc:setForename(username)
     desc:setSurname("Remote")
     if entry.female ~= nil and desc.setFemale then desc:setFemale(entry.female) end
-    local body = IsoPlayer.new(cell, desc, math.floor(entry.x), math.floor(entry.y),
-        math.floor(entry.z or 0))
-    body:setNpc(true)
-    body:setUsername(username)
-    body:setGodMod(true)
+    local body = nil
+    if IsoPlayer and IsoPlayer.new then
+        local okP, pBody = pcall(function()
+            return IsoPlayer.new(cell, desc, math.floor(entry.x), math.floor(entry.y), math.floor(entry.z or 0))
+        end)
+        if okP and pBody then body = pBody end
+    end
+    if not body and IsoSurvivor and IsoSurvivor.new then
+        local okS, sBody = pcall(function()
+            return IsoSurvivor.new(desc, cell, math.floor(entry.x), math.floor(entry.y), math.floor(entry.z or 0))
+        end)
+        if okS and sBody then body = sBody end
+    end
+    if not body then return nil end
+    if body.setNpc then pcall(body.setNpc, body, true) end
+    if body.setName then pcall(body.setName, body, username) end
+    if body.SetName then pcall(body.SetName, body, username) end
+    if body.setUsername then pcall(body.setUsername, body, username) end
+    if body.setGodMod then pcall(body.setGodMod, body, true) end
+    if body.spottedByPlayer ~= nil then
+        pcall(function() body.spottedByPlayer = true end)
+    end
     local data = body:getModData()
     data.NeighborhoodRemotePlayerId = username
     data.NeighborhoodRemotePlayerReplica = true
-    body:setSceneCulled(false)
-    body:setAlphaAndTarget(1, 1)
-    body:resetModelNextFrame()
+    if body.setSceneCulled then pcall(body.setSceneCulled, body, false) end
+    for p = 0, 3 do
+        if body.setAlphaAndTarget then pcall(body.setAlphaAndTarget, body, p, 1.0) end
+        if body.setTargetAlpha then pcall(body.setTargetAlpha, body, p, 1.0) end
+        if body.setAlpha then pcall(body.setAlpha, body, p, 1.0) end
+    end
+    if body.setAlphaAndTarget then pcall(body.setAlphaAndTarget, body, 1.0) end
+    if body.setTargetAlpha then pcall(body.setTargetAlpha, body, 1.0) end
+    if body.setAlpha then pcall(body.setAlpha, body, 1.0) end
+    if ModelManager and ModelManager.instance and ModelManager.instance.isCreated then
+        local okC, created = pcall(ModelManager.instance.isCreated, ModelManager.instance)
+        if okC and created and ModelManager.instance.Add then
+            pcall(ModelManager.instance.Add, ModelManager.instance, body)
+        end
+    end
+    if body.resetModel then pcall(body.resetModel, body) end
+    if body.resetModelNextFrame then pcall(body.resetModelNextFrame, body) end
     if not cell:getObjectList():contains(body) then cell:getObjectList():add(body) end
     positionBody(body, tonumber(entry.x or 0) or 0, tonumber(entry.y or 0) or 0,
         tonumber(entry.z or 0) or 0)
+    if NLNpcRender and NLNpcRender.register then
+        pcall(NLNpcRender.register, "remote:" .. tostring(username), body)
+    end
     return body
 end
 
@@ -179,6 +217,9 @@ function NLRemotePlayerClient.apply(packet)
                     cancelPath(username, body)
                     removeReplica(username, body)
                 end
+                if NLNpcRender and NLNpcRender.unregister then
+                    pcall(NLNpcRender.unregister, "remote:" .. tostring(username))
+                end
                 NLRemotePlayerClient.bodies[username] = native
                 NLRemotePlayerClient.modes[username] = "engine"
                 cancelPath(username, native)
@@ -201,6 +242,9 @@ function NLRemotePlayerClient.apply(packet)
     for username, body in pairs(NLRemotePlayerClient.bodies) do
         if not seen[username] then
             removeReplica(username, body)
+            if NLNpcRender and NLNpcRender.unregister then
+                pcall(NLNpcRender.unregister, "remote:" .. tostring(username))
+            end
             NLRemotePlayerClient.bodies[username] = nil
             NLRemotePlayerClient.targets[username] = nil
             NLRemotePlayerClient.states[username] = nil
@@ -235,6 +279,9 @@ function NLRemotePlayerClient.cleanup()
     for username, body in pairs(NLRemotePlayerClient.bodies) do
         cancelPath(username, body)
         removeReplica(username, body)
+        if NLNpcRender and NLNpcRender.unregister then
+            pcall(NLNpcRender.unregister, "remote:" .. tostring(username))
+        end
     end
     NLRemotePlayerClient.bodies = {}
     NLRemotePlayerClient.targets = {}

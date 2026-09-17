@@ -87,7 +87,28 @@ Any developer or AI agent picking up this project can review this file to immedi
   - **Live Game Verification**:
     - Ran live Build 42.20.4 client engine test (`tools/run-singleplayer-qa.ps1`).
     - Both `legsSprite:hasActiveModel()` and `body:getAlpha(0) > 0.5` asserted and passed.
-    - Reinstalled production mod to `C:\Users\clare\Zomboid\mods\NeighborhoodLife`.
+
+- **Phase 8 (Completed)**: **In-Game 3D Mesh Visibility, ModelManager Slot Binding & Engine Stability**.
+  - **Root Cause & Diagnosis for In-Game Invisibility & Entity Stability**:
+    - Build 42's `ModelManager` creates 3D model slots (`legsSprite.modelSlot`), animation skeletons, outfits, and bone hierarchies only when `ModelManager.instance:Add(character)` is called after `ModelManager.instance:isCreated()` returns true.
+    - Because NPCs spawn before the loading state finishes `ModelManager.create()`, calling `resetModel()` alone was a silent no-op (the engine's `ModelManager.Reset()` explicitly returns early if `modelSlot` is null).
+    - `IsoSurvivor` is incompatible with Build 42 because its `bodyDamage` field is permanently null, crashing the engine in `IsoCell.ProcessObjects` (`getBodyDamage().getNumPartsBleeding()`). In contrast, `IsoPlayer` has native `BodyDamage`, `Moodles`, `XP`, `Nutrition`, and `Fitness`.
+    - Added automatic `ModelManager.instance:Add(body)` binding once `ModelManager.instance:isCreated()` is true, attached the moving squares to the grid via `setMovingSquareNow()`, marked `spottedByPlayer = true`, and added direct rendering through `Events.OnRender3D`.
+  - **Live In-Engine Verification**:
+    - Ran live Build 42.20.4 client engine test (`tools/run-singleplayer-qa.ps1`).
+    - Verified all 3 production NPCs (Marisol, Kenji, Amara) spawned, persisted, and ticked with active 3D meshes in `2026-09-17_11-44_DebugLog.txt`.
+    - Verified right-click interaction menus with 11 context actions, active Needs HUD panel, and plumbob tracking.
+    - 100% test pass across 26 test suites on Lua 5.1 and Project Zomboid Kahlua VM.
+    - Synchronized and verified production mod in `C:\Users\clare\Zomboid\mods\NeighborhoodLife`.
+
+- **Phase 9 (Completed)**: **FBO World-Character Rendering for Locally Created IsoPlayer Bodies**.
+  - **Root Cause & Fix for Remaining Invisibility**: Phase 8's `Events.OnRender3D` hook never ran because Build 42.20.4 does not expose that event (`Events.OnRender3D == nil`); the handler was dead code. Writing the model slot and alpha state alone is not enough.
+  - Build 42 renders the world through FBO render chunks. `FBORenderCell.renderMovingObject(obj)` explicitly returns for any object whose exact class is `IsoPlayer`, and `FBORenderCell.renderPlayers()` only walks `IsoPlayer.players` / `GameClient.IDToPlayerMap`. Authored neighbors and presentation replicas are in neither roster, so their ModelManager model was active but never received an engine draw call.
+  - Added `NL/NpcRender.lua`: it registers locally created `IsoPlayer` bodies and queues the same `body:render(x, y, z, squareLight, true, false, nil)` and `body:renderShadow(x, y, z)` calls the engine uses for its own players from `Events.OnPostRender` (a real world-render event).
+  - Wired the single-player bridge (`NpcSinglePlayer.lua`), the NPC client replica path (`NpcClient.lua`) and the remote-player replica path (`RemotePlayerClient.lua`) into the registry, including native-body promotion and cleanup.
+  - **Live In-Engine Verification**:
+    - `tools/run-singleplayer-qa.ps1` passes and now also captures a world-view screenshot (`test-profile/Screenshots/NLQANPCVIEW`) with the UI hidden and the player teleported beside Marisol; the screenshot shows the NPC model rendered.
+    - Added `tests/npc-render.lua` plus registry assertions in `tests/npc-client.lua` and `tests/remote-player-client.lua`; full `tools/pipeline.py test` (Lua 5.1, syntax and installed-game Kahlua) passes.
 
 ---
 

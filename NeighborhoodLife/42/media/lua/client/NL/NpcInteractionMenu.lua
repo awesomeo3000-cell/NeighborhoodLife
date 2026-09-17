@@ -29,6 +29,16 @@ local function idFromObject(object)
             return tostring(data.NeighborhoodNpcId)
         end
     end
+    if NLNpcSinglePlayer and NLNpcSinglePlayer.bodies then
+        for id, body in pairs(NLNpcSinglePlayer.bodies) do
+            if body == object then return tostring(id) end
+        end
+    end
+    if NLNpcAuthority and NLNpcAuthority.bodies then
+        for id, body in pairs(NLNpcAuthority.bodies) do
+            if body == object then return tostring(id) end
+        end
+    end
     if NLNpcClient and NLNpcClient.bodies then
         for id, body in pairs(NLNpcClient.bodies) do
             if body == object then return tostring(id) end

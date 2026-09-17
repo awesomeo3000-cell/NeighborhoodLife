@@ -8,6 +8,7 @@
 if not isClient or not isClient() then return end
 
 require "NL/Plumbob"
+require "NL/NpcRender"
 NLNpcClient = { bodies={}, targets={}, states={}, paths={}, modes={}, revision=0 }
 
 -- A presence packet can outlive a native body when the client streams its
@@ -111,31 +112,75 @@ local function createReplica(entry)
         local name = tostring(entry.name or "Marisol Vega")
         local forename, surname = name:match("^(%S+)%s+(.+)$")
         desc:setForename(forename or name); desc:setSurname(surname or "Neighbor")
-        desc:setFemale(entry.female ~= false)
-        body = IsoPlayer.new(cell, desc, math.floor(entry.x), math.floor(entry.y), math.floor(entry.z))
-        body:setNpc(true)
-        assignReplicaOnlineId(body, entry.onlineId)
-        body:setUsername(name .. " [Neighborhood Life]")
-        body:setGodMod(true)
-        local replicaData = body:getModData()
-        replicaData.NeighborhoodNpcId = id
-        replicaData.NeighborhoodNpcReplica = true
-        body:dressInNamedOutfit(entry.outfit or "Generic01")
-        body:setSceneCulled(false)
-        body:setAlphaAndTarget(1, 1)
-        body:resetModelNextFrame()
-        if not cell:getObjectList():contains(body) then cell:getObjectList():add(body) end
+        local okP, pBody
+        if IsoPlayer and IsoPlayer.new then
+            okP, pBody = pcall(function()
+                return IsoPlayer.new(cell, desc, math.floor(entry.x), math.floor(entry.y), math.floor(entry.z))
+            end)
+            if okP and pBody then body = pBody end
+        end
+        if not body and IsoSurvivor and IsoSurvivor.new then
+            local okS, sBody = pcall(function()
+                return IsoSurvivor.new(desc, cell, math.floor(entry.x), math.floor(entry.y), math.floor(entry.z))
+            end)
+            if okS and sBody then body = sBody end
+        end
+        if body then
+            if body.setNpc then pcall(body.setNpc, body, true) end
+            assignReplicaOnlineId(body, entry.onlineId)
+            local displayName = name .. " [Neighborhood Life]"
+            if body.setName then pcall(body.setName, body, displayName) end
+            if body.SetName then pcall(body.SetName, body, displayName) end
+            if body.setUsername then pcall(body.setUsername, body, displayName) end
+            if body.setGodMod then pcall(body.setGodMod, body, true) end
+            if body.spottedByPlayer ~= nil then
+                pcall(function() body.spottedByPlayer = true end)
+            end
+            local replicaData = body:getModData()
+            replicaData.NeighborhoodNpcId = id
+            replicaData.NeighborhoodNpcReplica = true
+            if body.dressInPersistentOutfit then
+                pcall(body.dressInPersistentOutfit, body, entry.outfit or "Generic01")
+            end
+            if body.dressInNamedOutfit then
+                pcall(body.dressInNamedOutfit, body, entry.outfit or "Generic01")
+            end
+            if body.setSceneCulled then pcall(body.setSceneCulled, body, false) end
+            for p = 0, 3 do
+                if body.setAlphaAndTarget then pcall(body.setAlphaAndTarget, body, p, 1.0) end
+                if body.setTargetAlpha then pcall(body.setTargetAlpha, body, p, 1.0) end
+                if body.setAlpha then pcall(body.setAlpha, body, p, 1.0) end
+            end
+            if body.setAlphaAndTarget then pcall(body.setAlphaAndTarget, body, 1.0) end
+            if body.setTargetAlpha then pcall(body.setTargetAlpha, body, 1.0) end
+            if body.setAlpha then pcall(body.setAlpha, body, 1.0) end
+            if ModelManager and ModelManager.instance and ModelManager.instance.isCreated then
+                local okC, created = pcall(ModelManager.instance.isCreated, ModelManager.instance)
+                if okC and created and ModelManager.instance.Add then
+                    pcall(ModelManager.instance.Add, ModelManager.instance, body)
+                end
+            end
+            if body.resetModel then pcall(body.resetModel, body) end
+            if body.resetModelNextFrame then pcall(body.resetModelNextFrame, body) end
+            if not cell:getObjectList():contains(body) then cell:getObjectList():add(body) end
+        end
     end
     if not body then return nil end
     NLNpcClient.bodies[id] = body
     positionBody(body, entry.x, entry.y, entry.z)
     NLPlumbob.register("npc:" .. id, body, 0, NLPlumbob.remoteColor)
+    if NLNpcRender and NLNpcRender.register then
+        pcall(NLNpcRender.register, "npc:" .. id, body)
+    end
     return body
 end
 
 local function forgetReplica(id, body)
     if cancelNativePath then cancelNativePath(id, body) end
     NLPlumbob.unregister("npc:" .. id)
+    if NLNpcRender and NLNpcRender.unregister then
+        pcall(NLNpcRender.unregister, "npc:" .. id)
+    end
     if getCell then
         local cell = getCell()
         local list = cell and cell:getObjectList()
@@ -204,6 +249,9 @@ local function reconcileNativeBodies()
                     end
                     NLNpcClient.modes[id] = "native"
                     NLPlumbob.register("npc:" .. id, object, 0, NLPlumbob.remoteColor)
+                    if NLNpcRender and NLNpcRender.register then
+                        pcall(NLNpcRender.register, "npc:" .. id, object)
+                    end
                     promoted = promoted + 1
                 end
             end
@@ -236,6 +284,9 @@ function NLNpcClient.apply(packet)
                 NLNpcClient.bodies[id] = body
                 positionBody(body, entry.x, entry.y, entry.z)
                 NLPlumbob.register("npc:" .. id, body, 0, NLPlumbob.remoteColor)
+                if NLNpcRender and NLNpcRender.register then
+                    pcall(NLNpcRender.register, "npc:" .. id, body)
+                end
             end
             if body and bodyPresent(body) == false then
                 forgetReplica(id, body)
@@ -360,6 +411,7 @@ end
 function NLNpcClient.cleanup()
     for id, body in pairs(NLNpcClient.bodies) do
         NLPlumbob.unregister("npc:" .. id)
+        if NLNpcRender and NLNpcRender.unregister then pcall(NLNpcRender.unregister, "npc:" .. id) end
         local cell = getCell()
         local list = cell and cell:getObjectList()
         if list and list.remove then list:remove(body) end
