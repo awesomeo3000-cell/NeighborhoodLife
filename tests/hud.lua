@@ -1,6 +1,17 @@
 local file,mode=arg[1],arg[2]
 package.preload['ISUI/ISPanel']=function() end
 package.preload['ISUI/ISButton']=function() end
+package.preload['NL/SimsButton']=function()
+    NLSimsButton={}
+    function NLSimsButton:new(x,y,w,h,label,target,callback)
+        return {x=x,y=y,width=w,height=h,title=label,target=target,callback=callback,visible=true,
+            initialise=function() end,
+            setX=function(self,v) self.x=v end,setY=function(self,v) self.y=v end,
+            setWidth=function(self,v) self.width=v end,setVisible=function(self,v) self.visible=v end,
+            setKind=function(self,v) self.nlKind=v end,setActive=function(self,v) self.nlActive=v end}
+    end
+    return NLSimsButton
+end
 local opened={career=0,social=0,wardrobe=0,home=0}
 package.preload['NL/Journal']=function() NLJournal={open=function() opened.career=opened.career+1 end} end
 package.preload['NL/Relationships']=function() NLRelationships={open=function() opened.social=opened.social+1 end} end
@@ -19,7 +30,7 @@ package.preload['NL/UITheme']=function()
         },
         applyPanel=function(panel) return panel end,
         styleButton=function(button) return button end,
-        progress=function() end,
+        progress=function() end, roundedRect=function() end, card=function() end,
         needColor=function(value) return value>=0.70 and 'red' or value>=0.35 and 'yellow' or 'green' end
     }
     return NLUI
@@ -70,8 +81,8 @@ if mode=='disabled' then assert(count==0); print('PASS: HUD disabled; 0 panels')
 assert(count==1)
 NeighborhoodNeeds.create(0,players[0]); assert(count==1)
 NeighborhoodNeeds.create(1,players[1]); assert(count==2)
-assert(NeighborhoodNeeds.header(players[0],0)=='NEIGHBORHOOD LIFE / nl-host')
-assert(NeighborhoodNeeds.header(players[1],1)=='NEIGHBORHOOD LIFE / nl-guest')
+assert(NeighborhoodNeeds.header(players[0],0)=='Neighborhood Life / nl-host')
+assert(NeighborhoodNeeds.header(players[1],1)=='Neighborhood Life / nl-guest')
 for _,key in ipairs({'HUNGER','THIRST','FATIGUE','BOREDOM','STRESS','UNHAPPINESS'}) do
     assert(math.abs(NeighborhoodNeeds.read(players[0],key)-0.2)<0.0001)
     assert(math.abs(NeighborhoodNeeds.read(players[1],key)-0.8)<0.0001)
@@ -82,15 +93,15 @@ assert(NeighborhoodNeeds.read(players[0],'MISSING')==nil)
 assert(NeighborhoodNeeds.read(player(0/0),'HUNGER')==nil)
 local panel=NeighborhoodNeeds.instances[0]
 assert(#panel.navButtons==5,'HUD exposes five visible feature buttons')
-panel:prerender(); assert(panel.x==12 and panel.y>=0 and panel.width==500)
+panel:prerender(); assert(panel.x==14 and panel.y>=0 and panel.width==560)
 for _,b in ipairs(panel.navButtons) do assert(b.visible and b.width>0,'feature navigation button is visible') end
 panel:onNavButton(panel.navButtons[1]); panel:onNavButton(panel.navButtons[2]); panel:onNavButton(panel.navButtons[3]); panel:onNavButton(panel.navButtons[5])
 assert(opened.career==1 and opened.social==1 and opened.home==1 and opened.wardrobe==1,'visible HUD buttons route to feature panels')
 local origWidth=getPlayerScreenWidth
 getPlayerScreenWidth=function() return 2560 end
-panel:prerender(); assert(panel.width==666,'HUD scales width appropriately on higher resolutions')
+panel:prerender(); assert(panel.width==694,'HUD scales width appropriately on higher resolutions')
 getPlayerScreenWidth=origWidth
-panel:prerender(); assert(panel.width==500,'HUD restores baseline width')
+panel:prerender(); assert(panel.width==560,'HUD restores baseline width')
 panel:onMouseDown(5,5); assert(panel.collapsed and panel.height==panel.headerHeight)
 for _,b in ipairs(panel.navButtons) do assert(not b.visible,'navigation hides with collapsed HUD') end
 panel:prerender(); panel:onMouseDown(5,5); assert(not panel.collapsed)

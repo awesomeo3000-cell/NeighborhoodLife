@@ -1,6 +1,17 @@
 package.path = arg[1] .. '/42/media/lua/client/?.lua;' .. arg[1] .. '/42/media/lua/shared/?.lua;' .. package.path
 package.preload['ISUI/ISPanel'] = function() end
 package.preload['ISUI/ISButton'] = function() end
+package.preload['NL/SimsButton'] = function()
+    NLSimsButton = {}
+    function NLSimsButton:new(x,y,w,h,label,target,callback)
+        return {target=target, callback=callback,
+            setEnable=function(self, value) self.enabled=value; self.enable=value end,
+            setKind=function(self,v) self.nlKind=v end,
+            setActive=function(self,v) self.nlActive=v end,
+            initialise=function() end}
+    end
+    return NLSimsButton
+end
 ISPanel = {}
 function ISPanel:derive() local t = {}; t.__index = t; return setmetatable(t, {__index=self}) end
 function ISPanel:new(x,y,w,h) return setmetatable({x=x,y=y,width=w,height=h,children={}}, self) end
@@ -12,6 +23,7 @@ function ISPanel:addToUIManager() self.attached = true end
 function ISPanel:removeFromUIManager() self.attached = false end
 function ISPanel:prerender() end
 function ISPanel:drawText() end
+function ISPanel:drawRect() end
 function ISPanel:setX(value) self.x = value end
 function ISPanel:setY(value) self.y = value end
 ISButton = {}

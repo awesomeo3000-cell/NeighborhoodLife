@@ -1,6 +1,21 @@
 package.path=arg[1]..'/42/media/lua/client/?.lua;'..arg[1]..'/42/media/lua/shared/?.lua;'..package.path
 package.preload['ISUI/ISPanel']=function() end
 package.preload['ISUI/ISButton']=function() end
+package.preload['NL/SimsButton']=function()
+    NLSimsButton={}
+    function NLSimsButton:new(x,y,w,h,label,target,callback)
+        return {x=x,y=y,width=w,height=h,title=label,target=target,callback=callback,visible=true,
+            initialise=function() end,
+            setEnable=function(self,v) self.enabled=v; self.enable=v end,
+            setVisible=function(self,v) self.visible=v end,
+            setTitle=function(self,v) self.title=v end,
+            setKind=function(self,v) self.nlKind=v end,
+            setActive=function(self,v) self.nlActive=v end,
+            setX=function(self,v) self.x=v end,setY=function(self,v) self.y=v end,
+            setWidth=function(self,v) self.width=v end}
+    end
+    return NLSimsButton
+end
 ISPanel={}
 function ISPanel:derive() local t={}; t.__index=t; return setmetatable(t,{__index=self}) end
 function ISPanel:new(x,y,w,h) return setmetatable({x=x,y=y,width=w,height=h,children={}},self) end
@@ -61,7 +76,7 @@ end
 function getSpecificPlayer() return nil end
 NLClient.profiles[0]=p; p.skill=0
 NLJournal.open(0); NLJournal.instances[0]:prerender()
-assert(NLJournal.instances[0].careerButtons.tailor.backgroundColor.g==NLUI.colors.buttonActive.g,'selected career uses shared active theme')
+assert(NLJournal.instances[0].careerButtons.tailor.nlActive==true,'selected career uses shared active theme')
 if NLJournal.instances[0].workButton then
     assert(NLJournal.instances[0].workButton.enabled,'career journal exposes a ready work-shift action')
     local originalJournalRequest=NLClient.request; local workCommand

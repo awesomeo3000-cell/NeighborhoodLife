@@ -56,7 +56,7 @@ function NLWardrobePanel:prerender()
     for i = 1, 3 do
         local y = 132 + (i - 1) * 110
         local saved = outfits[i]
-        self:drawRect(34, y, 354, 84, 1, C.wellAlt.r, C.wellAlt.g, C.wellAlt.b)
+        NLUI.card(self, 34, y, 354, 84, true)
         NLUI.monogram(self, 48, y + 12, 56, "L" .. i)
         self:drawText("Look " .. i, 120, y + 14,
             C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
