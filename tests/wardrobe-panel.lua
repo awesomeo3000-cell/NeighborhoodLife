@@ -1,1 +1,2 @@
-arg[2]='wardrobe-panel'\ndofile('tests/interfaces.lua')\n
+arg[2]='wardrobe-panel'
+dofile('tests/interfaces.lua')
