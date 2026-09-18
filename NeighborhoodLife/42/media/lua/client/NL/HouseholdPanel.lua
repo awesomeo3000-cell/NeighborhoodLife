@@ -19,7 +19,7 @@ end
 function NLHouseholdPanel:button(x, y, w, text, action, value, kind)
     local button = NLSimsButton:new(x, y, w, 30, text, self, self.onButton)
     button.action, button.value = action, value
-    button:setKind(kind or (action == "close" and "danger" or "ghost"))
+    button:setKind(kind or (action == "close" and "close" or "ghost"))
     button:initialise()
     self:addChild(button)
     return button
@@ -27,7 +27,7 @@ end
 
 function NLHouseholdPanel:initialise()
     ISPanel.initialise(self)
-    self:button(self.width - 66, 11, 50, "X", "close")
+    self:button(self.width - 44, 9, 30, "✕", "close", nil, "close")
     self:button(18, 58, 122, "Create home", "create")
     self:button(148, 58, 120, "Accept invite", "accept")
     self:button(276, 58, 120, "Invite guest", "invite")

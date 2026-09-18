@@ -53,7 +53,7 @@ end
 
 function NLRelationships:initialise()
     ISPanel.initialise(self)
-    self:button(self.width - 66, 11, 50, "X", "close")
+    self:button(self.width - 44, 9, 30, "✕", "close", nil, "close")
     self:button(18, 58, 94, "< Previous", "previous")
     self:button(120, 58, 82, "Next >", "next")
     self:button(210, 58, 94, "Refresh", "refresh")

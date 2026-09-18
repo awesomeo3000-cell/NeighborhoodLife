@@ -16,7 +16,7 @@ end
 
 function NLWardrobePanel:initialise()
     ISPanel.initialise(self)
-    self:button(self.width - 66, 11, 50, "X", "close")
+    self:button(self.width - 44, 9, 30, "✕", "close", nil, "close")
     self.slots = {}
     for i = 1, 3 do
         local y = 142 + (i - 1) * 110

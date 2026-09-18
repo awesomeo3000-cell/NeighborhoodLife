@@ -1,54 +1,54 @@
 NLUI = NLUI or {}
 
 NLUI.colors = {
-    shadow = { r=0.00, g=0.03, b=0.08, a=0.34 },
+    shadow = { r=0.01, g=0.08, b=0.18, a=0.28 },
 
-    chromeDeep = { r=0.025, g=0.19, b=0.36, a=0.98 },
-    chrome = { r=0.045, g=0.36, b=0.63, a=0.98 },
-    chromeBright = { r=0.12, g=0.59, b=0.87, a=1.00 },
-    chromeSoft = { r=0.36, g=0.74, b=0.92, a=1.00 },
+    chromeDeep = { r=0.01, g=0.52, b=0.82, a=0.98 },
+    chrome = { r=0.05, g=0.62, b=0.92, a=0.98 },
+    chromeBright = { r=0.22, g=0.74, b=0.97, a=1.00 },
+    chromeSoft = { r=0.49, g=0.82, b=0.98, a=1.00 },
 
-    surface = { r=0.90, g=0.96, b=0.985, a=0.98 },
-    surfaceAlt = { r=0.82, g=0.92, b=0.97, a=0.98 },
-    surfaceLift = { r=0.96, g=0.985, b=1.00, a=0.99 },
-    surfaceBlue = { r=0.72, g=0.88, b=0.95, a=0.98 },
+    surface = { r=0.95, g=0.97, b=0.99, a=0.98 },
+    surfaceAlt = { r=0.91, g=0.95, b=0.99, a=0.96 },
+    surfaceLift = { r=1.00, g=1.00, b=1.00, a=0.99 },
+    surfaceBlue = { r=0.78, g=0.90, b=0.97, a=0.96 },
 
-    line = { r=0.48, g=0.71, b=0.83, a=0.62 },
-    lineSoft = { r=0.71, g=0.86, b=0.93, a=0.50 },
+    line = { r=0.73, g=0.87, b=0.95, a=0.85 },
+    lineSoft = { r=0.85, g=0.93, b=0.98, a=0.65 },
 
-    textLight = { r=0.99, g=1.00, b=1.00, a=1.00 },
-    textDark = { r=0.055, g=0.16, b=0.23, a=1.00 },
-    muted = { r=0.28, g=0.42, b=0.50, a=1.00 },
+    textLight = { r=1.00, g=1.00, b=1.00, a=1.00 },
+    textDark = { r=0.06, g=0.18, b=0.30, a=1.00 },
+    muted = { r=0.25, g=0.45, b=0.60, a=1.00 },
 
-    buttonFill = { r=0.93, g=0.96, b=0.98, a=1.00 },
-    buttonEdge = { r=0.41, g=0.53, b=0.61, a=1.00 },
-    buttonShine = { r=1.00, g=1.00, b=1.00, a=1.00 },
-    buttonText = { r=0.07, g=0.28, b=0.47, a=1.00 },
+    buttonFill = { r=0.96, g=0.98, b=1.00, a=1.00 },
+    buttonEdge = { r=0.68, g=0.84, b=0.94, a=1.00 },
+    buttonShine = { r=1.00, g=1.00, b=1.00, a=0.55 },
+    buttonText = { r=0.06, g=0.24, b=0.42, a=1.00 },
 
-    buttonHover = { r=0.15, g=0.57, b=0.86, a=1.00 },
-    buttonHoverEdge = { r=0.03, g=0.28, b=0.52, a=1.00 },
-    buttonHoverShine = { r=0.63, g=0.88, b=1.00, a=1.00 },
+    buttonHover = { r=0.05, g=0.62, b=0.92, a=1.00 },
+    buttonHoverEdge = { r=0.01, g=0.52, b=0.82, a=1.00 },
+    buttonHoverShine = { r=0.60, g=0.88, b=1.00, a=0.50 },
 
-    buttonActive = { r=0.055, g=0.38, b=0.70, a=1.00 },
-    buttonActiveEdge = { r=0.02, g=0.20, b=0.40, a=1.00 },
-    buttonActiveShine = { r=0.32, g=0.72, b=0.94, a=1.00 },
+    buttonActive = { r=0.01, g=0.52, b=0.82, a=1.00 },
+    buttonActiveEdge = { r=0.01, g=0.40, b=0.68, a=1.00 },
+    buttonActiveShine = { r=0.35, g=0.78, b=0.98, a=0.45 },
 
-    buttonGhost = { r=0.79, g=0.90, b=0.95, a=1.00 },
-    buttonGhostEdge = { r=0.45, g=0.66, b=0.76, a=1.00 },
-    buttonGhostShine = { r=0.96, g=0.99, b=1.00, a=1.00 },
+    buttonGhost = { r=0.93, g=0.96, b=0.99, a=0.95 },
+    buttonGhostEdge = { r=0.68, g=0.84, b=0.94, a=0.90 },
+    buttonGhostShine = { r=1.00, g=1.00, b=1.00, a=0.40 },
 
-    tabFill = { r=0.085, g=0.43, b=0.73, a=1.00 },
-    tabEdge = { r=0.02, g=0.23, b=0.43, a=1.00 },
-    tabShine = { r=0.30, g=0.70, b=0.92, a=1.00 },
+    tabFill = { r=0.01, g=0.52, b=0.82, a=1.00 },
+    tabEdge = { r=0.01, g=0.40, b=0.68, a=1.00 },
+    tabShine = { r=0.35, g=0.78, b=0.98, a=0.50 },
 
-    danger = { r=0.58, g=0.19, b=0.22, a=1.00 },
-    dangerEdge = { r=0.34, g=0.08, b=0.10, a=1.00 },
-    dangerShine = { r=0.84, g=0.40, b=0.42, a=1.00 },
+    danger = { r=0.92, g=0.26, b=0.32, a=1.00 },
+    dangerEdge = { r=0.75, g=0.15, b=0.20, a=1.00 },
+    dangerShine = { r=1.00, g=0.55, b=0.60, a=0.40 },
 
-    disabled = { r=0.72, g=0.76, b=0.79, a=1.00 },
-    disabledEdge = { r=0.50, g=0.55, b=0.58, a=1.00 },
-    disabledShine = { r=0.90, g=0.92, b=0.93, a=1.00 },
-    disabledText = { r=0.38, g=0.42, b=0.44, a=1.00 },
+    disabled = { r=0.86, g=0.90, b=0.93, a=1.00 },
+    disabledEdge = { r=0.72, g=0.78, b=0.82, a=1.00 },
+    disabledShine = { r=0.96, g=0.98, b=0.99, a=1.00 },
+    disabledText = { r=0.52, g=0.58, b=0.62, a=1.00 },
 
     buttonFriendly = { r=0.13, g=0.68, b=0.38, a=1.00 },
     buttonFriendlyEdge = { r=0.08, g=0.48, b=0.26, a=1.00 },
@@ -66,14 +66,14 @@ NLUI.colors = {
     plumbobGreenDark = { r=0.08, g=0.56, b=0.18, a=1.00 },
     plumbobGreenLight = { r=0.55, g=0.98, b=0.60, a=1.00 },
 
-    track = { r=0.78, g=0.86, b=0.92, a=0.85 },
-    trackEdge = { r=0.55, g=0.72, b=0.84, a=0.85 },
-    green = { r=0.27, g=0.78, b=0.30, a=1.00 },
-    greenDark = { r=0.12, g=0.50, b=0.17, a=1.00 },
-    yellow = { r=0.95, g=0.72, b=0.19, a=1.00 },
-    red = { r=0.85, g=0.24, b=0.25, a=1.00 },
-    pink = { r=0.86, g=0.35, b=0.65, a=1.00 },
-    cyan = { r=0.18, g=0.69, b=0.86, a=1.00 },
+    track = { r=0.85, g=0.92, b=0.96, a=0.90 },
+    trackEdge = { r=0.68, g=0.82, b=0.92, a=0.80 },
+    green = { r=0.13, g=0.72, b=0.38, a=1.00 },
+    greenDark = { r=0.06, g=0.48, b=0.22, a=1.00 },
+    yellow = { r=0.96, g=0.65, b=0.14, a=1.00 },
+    red = { r=0.92, g=0.26, b=0.32, a=1.00 },
+    pink = { r=0.89, g=0.28, b=0.48, a=1.00 },
+    cyan = { r=0.05, g=0.68, b=0.92, a=1.00 },
 
     -- Floating conversation bubbles are deliberately not framed windows. Keep
     -- their cool near-white treatment separate from the blue window system.
@@ -116,15 +116,29 @@ local function rect(panel, x, y, w, h, color, alpha)
         alpha or color.a or 1, color.r, color.g, color.b)
 end
 
-function NLUI.roundedRect(panel, x, y, w, h, color, alpha)
-    if not panel or w <= 0 or h <= 0 then return end
-    if w < 8 or h < 8 then
+function NLUI.roundedRect(panel, x, y, w, h, color, alpha, radius)
+    if not panel or not panel.drawRect or w <= 0 or h <= 0 then return end
+    alpha = alpha or color.a or 1
+    radius = radius or (h <= 24 and 4 or 8)
+    radius = math.min(radius, math.floor(w / 2), math.floor(h / 2))
+    if radius <= 2 then
         rect(panel, x, y, w, h, color, alpha)
         return
     end
-    rect(panel, x + 3, y, w - 6, h, color, alpha)
-    rect(panel, x + 1, y + 2, w - 2, h - 4, color, alpha)
-    rect(panel, x, y + 4, w, h - 8, color, alpha)
+    local bodyH = h - radius * 2
+    if bodyH > 0 then
+        rect(panel, x, y + radius, w, bodyH, color, alpha)
+    end
+    for i = 0, radius - 1 do
+        local dy = radius - i
+        local dx = math.floor(math.sqrt(math.max(0, radius * radius - dy * dy)) + 0.5)
+        local inset = radius - dx
+        local stripW = w - inset * 2
+        if stripW > 0 then
+            rect(panel, x + inset, y + i, stripW, 1, color, alpha)
+            rect(panel, x + inset, y + h - 1 - i, stripW, 1, color, alpha)
+        end
+    end
 end
 
 function NLUI.clamp(value, lo, hi)
@@ -162,35 +176,50 @@ function NLUI.window(panel, title, subtitle)
     if not panel then return end
     local w, h = panel.width or 0, panel.height or 0
 
-    NLUI.roundedRect(panel, 8, 10, w - 8, h - 6, C.shadow, 0.34)
-    NLUI.roundedRect(panel, 0, 0, w, h, C.chromeDeep, 0.98)
-    NLUI.roundedRect(panel, 3, 3, w - 6, h - 6, C.chrome, 0.98)
+    -- 1. Soft Outer Drop Shadow
+    NLUI.roundedRect(panel, 4, 6, w - 4, h - 4, C.shadow, 0.20, 14)
+    NLUI.roundedRect(panel, 6, 8, w - 8, h - 6, C.shadow, 0.10, 14)
 
-    NLUI.roundedRect(panel, 7, 7, w - 14, 46, C.chromeBright, 1)
-    NLUI.roundedRect(panel, 9, 26, w - 18, 26, C.chrome, 0.92)
+    -- 2. Clean Window Border (2px sky blue frame)
+    NLUI.roundedRect(panel, 0, 0, w, h, C.chromeDeep, 0.95, 14)
+    NLUI.roundedRect(panel, 1.5, 1.5, w - 3, h - 3, C.chrome, 0.95, 13)
 
-    NLUI.roundedRect(panel, 8, 56, w - 16, h - 64, C.surface, 0.99)
-    NLUI.roundedRect(panel, 11, 59, w - 22, h - 70, C.surfaceLift, 0.30)
+    -- 3. Top Title Header (Glossy Sky Blue Gradient)
+    local headerH = 48
+    NLUI.roundedRect(panel, 3, 3, w - 6, headerH, C.chrome, 1.0, 11)
+    NLUI.roundedRect(panel, 5, 4, w - 10, math.floor(headerH * 0.45), C.chromeBright, 0.65, 9)
+    rect(panel, 3, 3 + headerH - 1, w - 6, 1, C.chromeDeep, 0.70)
 
-    if panel.drawText and title then
-        panel:drawText(title, 18, 13, C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
+    -- 4. Main Window Surface (Crisp Frosted White-Azure Glass)
+    NLUI.roundedRect(panel, 3, 3 + headerH, w - 6, h - headerH - 6, C.surface, 0.98, 11)
+    NLUI.roundedRect(panel, 5, 3 + headerH + 2, w - 10, h - headerH - 10, C.surfaceLift, 0.35, 9)
+
+    -- 5. Title & Subtitle Typography
+    local font = UIFont.Medium or UIFont.Small
+    if panel.drawTextCentre and title then
+        panel:drawTextCentre(title, math.floor(w / 2), 13, 0, 0.10, 0.22, 0.40, font)
+        panel:drawTextCentre(title, math.floor(w / 2), 12, C.textLight.r, C.textLight.g, C.textLight.b, 1, font)
+    elseif panel.drawText and title then
+        panel:drawText(title, 20, 12, 0, 0.10, 0.22, 0.40, font)
+        panel:drawText(title, 19, 11, C.textLight.r, C.textLight.g, C.textLight.b, 1, font)
     end
     if panel.drawText and subtitle and subtitle ~= "" then
-        panel:drawText(subtitle, 18, 33, 0.84, 0.95, 1.00, 1, UIFont.Small)
+        panel:drawText(subtitle, 20, 31, 0.88, 0.96, 1.00, 0.90, UIFont.Small)
     end
 end
 
 function NLUI.sectionTitle(panel, x, y, text)
     if not panel or not panel.drawText then return end
     panel:drawText(text or "", x, y, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
-    rect(panel, x, y + 20, math.max(24, (panel.width or 100) - x * 2), 1, C.line, 0.52)
+    rect(panel, x, y + 18, math.max(24, (panel.width or 100) - x * 2), 1, C.line, 0.45)
 end
 
 function NLUI.card(panel, x, y, w, h, raised)
-    NLUI.roundedRect(panel, x + 2, y + 3, w, h, C.shadow, raised and 0.18 or 0.10)
-    NLUI.roundedRect(panel, x, y, w, h, raised and C.surfaceLift or C.surfaceAlt, 0.99)
-    NLUI.roundedRect(panel, x + 2, y + 2, w - 4, math.max(5, math.floor(h * 0.20)),
-        C.buttonShine, raised and 0.30 or 0.18)
+    local rad = math.min(10, math.floor(h / 3))
+    NLUI.roundedRect(panel, x + 1, y + 2, w - 1, h, C.shadow, raised and 0.14 or 0.07, rad)
+    NLUI.roundedRect(panel, x, y, w, h, C.line, 0.80, rad)
+    NLUI.roundedRect(panel, x + 1, y + 1, w - 2, h - 2, raised and C.surfaceLift or C.surfaceAlt, 0.98, rad - 1)
+    NLUI.roundedRect(panel, x + 3, y + 2, w - 6, math.max(4, math.floor(h * 0.22)), C.buttonShine, raised and 0.35 or 0.18, rad - 2)
 end
 
 function NLUI.well(panel, x, y, w, h, label, alternate)
@@ -203,21 +232,23 @@ end
 
 function NLUI.progress(panel, x, y, w, h, value, kind)
     value = NLUI.clamp(value, 0, 1)
-    NLUI.roundedRect(panel, x, y, w, h, C.trackEdge or C.track, 0.90)
-    NLUI.roundedRect(panel, x + 1, y + 1, w - 2, h - 2, C.track, 0.95)
-    NLUI.roundedRect(panel, x + 2, y + 2, w - 4, h - 4, C.surfaceLift, 0.35)
+    local rad = math.floor(h / 2)
+    local trackColor = { r=0.08, g=0.14, b=0.22, a=0.88 }
+    local trackEdge = { r=0.04, g=0.08, b=0.14, a=0.92 }
+    NLUI.roundedRect(panel, x, y, w, h, trackEdge, 0.90, rad)
+    NLUI.roundedRect(panel, x + 1, y + 1, w - 2, h - 2, trackColor, 0.95, rad - 1)
 
-    local fill = C.green
-    if kind == "pink" then fill = C.pink
-    elseif kind == "cyan" then fill = C.cyan
+    local fill = { r=0.15, g=0.78, b=0.96, a=1.00 }
+    if kind == "green" then fill = C.green
+    elseif kind == "pink" then fill = C.pink
     elseif kind == "yellow" then fill = C.yellow
     elseif kind == "red" then fill = C.red end
 
-    local inner = math.floor((w - 4) * value + 0.5)
-    if inner > 1 then
-        NLUI.roundedRect(panel, x + 2, y + 2, inner, h - 4, fill, 1)
-        rect(panel, x + 5, y + 3, math.max(0, inner - 8), math.max(1, math.floor((h - 4) / 3)),
-            C.buttonShine, 0.28)
+    local inner = math.floor((w - 2) * value + 0.5)
+    if inner > 2 then
+        local fillRad = math.min(rad - 1, math.floor(inner / 2))
+        NLUI.roundedRect(panel, x + 1, y + 1, inner, h - 2, fill, 1, fillRad)
+        NLUI.roundedRect(panel, x + 3, y + 2, math.max(0, inner - 6), math.max(1, math.floor((h - 2) * 0.35)), C.buttonShine, 0.45, 2)
     end
 end
 
@@ -239,14 +270,19 @@ function NLUI.pill(panel, x, y, w, text, kind)
     local fill = C.chrome
     if kind == "good" then fill = C.green
     elseif kind == "warn" then fill = C.yellow
-    elseif kind == "bad" then fill = C.red
+    elseif kind == "bad" then fill = C.danger
     elseif kind == "romance" then fill = C.pink
-    elseif kind == "accent" or kind == "info" then fill = C.chromeBright
+    elseif kind == "accent" or kind == "info" then fill = C.chrome
     elseif kind == "neutral" then fill = C.buttonGhostEdge
     end
-    NLUI.roundedRect(panel, x, y, w, 22, fill, 1)
-    NLUI.roundedRect(panel, x + 3, y + 2, w - 6, 7, C.buttonShine, 0.26)
-    if panel.drawText then
+    local h = 22
+    local rad = math.floor(h / 2)
+    NLUI.roundedRect(panel, x, y + 1, w, h, C.shadow, 0.12, rad)
+    NLUI.roundedRect(panel, x, y, w, h, fill, 1.0, rad)
+    NLUI.roundedRect(panel, x + 2, y + 1, w - 4, 6, C.buttonShine, 0.35, 3)
+    if panel.drawTextCentre then
+        panel:drawTextCentre(text or "", x + math.floor(w / 2), y + 4, C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
+    elseif panel.drawText then
         panel:drawText(text or "", x + 8, y + 4, C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
     end
 end
@@ -264,21 +300,25 @@ function NLUI.drawTraitPills(panel, x, y, maxWidth, traitsStr)
 
     local curX = x
     local curY = y
-    local pillHeight = 20
+    local pillHeight = 22
+    local rad = math.floor(pillHeight / 2)
     local tm = getTextManager and getTextManager()
 
     for _, trait in ipairs(traits) do
         local textW = tm and tm.MeasureStringX and tm:MeasureStringX(UIFont.Small, trait) or (#trait * 7)
-        local pillW = math.max(38, textW + 16)
+        local pillW = math.max(42, textW + 18)
         if (curX + pillW) > (x + maxWidth) and curX > x then
             curX = x
-            curY = curY + pillHeight + 4
+            curY = curY + pillHeight + 5
         end
-        NLUI.roundedRect(panel, curX, curY, pillW, pillHeight, C.chromeSoft, 0.90)
-        NLUI.roundedRect(panel, curX + 1, curY + 1, pillW - 2, pillHeight - 2, C.surfaceLift, 0.95)
-        NLUI.roundedRect(panel, curX + 2, curY + 2, pillW - 4, 4, C.buttonShine, 0.35)
-        if panel.drawText then
-            panel:drawText(trait, curX + 8, curY + 3, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
+        NLUI.roundedRect(panel, curX, curY + 1, pillW, pillHeight, C.shadow, 0.08, rad)
+        NLUI.roundedRect(panel, curX, curY, pillW, pillHeight, C.chromeSoft, 0.90, rad)
+        NLUI.roundedRect(panel, curX + 1, curY + 1, pillW - 2, pillHeight - 2, C.surfaceLift, 0.98, rad - 1)
+        NLUI.roundedRect(panel, curX + 2, curY + 2, pillW - 4, 5, C.buttonShine, 0.40, 2)
+        if panel.drawTextCentre then
+            panel:drawTextCentre(trait, curX + math.floor(pillW / 2), curY + 4, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
+        elseif panel.drawText then
+            panel:drawText(trait, curX + 8, curY + 4, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
         end
         curX = curX + pillW + 6
     end
@@ -286,19 +326,28 @@ function NLUI.drawTraitPills(panel, x, y, maxWidth, traitsStr)
 end
 
 function NLUI.drawPlumbob(panel, cx, cy, size, alpha)
-    if not panel then return end
+    if not panel or not panel.drawRect then return end
     alpha = alpha or 1
-    local halfW = math.floor(size * 0.35)
-    local halfH = math.floor(size * 0.5)
+    local halfW = math.max(3, math.floor(size * 0.38))
+    local halfH = math.max(5, math.floor(size * 0.58))
 
-    -- Left upper facet
-    rect(panel, cx - halfW, cy - math.floor(halfH * 0.3), halfW, math.floor(halfH * 0.8), C.plumbobGreen, alpha)
-    -- Right upper facet (highlight)
-    rect(panel, cx, cy - math.floor(halfH * 0.3), halfW, math.floor(halfH * 0.8), C.plumbobGreenLight, alpha)
-    -- Lower facet
-    rect(panel, cx - math.floor(halfW * 0.7), cy + math.floor(halfH * 0.5), math.floor(halfW * 1.4), math.floor(halfH * 0.5), C.plumbobGreenDark, alpha)
-    -- Center shine
-    rect(panel, cx - 1, cy - math.floor(halfH * 0.2), 2, math.floor(halfH * 1.1), C.buttonShine, alpha * 0.6)
+    for dy = 0, halfH - 1 do
+        local span = math.floor((dy / halfH) * halfW + 0.5)
+        local y = cy - halfH + dy
+        if span > 0 then
+            rect(panel, cx - span, y, span, 1, C.plumbobGreenDark or C.greenDark, alpha)
+            rect(panel, cx, y, span, 1, C.plumbobGreenLight or C.green, alpha)
+        end
+    end
+    for dy = 0, halfH do
+        local span = math.floor(((halfH - dy) / halfH) * halfW + 0.5)
+        local y = cy + dy
+        if span > 0 then
+            rect(panel, cx - span, y, span, 1, C.greenDark, alpha)
+            rect(panel, cx, y, span, 1, C.plumbobGreen or C.green, alpha)
+        end
+    end
+    rect(panel, cx - 1, cy - math.floor(halfH * 0.7), 2, math.floor(halfH * 1.4), C.buttonShine, alpha * 0.75)
 end
 
 function NLUI.monogram(panel, x, y, size, name)

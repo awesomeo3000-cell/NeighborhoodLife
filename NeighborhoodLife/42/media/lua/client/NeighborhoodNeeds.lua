@@ -135,10 +135,20 @@ function NeighborhoodNeeds:onMouseDown(x, y)
 end
 
 local function drawDockFrame(panel)
-    NLUI.roundedRect(panel, 6, 7, panel.width, panel.height - 3, C.shadow, 0.30)
-    NLUI.roundedRect(panel, 0, 0, panel.width, panel.height, C.chromeDeep, 0.97)
-    NLUI.roundedRect(panel, 3, 3, panel.width - 6, panel.height - 6, C.chrome, 0.97)
-    NLUI.roundedRect(panel, 6, 6, panel.width - 12, panel.headerHeight - 7, C.chromeBright, 1)
+    local w, h = panel.width or 0, panel.height or 0
+    NLUI.roundedRect(panel, 4, 6, w - 4, h - 4, C.shadow, 0.18, 12)
+    NLUI.roundedRect(panel, 0, 0, w, h, C.chromeDeep, 0.95, 12)
+    NLUI.roundedRect(panel, 1.5, 1.5, w - 3, h - 3, C.chrome, 0.95, 11)
+
+    -- Header bar
+    local headerH = panel.headerHeight or 32
+    NLUI.roundedRect(panel, 3, 3, w - 6, headerH, C.chrome, 1.0, 9)
+    NLUI.roundedRect(panel, 5, 4, w - 10, math.floor(headerH * 0.45), C.chromeBright, 0.65, 8)
+
+    if not panel.collapsed then
+        NLUI.roundedRect(panel, 3, 3 + headerH, w - 6, h - headerH - 6, C.surface, 0.98, 9)
+        NLUI.roundedRect(panel, 5, 3 + headerH + 2, w - 10, h - headerH - 10, C.surfaceLift, 0.35, 7)
+    end
 end
 
 function NeighborhoodNeeds:prerender()

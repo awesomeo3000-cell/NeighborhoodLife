@@ -18,7 +18,7 @@ end
 
 function NLAppearancePanel:initialise()
     ISPanel.initialise(self)
-    self:button(self.width - 66, 11, 50, "X", "close")
+    self:button(self.width - 44, 9, 30, "✕", "close", nil, "close")
     self.presetButtons = {}
     for i, id in ipairs(NLDefinitions.appearanceOrder) do
         self.presetButtons[id] = self:button(360, 142 + (i - 1) * 58, 286,

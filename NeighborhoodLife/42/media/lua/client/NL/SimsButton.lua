@@ -45,11 +45,17 @@ function NLSimsButton:prerender()
     local fill, edge, shine, text = C.buttonFill, C.buttonEdge, C.buttonShine, C.buttonText
 
     if kind == "ghost" then
-        fill, edge, shine, text = C.buttonGhost, C.buttonGhostEdge, C.buttonGhostShine, C.textDark
+        fill, edge, shine, text = C.surfaceLift, C.line, C.buttonGhostShine, C.chromeDeep
     elseif kind == "danger" then
         fill, edge, shine, text = C.danger, C.dangerEdge, C.dangerShine, C.textLight
+    elseif kind == "close" then
+        fill, edge, shine, text = { r=0.18, g=0.68, b=0.92, a=0.35 }, { r=0.75, g=0.90, b=1.00, a=0.65 }, C.buttonShine, C.textLight
     elseif kind == "tab" then
-        fill, edge, shine, text = C.tabFill, C.tabEdge, C.tabShine, C.textLight
+        if self.nlActive then
+            fill, edge, shine, text = C.surfaceLift, C.chrome, C.buttonShine, C.chromeDeep
+        else
+            fill, edge, shine, text = { r=0.88, g=0.94, b=0.98, a=0.65 }, { r=0.78, g=0.88, b=0.95, a=0.45 }, C.buttonGhostShine, C.muted
+        end
     elseif kind == "friendly" then
         fill, edge, shine, text = C.buttonFriendly, C.buttonFriendlyEdge, C.buttonFriendlyShine, C.textLight
     elseif kind == "romance" then
@@ -58,19 +64,27 @@ function NLSimsButton:prerender()
         fill, edge, shine, text = C.buttonAccent, C.buttonAccentEdge, C.buttonAccentShine, C.textLight
     end
 
-    if self.nlActive then
+    if self.nlActive and kind ~= "tab" then
         fill, edge, shine = C.buttonActive, C.buttonActiveEdge, C.buttonActiveShine
         text = C.textLight
     elseif hovered(self) and enabled then
-        if kind == "friendly" then
+        if kind == "close" then
+            fill, edge, shine = { r=0.92, g=0.30, b=0.35, a=0.90 }, C.dangerEdge, C.dangerShine
+            text = C.textLight
+        elseif kind == "tab" then
+            if not self.nlActive then
+                fill, edge, shine = { r=0.96, g=0.98, b=1.00, a=0.92 }, C.chromeSoft, C.buttonShine
+                text = C.chromeDeep
+            end
+        elseif kind == "friendly" then
             fill, edge, shine = C.buttonFriendlyShine, C.buttonFriendlyEdge, C.buttonShine
             text = C.textDark
         elseif kind == "romance" then
             fill, edge, shine = C.buttonRomanceShine, C.buttonRomanceEdge, C.buttonShine
             text = C.textDark
         elseif kind == "ghost" then
-            fill, edge, shine = C.surfaceLift, C.chromeSoft, C.buttonShine
-            text = C.chromeDeep
+            fill, edge, shine = C.surfaceLift, C.chrome, C.buttonShine
+            text = C.chrome
         else
             fill, edge, shine = C.buttonHover, C.buttonHoverEdge, C.buttonHoverShine
             text = C.textLight
@@ -79,23 +93,21 @@ function NLSimsButton:prerender()
         fill, edge, shine, text = C.disabled, C.disabledEdge, C.disabledShine, C.disabledText
     end
 
-    NLUI.roundedRect(self, 0, 2, self.width, self.height - 3, C.shadow, 0.18)
-    NLUI.roundedRect(self, 0, 0, self.width, self.height - 3, edge, 1)
-    NLUI.roundedRect(self, 2, 2, self.width - 4, self.height - 7, fill, 1)
-    NLUI.roundedRect(self, 4, 3, self.width - 8,
-        math.max(4, math.floor((self.height - 8) * 0.28)), shine, 0.24)
+    local rad = math.min(16, math.floor(self.height / 2))
+    if kind == "close" then rad = 8 end
+    NLUI.roundedRect(self, 0, 2, self.width, self.height - 2, C.shadow, (self.nlActive or hovered(self)) and 0.16 or 0.08, rad)
+    NLUI.roundedRect(self, 0, 0, self.width, self.height, edge, 1, rad)
+    NLUI.roundedRect(self, 1, 1, self.width - 2, self.height - 2, fill, 1, rad - 1)
+    NLUI.roundedRect(self, 3, 2, self.width - 6, math.max(3, math.floor((self.height - 4) * 0.32)), shine, 0.35, rad - 2)
 
-    -- ISButton.prerender() paints its own disabled background. That was
-    -- producing black rectangles in-game and undoing the custom control.
-    -- Keep ISButton for input behavior, but render the label ourselves.
     self.textColor = text
     local title = buttonTitle(self)
-    local textY = math.max(4, math.floor((self.height - 14) / 2) - 1)
+    local textY = math.max(3, math.floor((self.height - 14) / 2))
     if self.drawTextCentre then
         self:drawTextCentre(title, math.floor(self.width / 2), textY,
             text.r, text.g, text.b, 1, UIFont.Small)
     elseif self.drawText then
-        self:drawText(title, 8, textY, text.r, text.g, text.b, 1, UIFont.Small)
+        self:drawText(title, 10, textY, text.r, text.g, text.b, 1, UIFont.Small)
     end
 end
 
