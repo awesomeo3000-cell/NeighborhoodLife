@@ -334,6 +334,23 @@ other `IsoPlayer` objects, so `NL/NpcRender.lua` queues the engine's own
 from `Events.OnPostRender`. Without that bridge the neighbors existed, moved and had
 active models but were never drawn (plumbob-only).
 
+Right-clicking an authored neighbor now offers `Talk to <name>`, which opens the
+Sims-style conversation bubbles: individual near-white pills float around that NPC
+and follow the camera instead of opening a framed interaction panel. The primary
+page shows the most relevant actions, `More Choices...` opens Friendly, Funny,
+Romance and Relationship categories, and `Back...` returns. Bubble availability is
+derived from the authoritative social snapshot; every selection still routes through
+the existing `NLSocialClient` request path and server validation. The Relationships
+window remains a details/history viewer and is still reachable from the context menu.
+
+Interaction results also pop a floating thought bubble above the neighbor. The mood
+(happy, romantic, angry, irritated, disinterested, sad, neutral) is classified
+server-side from the authoritative relationship deltas, delivered through the
+private snapshot for your own actions and the replicated social event feed for
+other players, then rendered with original cloud/face textures under
+`NeighborhoodLife/42/media/textures/NL_Thought_*.png`.
+`tools/generate-thought-bubble-assets.ps1` regenerates those assets.
+
 ## Remaining manual gameplay checks
 - Host and guest join: each sees one panel with their own current stats.
 - Eat, drink, rest and read: observe appropriate values changing.

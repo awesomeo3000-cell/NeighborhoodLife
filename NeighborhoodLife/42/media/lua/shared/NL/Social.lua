@@ -64,6 +64,49 @@ NLSocial.favorites = {
     }
 }
 
+-- Mood keys used by the client thought bubbles. The classifier is shared so
+-- the authoritative result and the presentation layer agree on how a neighbor
+-- felt about the last interaction.
+NLSocial.moods = {
+    happy = true, romantic = true, angry = true, irritated = true,
+    disinterested = true, sad = true, neutral = true,
+}
+
+local successMood = {
+    introduce = "happy", chat = "happy", joke = "happy", ask_work = "happy",
+    talk_home = "happy", compliment = "happy", apologize = "happy",
+    flirt = "romantic", date = "romantic", date_activity = "romantic",
+    partner = "romantic", give = "happy", request = "neutral",
+}
+
+local failureMood = {
+    introduce = "disinterested", flirt = "disinterested", date = "disinterested",
+    partner = "disinterested", compliment = "irritated", apologize = "irritated",
+    date_activity = "irritated", breakup = "irritated", request = "irritated",
+    give = "disinterested", chat = "irritated", ask_work = "irritated",
+    talk_home = "irritated",
+}
+
+-- before/after are bounded relationship snapshots. Negative movement wins over
+-- the nominal action mood so a rejected advance reads as hurt or frustrated.
+function NLSocial.reaction(action, ok, before, after)
+    before = before or {}
+    after = after or {}
+    local friendship = (tonumber(after.friendship) or 0) - (tonumber(before.friendship) or 0)
+    local trust = (tonumber(after.trust) or 0) - (tonumber(before.trust) or 0)
+    local attraction = (tonumber(after.attraction) or 0) - (tonumber(before.attraction) or 0)
+    if not ok then
+        return failureMood[action] or "irritated"
+    end
+    if action == "breakup" then return "sad" end
+    if action == "joke" and friendship <= 2 then return "neutral" end
+    if friendship < 0 then return "angry" end
+    if attraction > 0 and action ~= "compliment" and action ~= "give" then return "romantic" end
+    if successMood[action] then return successMood[action] end
+    if friendship > 0 or trust > 0 then return "happy" end
+    return "neutral"
+end
+
 function NLSocial.isFavorite(npcId, itemType)
     if not npcId or not itemType or not NLSocial.favorites[npcId] then return false end
     return NLSocial.favorites[npcId].items[itemType] == true

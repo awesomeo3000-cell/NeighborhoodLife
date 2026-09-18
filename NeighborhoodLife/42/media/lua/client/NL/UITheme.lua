@@ -57,6 +57,22 @@ NLUI.colors = {
     red = { r=0.85, g=0.24, b=0.25, a=1.00 },
     pink = { r=0.86, g=0.35, b=0.65, a=1.00 },
     cyan = { r=0.18, g=0.69, b=0.86, a=1.00 },
+
+    -- Floating conversation bubbles are deliberately not framed windows. Keep
+    -- their cool near-white treatment separate from the blue window system.
+    conversationBubble = { r=0.97, g=0.98, b=1.00, a=0.97 },
+    conversationBubbleHover = { r=1.00, g=1.00, b=1.00, a=1.00 },
+    conversationBorder = { r=0.60, g=0.71, b=0.83, a=1.00 },
+    conversationBorderHover = { r=0.20, g=0.52, b=0.84, a=1.00 },
+    conversationText = { r=0.09, g=0.25, b=0.51, a=1.00 },
+    conversationTextHover = { r=0.05, g=0.18, b=0.43, a=1.00 },
+    conversationNav = { r=0.88, g=0.94, b=1.00, a=0.98 },
+    conversationNavBorder = { r=0.31, g=0.59, b=0.88, a=1.00 },
+    conversationRomance = { r=1.00, g=0.94, b=0.97, a=0.97 },
+    conversationRomanceBorder = { r=0.91, g=0.55, b=0.72, a=1.00 },
+    conversationRomanceText = { r=0.62, g=0.15, b=0.40, a=1.00 },
+    conversationShadow = { r=0.02, g=0.06, b=0.12, a=0.30 },
+    conversationHighlight = { r=1.00, g=1.00, b=1.00, a=0.55 },
 }
 
 -- Backward aliases used by existing panels and tests while the visual layer evolves.

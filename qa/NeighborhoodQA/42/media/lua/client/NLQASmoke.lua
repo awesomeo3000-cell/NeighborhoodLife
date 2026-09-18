@@ -21,10 +21,62 @@ Events.OnRenderTick.Add(function()
             end
         end)
     end
-    if renderTickCount==900 and not _G.NLQAShotView then
-        _G.NLQAShotView=true
+    if renderTickCount==885 and not _G.NLQAConversationOpened then
+        _G.NLQAConversationOpened=true
+        pcall(function()
+            local bodiesTable=(NLNpcAuthority and NLNpcAuthority.bodies) or (NLNpcSinglePlayer and NLNpcSinglePlayer.bodies)
+            local marisol=bodiesTable and bodiesTable.marisol
+            if NLConversationOverlay and marisol then
+                NLConversationOverlay.open(0,"marisol",marisol)
+            end
+        end)
+    end
+    if renderTickCount==890 then
+        pcall(function()
+            if NLConversationOverlay then NLConversationOverlay.refresh(0,true) end
+        end)
+    end
+    if renderTickCount==895 and not _G.NLQAReactionSent then
+        _G.NLQAReactionSent=true
+        pcall(function()
+            if NLSocialClient then
+                NLSocialClient.request(0,"interact",{id="marisol",action="chat"})
+            end
+        end)
+    end
+    if renderTickCount==898 then
+        assert(NLThoughtBubble and NLThoughtBubble.isActive("marisol"),
+            "authoritative social result did not create a thought bubble")
+    end
+    if renderTickCount==900 and not _G.NLQAShotConversation then
+        _G.NLQAShotConversation=true
+        local overlay=NLConversationOverlay and NLConversationOverlay.overlays[0]
+        assert(overlay and #overlay.bubbles>0, "conversation overlay did not create bubbles")
         pcall(function()
             getGameTime():setTimeOfDay(12.0)
+            getCore():TakeFullScreenshot("NLQACONVERSATION")
+        end)
+        print("NLQA PASS: conversation overlay bubbles rendered around the target NPC")
+    end
+    if renderTickCount==905 then
+        pcall(function()
+            if NLConversationOverlay then NLConversationOverlay.close(0) end
+        end)
+    end
+    if renderTickCount==915 and not _G.NLQAShotThought then
+        _G.NLQAShotThought=true
+        assert(NLThoughtBubble and NLThoughtBubble.isActive("marisol"),
+            "thought bubble expired before the reaction screenshot")
+        pcall(function()
+            getCore():TakeFullScreenshot("NLQATHOUGHT")
+        end)
+        print("NLQA PASS: reaction thought bubble rendered above the target NPC")
+    end
+    if renderTickCount==930 and not _G.NLQAShotView then
+        _G.NLQAShotView=true
+        pcall(function()
+            if NLConversationOverlay then NLConversationOverlay.close(0) end
+            if NLThoughtBubble then NLThoughtBubble.clear() end
             getCore():TakeFullScreenshot("NLQANPCVIEW")
         end)
         print("NLQA PASS: NPC world view screenshot requested from production rendering")
@@ -78,8 +130,8 @@ Events.OnRenderTick.Add(function()
         }
         local mockContext = {
             options = {},
-            addOption = function(self, text)
-                local opt = { text = text, sub = nil }
+            addOption = function(self, text, target, callback, ...)
+                local opt = { text = text, target = target, callback = callback, args = {...} }
                 self.options[#self.options + 1] = opt
                 return opt
             end,
@@ -93,9 +145,36 @@ Events.OnRenderTick.Add(function()
             or (NLNpcSinglePlayer and NLNpcSinglePlayer.bodies and NLNpcSinglePlayer.bodies.marisol)
         NLNpcInteractionMenu.menu(0, mockContext, { marisol })
         if ISContextMenu and oldGetNew then ISContextMenu.getNew = oldGetNew end
-        assert(#mockContext.options > 0, "No context menu generated for Marisol")
-        print("NLQA PASS: NPC context menu verified for Marisol: " .. tostring(mockContext.options[1].text)
-            .. " with " .. tostring(#mockSubmenu.actions) .. " actions")
+        assert(#mockContext.options >= 2, "No context menu generated for Marisol")
+        assert(string.find(mockContext.options[1].text, "^Talk to ") == 1,
+            "primary context option opens the conversation bubbles")
+        local overlayOpened = false
+        local oldOpen = NLConversationOverlay and NLConversationOverlay.open
+        if NLConversationOverlay then
+            NLConversationOverlay.open = function(index, id, body)
+                overlayOpened = index == 0 and tostring(id) == "marisol"
+            end
+            mockContext.options[1].callback(mockContext.options[1].target,
+                unpack(mockContext.options[1].args or {}))
+            NLConversationOverlay.open = oldOpen
+        end
+        assert(overlayOpened, "context talk option opens the production conversation overlay")
+
+        -- The real Build 42 mouse context stores a clicked IsoPlayer under
+        -- fetchVars.clickedPlayer instead of the Lua worldobjects list.
+        local fetch = ISWorldObjectContextMenu and ISWorldObjectContextMenu.fetchVars
+        if fetch then
+            local previousClicked = fetch.clickedPlayer
+            fetch.clickedPlayer = marisol
+            local clickedContext = { options = {}, addOption = mockContext.addOption }
+            NLNpcInteractionMenu.menu(0, clickedContext, {})
+            fetch.clickedPlayer = previousClicked
+            assert(#clickedContext.options >= 2,
+                "real clicked-player context did not discover the authored NPC")
+            assert(string.find(clickedContext.options[1].text, "^Talk to ") == 1,
+                "clicked-player discovery exposes the conversation entry")
+        end
+        print("NLQA PASS: NPC context menu verified for Marisol: " .. tostring(mockContext.options[1].text))
     end
 
     if NeighborhoodNeeds and NeighborhoodNeeds.instances then
