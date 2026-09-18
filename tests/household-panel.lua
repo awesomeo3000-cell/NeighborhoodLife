@@ -23,6 +23,7 @@ function ISPanel:addToUIManager() self.attached = true end
 function ISPanel:removeFromUIManager() self.attached = false end
 function ISPanel:prerender() end
 function ISPanel:drawText() end
+function ISPanel:drawRect() end
 function ISPanel:setX(value) self.x = value end
 function ISPanel:setY(value) self.y = value end
 ISButton = {}
