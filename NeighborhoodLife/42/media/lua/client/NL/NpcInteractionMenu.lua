@@ -1,25 +1,15 @@
 -- Direct world interaction for authored neighborhood NPCs.
 --
--- The menu is only a client entry point. Every action still travels through
--- NLSocialClient and is checked by the server for identity, proximity, line
--- of sight, cooldown and relationship state.
+-- The world context menu is only the discovery point: it opens the floating
+-- conversation overlay. Every action still travels through NLSocialClient and
+-- is checked by the server for identity, proximity, line of sight, cooldown
+-- and relationship state.
 require "NL/SocialClient"
 pcall(require, "NL/NpcClient")
+pcall(require, "NL/ConversationOverlay")
 pcall(require, "NL/Relationships")
 
 NLNpcInteractionMenu = {}
-
-local actions = {
-    { label = "Introduce", action = "introduce" },
-    { label = "Chat", action = "chat" },
-    { label = "Tell a joke", action = "joke" },
-    { label = "Ask about work", action = "ask_work" },
-    { label = "Talk about home", action = "talk_home" },
-    { label = "Compliment", action = "compliment" },
-    { label = "Flirt", action = "flirt" },
-    { label = "Ask on a date", action = "date" },
-    { label = "View relationship", action = "relationships" },
-}
 
 local function idFromObject(object)
     if not object then return nil end
@@ -82,10 +72,21 @@ local function npcLabel(id)
     return tostring(id)
 end
 
-local function firstInventoryType(player)
+local function displayName(item, itemType)
+    if item and item.getDisplayName then
+        local ok, label = pcall(item.getDisplayName, item)
+        if ok and type(label) == "string" and label ~= "" then return label end
+    end
+    return itemType
+end
+
+-- Shared inventory helpers. The conversation overlay uses the same helpers as
+-- the activation path so every label matches the item the server will receive.
+function NLNpcInteractionMenu.firstPlayerItemChoice(player)
     local inventory = player and player.getInventory and player:getInventory()
     local items = inventory and inventory.getItems and inventory:getItems()
     if not items then return nil end
+    local choices = {}
     for index = 0, items:size() - 1 do
         local item = items:get(index)
         local fullType = item and item.getFullType and item:getFullType()
@@ -94,25 +95,70 @@ local function firstInventoryType(player)
             local ok, value = pcall(player.isEquipped, player, item)
             equipped = ok and value == true
         end
-        if fullType and not equipped then return fullType end
+        if fullType and not equipped and not choices[fullType] then
+            choices[fullType] = { item = fullType, label = displayName(item, fullType) }
+        end
+    end
+    local names = {}
+    for itemType, _ in pairs(choices) do names[#names + 1] = itemType end
+    table.sort(names)
+    return names[1] and choices[names[1]] or nil
+end
+
+local function firstInventoryType(player)
+    local choice = NLNpcInteractionMenu.firstPlayerItemChoice(player)
+    return choice and choice.item or nil
+end
+
+function NLNpcInteractionMenu.firstNpcItemChoice(id)
+    local state = stateFor(id)
+    if state and state.inventoryItems and state.inventoryItems[1] then
+        local entry = state.inventoryItems[1]
+        return {
+            item = entry.item,
+            label = entry.label or entry.item,
+            amount = tonumber(entry.amount or 1) or 1,
+        }
+    end
+    if state and state.inventory then
+        local names = {}
+        for itemType, amount in pairs(state.inventory) do
+            if tonumber(amount) and tonumber(amount) > 0 then names[#names + 1] = itemType end
+        end
+        table.sort(names)
+        if names[1] then
+            return {
+                item = names[1],
+                label = names[1],
+                amount = tonumber(state.inventory[names[1]]) or 1,
+            }
+        end
     end
     return nil
 end
 
 local function firstNpcInventoryType(id)
-    local state = stateFor(id)
-    if state and state.inventoryItems and state.inventoryItems[1] then
-        local entry = state.inventoryItems[1]
-        return entry.item, tonumber(entry.amount or 1) or 1
+    local choice = NLNpcInteractionMenu.firstNpcItemChoice(id)
+    if not choice then return nil, 0 end
+    return choice.item, choice.amount or 1
+end
+
+function NLNpcInteractionMenu.findBody(id)
+    id = tostring(id)
+    local sources = {}
+    if NLNpcSinglePlayer and NLNpcSinglePlayer.bodies then
+        sources[#sources + 1] = NLNpcSinglePlayer.bodies
     end
-    if state and state.inventory then
-        for itemType, amount in pairs(state.inventory) do
-            if tonumber(amount) and tonumber(amount) > 0 then
-                return itemType, tonumber(amount)
-            end
-        end
+    if NLNpcAuthority and NLNpcAuthority.bodies then
+        sources[#sources + 1] = NLNpcAuthority.bodies
     end
-    return nil, 0
+    if NLNpcClient and NLNpcClient.bodies then
+        sources[#sources + 1] = NLNpcClient.bodies
+    end
+    for _, bodies in ipairs(sources) do
+        if bodies[id] then return bodies[id] end
+    end
+    return nil
 end
 
 function NLNpcInteractionMenu.activate(player, id, action)
@@ -136,8 +182,16 @@ function NLNpcInteractionMenu.activate(player, id, action)
     end
 end
 
-local function addAction(submenu, label, player, id, action)
-    submenu:addOption(label, player, NLNpcInteractionMenu.activate, id, action)
+-- Open the floating world conversation cluster for one authored neighbor.
+function NLNpcInteractionMenu.talk(player, id, body)
+    if not player or not id then return end
+    if not NLConversationOverlay then
+        pcall(require, "NL/ConversationOverlay")
+    end
+    if NLConversationOverlay and NLConversationOverlay.open then
+        local index = player.getPlayerNum and player:getPlayerNum() or 0
+        NLConversationOverlay.open(index, id, body)
+    end
 end
 
 function NLNpcInteractionMenu.menu(index, context, worldobjects)
@@ -148,31 +202,17 @@ function NLNpcInteractionMenu.menu(index, context, worldobjects)
         local id = idFromObject(object)
         if id and not seen[id] then
             seen[id] = true
-            local option = context:addOption("Neighborhood: " .. npcLabel(id))
-            local submenu = ISContextMenu:getNew(context)
-            context:addSubMenu(option, submenu)
-            for _, entry in ipairs(actions) do
-                addAction(submenu, entry.label, player, id, entry.action)
-            end
-            if activeDateFor(index, id) then
-                addAction(submenu, "Spend time together", player, id, "date_activity")
-            end
-            local relationship = relationshipFor(index, id)
-            if relationship and relationship.canPartner then
-                addAction(submenu, "Commit to partnership", player, id, "partner")
-            elseif relationship and relationship.canBreakup then
-                addAction(submenu, "End partnership", player, id, "breakup")
-            end
-            if relationship and relationship.canApologize then
-                addAction(submenu, "Apologize", player, id, "apologize")
-            end
-            addAction(submenu, "Give 1 item", player, id, "give")
-            local requestType = firstNpcInventoryType(id)
-            addAction(submenu, requestType and ("Request 1 " .. tostring(requestType))
-                or "Request item", player, id, "request")
+            context:addOption("Talk to " .. npcLabel(id), player, NLNpcInteractionMenu.talk, id, object)
+            context:addOption("View relationship", player, NLNpcInteractionMenu.activate, id, "relationships")
         end
     end
 end
+
+NLNpcInteractionMenu.idFromObject = idFromObject
+NLNpcInteractionMenu.stateFor = stateFor
+NLNpcInteractionMenu.activeDateFor = activeDateFor
+NLNpcInteractionMenu.relationshipFor = relationshipFor
+NLNpcInteractionMenu.npcLabel = npcLabel
 
 Events.OnFillWorldObjectContextMenu.Add(NLNpcInteractionMenu.menu)
 return NLNpcInteractionMenu

@@ -1,12 +1,11 @@
--- World-context NPC interaction contract. This proves menu discovery and
--- command routing with shaped UI fixtures; it is not real mouse or multiplayer
--- gameplay evidence.
+-- World-context NPC interaction contract. This proves menu discovery, the
+-- conversation-overlay entry point and command routing with shaped UI fixtures;
+-- it is not real mouse or multiplayer gameplay evidence.
 local root = arg[1]
 package.path = root .. '/42/media/lua/client/?.lua;' .. package.path
 
 local eventHook
 Events = { OnFillWorldObjectContextMenu = { Add = function(f) eventHook = f end } }
-local panelStub = function() end
 package.preload['NL/SocialClient'] = function()
 NLSocialClient = { requests = {}, snapshots = { [0] = { neighbors = {
     { id = 'marisol', relation = { activeDate = { status = 'active' } }, canPartner = true },
@@ -20,6 +19,14 @@ end
 NLRelationships = { opens = {}, open = function(index)
     NLRelationships.opens[#NLRelationships.opens + 1] = index
 end }
+package.preload['NL/ConversationOverlay'] = function()
+    NLConversationOverlay = { opens = {}, open = function(index, id, body)
+        NLConversationOverlay.opens[#NLConversationOverlay.opens + 1] = {
+            index = index, id = id, body = body,
+        }
+    end }
+    return NLConversationOverlay
+end
 package.preload['NL/NpcClient'] = function() return NLNpcClient end
 
 local player = { dead = false, playerNum = 0 }
@@ -57,58 +64,63 @@ local object = { data = { NeighborhoodNpcId = 'marisol' } }
 function object:getModData() return self.data end
 local context = newMenu()
 eventHook(0, context, { object }, false)
-assert(#context.options == 1, 'world context menu discovers one authored NPC')
-local submenu = context.options[1].submenu
-assert(context.options[1].label == 'Neighborhood: Marisol Vega')
-assert(#submenu.options == 13,
-    'NPC menu exposes richer conversations, date activity, partnership and item actions')
+assert(#context.options == 2, 'world context menu discovers the authored NPC talk and profile entries')
+assert(context.options[1].label == 'Talk to Marisol Vega',
+    'primary discovery option opens the world conversation bubbles')
+assert(context.options[2].label == 'View relationship',
+    'secondary option keeps the relationship details viewer reachable')
+assert(context.options[1].submenu == nil, 'talk entry no longer opens a large interaction submenu')
 
-local byLabel = {}
-for _, option in ipairs(submenu.options) do byLabel[option.label] = option end
-byLabel['Introduce'].callback(byLabel['Introduce'].target, unpack(byLabel['Introduce'].args))
-assert(NLSocialClient.requests[#NLSocialClient.requests].command == 'interact'
-    and NLSocialClient.requests[#NLSocialClient.requests].args.id == 'marisol'
-    and NLSocialClient.requests[#NLSocialClient.requests].args.action == 'introduce',
+context.options[1].callback(context.options[1].target, unpack(context.options[1].args))
+assert(#NLConversationOverlay.opens == 1, 'talk entry opens one conversation overlay')
+assert(NLConversationOverlay.opens[1].index == 0
+    and NLConversationOverlay.opens[1].id == 'marisol'
+    and NLConversationOverlay.opens[1].body == object,
+    'conversation overlay opens for the current player and selected NPC body')
+
+context.options[2].callback(context.options[2].target, unpack(context.options[2].args))
+assert(#NLRelationships.opens == 1 and NLRelationships.opens[1] == 0,
+    'relationship profile action opens for the current player')
+
+local function requestCount() return #NLSocialClient.requests end
+NLNpcInteractionMenu.activate(player, 'marisol', 'introduce')
+assert(NLSocialClient.requests[requestCount()].command == 'interact'
+    and NLSocialClient.requests[requestCount()].args.id == 'marisol'
+    and NLSocialClient.requests[requestCount()].args.action == 'introduce',
     'introduce action routes through the production social client')
-if byLabel['View relationship'] then
-    byLabel['View relationship'].callback(byLabel['View relationship'].target,
-        unpack(byLabel['View relationship'].args))
-    assert(#NLRelationships.opens == 1 and NLRelationships.opens[1] == 0,
-        'relationship profile action opens for the current player')
-end
-byLabel['Spend time together'].callback(byLabel['Spend time together'].target,
-    unpack(byLabel['Spend time together'].args))
-assert(NLSocialClient.requests[#NLSocialClient.requests].command == 'interact'
-    and NLSocialClient.requests[#NLSocialClient.requests].args.action == 'date_activity',
+NLNpcInteractionMenu.activate(player, 'marisol', 'date_activity')
+assert(NLSocialClient.requests[requestCount()].args.action == 'date_activity',
     'active date activity routes through the production social client')
-byLabel['Ask about work'].callback(byLabel['Ask about work'].target,
-    unpack(byLabel['Ask about work'].args))
-assert(NLSocialClient.requests[#NLSocialClient.requests].args.action == 'ask_work',
+NLNpcInteractionMenu.activate(player, 'marisol', 'ask_work')
+assert(NLSocialClient.requests[requestCount()].args.action == 'ask_work',
     'work conversation routes through the production social client')
-byLabel['Talk about home'].callback(byLabel['Talk about home'].target,
-    unpack(byLabel['Talk about home'].args))
-assert(NLSocialClient.requests[#NLSocialClient.requests].args.action == 'talk_home',
+NLNpcInteractionMenu.activate(player, 'marisol', 'talk_home')
+assert(NLSocialClient.requests[requestCount()].args.action == 'talk_home',
     'home conversation routes through the production social client')
-byLabel['Compliment'].callback(byLabel['Compliment'].target,
-    unpack(byLabel['Compliment'].args))
-assert(NLSocialClient.requests[#NLSocialClient.requests].args.action == 'compliment',
+NLNpcInteractionMenu.activate(player, 'marisol', 'compliment')
+assert(NLSocialClient.requests[requestCount()].args.action == 'compliment',
     'compliment routes through the production social client')
-byLabel['Commit to partnership'].callback(byLabel['Commit to partnership'].target,
-    unpack(byLabel['Commit to partnership'].args))
-assert(NLSocialClient.requests[#NLSocialClient.requests].args.action == 'partner',
+NLNpcInteractionMenu.activate(player, 'marisol', 'partner')
+assert(NLSocialClient.requests[requestCount()].args.action == 'partner',
     'partnership commitment routes through the production social client')
-byLabel['Give 1 item'].callback(byLabel['Give 1 item'].target, unpack(byLabel['Give 1 item'].args))
-assert(NLSocialClient.requests[#NLSocialClient.requests].command == 'give'
-    and NLSocialClient.requests[#NLSocialClient.requests].args.item == 'Base.Hammer',
+NLNpcInteractionMenu.activate(player, 'marisol', 'give')
+assert(NLSocialClient.requests[requestCount()].command == 'give'
+    and NLSocialClient.requests[requestCount()].args.item == 'Base.Hammer',
     'give action selects an unequipped main-inventory item')
-byLabel['Request 1 Base.Bandage'].callback(byLabel['Request 1 Base.Bandage'].target,
-    unpack(byLabel['Request 1 Base.Bandage'].args))
-assert(NLSocialClient.requests[#NLSocialClient.requests].command == 'request'
-    and NLSocialClient.requests[#NLSocialClient.requests].args.item == 'Base.Bandage',
+NLNpcInteractionMenu.activate(player, 'marisol', 'request')
+assert(NLSocialClient.requests[requestCount()].command == 'request'
+    and NLSocialClient.requests[requestCount()].args.item == 'Base.Bandage',
     'request action selects an authoritative NPC inventory item')
+
+assert(NLNpcInteractionMenu.findBody('marisol') == nil,
+    'findBody only resolves registered NPC bodies')
+assert(NLNpcInteractionMenu.firstPlayerItemChoice(player).item == 'Base.Hammer',
+    'shared item helper rejects equipped items and returns the first eligible type')
+assert(NLNpcInteractionMenu.firstNpcItemChoice('marisol').item == 'Base.Bandage',
+    'shared item helper reads the authoritative NPC inventory')
 
 player.dead = true
 local deadContext = newMenu()
 eventHook(0, deadContext, { object }, false)
 assert(#deadContext.options == 0, 'dead local players receive no NPC context actions')
-print('PASS: world-context NPC discovery, social actions, relationship profile, item routing and dead-player guard')
+print('PASS: world-context NPC discovery, overlay entry point, profile option and item routing')
