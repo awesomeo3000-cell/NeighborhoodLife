@@ -1,5 +1,5 @@
 require "ISUI/ISPanel"
-require "ISUI/ISButton"
+require "NL/SimsButton"
 require "NL/Client"
 require "NL/HouseholdClient"
 require "NL/UITheme"
@@ -16,10 +16,10 @@ function NLHouseholdPanel:new(index)
     return o
 end
 
-function NLHouseholdPanel:button(x, y, w, text, action, value)
-    local button = ISButton:new(x, y, w, 28, text, self, self.onButton)
+function NLHouseholdPanel:button(x, y, w, text, action, value, kind)
+    local button = NLSimsButton:new(x, y, w, 30, text, self, self.onButton)
     button.action, button.value = action, value
-    NLUI.styleButton(button, action == "close" and "close" or "primary")
+    button:setKind(kind or (action == "close" and "danger" or "ghost"))
     button:initialise()
     self:addChild(button)
     return button
@@ -36,8 +36,8 @@ function NLHouseholdPanel:initialise()
     self.transferButton = self:button(18, 96, 160, "Transfer owner", "transfer")
 
     self.storageButtons = {
-        store = self:button(18, 450, 196, "Store 1 RippedSheet", "store", { item="Base.RippedSheets", amount=1 }),
-        retrieve = self:button(222, 450, 196, "Take 1 RippedSheet", "retrieve", { item="Base.RippedSheets", amount=1 }),
+        store = self:button(18, 450, 196, "Store Ripped Sheets", "store", { item="Base.RippedSheets", amount=1 }),
+        retrieve = self:button(222, 450, 196, "Take Ripped Sheets", "retrieve", { item="Base.RippedSheets", amount=1 }),
     }
 
     self.taskButtons = {}
@@ -143,7 +143,7 @@ function NLHouseholdPanel:prerender()
     local stored = {}
     if household then
         for itemType, amount in pairs(household.storage or {}) do
-            stored[#stored + 1] = itemType .. " x" .. tostring(amount)
+            stored[#stored + 1] = NLUI.itemLabel(itemType) .. " x" .. tostring(amount)
         end
         table.sort(stored)
     end
