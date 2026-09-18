@@ -4,20 +4,47 @@ require "NL/Authority"
 require "NL/Neighbors"
 NLSocialAuthority={bodies={},lastRequest={}}
 
-function NLSocialAuthority.broadcastEvent(actor,npcId,action,message)
-    if not isServer() or type(getOnlinePlayers)~="function" then return 0 end
-    local ok,players=pcall(getOnlinePlayers)
-    if not ok or not players then return 0 end
+function NLSocialAuthority.broadcastEvent(actor,npcId,action,message,mood)
     local person=NLSocial.people[npcId] or {}
     local packet={actor=NLAuthority.key(actor),npcId=npcId,
-        npcName=person.name or tostring(npcId),action=action,message=message,
+        npcName=person.name or tostring(npcId),action=action,message=message,mood=mood,
         revision=getTimestampMs()}
+    -- Single-player runs the authority inline; deliver the same event locally so
+    -- the event feed and thought bubbles behave identically in both modes.
+    if not isServer() or type(getOnlinePlayers)~="function" then
+        if NLSocialClient then NLSocialClient.receive("NeighborhoodSocial","event",packet) end
+        return NLSocialClient and 1 or 0
+    end
+    local ok,players=pcall(getOnlinePlayers)
+    if not ok or not players then return 0 end
     local count=0
     for i=0,players:size()-1 do
         sendServerCommand(players:get(i),"NeighborhoodSocial","event",packet)
         count=count+1
     end
     return count
+end
+
+local function relationValues(profile,id)
+    local relation=NLSocial.relation(profile,id)
+    return {
+        friendship=tonumber(relation.friendship) or 0,
+        trust=tonumber(relation.trust) or 0,
+        attraction=tonumber(relation.attraction) or 0,
+    }
+end
+
+-- A monotonic sequence lets clients show exactly one thought bubble per
+-- authoritative result, including rejected interactions that never broadcast
+-- an event.
+function NLSocialAuthority.reactionFor(action,npcId,ok,before,after)
+    NLSocialAuthority.reactionSeq=(NLSocialAuthority.reactionSeq or 0)+1
+    return {
+        seq=NLSocialAuthority.reactionSeq,
+        mood=NLSocial.reaction(action,ok,before,after),
+        action=action,
+        npcId=npcId,
+    }
 end
 
 function NLSocialAuthority.register(id,body,home)
@@ -251,12 +278,13 @@ end
 -- path only through the server-gated give/request commands.
 NLSocialAuthority.inventoryExchange=inventoryExchange
 
-function NLSocialAuthority.snapshot(player,message)
+function NLSocialAuthority.snapshot(player,message,reaction)
     local world=NLAuthority.world()
     NLNeighbors.ensure(world)
     local key=NLAuthority.key(player)
     local profile=NLDomain.profile(world,key)
     local result={username=NLAuthority.key(player),neighbors={},message=message or "Updated",revision=profile.revision}
+    if reaction then result.reaction=reaction end
     for _,id in ipairs(NLSocial.order) do
         local npc=NLNeighbors.get(world,id)
         if npc then
@@ -333,6 +361,7 @@ function NLSocialAuthority.command(module,command,player,args)
     if globalState=="repaired" then message="Global data recovery repaired" end
     if recoveryState=="repaired" then message="Inventory recovery repaired" end
     local completed=command~="interact"
+    local reaction=nil
     local journal=command=="interact" and NLAuthority.beginWorldJournal(world,player,command) or nil
     if command=="interact" then
         local npc=(NLAuthority.world().neighbors or {})[args.id]
@@ -345,9 +374,12 @@ function NLSocialAuthority.command(module,command,player,args)
         elseif not player:CanSee(body) then message="You need a clear line of sight."
         else
             local profile=NLDomain.profile(NLAuthority.world(),key)
+            local before=relationValues(profile,args.id)
             local ok
             ok,message=NLSocial.interact(profile,npc,args.action,getGameTime():getWorldAgeHours(),key)
+            local after=relationValues(profile,args.id)
             completed=ok==true
+            reaction=NLSocialAuthority.reactionFor(args.action,args.id,completed,before,after)
             if not completed then message="Not completed: "..message end
         end
     elseif command=="give" or command=="request" then
@@ -365,19 +397,25 @@ function NLSocialAuthority.command(module,command,player,args)
                 local profile=NLDomain.profile(world,key)
                 local gameTime=getGameTime and getGameTime()
                 local hours=(gameTime and gameTime.getWorldAgeHours and gameTime:getWorldAgeHours()) or 0
+                local before=relationValues(profile,args.id)
                 local giftOk,giftMessage=NLSocial.giveGift(profile,npc,args.item,hours,key)
+                local after=relationValues(profile,args.id)
                 if giftOk and giftMessage then message=giftMessage end
+                reaction=NLSocialAuthority.reactionFor("give",args.id,giftOk==true,before,after)
             elseif not completed then
                 message="Not completed: "..message
+            else
+                reaction=NLSocialAuthority.reactionFor("request",args.id,true,{},{})
             end
         end
     end
     NLAuthority.commitWorldJournal(world,journal)
-    NLSocialAuthority.snapshot(player,message)
+    NLSocialAuthority.snapshot(player,message,reaction)
     if completed and (command=="interact" or command=="give" or command=="request") then
         local eventAction=command
         if command=="interact" then eventAction=args.action end
-        NLSocialAuthority.broadcastEvent(player,args.id,eventAction,message)
+        NLSocialAuthority.broadcastEvent(player,args.id,eventAction,message,
+            reaction and reaction.mood or nil)
     end
     if NLQAMultiplayerServer and command=="interact" then
         print("NLQA SOCIAL RESULT: username="..tostring(key).." message="..tostring(message))

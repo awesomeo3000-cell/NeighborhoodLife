@@ -343,6 +343,14 @@ derived from the authoritative social snapshot; every selection still routes thr
 the existing `NLSocialClient` request path and server validation. The Relationships
 window remains a details/history viewer and is still reachable from the context menu.
 
+Interaction results also pop a floating thought bubble above the neighbor. The mood
+(happy, romantic, angry, irritated, disinterested, sad, neutral) is classified
+server-side from the authoritative relationship deltas, delivered through the
+private snapshot for your own actions and the replicated social event feed for
+other players, then rendered with original cloud/face textures under
+`NeighborhoodLife/42/media/textures/NL_Thought_*.png`.
+`tools/generate-thought-bubble-assets.ps1` regenerates those assets.
+
 ## Remaining manual gameplay checks
 - Host and guest join: each sees one panel with their own current stats.
 - Eat, drink, rest and read: observe appropriate values changing.

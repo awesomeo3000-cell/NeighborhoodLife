@@ -72,6 +72,8 @@ def suites(target: Path, engine: bool, record: list[str]) -> None:
         suite_names.append("npc-interaction-menu")
     if (target / "42/media/lua/client/NL/ConversationOverlay.lua").exists():
         suite_names.append("conversation-overlay")
+    if (target / "42/media/lua/client/NL/ThoughtBubble.lua").exists():
+        suite_names.append("thought-bubble")
     if (target / "42/media/lua/client/NL/RemotePlayerClient.lua").exists():
         suite_names.append("remote-player-client")
     if (target / "42/media/lua/client/NL/Appearance.lua").exists():

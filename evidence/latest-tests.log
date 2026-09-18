@@ -164,6 +164,11 @@ SYNTAX INPUT: E:\pzmod
 SYNTAX OUTPUT: 
 SYNTAX STDERR: 
 SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\ThoughtBubble.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
 SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\UITheme.lua
 SYNTAX INPUT: E:\pzmod
 SYNTAX OUTPUT: 
@@ -356,6 +361,11 @@ LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\conversation-overlay.lua E:\pzmod\NeighborhoodLife
 LUA INPUT: E:\pzmod
 LUA OUTPUT: PASS: conversation overlay opening, availability, routing, navigation, anchoring and cleanup
+LUA STDERR: 
+LUA EXIT: 0
+LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\thought-bubble.lua E:\pzmod\NeighborhoodLife
+LUA INPUT: E:\pzmod
+LUA OUTPUT: PASS: reaction moods, thought-bubble lifecycle, anchoring, split-screen and cleanup
 LUA STDERR: 
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\remote-player-client.lua E:\pzmod\NeighborhoodLife
@@ -585,6 +595,12 @@ KAHLUA EXIT: 0
 KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\conversation-overlay.lua
 KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
 KAHLUA OUTPUT: PASS: conversation overlay opening, availability, routing, navigation, anchoring and cleanup
+PASS: installed Project Zomboid Kahlua VM execution
+KAHLUA STDERR: 
+KAHLUA EXIT: 0
+KAHLUA COMMAND: java -cp E:\pzmod\tests\classes;projectzomboid.jar;. EngineLua E:\pzmod\NeighborhoodLife E:\pzmod\tests\thought-bubble.lua
+KAHLUA INPUT: E:\SteamLibrary\steamapps\common\ProjectZomboid
+KAHLUA OUTPUT: PASS: reaction moods, thought-bubble lifecycle, anchoring, split-screen and cleanup
 PASS: installed Project Zomboid Kahlua VM execution
 KAHLUA STDERR: 
 KAHLUA EXIT: 0
