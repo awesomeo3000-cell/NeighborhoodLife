@@ -1,51 +1,97 @@
 NLUI = NLUI or {}
 
 NLUI.colors = {
-    shadow = { r=0.01, g=0.04, b=0.08, a=0.42 },
-    frameDark = { r=0.02, g=0.20, b=0.38, a=0.98 },
-    frameMid = { r=0.03, g=0.36, b=0.63, a=0.98 },
-    frameLight = { r=0.10, g=0.56, b=0.84, a=1.00 },
-    headerTop = { r=0.18, g=0.66, b=0.92, a=1.00 },
-    headerBottom = { r=0.04, g=0.38, b=0.69, a=1.00 },
-    well = { r=0.82, g=0.92, b=0.97, a=0.98 },
-    wellAlt = { r=0.70, g=0.86, b=0.94, a=0.98 },
-    wellDark = { r=0.51, g=0.74, b=0.86, a=0.98 },
-    borderLight = { r=0.69, g=0.92, b=1.00, a=1.00 },
-    borderDark = { r=0.02, g=0.21, b=0.40, a=1.00 },
-    textLight = { r=0.98, g=1.00, b=1.00, a=1.00 },
-    textDark = { r=0.04, g=0.18, b=0.29, a=1.00 },
-    muted = { r=0.23, g=0.39, b=0.49, a=1.00 },
-    button = { r=0.08, g=0.45, b=0.74, a=1.00 },
-    buttonHover = { r=0.17, g=0.63, b=0.89, a=1.00 },
-    buttonActive = { r=0.03, g=0.32, b=0.61, a=1.00 },
-    buttonBorder = { r=0.65, g=0.91, b=1.00, a=1.00 },
-    close = { r=0.57, g=0.17, b=0.20, a=1.00 },
-    closeHover = { r=0.78, g=0.25, b=0.27, a=1.00 },
-    track = { r=0.38, g=0.55, b=0.64, a=1.00 },
-    green = { r=0.25, g=0.78, b=0.30, a=1.00 },
-    yellow = { r=0.94, g=0.70, b=0.19, a=1.00 },
-    red = { r=0.84, g=0.22, b=0.23, a=1.00 },
-    pink = { r=0.84, g=0.33, b=0.62, a=1.00 },
-    cyan = { r=0.17, g=0.72, b=0.88, a=1.00 },
+    shadow = { r=0.00, g=0.03, b=0.08, a=0.34 },
+
+    chromeDeep = { r=0.025, g=0.19, b=0.36, a=0.98 },
+    chrome = { r=0.045, g=0.36, b=0.63, a=0.98 },
+    chromeBright = { r=0.12, g=0.59, b=0.87, a=1.00 },
+    chromeSoft = { r=0.36, g=0.74, b=0.92, a=1.00 },
+
+    surface = { r=0.90, g=0.96, b=0.985, a=0.98 },
+    surfaceAlt = { r=0.82, g=0.92, b=0.97, a=0.98 },
+    surfaceLift = { r=0.96, g=0.985, b=1.00, a=0.99 },
+    surfaceBlue = { r=0.72, g=0.88, b=0.95, a=0.98 },
+
+    line = { r=0.48, g=0.71, b=0.83, a=0.62 },
+    lineSoft = { r=0.71, g=0.86, b=0.93, a=0.50 },
+
+    textLight = { r=0.99, g=1.00, b=1.00, a=1.00 },
+    textDark = { r=0.055, g=0.16, b=0.23, a=1.00 },
+    muted = { r=0.28, g=0.42, b=0.50, a=1.00 },
+
+    buttonFill = { r=0.93, g=0.96, b=0.98, a=1.00 },
+    buttonEdge = { r=0.41, g=0.53, b=0.61, a=1.00 },
+    buttonShine = { r=1.00, g=1.00, b=1.00, a=1.00 },
+    buttonText = { r=0.07, g=0.28, b=0.47, a=1.00 },
+
+    buttonHover = { r=0.15, g=0.57, b=0.86, a=1.00 },
+    buttonHoverEdge = { r=0.03, g=0.28, b=0.52, a=1.00 },
+    buttonHoverShine = { r=0.63, g=0.88, b=1.00, a=1.00 },
+
+    buttonActive = { r=0.055, g=0.38, b=0.70, a=1.00 },
+    buttonActiveEdge = { r=0.02, g=0.20, b=0.40, a=1.00 },
+    buttonActiveShine = { r=0.32, g=0.72, b=0.94, a=1.00 },
+
+    buttonGhost = { r=0.79, g=0.90, b=0.95, a=1.00 },
+    buttonGhostEdge = { r=0.45, g=0.66, b=0.76, a=1.00 },
+    buttonGhostShine = { r=0.96, g=0.99, b=1.00, a=1.00 },
+
+    tabFill = { r=0.085, g=0.43, b=0.73, a=1.00 },
+    tabEdge = { r=0.02, g=0.23, b=0.43, a=1.00 },
+    tabShine = { r=0.30, g=0.70, b=0.92, a=1.00 },
+
+    danger = { r=0.58, g=0.19, b=0.22, a=1.00 },
+    dangerEdge = { r=0.34, g=0.08, b=0.10, a=1.00 },
+    dangerShine = { r=0.84, g=0.40, b=0.42, a=1.00 },
+
+    disabled = { r=0.72, g=0.76, b=0.79, a=1.00 },
+    disabledEdge = { r=0.50, g=0.55, b=0.58, a=1.00 },
+    disabledShine = { r=0.90, g=0.92, b=0.93, a=1.00 },
+    disabledText = { r=0.38, g=0.42, b=0.44, a=1.00 },
+
+    track = { r=0.36, g=0.47, b=0.52, a=0.88 },
+    green = { r=0.27, g=0.78, b=0.30, a=1.00 },
+    greenDark = { r=0.12, g=0.50, b=0.17, a=1.00 },
+    yellow = { r=0.95, g=0.72, b=0.19, a=1.00 },
+    red = { r=0.85, g=0.24, b=0.25, a=1.00 },
+    pink = { r=0.86, g=0.35, b=0.65, a=1.00 },
+    cyan = { r=0.18, g=0.69, b=0.86, a=1.00 },
 }
+
+-- Backward aliases used by existing panels and tests while the visual layer evolves.
+NLUI.colors.frameDark = NLUI.colors.chromeDeep
+NLUI.colors.frameMid = NLUI.colors.chrome
+NLUI.colors.frameLight = NLUI.colors.chromeBright
+NLUI.colors.headerTop = NLUI.colors.chromeBright
+NLUI.colors.headerBottom = NLUI.colors.chrome
+NLUI.colors.well = NLUI.colors.surface
+NLUI.colors.wellAlt = NLUI.colors.surfaceAlt
+NLUI.colors.wellDark = NLUI.colors.surfaceBlue
+NLUI.colors.borderLight = NLUI.colors.lineSoft
+NLUI.colors.borderDark = NLUI.colors.chromeDeep
+NLUI.colors.button = NLUI.colors.buttonFill
+NLUI.colors.buttonBorder = NLUI.colors.buttonEdge
+NLUI.colors.close = NLUI.colors.danger
+NLUI.colors.closeHover = NLUI.colors.dangerShine
 
 local C = NLUI.colors
 
 local function rect(panel, x, y, w, h, color, alpha)
     if not panel or not panel.drawRect or w <= 0 or h <= 0 then return end
-    panel:drawRect(x, y, w, h, alpha or color.a or 1, color.r, color.g, color.b)
+    panel:drawRect(math.floor(x), math.floor(y), math.floor(w), math.floor(h),
+        alpha or color.a or 1, color.r, color.g, color.b)
 end
 
-local function border(panel, x, y, w, h, color)
+function NLUI.roundedRect(panel, x, y, w, h, color, alpha)
     if not panel or w <= 0 or h <= 0 then return end
-    if panel.drawRectBorder then
-        panel:drawRectBorder(x, y, w, h, color.a or 1, color.r, color.g, color.b)
+    if w < 8 or h < 8 then
+        rect(panel, x, y, w, h, color, alpha)
         return
     end
-    rect(panel, x, y, w, 1, color)
-    rect(panel, x, y+h-1, w, 1, color)
-    rect(panel, x, y, 1, h, color)
-    rect(panel, x+w-1, y, 1, h, color)
+    rect(panel, x + 3, y, w - 6, h, color, alpha)
+    rect(panel, x + 1, y + 2, w - 2, h - 4, color, alpha)
+    rect(panel, x, y + 4, w, h - 8, color, alpha)
 end
 
 function NLUI.clamp(value, lo, hi)
@@ -65,69 +111,80 @@ end
 
 function NLUI.styleButton(button, kind, active)
     if not button then return button end
-    kind = kind or "primary"
-    if kind == "close" then
-        button.backgroundColor = C.close
-        button.backgroundColorMouseOver = C.closeHover
-    elseif active then
-        button.backgroundColor = C.buttonActive
-        button.backgroundColorMouseOver = C.buttonHover
-    else
-        button.backgroundColor = C.button
-        button.backgroundColorMouseOver = C.buttonHover
-    end
-    button.borderColor = C.buttonBorder
-    button.textColor = C.textLight
+    if button.setKind then button:setKind(kind or "primary") end
+    if button.setActive then button:setActive(active == true) end
     return button
 end
 
 function NLUI.setButtonActive(button, active)
-    return NLUI.styleButton(button, "primary", active == true)
+    if not button then return end
+    if button.setActive then
+        button:setActive(active == true)
+    else
+        button.backgroundColor = active and C.buttonActive or C.buttonFill
+    end
 end
 
 function NLUI.window(panel, title, subtitle)
     if not panel then return end
     local w, h = panel.width or 0, panel.height or 0
-    rect(panel, 5, 6, w-2, h-2, C.shadow)
-    rect(panel, 0, 0, w, h, C.frameDark)
-    rect(panel, 3, 3, w-6, h-6, C.frameMid)
-    rect(panel, 6, 6, w-12, 42, C.headerBottom)
-    rect(panel, 7, 7, w-14, 19, C.headerTop)
-    rect(panel, 8, 49, w-16, h-57, C.well)
-    border(panel, 0, 0, w, h, C.borderDark)
-    border(panel, 4, 4, w-8, h-8, C.borderLight)
+
+    NLUI.roundedRect(panel, 8, 10, w - 8, h - 6, C.shadow, 0.34)
+    NLUI.roundedRect(panel, 0, 0, w, h, C.chromeDeep, 0.98)
+    NLUI.roundedRect(panel, 3, 3, w - 6, h - 6, C.chrome, 0.98)
+
+    NLUI.roundedRect(panel, 7, 7, w - 14, 46, C.chromeBright, 1)
+    NLUI.roundedRect(panel, 9, 26, w - 18, 26, C.chrome, 0.92)
+
+    NLUI.roundedRect(panel, 8, 56, w - 16, h - 64, C.surface, 0.99)
+    NLUI.roundedRect(panel, 11, 59, w - 22, h - 70, C.surfaceLift, 0.30)
+
     if panel.drawText and title then
-        panel:drawText(title, 16, 13, C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
+        panel:drawText(title, 18, 13, C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
     end
     if panel.drawText and subtitle and subtitle ~= "" then
-        panel:drawText(subtitle, 16, 31, 0.80, 0.94, 1.00, 1, UIFont.Small)
+        panel:drawText(subtitle, 18, 33, 0.84, 0.95, 1.00, 1, UIFont.Small)
     end
 end
 
+function NLUI.sectionTitle(panel, x, y, text)
+    if not panel or not panel.drawText then return end
+    panel:drawText(text or "", x, y, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
+    rect(panel, x, y + 20, math.max(24, (panel.width or 100) - x * 2), 1, C.line, 0.52)
+end
+
+function NLUI.card(panel, x, y, w, h, raised)
+    NLUI.roundedRect(panel, x + 2, y + 3, w, h, C.shadow, raised and 0.18 or 0.10)
+    NLUI.roundedRect(panel, x, y, w, h, raised and C.surfaceLift or C.surfaceAlt, 0.99)
+    NLUI.roundedRect(panel, x + 2, y + 2, w - 4, math.max(5, math.floor(h * 0.20)),
+        C.buttonShine, raised and 0.30 or 0.18)
+end
+
 function NLUI.well(panel, x, y, w, h, label, alternate)
-    local fill = alternate and C.wellAlt or C.well
-    rect(panel, x, y, w, h, C.borderDark)
-    rect(panel, x+2, y+2, w-4, h-4, fill)
-    border(panel, x+2, y+2, w-4, h-4, C.borderLight)
+    NLUI.card(panel, x, y, w, h, not alternate)
     if label and panel.drawText then
-        rect(panel, x+3, y+3, w-6, 23, C.frameMid)
-        rect(panel, x+4, y+4, w-8, 10, C.frameLight)
-        panel:drawText(label, x+12, y+7, C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
+        panel:drawText(label, x + 12, y + 9, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+        rect(panel, x + 10, y + 29, w - 20, 1, C.line, 0.50)
     end
 end
 
 function NLUI.progress(panel, x, y, w, h, value, kind)
     value = NLUI.clamp(value, 0, 1)
-    rect(panel, x, y, w, h, C.borderDark)
-    rect(panel, x+2, y+2, w-4, h-4, C.track)
+    NLUI.roundedRect(panel, x, y, w, h, C.track, 0.82)
+    NLUI.roundedRect(panel, x + 2, y + 2, w - 4, h - 4, C.surfaceLift, 0.20)
+
     local fill = C.green
     if kind == "pink" then fill = C.pink
     elseif kind == "cyan" then fill = C.cyan
     elseif kind == "yellow" then fill = C.yellow
     elseif kind == "red" then fill = C.red end
-    local inner = math.floor((w-4) * value + 0.5)
-    if inner > 0 then rect(panel, x+2, y+2, inner, h-4, fill) end
-    rect(panel, x+2, y+2, math.max(0, inner), math.max(1, math.floor((h-4)/3)), C.textLight, 0.22)
+
+    local inner = math.floor((w - 4) * value + 0.5)
+    if inner > 1 then
+        NLUI.roundedRect(panel, x + 2, y + 2, inner, h - 4, fill, 1)
+        rect(panel, x + 5, y + 3, math.max(0, inner - 8), math.max(1, math.floor((h - 4) / 3)),
+            C.buttonShine, 0.28)
+    end
 end
 
 function NLUI.needColor(value)
@@ -139,31 +196,48 @@ end
 
 function NLUI.pill(panel, x, y, w, text, kind)
     local fill = kind == "good" and C.green or kind == "warn" and C.yellow
-        or kind == "bad" and C.red or C.frameMid
-    rect(panel, x, y, w, 20, C.borderDark)
-    rect(panel, x+1, y+1, w-2, 18, fill)
+        or kind == "bad" and C.red or C.chrome
+    NLUI.roundedRect(panel, x, y, w, 22, fill, 1)
+    NLUI.roundedRect(panel, x + 3, y + 2, w - 6, 7, C.buttonShine, 0.24)
     if panel.drawText then
-        panel:drawText(text or "", x+7, y+3, C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
+        panel:drawText(text or "", x + 10, y + 4, C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
     end
 end
 
 function NLUI.monogram(panel, x, y, size, name)
-    rect(panel, x, y, size, size, C.borderDark)
-    rect(panel, x+3, y+3, size-6, size-6, C.wellDark)
-    rect(panel, x+7, y+7, size-14, size-14, C.frameMid)
+    NLUI.roundedRect(panel, x + 2, y + 3, size, size, C.shadow, 0.18)
+    NLUI.roundedRect(panel, x, y, size, size, C.chromeSoft, 1)
+    NLUI.roundedRect(panel, x + 4, y + 4, size - 8, size - 8, C.surfaceLift, 0.96)
     local initial = tostring(name or "?"):sub(1,1):upper()
     if panel.drawText then
-        panel:drawText(initial, x+math.floor(size*0.42), y+math.floor(size*0.36),
-            C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
+        panel:drawText(initial, x + math.floor(size * 0.43), y + math.floor(size * 0.37),
+            C.chromeDeep.r, C.chromeDeep.g, C.chromeDeep.b, 1, UIFont.Small)
     end
 end
 
 function NLUI.metric(panel, label, valueText, x, y, w, value, kind)
     if panel.drawText then
         panel:drawText(label, x, y, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
-        panel:drawText(valueText or "", x+w-44, y, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+        if panel.drawTextRight then
+            panel:drawTextRight(valueText or "", x + w, y, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+        end
     end
-    NLUI.progress(panel, x, y+18, w, 12, value, kind)
+    NLUI.progress(panel, x, y + 18, w, 12, value, kind)
+end
+
+function NLUI.itemLabel(fullType)
+    local raw = tostring(fullType or "")
+    raw = raw:gsub("^.-%.", "")
+    local overrides = {
+        RippedSheets = "Ripped Sheets",
+        Nails = "Nails",
+        Plank = "Plank",
+    }
+    if overrides[raw] then return overrides[raw] end
+    raw = raw:gsub("_", " ")
+    raw = raw:gsub("(%l)(%u)", "%1 %2")
+    raw = raw:gsub("(%a)(%d)", "%1 %2")
+    return raw
 end
 
 return NLUI
