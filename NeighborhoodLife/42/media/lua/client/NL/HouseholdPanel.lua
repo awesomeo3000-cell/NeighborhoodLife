@@ -123,7 +123,7 @@ function NLHouseholdPanel:prerender()
         for i, member in ipairs(household.members or {}) do
             local cardX = x + ((i - 1) % 3) * 208
             local cardY = y + math.floor((i - 1) / 3) * 70
-            self:drawRect(cardX, cardY, 194, 56, 1, C.wellAlt.r, C.wellAlt.g, C.wellAlt.b)
+            NLUI.card(self, cardX, cardY, 194, 56, true)
             NLUI.monogram(self, cardX + 8, cardY + 8, 40, member.username)
             self:drawText(member.username, cardX + 56, cardY + 8,
                 C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
