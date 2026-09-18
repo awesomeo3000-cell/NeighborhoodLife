@@ -1,11 +1,11 @@
 require "ISUI/ISPanel"
-require "ISUI/ISButton"
 require "NL/Journal"
 require "NL/Relationships"
 require "NL/WardrobePanel"
 require "NL/HouseholdPanel"
 require "NL/Plumbob"
 require "NL/UITheme"
+require "NL/SimsButton"
 pcall(require, "NL/NpcInteractionMenu")
 pcall(require, "NL/NpcSinglePlayer")
 
@@ -39,17 +39,15 @@ function NeighborhoodNeeds.read(player, key)
 end
 
 function NeighborhoodNeeds:new(index, player)
-    local font = getTextManager():getFontHeight(UIFont.Small)
-    local o = ISPanel.new(self, 0, 0, 500, 320)
+    local o = ISPanel.new(self, 0, 0, 560, 220)
     o.playerIndex, o.player = index, player
-    o.rowHeight = math.max(31, font + 17)
-    o.headerHeight = 48
-    o.navButtonHeight = 30
+    o.headerHeight = 32
+    o.navButtonHeight = 31
     o.navGap = 6
-    o.needsTop = 76
-    o.navTop = o.needsTop + 3 * o.rowHeight + 24
-    o.expandedHeight = o.navTop + o.navButtonHeight + 18
+    o.navTop = 175
+    o.expandedHeight = 214
     o.collapsed = false
+    o.plumbobTexture = getTexture and getTexture("media/textures/NL_Plumbob.png") or nil
     NLUI.applyPanel(o)
     o:setHeight(o.expandedHeight)
     return o
@@ -59,9 +57,9 @@ function NeighborhoodNeeds:initialise()
     ISPanel.initialise(self)
     self.navButtons = {}
     for i, item in ipairs(self.nav) do
-        local button = ISButton:new(0, 0, 80, self.navButtonHeight, item[1], self, self.onNavButton)
+        local button = NLSimsButton:new(0, 0, 90, self.navButtonHeight, item[1], self, self.onNavButton)
         button.action = item[2]
-        NLUI.styleButton(button)
+        button:setKind("ghost")
         button:initialise()
         self:addChild(button)
         self.navButtons[i] = button
@@ -77,7 +75,7 @@ function NeighborhoodNeeds.playerName(player, index)
 end
 
 function NeighborhoodNeeds.header(player, index)
-    return "NEIGHBORHOOD LIFE / " .. NeighborhoodNeeds.playerName(player, index)
+    return "Neighborhood Life / " .. NeighborhoodNeeds.playerName(player, index)
 end
 
 function NeighborhoodNeeds:dataStatus()
@@ -96,11 +94,11 @@ end
 
 function NeighborhoodNeeds:layoutNav()
     if not self.navButtons then return end
-    local inner = self.width - 32
+    local inner = self.width - 28
     local gap = self.navGap
     local buttonWidth = math.floor((inner - gap * 4) / 5)
     for i, button in ipairs(self.navButtons) do
-        button:setX(16 + (i - 1) * (buttonWidth + gap))
+        button:setX(14 + (i - 1) * (buttonWidth + gap))
         button:setY(self.navTop)
         button:setWidth(buttonWidth)
         button:setVisible(not self.collapsed)
@@ -136,11 +134,11 @@ function NeighborhoodNeeds:onMouseDown(x, y)
     return true
 end
 
-local function drawHeader(panel)
-    panel:drawRect(0, 0, panel.width, panel.height, 0.42, C.shadow.r, C.shadow.g, C.shadow.b)
-    panel:drawRect(0, 0, panel.width, panel.headerHeight, 1, C.frameDark.r, C.frameDark.g, C.frameDark.b)
-    panel:drawRect(3, 3, panel.width - 6, panel.headerHeight - 6, 1, C.headerBottom.r, C.headerBottom.g, C.headerBottom.b)
-    panel:drawRect(4, 4, panel.width - 8, 18, 1, C.headerTop.r, C.headerTop.g, C.headerTop.b)
+local function drawDockFrame(panel)
+    NLUI.roundedRect(panel, 6, 7, panel.width, panel.height - 3, C.shadow, 0.30)
+    NLUI.roundedRect(panel, 0, 0, panel.width, panel.height, C.chromeDeep, 0.97)
+    NLUI.roundedRect(panel, 3, 3, panel.width - 6, panel.height - 6, C.chrome, 0.97)
+    NLUI.roundedRect(panel, 6, 6, panel.width - 12, panel.headerHeight - 7, C.chromeBright, 1)
 end
 
 function NeighborhoodNeeds:prerender()
@@ -150,57 +148,67 @@ function NeighborhoodNeeds:prerender()
 
     local left, top = getPlayerScreenLeft(self.playerIndex), getPlayerScreenTop(self.playerIndex)
     local width, height = getPlayerScreenWidth(self.playerIndex), getPlayerScreenHeight(self.playerIndex)
-    local uiScale = math.max(1.0, math.min(1.35, (width or 1920) / 1920))
-    local targetWidth = math.floor(500 * uiScale)
-    self:setWidth(math.min(targetWidth, math.max(360, width - 24)))
-    self:setX(left + 12)
-    self:setY(top + math.max(12, height - self.height - 84))
+    local uiScale = math.max(1.0, math.min(1.24, (width or 1920) / 1920))
+    local targetWidth = math.floor(560 * uiScale)
+    self:setWidth(math.min(targetWidth, math.max(420, width - 28)))
+    self:setX(left + 14)
+    self:setY(top + math.max(12, height - self.height - 28))
     self:layoutNav()
 
     ISPanel.prerender(self)
-    drawHeader(self)
+    drawDockFrame(self)
 
     self.title = self.header(player, self.playerIndex)
-    self:drawText(self.title, 14, 8, C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
+    self:drawText(self.title, 14, 9, C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
 
     local ready, total = self:dataStatus()
     self.syncTick = (self.syncTick or 0) + 1
     if ready < total and self.syncTick % 120 == 0 then self:requestFeatureData() end
 
-    local syncText = ready == total and "READY" or ("SYNC " .. tostring(ready) .. "/" .. tostring(total))
-    self:drawTextRight(syncText, self.width - 34, 8,
+    local syncText = ready == total and "Ready" or ("Sync " .. tostring(ready) .. "/" .. tostring(total))
+    self:drawTextRight(syncText, self.width - 34, 9,
         ready == total and C.green.r or C.yellow.r,
         ready == total and C.green.g or C.yellow.g,
         ready == total and C.green.b or C.yellow.b, 1, UIFont.Small)
-    self:drawTextRight(self.collapsed and "+" or "-", self.width - 14, 8,
+    self:drawTextRight(self.collapsed and "+" or "-", self.width - 14, 9,
         C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
 
     if self.collapsed then return end
 
-    self:drawRect(4, self.headerHeight, self.width - 8, self.height - self.headerHeight - 4,
-        1, C.frameMid.r, C.frameMid.g, C.frameMid.b)
-    self:drawRect(8, self.headerHeight + 4, self.width - 16, self.height - self.headerHeight - 12,
-        1, C.well.r, C.well.g, C.well.b)
+    NLUI.roundedRect(self, 8, 36, self.width - 16, 132, C.surface, 0.99)
 
-    self:drawText("Needs", 16, 56, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
-    self:drawText("Lower pressure is better", 62, 56, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+    local profile = NLClient and NLClient.profiles and NLClient.profiles[self.playerIndex]
+    local mood = ready == total and "Life panels ready" or "Loading neighborhood data"
 
-    local columnWidth = math.floor((self.width - 46) / 2)
+    NLUI.card(self, 14, 43, 112, 116, true)
+    if self.plumbobTexture and self.drawTextureScaled then
+        self:drawTextureScaled(self.plumbobTexture, 52, 54, 28, 38, 0.98, 1, 1, 1)
+    else
+        NLUI.roundedRect(self, 57, 56, 20, 32, C.green, 0.95)
+    end
+    self:drawText(NeighborhoodNeeds.playerName(player, self.playerIndex), 26, 102,
+        C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
+    self:drawText(mood, 24, 124, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+
+    local needsX = 144
+    local available = self.width - needsX - 18
+    local colGap = 18
+    local columnWidth = math.floor((available - colGap) / 2)
+
     for i, row in ipairs(self.rows) do
         local col = (i - 1) % 2
         local line = math.floor((i - 1) / 2)
-        local x = 16 + col * (columnWidth + 14)
-        local y = self.needsTop + line * self.rowHeight
+        local x = needsX + col * (columnWidth + colGap)
+        local y = 48 + line * 38
         local value = self.read(player, row[2])
 
         self:drawText(row[1], x, y, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
         local label = value and (tostring(math.floor(value * 100 + 0.5)) .. "%") or "N/A"
-        self:drawTextRight(label, x + columnWidth, y, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
-        NLUI.progress(self, x, y + 18, columnWidth, 12, value or 0, value and NLUI.needColor(value) or "yellow")
+        self:drawTextRight(label, x + columnWidth, y,
+            C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+        NLUI.progress(self, x, y + 18, columnWidth, 12, value or 0,
+            value and NLUI.needColor(value) or "yellow")
     end
-
-    self:drawText("Life Panels", 16, self.navTop - 21,
-        C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
 end
 
 function NeighborhoodNeeds.create(index, player)
