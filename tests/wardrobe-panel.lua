@@ -1,2 +1,1 @@
-arg[2]='wardrobe-panel'
-dofile('E:/pzmod/tests/interfaces.lua')
+arg[2]='wardrobe-panel'\ndofile('tests/interfaces.lua')\n
