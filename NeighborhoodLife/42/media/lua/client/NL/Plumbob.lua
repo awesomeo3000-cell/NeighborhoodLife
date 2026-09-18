@@ -16,7 +16,7 @@ NLPlumbob.remoteColor = { r = 0.28, g = 0.86, b = 0.95 }
 -- draws a texture at native dimensions instead of honoring a scaled panel.
 NLPlumbob.baseWidth = 12
 NLPlumbob.baseHeight = 16
-NLPlumbob.baseLift = 64
+NLPlumbob.baseLift = 150
 
 function NLPlumbob.screenPosition(screenX, screenY, left, top, width, height, lift)
     return math.floor(screenX - left - width / 2), math.floor(screenY - top - height - lift)
@@ -74,13 +74,19 @@ function NLPlumbob:positionOverCharacter()
         return false
     end
 
-    -- The character model grows on screen with the game zoom, so the world-to-
-    -- screen lift must grow with it too (the older 1/zoom scale shrank the gap
-    -- and dropped the marker onto the torso when zoomed in).
+    -- In Project Zomboid, Core.getZoom(player) returns values where zoom < 1.0
+    -- is zoomed IN (larger on-screen character model) and zoom > 1.0 is zoomed OUT.
+    -- The world height of the character on screen scales as (baseHeight / zoom),
+    -- so the world-to-screen lift must scale with (1 / zoom) to remain floating
+    -- atop the character's head across all zoom levels.
     local zoom = 1
-    if getCore and getCore().getZoom then zoom = math.max(0.25, tonumber(getCore():getZoom(index)) or 1) end
-    local zoomScale = math.max(0.5, math.min(4, zoom))
-    local sizeScale = math.max(0.85, math.min(1.5, zoom))
+    if getCore and getCore().getZoom then
+        local ok, val = pcall(getCore().getZoom, getCore(), index)
+        if ok and tonumber(val) then zoom = tonumber(val) end
+    end
+    zoom = math.max(0.25, math.min(4, zoom))
+    local liftScale = 1 / zoom
+    local sizeScale = math.max(0.75, math.min(1.5, 1 / zoom))
     local width, height = math.floor(NLPlumbob.baseWidth * sizeScale),
         math.floor(NLPlumbob.baseHeight * sizeScale)
     self:setWidth(width)
@@ -91,9 +97,9 @@ function NLPlumbob:positionOverCharacter()
     local sx = isoToScreenX(index, worldX, worldY, worldZ)
     local sy = isoToScreenY(index, worldX, worldY, worldZ)
     local left, top = getPlayerScreenLeft(index), getPlayerScreenTop(index)
-    -- Lift the bottom tip past the full player model, leaving the gem above the head.
+    -- Lift the bottom tip past the full player model, leaving the gem atop the head.
     local x, y = NLPlumbob.screenPosition(sx, sy, left, top, width, height,
-        math.floor(NLPlumbob.baseLift * zoomScale))
+        math.floor(NLPlumbob.baseLift * liftScale))
     self:setX(x)
     self:setY(y)
     self:setVisible(true)

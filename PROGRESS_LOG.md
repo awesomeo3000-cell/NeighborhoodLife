@@ -108,7 +108,19 @@ Any developer or AI agent picking up this project can review this file to immedi
   - Wired the single-player bridge (`NpcSinglePlayer.lua`), the NPC client replica path (`NpcClient.lua`) and the remote-player replica path (`RemotePlayerClient.lua`) into the registry, including native-body promotion and cleanup.
   - **Live In-Engine Verification**:
     - `tools/run-singleplayer-qa.ps1` passes and now also captures a world-view screenshot (`test-profile/Screenshots/NLQANPCVIEW`) with the UI hidden and the player teleported beside Marisol; the screenshot shows the NPC model rendered.
-    - Added `tests/npc-render.lua` plus registry assertions in `tests/npc-client.lua` and `tests/remote-player-client.lua`; full `tools/pipeline.py test` (Lua 5.1, syntax and installed-game Kahlua) passes.
+- **Phase 10 (Completed)**: **Fix Plumbob and Thought Bubble Overhead Placement in Build 42**.
+  - **Root Cause Discovered**:
+    1. In Project Zomboid's isometric camera engine, `Core.getZoom(playerIndex)` returns values where `zoom < 1.0` is zoomed IN (e.g. `0.25`, `0.5`, `0.75`), which draws characters larger on screen, and `zoom > 1.0` is zoomed OUT (e.g. `1.5`, `2.0`, `2.5`).
+    2. Character screen height from feet (`isoToScreenY`) scales as `worldHeight / zoom`. To maintain correct overhead placement above the character's head across all zoom levels, world-to-screen lift must scale inversely as `1 / zoom`.
+    3. `NLPlumbob.lua` and `NLThoughtBubble.lua` incorrectly multiplied by `zoom` rather than dividing by `zoom`. Furthermore, `baseLift` was set to only `64` for plumbobs and `82` for thought bubbles, which is far below human character height (~135-140 world px). When zoomed in (e.g. zoom 0.5), the lift shrank to ~32px, placing plumbobs directly at the ankles/feet.
+  - **Fixes Applied**:
+    1. `NeighborhoodLife/42/media/lua/client/NL/Plumbob.lua`: Increased `baseLift` to `150` and updated `positionOverCharacter()` to use `liftScale = 1 / zoom` with inverted size scaling (`sizeScale = math.max(0.75, math.min(1.5, 1 / zoom))`), placing the plumbob comfortably atop the character's head.
+    2. `NeighborhoodLife/42/media/lua/client/NL/ThoughtBubble.lua`: Increased `LIFT` to `160` and updated `positionAll()` to use `liftScale = 1 / zoom` with inverted size scaling (`sizeScale = math.max(0.75, math.min(1.4, 1 / zoom))`), placing reaction bubbles atop the character's head.
+    3. `tests/plumbob.lua` and `tests/thought-bubble.lua`: Updated unit tests to assert proper overhead lift and verified inverse zoom scaling at `zoom = 0.5`.
+  - **Verification Completed**:
+    - `python tools/pipeline.py test`: PASS (Lua 5.1 and Project Zomboid Kahlua VM).
+    - `tools/run-singleplayer-qa.ps1`: PASS in live engine runtime.
+    - Synchronized production mod to `C:\Users\clare\Zomboid\mods\NeighborhoodLife`.
 
 ---
 
