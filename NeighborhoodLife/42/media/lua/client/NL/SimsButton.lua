@@ -33,6 +33,12 @@ local function hovered(button)
     return button.mouseOver == true
 end
 
+local function buttonTitle(button)
+    if button.title and button.title ~= "" then return tostring(button.title) end
+    if button.name and button.name ~= "" then return tostring(button.name) end
+    return ""
+end
+
 function NLSimsButton:prerender()
     local enabled = self.enable ~= false
     local kind = self.nlKind or "primary"
@@ -56,13 +62,23 @@ function NLSimsButton:prerender()
         fill, edge, shine, text = C.disabled, C.disabledEdge, C.disabledShine, C.disabledText
     end
 
-    NLUI.roundedRect(self, 0, 2, self.width, self.height - 3, C.shadow, 0.26)
+    NLUI.roundedRect(self, 0, 2, self.width, self.height - 3, C.shadow, 0.18)
     NLUI.roundedRect(self, 0, 0, self.width, self.height - 3, edge, 1)
     NLUI.roundedRect(self, 2, 2, self.width - 4, self.height - 7, fill, 1)
-    NLUI.roundedRect(self, 4, 3, self.width - 8, math.max(5, math.floor((self.height - 8) * 0.34)), shine, 0.34)
+    NLUI.roundedRect(self, 4, 3, self.width - 8,
+        math.max(4, math.floor((self.height - 8) * 0.28)), shine, 0.24)
 
-    self.textColor = text
-    ISButton.prerender(self)
+    -- ISButton.prerender() paints its own disabled background. That was
+    -- producing black rectangles in-game and undoing the custom control.
+    -- Keep ISButton for input behavior, but render the label ourselves.
+    local title = buttonTitle(self)
+    local textY = math.max(4, math.floor((self.height - 14) / 2) - 1)
+    if self.drawTextCentre then
+        self:drawTextCentre(title, math.floor(self.width / 2), textY,
+            text.r, text.g, text.b, 1, UIFont.Small)
+    elseif self.drawText then
+        self:drawText(title, 8, textY, text.r, text.g, text.b, 1, UIFont.Small)
+    end
 end
 
 return NLSimsButton
