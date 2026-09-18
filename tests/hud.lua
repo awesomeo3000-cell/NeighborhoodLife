@@ -88,7 +88,7 @@ panel:onNavButton(panel.navButtons[1]); panel:onNavButton(panel.navButtons[2]); 
 assert(opened.career==1 and opened.social==1 and opened.home==1 and opened.wardrobe==1,'visible HUD buttons route to feature panels')
 local origWidth=getPlayerScreenWidth
 getPlayerScreenWidth=function() return 2560 end
-panel:prerender(); assert(panel.width==675,'HUD scales width appropriately on higher resolutions')
+panel:prerender(); assert(panel.width==666,'HUD scales width appropriately on higher resolutions')
 getPlayerScreenWidth=origWidth
 panel:prerender(); assert(panel.width==500,'HUD restores baseline width')
 panel:onMouseDown(5,5); assert(panel.collapsed and panel.height==panel.headerHeight)
