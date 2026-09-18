@@ -88,6 +88,7 @@ function NLSimsButton:prerender()
     -- ISButton.prerender() paints its own disabled background. That was
     -- producing black rectangles in-game and undoing the custom control.
     -- Keep ISButton for input behavior, but render the label ourselves.
+    self.textColor = text
     local title = buttonTitle(self)
     local textY = math.max(4, math.floor((self.height - 14) / 2) - 1)
     if self.drawTextCentre then
@@ -96,6 +97,10 @@ function NLSimsButton:prerender()
     elseif self.drawText then
         self:drawText(title, 8, textY, text.r, text.g, text.b, 1, UIFont.Small)
     end
+end
+
+function NLSimsButton:render()
+    -- Intentionally no-op to prevent ISButton:render from overwriting custom styled text
 end
 
 return NLSimsButton

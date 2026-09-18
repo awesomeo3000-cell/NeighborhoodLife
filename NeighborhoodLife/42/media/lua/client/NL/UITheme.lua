@@ -66,7 +66,8 @@ NLUI.colors = {
     plumbobGreenDark = { r=0.08, g=0.56, b=0.18, a=1.00 },
     plumbobGreenLight = { r=0.55, g=0.98, b=0.60, a=1.00 },
 
-    track = { r=0.36, g=0.47, b=0.52, a=0.88 },
+    track = { r=0.78, g=0.86, b=0.92, a=0.85 },
+    trackEdge = { r=0.55, g=0.72, b=0.84, a=0.85 },
     green = { r=0.27, g=0.78, b=0.30, a=1.00 },
     greenDark = { r=0.12, g=0.50, b=0.17, a=1.00 },
     yellow = { r=0.95, g=0.72, b=0.19, a=1.00 },
@@ -202,8 +203,9 @@ end
 
 function NLUI.progress(panel, x, y, w, h, value, kind)
     value = NLUI.clamp(value, 0, 1)
-    NLUI.roundedRect(panel, x, y, w, h, C.track, 0.82)
-    NLUI.roundedRect(panel, x + 2, y + 2, w - 4, h - 4, C.surfaceLift, 0.20)
+    NLUI.roundedRect(panel, x, y, w, h, C.trackEdge or C.track, 0.90)
+    NLUI.roundedRect(panel, x + 1, y + 1, w - 2, h - 2, C.track, 0.95)
+    NLUI.roundedRect(panel, x + 2, y + 2, w - 4, h - 4, C.surfaceLift, 0.35)
 
     local fill = C.green
     if kind == "pink" then fill = C.pink

@@ -138,11 +138,31 @@ local function playerItemCount(playerIndex, fullType)
     return 0
 end
 
+local function drawCareerInsignia(panel, x, y, size, careerName, rank)
+    NLUI.roundedRect(panel, x + 2, y + 3, size, size, C.shadow, 0.18)
+    NLUI.roundedRect(panel, x, y, size, size, C.chromeBright, 1)
+    NLUI.roundedRect(panel, x + 2, y + 2, size - 4, size - 4, C.chromeSoft, 1)
+    NLUI.roundedRect(panel, x + 4, y + 4, size - 8, size - 8, C.surfaceLift, 0.98)
+
+    -- Centered Plumbob on top half
+    NLUI.drawPlumbob(panel, x + math.floor(size / 2), y + 16, 18, 0.95)
+
+    -- Centered Career Initial and Rank below plumbob
+    local initial = tostring(careerName or "?"):sub(1,1):upper()
+    local rankLabel = initial .. " • " .. tostring(rank or 1)
+    if panel.drawTextCentre then
+        panel:drawTextCentre(rankLabel, x + math.floor(size / 2), y + 34,
+            C.chromeDeep.r, C.chromeDeep.g, C.chromeDeep.b, 1, UIFont.Small)
+    elseif panel.drawText then
+        panel:drawText(rankLabel, x + 8, y + 34,
+            C.chromeDeep.r, C.chromeDeep.g, C.chromeDeep.b, 1, UIFont.Small)
+    end
+end
+
 local function drawCareerCard(panel, profile, definition, progress)
     NLUI.card(panel, 26, 150, 668, 104, true)
 
-    NLUI.monogram(panel, 42, 168, 58, definition.name)
-    NLUI.drawPlumbob(panel, 92, 176, 16, 0.95)
+    drawCareerInsignia(panel, 42, 168, 58, definition.name, progress.rank)
     panel:drawText(definition.name, 116, 166,
         C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
     panel:drawText(definition.ranks[progress.rank], 116, 187,
@@ -264,12 +284,17 @@ function NLJournal:prerender()
 
     self.workButton:setEnable(not worked)
 
-    NLUI.sectionTitle(self, 28, 448, "Aspiration")
-    NLUI.card(self, 28, 472, 664, 44, false)
-    self:drawText(NLAspirations.label(profile), 44, 484,
+    NLUI.sectionTitle(self, 28, 448, "Aspiration Milestones")
+    local cardW = 326
+    NLUI.card(self, 28, 470, cardW, 48, false)
+    self:drawText("CAREER GOAL", 38, 476, C.chrome.r, C.chrome.g, C.chrome.b, 1, UIFont.Small)
+    self:drawText(NLAspirations.label(profile), 38, 494,
         C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
-    self:drawText(NLAspirations.homeLabel(profile), 352, 484,
-        C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+
+    NLUI.card(self, 366, 470, cardW, 48, false)
+    self:drawText("HOME GOAL", 376, 476, C.chrome.r, C.chrome.g, C.chrome.b, 1, UIFont.Small)
+    self:drawText(NLAspirations.homeLabel(profile), 376, 494,
+        C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
 
     local nextRank = NLDefinitions.promotions[progress.rank + 1]
     local nextText = nextRank and ("Next rank: skill " .. nextRank.skill .. ", " .. nextRank.xp
