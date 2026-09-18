@@ -93,15 +93,15 @@ assert(NeighborhoodNeeds.read(players[0],'MISSING')==nil)
 assert(NeighborhoodNeeds.read(player(0/0),'HUNGER')==nil)
 local panel=NeighborhoodNeeds.instances[0]
 assert(#panel.navButtons==5,'HUD exposes five visible feature buttons')
-panel:prerender(); assert(panel.x==14 and panel.y>=0 and panel.width==560)
+panel:prerender(); assert(panel.x==14 and panel.y>=0 and panel.width==600)
 for _,b in ipairs(panel.navButtons) do assert(b.visible and b.width>0,'feature navigation button is visible') end
 panel:onNavButton(panel.navButtons[1]); panel:onNavButton(panel.navButtons[2]); panel:onNavButton(panel.navButtons[3]); panel:onNavButton(panel.navButtons[5])
 assert(opened.career==1 and opened.social==1 and opened.home==1 and opened.wardrobe==1,'visible HUD buttons route to feature panels')
 local origWidth=getPlayerScreenWidth
 getPlayerScreenWidth=function() return 2560 end
-panel:prerender(); assert(panel.width==694,'HUD scales width appropriately on higher resolutions')
+panel:prerender(); assert(panel.width==744,'HUD scales width appropriately on higher resolutions')
 getPlayerScreenWidth=origWidth
-panel:prerender(); assert(panel.width==560,'HUD restores baseline width')
+panel:prerender(); assert(panel.width==600,'HUD restores baseline width')
 panel:onMouseDown(5,5); assert(panel.collapsed and panel.height==panel.headerHeight)
 for _,b in ipairs(panel.navButtons) do assert(not b.visible,'navigation hides with collapsed HUD') end
 panel:prerender(); panel:onMouseDown(5,5); assert(not panel.collapsed)
