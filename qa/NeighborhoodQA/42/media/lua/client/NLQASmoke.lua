@@ -132,6 +132,21 @@ Events.OnRenderTick.Add(function()
             NLConversationOverlay.open = oldOpen
         end
         assert(overlayOpened, "context talk option opens the production conversation overlay")
+
+        -- The real Build 42 mouse context stores a clicked IsoPlayer under
+        -- fetchVars.clickedPlayer instead of the Lua worldobjects list.
+        local fetch = ISWorldObjectContextMenu and ISWorldObjectContextMenu.fetchVars
+        if fetch then
+            local previousClicked = fetch.clickedPlayer
+            fetch.clickedPlayer = marisol
+            local clickedContext = { options = {}, addOption = mockContext.addOption }
+            NLNpcInteractionMenu.menu(0, clickedContext, {})
+            fetch.clickedPlayer = previousClicked
+            assert(#clickedContext.options >= 2,
+                "real clicked-player context did not discover the authored NPC")
+            assert(string.find(clickedContext.options[1].text, "^Talk to ") == 1,
+                "clicked-player discovery exposes the conversation entry")
+        end
         print("NLQA PASS: NPC context menu verified for Marisol: " .. tostring(mockContext.options[1].text))
     end
 

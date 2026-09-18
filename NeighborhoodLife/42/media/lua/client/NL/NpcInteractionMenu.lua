@@ -194,11 +194,30 @@ function NLNpcInteractionMenu.talk(player, id, body)
     end
 end
 
+-- Build 42's mouse context logic stores a clicked IsoPlayer under
+-- ISWorldObjectContextMenu.fetchVars.clickedPlayer instead of adding it to the
+-- Lua worldobjects list (only animals are appended there). Read both sources so
+-- a real right-click on an authored neighbor discovers the conversation entry.
+local function candidateObjects(worldobjects)
+    local candidates = {}
+    for _, object in ipairs(worldobjects or {}) do
+        candidates[#candidates + 1] = object
+    end
+    local fetch = ISWorldObjectContextMenu and ISWorldObjectContextMenu.fetchVars
+    local clickedPlayer = fetch and fetch.clickedPlayer
+    if clickedPlayer then
+        candidates[#candidates + 1] = clickedPlayer
+    end
+    return candidates
+end
+
+NLNpcInteractionMenu.candidateObjects = candidateObjects
+
 function NLNpcInteractionMenu.menu(index, context, worldobjects)
     local player = getSpecificPlayer(index)
     if not player or player:isDead() or not context then return end
     local seen = {}
-    for _, object in ipairs(worldobjects or {}) do
+    for _, object in ipairs(candidateObjects(worldobjects)) do
         local id = idFromObject(object)
         if id and not seen[id] then
             seen[id] = true

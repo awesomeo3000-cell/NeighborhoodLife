@@ -154,6 +154,11 @@ SYNTAX INPUT: E:\pzmod
 SYNTAX OUTPUT: 
 SYNTAX STDERR: 
 SYNTAX EXIT: 0
+SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\SimsButton.lua
+SYNTAX INPUT: E:\pzmod
+SYNTAX OUTPUT: 
+SYNTAX STDERR: 
+SYNTAX EXIT: 0
 SYNTAX COMMAND: "C:\Program Files (x86)\Lua\5.1\luac.exe" -p E:\pzmod\NeighborhoodLife\42\media\lua\client\NL\SocialClient.lua
 SYNTAX INPUT: E:\pzmod
 SYNTAX OUTPUT: 

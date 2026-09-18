@@ -82,6 +82,31 @@ context.options[2].callback(context.options[2].target, unpack(context.options[2]
 assert(#NLRelationships.opens == 1 and NLRelationships.opens[1] == 0,
     'relationship profile action opens for the current player')
 
+-- Build 42 mouse context logic stores a clicked IsoPlayer under
+-- ISWorldObjectContextMenu.fetchVars.clickedPlayer instead of the Lua
+-- worldobjects list, so the entry point must read both sources.
+ISWorldObjectContextMenu = { fetchVars = { clickedPlayer = object } }
+local clickedContext = newMenu()
+eventHook(0, clickedContext, {}, false)
+assert(#clickedContext.options == 2, 'real clicked-player context discovers the authored NPC')
+assert(clickedContext.options[1].label == 'Talk to Marisol Vega',
+    'clicked-player discovery opens the conversation overlay')
+clickedContext.options[1].callback(clickedContext.options[1].target,
+    unpack(clickedContext.options[1].args))
+assert(#NLConversationOverlay.opens == 2
+    and NLConversationOverlay.opens[2].id == 'marisol'
+    and NLConversationOverlay.opens[2].body == object,
+    'clicked-player discovery passes the clicked NPC body to the overlay')
+
+local stranger = { data = {} }
+function stranger:getModData() return self.data end
+ISWorldObjectContextMenu.fetchVars.clickedPlayer = stranger
+local strangerContext = newMenu()
+eventHook(0, strangerContext, {}, false)
+assert(#strangerContext.options == 0,
+    'non-authored clicked players receive no neighborhood entries')
+ISWorldObjectContextMenu.fetchVars.clickedPlayer = nil
+
 local function requestCount() return #NLSocialClient.requests end
 NLNpcInteractionMenu.activate(player, 'marisol', 'introduce')
 assert(NLSocialClient.requests[requestCount()].command == 'interact'
