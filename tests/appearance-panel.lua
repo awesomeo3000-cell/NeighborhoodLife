@@ -26,6 +26,7 @@ function ISPanel:setX(v) self.x = v end
 function ISPanel:setY(v) self.y = v end
 function ISPanel:prerender() end
 function ISPanel:drawText() end
+function ISPanel:drawRect() end
 ISButton = {}
 function ISButton:new(x,y,w,h,label,target,callback)
     return { title=label, target=target, callback=callback,
