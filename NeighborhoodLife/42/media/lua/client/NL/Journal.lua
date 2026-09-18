@@ -110,10 +110,39 @@ function NLJournal:onButton(button)
     NLClient.request(self.playerIndex, button.action, args)
 end
 
+local function playerItemCount(playerIndex, fullType)
+    local player = getSpecificPlayer(playerIndex)
+    local inventory = player and player.getInventory and player:getInventory()
+    if not inventory or not fullType then return 0 end
+    if inventory.getItemCountRecurse then
+        local ok, count = pcall(inventory.getItemCountRecurse, inventory, fullType)
+        if ok and type(count) == "number" then return count end
+    end
+    if inventory.getItemCount then
+        local ok, count = pcall(inventory.getItemCount, inventory, fullType)
+        if ok and type(count) == "number" then return count end
+    end
+    if inventory.getItems then
+        local ok, items = pcall(inventory.getItems, inventory)
+        if ok and items then
+            local count = 0
+            for i = 0, items:size() - 1 do
+                local item = items:get(i)
+                if item and item.getFullType and item:getFullType() == fullType then
+                    count = count + 1
+                end
+            end
+            return count
+        end
+    end
+    return 0
+end
+
 local function drawCareerCard(panel, profile, definition, progress)
     NLUI.card(panel, 26, 150, 668, 104, true)
 
-    NLUI.monogram(panel, 42, 170, 58, definition.name)
+    NLUI.monogram(panel, 42, 168, 58, definition.name)
+    NLUI.drawPlumbob(panel, 92, 176, 16, 0.95)
     panel:drawText(definition.name, 116, 166,
         C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
     panel:drawText(definition.ranks[progress.rank], 116, 187,
@@ -215,15 +244,22 @@ function NLJournal:prerender()
     for i, contract in ipairs(contracts) do
         local y = 292 + (i - 1) * 50
         local done = profile.claimed[contract.id]
-        NLUI.card(self, 28, y, 500, 42, false)
+        local countInBackpack = playerItemCount(self.playerIndex, contract.item)
+        local hasEnough = countInBackpack >= (contract.amount or 1)
+        NLUI.card(self, 28, y, 506, 42, false)
 
         self:drawText(tostring(contract.amount) .. " x " .. NLUI.itemLabel(contract.item),
-            48, y + 13, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
+            44, y + 13, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
 
         if done then
-            NLUI.pill(self, 404, y + 10, 102, "DONE", "good")
+            NLUI.pill(self, 370, y + 10, 150, "DELIVERED", "neutral")
+        elseif hasEnough then
+            NLUI.pill(self, 330, y + 10, 190, "READY (" .. countInBackpack .. "/" .. contract.amount .. ")", "good")
+        else
+            NLUI.pill(self, 330, y + 10, 190, "NEED (" .. countInBackpack .. "/" .. contract.amount .. ")", "warn")
         end
         self.deliverButtons[i]:setEnable(not done)
+        self.deliverButtons[i]:setKind(hasEnough and not done and "primary" or "ghost")
     end
 
     self.workButton:setEnable(not worked)

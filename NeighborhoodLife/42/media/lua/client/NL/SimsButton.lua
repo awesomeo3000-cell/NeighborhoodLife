@@ -50,14 +50,31 @@ function NLSimsButton:prerender()
         fill, edge, shine, text = C.danger, C.dangerEdge, C.dangerShine, C.textLight
     elseif kind == "tab" then
         fill, edge, shine, text = C.tabFill, C.tabEdge, C.tabShine, C.textLight
+    elseif kind == "friendly" then
+        fill, edge, shine, text = C.buttonFriendly, C.buttonFriendlyEdge, C.buttonFriendlyShine, C.textLight
+    elseif kind == "romance" then
+        fill, edge, shine, text = C.buttonRomance, C.buttonRomanceEdge, C.buttonRomanceShine, C.textLight
+    elseif kind == "accent" then
+        fill, edge, shine, text = C.buttonAccent, C.buttonAccentEdge, C.buttonAccentShine, C.textLight
     end
 
     if self.nlActive then
         fill, edge, shine = C.buttonActive, C.buttonActiveEdge, C.buttonActiveShine
         text = C.textLight
     elseif hovered(self) and enabled then
-        fill, edge, shine = C.buttonHover, C.buttonHoverEdge, C.buttonHoverShine
-        text = C.textLight
+        if kind == "friendly" then
+            fill, edge, shine = C.buttonFriendlyShine, C.buttonFriendlyEdge, C.buttonShine
+            text = C.textDark
+        elseif kind == "romance" then
+            fill, edge, shine = C.buttonRomanceShine, C.buttonRomanceEdge, C.buttonShine
+            text = C.textDark
+        elseif kind == "ghost" then
+            fill, edge, shine = C.surfaceLift, C.chromeSoft, C.buttonShine
+            text = C.chromeDeep
+        else
+            fill, edge, shine = C.buttonHover, C.buttonHoverEdge, C.buttonHoverShine
+            text = C.textLight
+        end
     elseif not enabled then
         fill, edge, shine, text = C.disabled, C.disabledEdge, C.disabledShine, C.disabledText
     end

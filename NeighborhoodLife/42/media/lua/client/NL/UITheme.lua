@@ -50,6 +50,22 @@ NLUI.colors = {
     disabledShine = { r=0.90, g=0.92, b=0.93, a=1.00 },
     disabledText = { r=0.38, g=0.42, b=0.44, a=1.00 },
 
+    buttonFriendly = { r=0.13, g=0.68, b=0.38, a=1.00 },
+    buttonFriendlyEdge = { r=0.08, g=0.48, b=0.26, a=1.00 },
+    buttonFriendlyShine = { r=0.45, g=0.88, b=0.60, a=1.00 },
+
+    buttonRomance = { r=0.89, g=0.28, b=0.48, a=1.00 },
+    buttonRomanceEdge = { r=0.65, g=0.15, b=0.33, a=1.00 },
+    buttonRomanceShine = { r=0.98, g=0.60, b=0.75, a=1.00 },
+
+    buttonAccent = { r=0.08, g=0.55, b=0.82, a=1.00 },
+    buttonAccentEdge = { r=0.04, g=0.38, b=0.62, a=1.00 },
+    buttonAccentShine = { r=0.40, g=0.78, b=0.98, a=1.00 },
+
+    plumbobGreen = { r=0.18, g=0.86, b=0.28, a=1.00 },
+    plumbobGreenDark = { r=0.08, g=0.56, b=0.18, a=1.00 },
+    plumbobGreenLight = { r=0.55, g=0.98, b=0.60, a=1.00 },
+
     track = { r=0.36, g=0.47, b=0.52, a=0.88 },
     green = { r=0.27, g=0.78, b=0.30, a=1.00 },
     greenDark = { r=0.12, g=0.50, b=0.17, a=1.00 },
@@ -210,14 +226,77 @@ function NLUI.needColor(value)
     return "green"
 end
 
+function NLUI.needSatisfactionColor(sat)
+    sat = NLUI.clamp(sat, 0, 1)
+    if sat <= 0.25 then return "red" end
+    if sat <= 0.55 then return "yellow" end
+    return "green"
+end
+
 function NLUI.pill(panel, x, y, w, text, kind)
-    local fill = kind == "good" and C.green or kind == "warn" and C.yellow
-        or kind == "bad" and C.red or C.chrome
-    NLUI.roundedRect(panel, x, y, w, 22, fill, 1)
-    NLUI.roundedRect(panel, x + 3, y + 2, w - 6, 7, C.buttonShine, 0.24)
-    if panel.drawText then
-        panel:drawText(text or "", x + 10, y + 4, C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
+    local fill = C.chrome
+    if kind == "good" then fill = C.green
+    elseif kind == "warn" then fill = C.yellow
+    elseif kind == "bad" then fill = C.red
+    elseif kind == "romance" then fill = C.pink
+    elseif kind == "accent" or kind == "info" then fill = C.chromeBright
+    elseif kind == "neutral" then fill = C.buttonGhostEdge
     end
+    NLUI.roundedRect(panel, x, y, w, 22, fill, 1)
+    NLUI.roundedRect(panel, x + 3, y + 2, w - 6, 7, C.buttonShine, 0.26)
+    if panel.drawText then
+        panel:drawText(text or "", x + 8, y + 4, C.textLight.r, C.textLight.g, C.textLight.b, 1, UIFont.Small)
+    end
+end
+
+function NLUI.drawTraitPills(panel, x, y, maxWidth, traitsStr)
+    if not panel or not traitsStr or traitsStr == "" then return y end
+    local traits = {}
+    for trait in string.gmatch(traitsStr, "[^,]+") do
+        local trimmed = trait:match("^%s*(.-)%s*$")
+        if trimmed and #trimmed > 0 then
+            traits[#traits + 1] = trimmed
+        end
+    end
+    if #traits == 0 then return y end
+
+    local curX = x
+    local curY = y
+    local pillHeight = 20
+    local tm = getTextManager and getTextManager()
+
+    for _, trait in ipairs(traits) do
+        local textW = tm and tm.MeasureStringX and tm:MeasureStringX(UIFont.Small, trait) or (#trait * 7)
+        local pillW = math.max(38, textW + 16)
+        if (curX + pillW) > (x + maxWidth) and curX > x then
+            curX = x
+            curY = curY + pillHeight + 4
+        end
+        NLUI.roundedRect(panel, curX, curY, pillW, pillHeight, C.chromeSoft, 0.90)
+        NLUI.roundedRect(panel, curX + 1, curY + 1, pillW - 2, pillHeight - 2, C.surfaceLift, 0.95)
+        NLUI.roundedRect(panel, curX + 2, curY + 2, pillW - 4, 4, C.buttonShine, 0.35)
+        if panel.drawText then
+            panel:drawText(trait, curX + 8, curY + 3, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
+        end
+        curX = curX + pillW + 6
+    end
+    return curY + pillHeight
+end
+
+function NLUI.drawPlumbob(panel, cx, cy, size, alpha)
+    if not panel then return end
+    alpha = alpha or 1
+    local halfW = math.floor(size * 0.35)
+    local halfH = math.floor(size * 0.5)
+
+    -- Left upper facet
+    rect(panel, cx - halfW, cy - math.floor(halfH * 0.3), halfW, math.floor(halfH * 0.8), C.plumbobGreen, alpha)
+    -- Right upper facet (highlight)
+    rect(panel, cx, cy - math.floor(halfH * 0.3), halfW, math.floor(halfH * 0.8), C.plumbobGreenLight, alpha)
+    -- Lower facet
+    rect(panel, cx - math.floor(halfW * 0.7), cy + math.floor(halfH * 0.5), math.floor(halfW * 1.4), math.floor(halfH * 0.5), C.plumbobGreenDark, alpha)
+    -- Center shine
+    rect(panel, cx - 1, cy - math.floor(halfH * 0.2), 2, math.floor(halfH * 1.1), C.buttonShine, alpha * 0.6)
 end
 
 function NLUI.monogram(panel, x, y, size, name)

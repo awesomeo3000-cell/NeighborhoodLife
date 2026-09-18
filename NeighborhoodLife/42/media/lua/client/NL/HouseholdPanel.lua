@@ -111,11 +111,12 @@ function NLHouseholdPanel:prerender()
         NLUI.pill(self, 34, 224, 150, "INVITE WAITING", "good")
     elseif state.household then
         local household = state.household
-        self:drawText(household.name, 34, 166, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
-        self:drawText("Owner: " .. tostring(household.owner), 34, 188,
+        NLUI.drawPlumbob(self, 42, 172, 22, 0.95)
+        self:drawText(household.name, 62, 166, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
+        self:drawText("Owner: " .. tostring(household.owner), 62, 188,
             C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
         self:drawText("Home tile " .. tostring(household.home.x) .. ", "
-            .. tostring(household.home.y) .. ", " .. tostring(household.home.z), 34, 210,
+            .. tostring(household.home.y) .. ", " .. tostring(household.home.z), 62, 210,
             C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
 
         local x = 34
@@ -133,9 +134,12 @@ function NLHouseholdPanel:prerender()
             if i >= 6 then break end
         end
     else
-        self:drawText("No household yet.", 34, 170, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
-        self:drawText("Create a home or accept an invitation to begin shared progression.",
-            34, 194, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+        NLUI.drawPlumbob(self, 44, 175, 24, 0.95)
+        self:drawText("Found a Household & Establish Safehouse", 68, 166, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
+        self:drawText("• Claim your current safehouse tile as the communal neighborhood home.", 38, 196, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+        self:drawText("• Pool food, building materials, and medicine in Shared Storage.", 38, 218, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+        self:drawText("• Complete morning and evening routines for communal morale boosts.", 38, 240, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+        NLUI.pill(self, 38, 276, 260, "CLICK 'CREATE HOME' ABOVE TO ESTABLISH", "accent")
     end
 
     NLUI.well(self, 18, 390, 664, 98, "SHARED STORAGE", true)

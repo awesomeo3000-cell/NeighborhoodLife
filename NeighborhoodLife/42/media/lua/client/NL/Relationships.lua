@@ -58,26 +58,51 @@ function NLRelationships:initialise()
     self:button(120, 58, 82, "Next >", "next")
     self:button(210, 58, 94, "Refresh", "refresh")
 
+    self.filterTab = "all"
+    self.filterAll = self:button(424, 58, 64, "All", "filter", "all", "tab")
+    self.filterFriendly = self:button(492, 58, 82, "Friendly", "filter", "friendly", "tab")
+    self.filterRomance = self:button(578, 58, 82, "Romance", "filter", "romance", "tab")
+
     self.actions = {}
     self.actionButtons = {}
     local labels = {
-        {"Introduce","introduce"},{"Chat","chat"},{"Joke","joke"},
-        {"Flirt","flirt"},{"Ask on a date","date"},{"Spend time together","date_activity"},
-        {"Become partners","partner"},{"Break up","breakup"},{"Give item","give"},{"Request item","request"},
-        {"Ask about work","ask_work"},{"Talk about home","talk_home"},{"Compliment","compliment"},{"Apologize","apologize"}
+        {"Introduce","introduce","friendly"},{"Chat","chat","friendly"},{"Joke","joke","friendly"},
+        {"Flirt","flirt","romance"},{"Ask on a date","date","romance"},{"Spend time together","date_activity","romance"},
+        {"Become partners","partner","romance"},{"Break up","breakup","romance"},{"Give item","give","friendly"},{"Request item","request","friendly"},
+        {"Ask about work","ask_work","friendly"},{"Talk about home","talk_home","friendly"},{"Compliment","compliment","friendly"},{"Apologize","apologize","friendly"}
     }
 
     for i, value in ipairs(labels) do
-        local col = (i - 1) % 3
-        local row = math.floor((i - 1) / 3)
-        self.actions[i] = self:button(18 + col * 218, 394 + row * 36, 206,
-            value[1], value[2], value[3])
+        local kind = value[3] == "romance" and "romance" or "friendly"
+        self.actions[i] = self:button(18, 394, 206, value[1], value[2], nil, kind)
+        self.actions[i].nlCategory = value[3]
         self.actionButtons[value[2]] = self.actions[i]
+    end
+    self:layoutActions()
+end
+
+function NLRelationships:layoutActions()
+    local visibleIdx = 0
+    for _, btn in ipairs(self.actions) do
+        local matches = (self.filterTab == "all") or (btn.nlCategory == self.filterTab)
+        btn:setVisible(matches)
+        if matches then
+            local col = visibleIdx % 3
+            local row = math.floor(visibleIdx / 3)
+            btn:setX(18 + col * 218)
+            btn:setY(400 + row * 36)
+            visibleIdx = visibleIdx + 1
+        end
     end
 end
 
 function NLRelationships:onButton(button)
     if button.action == "close" then self:setVisible(false); return end
+    if button.action == "filter" then
+        self.filterTab = button.value
+        self:layoutActions()
+        return
+    end
     local data = NLSocialClient.snapshots[self.playerIndex]
     local count = data and #data.neighbors or 0
     if button.action == "next" then self.selected = math.min(count, self.selected + 1); return end
@@ -127,6 +152,12 @@ function NLRelationships:prerender()
             and activeDate and activeDate.status == "active")
     end
 
+    if self.filterAll then
+        NLUI.setButtonActive(self.filterAll, self.filterTab == "all")
+        NLUI.setButtonActive(self.filterFriendly, self.filterTab == "friendly")
+        NLUI.setButtonActive(self.filterRomance, self.filterTab == "romance")
+    end
+
     if not npc then
         self.selected = 1
         NLUI.well(self, 18, 100, 654, 236, "NEIGHBOR")
@@ -138,29 +169,44 @@ function NLRelationships:prerender()
     end
 
     NLUI.well(self, 18, 100, 206, 264, "NEIGHBOR")
-    NLUI.monogram(self, 40, 138, 82, npc.name)
-    self:drawText(npc.name, 40, 232, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
-    self:drawText("Age " .. tostring(npc.age) .. "   |   " .. tostring(npc.relation.status), 40, 254,
+    NLUI.monogram(self, 40, 134, 76, npc.name)
+    NLUI.drawPlumbob(self, 108, 142, 18, 0.95)
+    self:drawText(npc.name, 36, 218, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
+    self:drawText("Age " .. tostring(npc.age) .. "  |  " .. tostring(npc.relation.status), 36, 238,
         C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
-    self:drawText(string.sub(tostring(npc.personality or ""), 1, 24), 40, 276,
-        C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+    NLUI.drawTraitPills(self, 34, 258, 172, tostring(npc.personality or ""))
 
     local relationshipLocation = npc.exclusive
-        and (npc.isPartner and "Your partner" or "In a partnership") or nil
+        and (npc.isPartner and "Partner" or "In partnership") or nil
+    local dist = math.floor(npc.distance or 999)
+    local inRange = npc.available and not npc.dead and (dist <= 4)
     local location
+    local statusText
+    local statusKind
     if npc.dead then
         location = "Deceased"
+        statusText = "DECEASED"
+        statusKind = "bad"
+    elseif nearby then
+        location = "Nearby: " .. dist .. " tiles"
+        statusText = "READY TO TALK"
+        statusKind = "good"
+    elseif inRange then
+        location = "In range: " .. dist .. " tiles"
+        statusText = "FACE NPC"
+        statusKind = "warn"
     elseif npc.available then
-        local distance = math.floor(npc.distance or 0)
-        location = nearby and ("Nearby: " .. distance .. " tiles") or ("Distance: " .. distance .. " tiles")
+        location = "Distance: " .. dist .. " tiles"
+        statusText = dist .. " TILES AWAY"
+        statusKind = "accent"
     else
         location = "Away"
+        statusText = "AWAY"
+        statusKind = "neutral"
     end
     if relationshipLocation then location = location .. " | " .. relationshipLocation end
-    self:drawText(string.sub(location, 1, 30), 40, 306,
-        C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
-    NLUI.pill(self, 40, 328, 150, nearby and "READY TO TALK" or (npc.dead and "UNAVAILABLE" or "NOT NEARBY"),
-        nearby and "good" or "warn")
+    self:drawText(location, 36, 308, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
+    NLUI.pill(self, 34, 330, 172, statusText, statusKind)
 
     NLUI.well(self, 236, 100, 436, 264, "RELATIONSHIP")
     NLUI.metric(self, "Friendship", tostring(npc.relation.friendship), 258, 140, 374,

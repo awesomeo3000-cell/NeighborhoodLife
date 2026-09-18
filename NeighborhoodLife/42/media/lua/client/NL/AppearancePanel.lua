@@ -33,6 +33,15 @@ function NLAppearancePanel:onButton(button)
     end
 end
 
+local function hasGroomingTool(playerIndex)
+    local player = getSpecificPlayer(playerIndex)
+    local inv = player and player.getInventory and player:getInventory()
+    if not inv then return false end
+    if inv.containsTag and inv:containsTag("Scissors") then return true end
+    if inv.containsType and (inv:containsType("Base.Scissors") or inv:containsType("Scissors")) then return true end
+    return false
+end
+
 function NLAppearancePanel:prerender()
     ISPanel.prerender(self)
     NLUI.window(self, "Appearance", "Native Build 42 hair presets")
@@ -43,10 +52,25 @@ function NLAppearancePanel:prerender()
     local current = profile and profile.appearance and profile.appearance.preset or "natural"
 
     NLUI.well(self, 18, 92, 316, 338, "CURRENT LOOK")
-    NLUI.monogram(self, 98, 138, 150, NLAppearance.label(current))
-    self:drawText(NLAppearance.label(current), 104, 306,
-        C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
-    self:drawText("Saved to your Neighborhood Life profile", 54, 338,
+    NLUI.card(self, 78, 126, 196, 154, true)
+    NLUI.drawPlumbob(self, 176, 146, 26, 0.95)
+
+    -- Avatar Headshot Frame
+    NLUI.roundedRect(self, 136, 178, 80, 84, C.chromeSoft, 0.90)
+    NLUI.roundedRect(self, 138, 180, 76, 80, C.surfaceLift, 0.98)
+    local label = NLAppearance.label(current)
+    if self.drawTextCentre then
+        self:drawTextCentre(label, 176, 210, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
+    else
+        self:drawText(label, 148, 210, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
+    end
+
+    NLUI.pill(self, 86, 290, 180, "ACTIVE: " .. label:upper(), "good")
+
+    local hasTool = hasGroomingTool(self.playerIndex)
+    NLUI.pill(self, 46, 324, 260, hasTool and "SCISSORS READY IN INVENTORY" or "SCISSORS / MIRROR RECOMMENDED",
+        hasTool and "good" or "warn")
+    self:drawText("Saved to your Neighborhood Life profile", 42, 360,
         C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
 
     NLUI.well(self, 348, 92, 324, 338, "CHOOSE A PRESET", true)
@@ -56,7 +80,7 @@ function NLAppearancePanel:prerender()
     end
 
     if not profile then
-        self:drawText("Waiting for saved profile data...", 54, 378,
+        self:drawText("Waiting for saved profile data...", 364, 384,
             C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
     end
 

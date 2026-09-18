@@ -31,7 +31,9 @@ package.preload['NL/UITheme']=function()
         applyPanel=function(panel) return panel end,
         styleButton=function(button) return button end,
         progress=function() end, roundedRect=function() end, card=function() end,
-        needColor=function(value) return value>=0.70 and 'red' or value>=0.35 and 'yellow' or 'green' end
+        pill=function() end, drawPlumbob=function() end,
+        needColor=function(value) return value>=0.70 and 'red' or value>=0.35 and 'yellow' or 'green' end,
+        needSatisfactionColor=function(value) return value<=0.25 and 'red' or value<=0.55 and 'yellow' or 'green' end
     }
     return NLUI
 end

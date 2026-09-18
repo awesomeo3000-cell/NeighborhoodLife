@@ -178,18 +178,36 @@ function NeighborhoodNeeds:prerender()
     NLUI.roundedRect(self, 8, 36, self.width - 16, 132, C.surface, 0.99)
 
     local profile = NLClient and NLClient.profiles and NLClient.profiles[self.playerIndex]
-    local mood = ready == total and "Life panels ready" or "Loading neighborhood data"
+
+    -- Calculate average satisfaction across stats to derive player's live mood
+    local totalSat = 0
+    local statCount = 0
+    for _, row in ipairs(self.rows) do
+        local val = self.read(player, row[2])
+        if val then
+            totalSat = totalSat + (1.0 - val)
+            statCount = statCount + 1
+        end
+    end
+    local avgSat = statCount > 0 and (totalSat / statCount) or 0.85
+    local moodLabel = "Content"
+    local moodKind = "good"
+    if avgSat >= 0.85 then moodLabel = "Well Rested"; moodKind = "good"
+    elseif avgSat >= 0.65 then moodLabel = "Content"; moodKind = "good"
+    elseif avgSat >= 0.40 then moodLabel = "Tired / Hungry"; moodKind = "warn"
+    else moodLabel = "In Distress"; moodKind = "bad" end
 
     NLUI.card(self, 14, 43, 128, 116, true)
     if self.plumbobTexture and self.drawTextureScaled then
-        self:drawTextureScaled(self.plumbobTexture, 62, 54, 28, 38, 0.98, 1, 1, 1)
+        self:drawTextureScaled(self.plumbobTexture, 64, 52, 28, 38, 0.98, 1, 1, 1)
+    elseif NLUI.drawPlumbob then
+        NLUI.drawPlumbob(self, 78, 68, 32, 1)
     else
         NLUI.roundedRect(self, 67, 56, 20, 32, C.green, 0.95)
     end
-    self:drawText(NeighborhoodNeeds.playerName(player, self.playerIndex), 24, 102,
+    self:drawText(NeighborhoodNeeds.playerName(player, self.playerIndex), 24, 98,
         C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
-    local moodLabel = ready == total and "Ready" or "Loading"
-    self:drawText(moodLabel, 24, 124, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+    NLUI.pill(self, 20, 124, 116, moodLabel, moodKind)
 
     local needsX = 158
     local available = self.width - needsX - 18
@@ -201,14 +219,16 @@ function NeighborhoodNeeds:prerender()
         local line = math.floor((i - 1) / 2)
         local x = needsX + col * (columnWidth + colGap)
         local y = 48 + line * 38
-        local value = self.read(player, row[2])
+        local deficit = self.read(player, row[2])
+        -- Sims convention: bars represent Satisfaction (100% when fully met, draining as deficit increases)
+        local satisfaction = deficit and math.max(0, math.min(1, 1.0 - deficit)) or 1.0
 
         self:drawText(row[1], x, y, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
-        local label = value and (tostring(math.floor(value * 100 + 0.5)) .. "%") or "N/A"
-        self:drawTextRight(label, x + columnWidth, y,
+        local pctText = deficit and (tostring(math.floor(satisfaction * 100 + 0.5)) .. "%") or "N/A"
+        self:drawTextRight(pctText, x + columnWidth, y,
             C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
-        NLUI.progress(self, x, y + 18, columnWidth, 12, value or 0,
-            value and NLUI.needColor(value) or "yellow")
+        NLUI.progress(self, x, y + 18, columnWidth, 12, satisfaction,
+            NLUI.needSatisfactionColor(satisfaction))
     end
 end
 
