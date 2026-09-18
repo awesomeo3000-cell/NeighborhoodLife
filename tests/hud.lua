@@ -9,6 +9,21 @@ package.preload['NL/HouseholdPanel']=function() NLHouseholdPanel={open=function(
 package.preload['NL/Plumbob']=function() NLPlumbob={} return NLPlumbob end
 package.preload['NL/NpcInteractionMenu']=function() return {} end
 package.preload['NL/NpcSinglePlayer']=function() return {} end
+package.preload['NL/UITheme']=function()
+    NLUI={
+        colors={
+            shadow={r=0,g=0,b=0},frameDark={r=0,g=0.2,b=0.38},frameMid={r=0.03,g=0.36,b=0.63},
+            headerBottom={r=0.04,g=0.38,b=0.69},headerTop={r=0.18,g=0.66,b=0.92},
+            well={r=0.82,g=0.92,b=0.97},textLight={r=1,g=1,b=1},textDark={r=0.04,g=0.18,b=0.29},
+            muted={r=0.23,g=0.39,b=0.49},green={r=0.25,g=0.78,b=0.30},yellow={r=0.94,g=0.70,b=0.19}
+        },
+        applyPanel=function(panel) return panel end,
+        styleButton=function(button) return button end,
+        progress=function() end,
+        needColor=function(value) return value>=0.70 and 'red' or value>=0.35 and 'yellow' or 'green' end
+    }
+    return NLUI
+end
 ISPanel={}
 function ISPanel:derive() local t={}; t.__index=t; setmetatable(t,{__index=self}); return t end
 function ISPanel:new(x,y,w,h) return setmetatable({x=x,y=y,width=w,height=h,children={}},self) end
@@ -67,15 +82,15 @@ assert(NeighborhoodNeeds.read(players[0],'MISSING')==nil)
 assert(NeighborhoodNeeds.read(player(0/0),'HUNGER')==nil)
 local panel=NeighborhoodNeeds.instances[0]
 assert(#panel.navButtons==5,'HUD exposes five visible feature buttons')
-panel:prerender(); assert(panel.x==12 and panel.y>=0 and panel.width==360)
+panel:prerender(); assert(panel.x==12 and panel.y>=0 and panel.width==500)
 for _,b in ipairs(panel.navButtons) do assert(b.visible and b.width>0,'feature navigation button is visible') end
 panel:onNavButton(panel.navButtons[1]); panel:onNavButton(panel.navButtons[2]); panel:onNavButton(panel.navButtons[3]); panel:onNavButton(panel.navButtons[5])
 assert(opened.career==1 and opened.social==1 and opened.home==1 and opened.wardrobe==1,'visible HUD buttons route to feature panels')
 local origWidth=getPlayerScreenWidth
 getPlayerScreenWidth=function() return 2560 end
-panel:prerender(); assert(panel.width==480,'HUD scales width appropriately on higher resolutions')
+panel:prerender(); assert(panel.width==675,'HUD scales width appropriately on higher resolutions')
 getPlayerScreenWidth=origWidth
-panel:prerender(); assert(panel.width==360,'HUD restores baseline width')
+panel:prerender(); assert(panel.width==500,'HUD restores baseline width')
 panel:onMouseDown(5,5); assert(panel.collapsed and panel.height==panel.headerHeight)
 for _,b in ipairs(panel.navButtons) do assert(not b.visible,'navigation hides with collapsed HUD') end
 panel:prerender(); panel:onMouseDown(5,5); assert(not panel.collapsed)
