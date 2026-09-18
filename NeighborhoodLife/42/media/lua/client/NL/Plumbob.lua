@@ -74,11 +74,15 @@ function NLPlumbob:positionOverCharacter()
         return false
     end
 
+    -- The character model grows on screen with the game zoom, so the world-to-
+    -- screen lift must grow with it too (the older 1/zoom scale shrank the gap
+    -- and dropped the marker onto the torso when zoomed in).
     local zoom = 1
-    if getCore and getCore().getZoom then zoom = math.max(0.5, getCore():getZoom(index)) end
-    local scale = math.max(0.72, math.min(1.15, 1 / zoom))
-    local width, height = math.floor(NLPlumbob.baseWidth * scale),
-        math.floor(NLPlumbob.baseHeight * scale)
+    if getCore and getCore().getZoom then zoom = math.max(0.25, tonumber(getCore():getZoom(index)) or 1) end
+    local zoomScale = math.max(0.5, math.min(4, zoom))
+    local sizeScale = math.max(0.85, math.min(1.5, zoom))
+    local width, height = math.floor(NLPlumbob.baseWidth * sizeScale),
+        math.floor(NLPlumbob.baseHeight * sizeScale)
     self:setWidth(width)
     self:setHeight(height)
     local worldX = characterValue(character, "getX", "x")
@@ -89,7 +93,7 @@ function NLPlumbob:positionOverCharacter()
     local left, top = getPlayerScreenLeft(index), getPlayerScreenTop(index)
     -- Lift the bottom tip past the full player model, leaving the gem above the head.
     local x, y = NLPlumbob.screenPosition(sx, sy, left, top, width, height,
-        math.floor(NLPlumbob.baseLift * scale))
+        math.floor(NLPlumbob.baseLift * zoomScale))
     self:setX(x)
     self:setY(y)
     self:setVisible(true)

@@ -71,6 +71,20 @@ function NLThoughtBubble.screenAnchor(index, body)
     return tonumber(screenX) or 0, tonumber(screenY) or 0
 end
 
+-- The character grows on screen with the game zoom; the bubble lift and size
+-- scale with it so a zoomed-in neighbor keeps the reaction above the head.
+function NLThoughtBubble.zoomScale(index)
+    local zoom = 1
+    if type(getCore) == "function" then
+        local core = getCore()
+        if core and core.getZoom then
+            local ok, value = pcall(core.getZoom, core, index)
+            if ok and tonumber(value) then zoom = tonumber(value) end
+        end
+    end
+    return math.max(0.5, math.min(4, zoom))
+end
+
 function NLThoughtBubble.viewport(index)
     local left = type(getPlayerScreenLeft) == "function" and (tonumber(getPlayerScreenLeft(index)) or 0) or 0
     local top = type(getPlayerScreenTop) == "function" and (tonumber(getPlayerScreenTop(index)) or 0) or 0
@@ -236,8 +250,10 @@ function NLThoughtBubble.positionAll()
                 alpha = math.min(alpha, remaining / NLThoughtBubble.FADE_OUT)
             end
             alpha = clamp(alpha, 0, 1)
+            local zoom = NLThoughtBubble.zoomScale(entry.observer)
+            local sizeScale = math.max(0.85, math.min(1.5, zoom))
             local pop = 0.72 + 0.28 * math.min(1, math.max(0, age) / NLThoughtBubble.POP)
-            local size = math.floor(NLThoughtBubble.SIZE * pop)
+            local size = math.floor(NLThoughtBubble.SIZE * pop * sizeScale)
             panel.alpha = alpha
             panel:setWidth(size)
             panel:setHeight(size)
@@ -245,7 +261,7 @@ function NLThoughtBubble.positionAll()
             if anchorX then
                 local viewport = NLThoughtBubble.viewport(entry.observer)
                 local x = anchorX - size / 2
-                local y = anchorY - NLThoughtBubble.LIFT - size
+                local y = anchorY - NLThoughtBubble.LIFT * zoom - size
                 panel:setX(clamp(x, viewport.left + 4, viewport.left + viewport.width - 4 - size))
                 panel:setY(clamp(y, viewport.top + 4, viewport.top + viewport.height - 4 - size))
                 panel:setVisible(true)

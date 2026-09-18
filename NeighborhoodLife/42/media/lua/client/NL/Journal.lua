@@ -13,7 +13,7 @@ local function setBtnVisible(button, visible)
 end
 
 function NLJournal:new(index)
-    local o = ISPanel.new(self, 330, 120, 720, 560)
+    local o = ISPanel.new(self, 330, 120, 720, 610)
     o.playerIndex = index
     NLUI.applyPanel(o)
     return o
@@ -46,20 +46,22 @@ function NLJournal:initialise()
 
     self.deliverButtons = {}
     for i = 1, 3 do
-        self.deliverButtons[i] = self:button(550, 274 + (i - 1) * 58, 128, "Deliver", "deliver", i, "ghost")
+        self.deliverButtons[i] = self:button(550, 298 + (i - 1) * 50, 128,
+            "Deliver", "deliver", i, "ghost")
     end
 
-    self.promoteButton = self:button(28, 484, 164, "Check promotion", "promote", nil, "ghost")
-    self.refreshButton = self:button(202, 484, 106, "Refresh", "refresh", nil, "ghost")
-    self.workButton = self:button(318, 484, 170, "Work shift", "work", nil, "primary")
+    self.promoteButton = self:button(28, 530, 164, "Check promotion", "promote", nil, "ghost")
+    self.refreshButton = self:button(202, 530, 106, "Refresh", "refresh", nil, "ghost")
+    self.workButton = self:button(318, 530, 170, "Work shift", "work", nil, "primary")
 
     self.rewardButtons = {}
     for i = 1, 4 do
-        self.rewardButtons[i] = self:button(540, 148 + (i - 1) * 72, 138, "Buy", "buy_reward", i, "ghost")
+        self.rewardButtons[i] = self:button(540, 148 + (i - 1) * 72, 138,
+            "Buy", "buy_reward", i, "ghost")
         setBtnVisible(self.rewardButtons[i], false)
     end
-    self.rewardPrev = self:button(28, 456, 90, "Previous", "reward_page", -1, "ghost")
-    self.rewardNext = self:button(128, 456, 90, "Next", "reward_page", 1, "ghost")
+    self.rewardPrev = self:button(28, 486, 90, "Previous", "reward_page", -1, "ghost")
+    self.rewardNext = self:button(128, 486, 90, "Next", "reward_page", 1, "ghost")
     setBtnVisible(self.rewardPrev, false)
     setBtnVisible(self.rewardNext, false)
 end
@@ -90,7 +92,8 @@ function NLJournal:onButton(button)
         return
     end
     if button.action == "buy_reward" then
-        local reward = NLDefinitions.rewards and NLDefinitions.rewards[(self.rewardPage - 1) * 4 + button.value]
+        local reward = NLDefinitions.rewards
+            and NLDefinitions.rewards[(self.rewardPage - 1) * 4 + button.value]
         if reward then NLClient.request(self.playerIndex, "purchase", { rewardId = reward.id }) end
         return
     end
@@ -147,7 +150,7 @@ function NLJournal:prerender()
 
     local profile = NLClient.profiles[self.playerIndex]
     if not profile then
-        NLUI.card(self, 26, 112, 668, 340, true)
+        NLUI.card(self, 26, 112, 668, 390, true)
         self:drawText("Waiting for world data...", 48, 148,
             C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
         self:drawText("Use Refresh if this persists.", 48, 170,
@@ -186,13 +189,13 @@ function NLJournal:prerender()
             end
         end
 
-        self:drawText("Page " .. self.rewardPage .. " of " .. maxPage, 238, 465,
+        self:drawText("Page " .. self.rewardPage .. " of " .. maxPage, 238, 495,
             C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
         self.rewardPrev:setEnable(self.rewardPage > 1)
         self.rewardNext:setEnable(self.rewardPage < maxPage)
 
-        NLUI.card(self, 28, 506, 664, 34, false)
-        self:drawText(string.sub(profile.message or "", 1, 84), 42, 517,
+        NLUI.card(self, 28, 534, 664, 42, false)
+        self:drawText(string.sub(profile.message or "", 1, 84), 42, 548,
             C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
         return
     end
@@ -210,32 +213,32 @@ function NLJournal:prerender()
     NLUI.sectionTitle(self, 28, 270, "Supply Requests")
     local contracts = NLDomain.contracts(profile)
     for i, contract in ipairs(contracts) do
-        local y = 298 + (i - 1) * 58
+        local y = 292 + (i - 1) * 50
         local done = profile.claimed[contract.id]
-        NLUI.card(self, 28, y, 500, 44, false)
+        NLUI.card(self, 28, y, 500, 42, false)
 
         self:drawText(tostring(contract.amount) .. " x " .. NLUI.itemLabel(contract.item),
-            48, y + 14, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
+            48, y + 13, C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
 
         if done then
-            NLUI.pill(self, 404, y + 11, 102, "DONE", "good")
+            NLUI.pill(self, 404, y + 10, 102, "DONE", "good")
         end
         self.deliverButtons[i]:setEnable(not done)
     end
 
     self.workButton:setEnable(not worked)
 
-    NLUI.sectionTitle(self, 28, 444, "Aspiration")
-    NLUI.card(self, 28, 468, 664, 48, false)
-    self:drawText(NLAspirations.label(profile), 44, 480,
+    NLUI.sectionTitle(self, 28, 448, "Aspiration")
+    NLUI.card(self, 28, 472, 664, 44, false)
+    self:drawText(NLAspirations.label(profile), 44, 484,
         C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
-    self:drawText(NLAspirations.homeLabel(profile), 352, 480,
+    self:drawText(NLAspirations.homeLabel(profile), 352, 484,
         C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
 
     local nextRank = NLDefinitions.promotions[progress.rank + 1]
     local nextText = nextRank and ("Next rank: skill " .. nextRank.skill .. ", " .. nextRank.xp
         .. " XP, " .. nextRank.variety .. " delivery types") or "Top career rank reached"
-    self:drawText(nextText, 28, 530, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+    self:drawText(nextText, 28, 576, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
 end
 
 function NLJournal.open(index)

@@ -39,7 +39,7 @@ function NeighborhoodNeeds.read(player, key)
 end
 
 function NeighborhoodNeeds:new(index, player)
-    local o = ISPanel.new(self, 0, 0, 560, 220)
+    local o = ISPanel.new(self, 0, 0, 600, 220)
     o.playerIndex, o.player = index, player
     o.headerHeight = 32
     o.navButtonHeight = 31
@@ -149,7 +149,7 @@ function NeighborhoodNeeds:prerender()
     local left, top = getPlayerScreenLeft(self.playerIndex), getPlayerScreenTop(self.playerIndex)
     local width, height = getPlayerScreenWidth(self.playerIndex), getPlayerScreenHeight(self.playerIndex)
     local uiScale = math.max(1.0, math.min(1.24, (width or 1920) / 1920))
-    local targetWidth = math.floor(560 * uiScale)
+    local targetWidth = math.floor(600 * uiScale)
     self:setWidth(math.min(targetWidth, math.max(420, width - 28)))
     self:setX(left + 14)
     self:setY(top + math.max(12, height - self.height - 28))
@@ -180,17 +180,18 @@ function NeighborhoodNeeds:prerender()
     local profile = NLClient and NLClient.profiles and NLClient.profiles[self.playerIndex]
     local mood = ready == total and "Life panels ready" or "Loading neighborhood data"
 
-    NLUI.card(self, 14, 43, 112, 116, true)
+    NLUI.card(self, 14, 43, 128, 116, true)
     if self.plumbobTexture and self.drawTextureScaled then
-        self:drawTextureScaled(self.plumbobTexture, 52, 54, 28, 38, 0.98, 1, 1, 1)
+        self:drawTextureScaled(self.plumbobTexture, 62, 54, 28, 38, 0.98, 1, 1, 1)
     else
-        NLUI.roundedRect(self, 57, 56, 20, 32, C.green, 0.95)
+        NLUI.roundedRect(self, 67, 56, 20, 32, C.green, 0.95)
     end
-    self:drawText(NeighborhoodNeeds.playerName(player, self.playerIndex), 26, 102,
+    self:drawText(NeighborhoodNeeds.playerName(player, self.playerIndex), 24, 102,
         C.textDark.r, C.textDark.g, C.textDark.b, 1, UIFont.Small)
-    self:drawText(mood, 24, 124, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
+    local moodLabel = ready == total and "Ready" or "Loading"
+    self:drawText(moodLabel, 24, 124, C.muted.r, C.muted.g, C.muted.b, 1, UIFont.Small)
 
-    local needsX = 144
+    local needsX = 158
     local available = self.width - needsX - 18
     local colGap = 18
     local columnWidth = math.floor((available - colGap) / 2)

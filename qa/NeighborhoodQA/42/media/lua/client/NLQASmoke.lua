@@ -34,7 +34,12 @@ Events.OnRenderTick.Add(function()
     if renderTickCount==890 then
         pcall(function()
             if NLConversationOverlay then NLConversationOverlay.refresh(0,true) end
+            -- Zoom in so the marker screenshots exercise a larger on-screen model.
+            getCore():doZoomScroll(0, 1)
         end)
+    end
+    if renderTickCount==891 then
+        pcall(function() getCore():doZoomScroll(0, 1) end)
     end
     if renderTickCount==895 and not _G.NLQAReactionSent then
         _G.NLQAReactionSent=true
@@ -42,6 +47,9 @@ Events.OnRenderTick.Add(function()
             if NLSocialClient then
                 NLSocialClient.request(0,"interact",{id="marisol",action="chat"})
             end
+            -- Render frames can outpace game ticks; consume the authoritative
+            -- reaction now so the screenshot is deterministic.
+            if NLThoughtBubble then NLThoughtBubble.update() end
         end)
     end
     if renderTickCount==898 then
@@ -63,6 +71,25 @@ Events.OnRenderTick.Add(function()
             if NLConversationOverlay then NLConversationOverlay.close(0) end
         end)
     end
+    if renderTickCount==922 and not _G.NLQAMarkerChecked then
+        _G.NLQAMarkerChecked=true
+        local bodiesTable=(NLNpcAuthority and NLNpcAuthority.bodies) or (NLNpcSinglePlayer and NLNpcSinglePlayer.bodies)
+        local marisol=bodiesTable and bodiesTable.marisol
+        if marisol then
+            local feetY=isoToScreenY(0,marisol:getX(),marisol:getY(),marisol:getZ())
+            local plumbob=NLPlumbob and NLPlumbob.instances["npc:marisol"]
+            local thought=NLThoughtBubble and NLThoughtBubble.bubbles["marisol"]
+            assert(tonumber(getCore():getZoom(0)) > 1, "QA zoom scroll did not zoom in")
+            if plumbob then
+                assert(plumbob:getY() + plumbob:getHeight() < feetY,
+                    "zoomed plumbob is not above the target")
+            end
+            if thought then
+                assert(thought.panel:getY() + thought.panel:getHeight() < feetY,
+                    "zoomed thought bubble is not above the target")
+            end
+        end
+    end
     if renderTickCount==915 and not _G.NLQAShotThought then
         _G.NLQAShotThought=true
         assert(NLThoughtBubble and NLThoughtBubble.isActive("marisol"),
@@ -71,6 +98,23 @@ Events.OnRenderTick.Add(function()
             getCore():TakeFullScreenshot("NLQATHOUGHT")
         end)
         print("NLQA PASS: reaction thought bubble rendered above the target NPC")
+    end
+    if renderTickCount==920 then
+        pcall(function()
+            local plumbob=NLPlumbob and NLPlumbob.instances["npc:marisol"]
+            if plumbob then plumbob:setVisible(true) end
+        end)
+    end
+    if renderTickCount==925 and not _G.NLQAShotMarkers then
+        _G.NLQAShotMarkers=true
+        pcall(function() getCore():TakeFullScreenshot("NLQAMARKERS") end)
+        print("NLQA PASS: plumbob and thought bubble markers rendered above the zoomed target")
+    end
+    if renderTickCount==928 then
+        pcall(function()
+            local plumbob=NLPlumbob and NLPlumbob.instances["npc:marisol"]
+            if plumbob then plumbob:setVisible(false) end
+        end)
     end
     if renderTickCount==930 and not _G.NLQAShotView then
         _G.NLQAShotView=true

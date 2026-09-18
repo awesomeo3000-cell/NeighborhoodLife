@@ -54,6 +54,16 @@ if NLPlumbob.baseWidth then
         end
     end
 end
+-- A zoomed-in model is drawn larger on screen, so the world-to-screen lift
+-- must grow with the game zoom instead of shrinking.
+getCore=function() return {getZoom=function() return 2 end} end
+panel:prerender()
+assert(panel.y==300-panel.height-math.floor(NLPlumbob.baseLift*2),
+    "plumbob lift scales with the game zoom")
+assert(panel.width>=NLPlumbob.baseWidth and panel.height>=NLPlumbob.baseHeight,
+    "zoomed-in plumbob keeps at least its base size")
+getCore=function() return {getZoom=function() return 1 end} end
+
 character.isDead=function() return true end; panel:prerender(); assert(not panel.visible)
 NLPlumbob.unregister('test:character'); assert(NLPlumbob.instances['test:character']==nil)
 local localPlayer={getX=function() return 12 end,getY=function() return 13 end,getZ=function() return 0 end,isDead=function() return false end}

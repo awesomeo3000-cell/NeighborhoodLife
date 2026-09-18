@@ -303,6 +303,19 @@ for _, bubble in ipairs(overlay.bubbles) do
         'a near-edge NPC shifts the cluster inward instead of clipping bubbles')
 end
 
+-- Layout offsets scale with the game zoom; zoom 1 keeps the tuned layout.
+local scaleBubbles = { { width = 100, height = 26 }, { width = 100, height = 26 } }
+local flatLayout = NLConversationOverlay.layoutCluster({ x = 400, y = 300 }, scaleBubbles,
+    { left = 0, top = 0, width = 1280, height = 720 }, 1)
+local zoomedLayout = NLConversationOverlay.layoutCluster({ x = 400, y = 300 }, scaleBubbles,
+    { left = 0, top = 0, width = 1280, height = 720 }, 2)
+assert(flatLayout[1].x == 400 - 30 - 100 and flatLayout[2].x == 400 + 30,
+    'zoom 1 keeps the tuned paired layout')
+assert(zoomedLayout[1].x == 400 - 60 - 100 and zoomedLayout[2].x == 400 + 60,
+    'conversation layout offsets scale with the game zoom')
+assert(zoomedLayout[1].y ~= flatLayout[1].y, 'conversation vertical center scales with the game zoom')
+assert(NLConversationOverlay.zoomScale(0) == 1, 'missing zoom configuration defaults to 1')
+
 NLConversationOverlay.open(1, 'marisol', body)
 local second = NLConversationOverlay.overlays[1]
 screenX, screenY = 320, 400
