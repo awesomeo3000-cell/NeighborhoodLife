@@ -61,7 +61,7 @@ end
 function getSpecificPlayer() return nil end
 NLClient.profiles[0]=p; p.skill=0
 NLJournal.open(0); NLJournal.instances[0]:prerender()
-assert(NLJournal.instances[0].careerButtons.tailor.backgroundColor.g==0.27,'selected career uses repaired active theme')
+assert(NLJournal.instances[0].careerButtons.tailor.backgroundColor.g==NLUI.colors.buttonActive.g,'selected career uses shared active theme')
 if NLJournal.instances[0].workButton then
     assert(NLJournal.instances[0].workButton.enabled,'career journal exposes a ready work-shift action')
     local originalJournalRequest=NLClient.request; local workCommand
