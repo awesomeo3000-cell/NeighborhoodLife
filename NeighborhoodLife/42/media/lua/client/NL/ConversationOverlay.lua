@@ -191,6 +191,20 @@ function NLConversationOverlay.signature(page, entries)
     return table.concat(parts, "|")
 end
 
+-- Character models grow on screen with the game zoom, so the cluster offsets
+-- scale with it as well. Zoom 1 keeps the original tuned layout.
+function NLConversationOverlay.zoomScale(index)
+    local zoom = 1
+    if type(getCore) == "function" then
+        local core = getCore()
+        if core and core.getZoom then
+            local ok, value = pcall(core.getZoom, core, index)
+            if ok and tonumber(value) then zoom = tonumber(value) end
+        end
+    end
+    return math.max(0.5, math.min(4, zoom))
+end
+
 function NLConversationOverlay.viewport(index)
     local left = 0
     local top = 0
@@ -232,10 +246,13 @@ end
 -- the action bubbles. Two columns flank the NPC when both sides fit; near a
 -- screen edge the cluster becomes a single inward-shifted column and every
 -- bubble is clamped inside the observer viewport.
-function NLConversationOverlay.layoutCluster(anchor, bubbles, viewport)
+function NLConversationOverlay.layoutCluster(anchor, bubbles, viewport, scale)
     anchor = anchor or {}
     bubbles = bubbles or {}
     viewport = viewport or {}
+    scale = math.max(0.5, math.min(4, tonumber(scale) or 1))
+    local gap = LAYOUT_GAP * scale
+    local side = LAYOUT_SIDE * scale
     local anchorX = toNumber(anchor.x, 0) or 0
     local anchorY = toNumber(anchor.y, 0) or 0
     local vpLeft = toNumber(viewport.left, 0) or 0
@@ -258,20 +275,20 @@ function NLConversationOverlay.layoutCluster(anchor, bubbles, viewport)
         end
     end
 
-    local rowHeight = LAYOUT_GAP
+    local rowHeight = gap
     local maxWidth = 0
     for _, bubble in ipairs(actions) do
         rowHeight = math.max(rowHeight, toNumber(bubble.height, 0) or 0)
         maxWidth = math.max(maxWidth, toNumber(bubble.width, 0) or 0)
     end
-    rowHeight = rowHeight + LAYOUT_GAP
+    rowHeight = rowHeight + gap
 
-    local centerY = anchorY - 46
+    local centerY = anchorY - 46 * scale
     local leftRoom = anchorX - vpLeft
     local rightRoom = vpRight - anchorX
     local paired = #actions > 1
-        and leftRoom >= (LAYOUT_SIDE + maxWidth)
-        and rightRoom >= (LAYOUT_SIDE + maxWidth)
+        and leftRoom >= (side + maxWidth)
+        and rightRoom >= (side + maxWidth)
 
     local function clampX(x, width)
         return clamp(x, vpLeft + LAYOUT_EDGE, vpRight - LAYOUT_EDGE - width)
@@ -282,15 +299,15 @@ function NLConversationOverlay.layoutCluster(anchor, bubbles, viewport)
 
     if paired then
         local rows = math.ceil(#actions / 2)
-        local totalHeight = rows * rowHeight - LAYOUT_GAP
+        local totalHeight = rows * rowHeight - gap
         local top = centerY - totalHeight / 2
         for position, bubble in ipairs(actions) do
             local row = math.floor((position - 1) / 2)
             local width = toNumber(bubble.width, 0) or 0
             local height = toNumber(bubble.height, 0) or 0
             local x = (position % 2 == 1)
-                and (anchorX - LAYOUT_SIDE - width)
-                or (anchorX + LAYOUT_SIDE)
+                and (anchorX - side - width)
+                or (anchorX + side)
             result[actionIndexes[position]] = {
                 x = clampX(x, width),
                 y = clampY(top + row * rowHeight, height),
@@ -300,7 +317,7 @@ function NLConversationOverlay.layoutCluster(anchor, bubbles, viewport)
             local width = toNumber(nav.width, 0) or 0
             result[navIndex] = {
                 x = clampX(anchorX - width / 2, width),
-                y = clampY(top - (toNumber(nav.height, 0) or 0) - LAYOUT_GAP, toNumber(nav.height, 0) or 0),
+                y = clampY(top - (toNumber(nav.height, 0) or 0) - gap, toNumber(nav.height, 0) or 0),
                 navigation = true,
             }
         end
@@ -309,21 +326,21 @@ function NLConversationOverlay.layoutCluster(anchor, bubbles, viewport)
 
     local rightSide = rightRoom >= leftRoom
     local count = #actions + (nav and 1 or 0)
-    local y = centerY - (count * rowHeight - LAYOUT_GAP) / 2
+    local y = centerY - (count * rowHeight - gap) / 2
     if nav then
         local width = toNumber(nav.width, 0) or 0
-        local x = rightSide and (anchorX + LAYOUT_SIDE) or (anchorX - LAYOUT_SIDE - width)
+        local x = rightSide and (anchorX + side) or (anchorX - side - width)
         result[navIndex] = {
             x = clampX(x, width), y = clampY(y, toNumber(nav.height, 0) or 0), navigation = true,
         }
-        y = y + (toNumber(nav.height, 0) or 0) + LAYOUT_GAP
+        y = y + (toNumber(nav.height, 0) or 0) + gap
     end
     for position, bubble in ipairs(actions) do
         local width = toNumber(bubble.width, 0) or 0
         local height = toNumber(bubble.height, 0) or 0
-        local x = rightSide and (anchorX + LAYOUT_SIDE) or (anchorX - LAYOUT_SIDE - width)
+        local x = rightSide and (anchorX + side) or (anchorX - side - width)
         result[actionIndexes[position]] = { x = clampX(x, width), y = clampY(y, height) }
-        y = y + height + LAYOUT_GAP
+        y = y + height + gap
     end
     return result
 end
@@ -390,7 +407,8 @@ function NLConversationOverlay.position(index)
         }
     end
     local positions = NLConversationOverlay.layoutCluster(
-        { x = anchorX, y = anchorY }, sizes, NLConversationOverlay.viewport(index))
+        { x = anchorX, y = anchorY }, sizes, NLConversationOverlay.viewport(index),
+        NLConversationOverlay.zoomScale(index))
     for position, bubble in ipairs(overlay.bubbles) do
         local point = positions[position]
         if point then

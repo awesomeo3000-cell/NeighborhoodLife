@@ -381,7 +381,7 @@ LUA STDERR:
 LUA EXIT: 0
 LUA COMMAND: "C:\Program Files (x86)\Lua\5.1\lua.exe" E:\pzmod\tests\appearance-panel.lua E:\pzmod\NeighborhoodLife
 LUA INPUT: E:\pzmod
-LUA OUTPUT: [NeighborhoodLife] Failed to load NL/NpcClient: ...\NeighborhoodLife/42/media/lua/client/NL/Plumbob.lua:282: attempt to index field 'OnCreatePlayer' (a nil value)
+LUA OUTPUT: [NeighborhoodLife] Failed to load NL/NpcClient: ...\NeighborhoodLife/42/media/lua/client/NL/Plumbob.lua:292: attempt to index field 'OnCreatePlayer' (a nil value)
 [NeighborhoodLife] Failed to load NL/RemotePlayerClient: ...odLife/42/media/lua/client/NL/RemotePlayerClient.lua:9: loop or previous error loading module 'NL/Plumbob'
 PASS: appearance panel rendering, preset callbacks, reopen and dead-state gating
 LUA STDERR: 

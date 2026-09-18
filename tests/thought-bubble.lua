@@ -157,6 +157,20 @@ local split = NLThoughtBubble.bubbles.kenji.panel
 assert(split.x >= 640 and split.x + split.width <= 1280,
     'split-screen bubbles clamp to the observer viewport')
 
+-- Zoom scaling keeps the bubble above a larger on-screen model (zoom 0.5 is zoomed IN).
+screenX, screenY = 320, 600
+getCore = function() return { getZoom = function() return 0.5 end } end
+NOW = NOW + 600
+NLThoughtBubble.clear()
+NLThoughtBubble.show('marisol', 'happy', 0)
+NOW = NOW + 200
+renderHook()
+local zoomed = NLThoughtBubble.bubbles.marisol.panel
+assert(zoomed.y == screenY - NLThoughtBubble.LIFT * 2 - zoomed.height,
+    'zoomed-in thought bubble lift scales inversely with the game zoom')
+assert(zoomed.width > NLThoughtBubble.SIZE, 'zoomed-in thought bubble scales up')
+getCore = nil
+
 -- Dead targets and cleanup.
 NLThoughtBubble.clear()
 NLThoughtBubble.show('marisol', 'happy')

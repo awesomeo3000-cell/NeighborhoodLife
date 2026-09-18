@@ -10,7 +10,7 @@ NLThoughtBubble = {
     lastSnapshotSeq = {},
     lastEventRevision = nil,
     SIZE = 64,
-    LIFT = 82,
+    LIFT = 160,
     DURATION = 4200,
     FADE_IN = 200,
     FADE_OUT = 520,
@@ -69,6 +69,21 @@ function NLThoughtBubble.screenAnchor(index, body)
     local okY, screenY = pcall(isoToScreenY, index, x, y, z or 0)
     if not okX or not okY or screenX == nil or screenY == nil then return nil end
     return tonumber(screenX) or 0, tonumber(screenY) or 0
+end
+
+-- In Project Zomboid, Core.getZoom(index) returns values where zoom < 1.0 is
+-- zoomed IN (larger model) and zoom > 1.0 is zoomed OUT. Clamping prevents
+-- extreme edge cases.
+function NLThoughtBubble.zoomScale(index)
+    local zoom = 1
+    if type(getCore) == "function" then
+        local core = getCore()
+        if core and core.getZoom then
+            local ok, value = pcall(core.getZoom, core, index)
+            if ok and tonumber(value) then zoom = tonumber(value) end
+        end
+    end
+    return math.max(0.25, math.min(4, zoom))
 end
 
 function NLThoughtBubble.viewport(index)
@@ -236,8 +251,11 @@ function NLThoughtBubble.positionAll()
                 alpha = math.min(alpha, remaining / NLThoughtBubble.FADE_OUT)
             end
             alpha = clamp(alpha, 0, 1)
+            local zoom = NLThoughtBubble.zoomScale(entry.observer)
+            local liftScale = 1 / zoom
+            local sizeScale = math.max(0.75, math.min(1.4, 1 / zoom))
             local pop = 0.72 + 0.28 * math.min(1, math.max(0, age) / NLThoughtBubble.POP)
-            local size = math.floor(NLThoughtBubble.SIZE * pop)
+            local size = math.floor(NLThoughtBubble.SIZE * pop * sizeScale)
             panel.alpha = alpha
             panel:setWidth(size)
             panel:setHeight(size)
@@ -245,7 +263,7 @@ function NLThoughtBubble.positionAll()
             if anchorX then
                 local viewport = NLThoughtBubble.viewport(entry.observer)
                 local x = anchorX - size / 2
-                local y = anchorY - NLThoughtBubble.LIFT - size
+                local y = anchorY - math.floor(NLThoughtBubble.LIFT * liftScale) - size
                 panel:setX(clamp(x, viewport.left + 4, viewport.left + viewport.width - 4 - size))
                 panel:setY(clamp(y, viewport.top + 4, viewport.top + viewport.height - 4 - size))
                 panel:setVisible(true)
