@@ -338,6 +338,9 @@ NLQA NPC PRODUCTION PATH id=kenji from=100.50,101.50 to=100.00,105.00 waypoint=2
 NLQA NPC PRODUCTION MOVE id=kenji x=100.50 y=101.50 waypoint=2
 NLQA NPC PRODUCTION PATH id=marisol from=101.50,101.50 to=105.00,101.00 waypoint=2
 NLQA NPC PRODUCTION MOVE id=marisol x=101.50 y=101.50 waypoint=2
+NLQA NPC PRODUCTION IDLE GREET PLAYER id=marisol dist=1.00
+NLQA NPC PRODUCTION IDLE GREET NEIGHBOR id=marisol dist=1.00
+NLQA NPC PRODUCTION WANDER id=marisol from=101.50,101.50 to=101,103
 PASS: production NPC identity, native body adapter, route tick and save/reload position restoration
 LUA STDERR: 
 LUA EXIT: 0
@@ -568,6 +571,9 @@ NLQA NPC PRODUCTION PATH id=marisol from=101.50,101.50 to=105.00,101.00 waypoint
 NLQA NPC PRODUCTION MOVE id=marisol x=101.50 y=101.50 waypoint=2
 NLQA NPC PRODUCTION PATH id=kenji from=100.50,101.50 to=100.00,105.00 waypoint=2
 NLQA NPC PRODUCTION MOVE id=kenji x=100.50 y=101.50 waypoint=2
+NLQA NPC PRODUCTION IDLE GREET PLAYER id=marisol dist=1.00
+NLQA NPC PRODUCTION IDLE GREET NEIGHBOR id=marisol dist=1.00
+NLQA NPC PRODUCTION WANDER id=marisol from=101.50,101.50 to=101,99
 PASS: production NPC identity, native body adapter, route tick and save/reload position restoration
 PASS: installed Project Zomboid Kahlua VM execution
 KAHLUA STDERR: 

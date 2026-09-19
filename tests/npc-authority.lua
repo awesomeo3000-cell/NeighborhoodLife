@@ -305,4 +305,58 @@ if NLNpcAuthority.reconcileBodies and NLNpcAuthority.recoverMissingBodies then
     assert(not NLNpcAuthority.bodies.amara and NLAuthority.world().neighbors.amara.alive==false,
         'native death retires the body and persists a dead neighbor row')
 end
+
+-- Contract tests for Sims-style autonomous idle behaviors
+if NLNpcAuthority.handleIdleBehavior and NLNpcAuthority.nearbyPlayer then
+    local testBody = NLNpcAuthority.bodies.marisol
+    local emotePlayed = nil
+    local facedCoords = nil
+    local directionAngle = nil
+    testBody.playEmote = function(self, emote) emotePlayed = emote end
+    testBody.faceLocation = function(self, x, y) facedCoords = { x=x, y=y } end
+    testBody.setDirectionAngle = function(self, angle) directionAngle = angle end
+
+    local bubbleShown = nil
+    NLThoughtBubble = {
+        show = function(npcId, mood, obsIndex, dur)
+            bubbleShown = { id=npcId, mood=mood, duration=dur }
+            return true
+        end
+    }
+
+    -- 1. Proximity detection & greeting
+    player.x = testBody:getX() + 1.0
+    player.y = testBody:getY()
+    local pFound, pDist = NLNpcAuthority.nearbyPlayer(testBody, 3.2)
+    assert(pFound == player and pDist <= 1.0, 'nearbyPlayer finds player within 3.2 tiles')
+
+    NLNpcAuthority.idleStates = {}
+    NLNpcAuthority.tick = 500
+    local behavior = testBody:getPathFindBehavior2()
+    local row = NLAuthority.world().neighbors.marisol
+    local target = { x=math.floor(testBody:getX()), y=math.floor(testBody:getY()), z=0 }
+
+    NLNpcAuthority.handleIdleBehavior('marisol', testBody, row, target, 1, behavior)
+    assert(facedCoords and facedCoords.x == player.x, 'idle NPC faces nearby player')
+    assert(emotePlayed == 'wavehi', 'idle NPC waves greeting to nearby player')
+    assert(bubbleShown and bubbleShown.id == 'marisol' and bubbleShown.mood == 'happy',
+        'idle NPC shows friendly thought bubble to nearby player')
+
+    -- 2. Ambient emotes when player is far away
+    player.x = 999
+    player.y = 999
+    emotePlayed = nil
+    bubbleShown = nil
+    NLNpcAuthority.idleStates.marisol.lastSocialTick = 0
+    NLNpcAuthority.idleStates.marisol.lastEmoteTick = 0
+    NLNpcAuthority.tick = 1000
+    NLNpcAuthority.handleIdleBehavior('marisol', testBody, row, target, 1, behavior)
+    assert(emotePlayed ~= nil, 'idle NPC performs autonomous personality emote when alone')
+
+    -- 3. Autonomous wandering within home/work lot
+    NLNpcAuthority.idleStates.marisol.idleUntil = NLNpcAuthority.tick - 1
+    NLNpcAuthority.handleIdleBehavior('marisol', testBody, row, target, 1, behavior)
+    assert(NLNpcAuthority.targets.marisol and NLNpcAuthority.targets.marisol.isWander,
+        'idle NPC generates an autonomous wander target within its lot')
+end
 print('PASS: production NPC identity, native body adapter, route tick and save/reload position restoration')

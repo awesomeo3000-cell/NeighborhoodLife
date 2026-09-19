@@ -14,6 +14,7 @@ NLNpcAuthority = {
     bodies = {},
     targets = {},
     offscreen = {},
+    idleStates = {},
     tick = 0,
     started = false,
     startAttempts = 0,
@@ -787,6 +788,10 @@ local function refreshRoutine(world, id, row, body)
     NLNeighbors.routine(world, id, desired, day, hour)
     if previous ~= desired then
         cancelBodyPath(id, body)
+        if NLNpcAuthority.idleStates and NLNpcAuthority.idleStates[id] then
+            NLNpcAuthority.idleStates[id].arrived = false
+            NLNpcAuthority.idleStates[id].routine = desired
+        end
         local target = routineTarget(row, desired)
         emit(string.format("ROUTINE id=%s state=%s hour=%s target=%s", id, desired,
             tostring(hour), tostring(target and (target.x .. "," .. target.y) or "nil")))
@@ -818,6 +823,9 @@ local function retireBody(id, row, body, reason)
     end
     NLSocialAuthority.bodies[id] = nil
     NLNpcAuthority.bodies[id] = nil
+    if NLNpcAuthority.idleStates then
+        NLNpcAuthority.idleStates[id] = nil
+    end
     if reason == "OFFSCREEN" then
         NLNpcAuthority.offscreen[id] = { nextAttempt = NLNpcAuthority.tick + 30 }
         emit(string.format("OFFSCREEN id=%s retryTick=%d", id, NLNpcAuthority.offscreen[id].nextAttempt))
@@ -927,13 +935,243 @@ end
 
 NLNpcAuthority.recoverMissingBodies = recoverMissingBodies
 
+local function nearbyPlayer(body, maxDistance)
+    if not body or not body.getX or not body.getY then return nil end
+    local bx, by = body:getX(), body:getY()
+    local limit = maxDistance or 3.2
+    if getSpecificPlayer then
+        for p = 0, 3 do
+            local ok, pl = pcall(getSpecificPlayer, p)
+            if ok and pl and not pl:isDead() and pl.getX and pl.getY then
+                local dx, dy = pl:getX() - bx, pl:getY() - by
+                local dist = math.sqrt(dx * dx + dy * dy)
+                if dist <= limit then return pl, dist end
+            end
+        end
+    end
+    if type(getOnlinePlayers) == "function" then
+        local ok, players = pcall(getOnlinePlayers)
+        if ok and players and players.size then
+            local sOk, count = pcall(players.size, players)
+            if sOk and count then
+                for i = 0, count - 1 do
+                    local plOk, pl = pcall(players.get, players, i)
+                    if plOk and pl and not pl:isDead() and pl.getX and pl.getY then
+                        local dx, dy = pl:getX() - bx, pl:getY() - by
+                        local dist = math.sqrt(dx * dx + dy * dy)
+                        if dist <= limit then return pl, dist end
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
+local function nearbyNeighbor(body, currentId, maxDistance)
+    if not body or not body.getX or not body.getY then return nil end
+    local bx, by = body:getX(), body:getY()
+    local limit = maxDistance or 3.2
+    for otherId, otherBody in pairs(NLNpcAuthority.bodies) do
+        if otherId ~= currentId and otherBody and otherBody.getX and otherBody.getY and not otherBody:isDead() then
+            local dx, dy = otherBody:getX() - bx, otherBody:getY() - by
+            local dist = math.sqrt(dx * dx + dy * dy)
+            if dist <= limit then return otherBody, dist end
+        end
+    end
+    return nil
+end
+
+local function faceCoordinate(body, tx, ty)
+    if not body or not tx or not ty or not body.getX or not body.getY then return end
+    if body.faceLocation then
+        local ok = pcall(body.faceLocation, body, tx, ty)
+        if ok then return end
+    end
+    if body.setDirectionAngle then
+        local dx = tx - body:getX()
+        local dy = ty - body:getY()
+        local angleDeg = math.deg(math.atan2(dy, dx))
+        pcall(body.setDirectionAngle, body, angleDeg)
+    end
+end
+
+local rngSeed = 42
+local function safeRandom(min, max)
+    if not min then return 0 end
+    if not max then max = min; min = 1 end
+    if min >= max then return min end
+    if type(math.random) == "function" then
+        local ok, val = pcall(math.random, min, max)
+        if ok and tonumber(val) then return tonumber(val) end
+    end
+    rngSeed = ((rngSeed * 1103515245) + 12345) % 2147483648
+    return min + math.floor(rngSeed % (max - min + 1))
+end
+
+local function wanderSquareNear(cell, baseX, baseY, baseZ, maxRadius, currentX, currentY, reserved)
+    if not cell then return nil end
+    local radius = maxRadius or 2
+    local candidates = {}
+    local currFloorX = math.floor(currentX)
+    local currFloorY = math.floor(currentY)
+    for dx = -radius, radius do
+        for dy = -radius, radius do
+            local dist = math.sqrt(dx * dx + dy * dy)
+            if dist >= 1 and dist <= radius then
+                local tx = baseX + dx
+                local ty = baseY + dy
+                if tx ~= currFloorX or ty ~= currFloorY then
+                    local square = cell:getGridSquare(tx, ty, baseZ)
+                    local key = square and (square:getX() .. ":" .. square:getY() .. ":" .. square:getZ())
+                    if square and square:isFree(false) and (not reserved or not reserved[key]) then
+                        if not square.isSolidFloor or square:isSolidFloor() then
+                            candidates[#candidates + 1] = square
+                        end
+                    end
+                end
+            end
+        end
+    end
+    if #candidates == 0 then return nil end
+    local pickIndex = safeRandom(1, #candidates)
+    return candidates[pickIndex]
+end
+
+local function handleIdleBehavior(id, body, row, primaryTarget, primaryIndex, behavior)
+    NLNpcAuthority.idleStates = NLNpcAuthority.idleStates or {}
+    local idle = NLNpcAuthority.idleStates[id]
+    if not idle then
+        idle = {
+            arrived = true,
+            routine = (row and row.routine) or "home",
+            idleUntil = NLNpcAuthority.tick + safeRandom(150, 300),
+            lastEmoteTick = 0,
+            lastBubbleTick = 0,
+            lastTurnTick = 0,
+            lastSocialTick = 0,
+        }
+        NLNpcAuthority.idleStates[id] = idle
+    end
+
+    local definition = NLNeighbors.definitions[id] or {}
+
+    -- 1. Player proximity: face and greet
+    local playerTarget, playerDist = nearbyPlayer(body, 3.2)
+    if playerTarget and playerTarget.getX and playerTarget.getY then
+        faceCoordinate(body, playerTarget:getX(), playerTarget:getY())
+        if NLNpcAuthority.tick - (idle.lastSocialTick or 0) >= 300 then
+            idle.lastSocialTick = NLNpcAuthority.tick
+            idle.lastEmoteTick = NLNpcAuthority.tick
+            idle.lastBubbleTick = NLNpcAuthority.tick
+            idle.idleUntil = math.max(idle.idleUntil, NLNpcAuthority.tick + 150)
+            if body.playEmote then pcall(body.playEmote, body, "wavehi") end
+            if NLThoughtBubble and NLThoughtBubble.show then
+                pcall(NLThoughtBubble.show, id, "happy", 0, 3000)
+            end
+            emit(string.format("IDLE GREET PLAYER id=%s dist=%.2f", id, playerDist or 0))
+            return
+        end
+        return
+    end
+
+    -- 2. Neighbor proximity: face and greet
+    local neighborTarget, neighborDist = nearbyNeighbor(body, id, 3.2)
+    if neighborTarget and neighborTarget.getX and neighborTarget.getY then
+        faceCoordinate(body, neighborTarget:getX(), neighborTarget:getY())
+        if NLNpcAuthority.tick - (idle.lastSocialTick or 0) >= 450 then
+            idle.lastSocialTick = NLNpcAuthority.tick
+            idle.lastEmoteTick = NLNpcAuthority.tick
+            idle.idleUntil = math.max(idle.idleUntil, NLNpcAuthority.tick + 120)
+            if body.playEmote then pcall(body.playEmote, body, "wavehi") end
+            emit(string.format("IDLE GREET NEIGHBOR id=%s dist=%.2f", id, neighborDist or 0))
+            return
+        end
+    end
+
+    -- 3. Ambient look around
+    if NLNpcAuthority.tick - (idle.lastTurnTick or 0) >= 120 then
+        idle.lastTurnTick = NLNpcAuthority.tick
+        if body.setDirectionAngle then
+            local angle = ((NLNpcAuthority.tick * 47) + (tonumber(id:byte(1) or 0) * 31)) % 360
+            pcall(body.setDirectionAngle, body, angle)
+        end
+    end
+
+    -- 4. Thematic emotes
+    if NLNpcAuthority.tick - (idle.lastEmoteTick or 0) >= 240 then
+        idle.lastEmoteTick = NLNpcAuthority.tick
+        local emoteList = definition.emotes or { "thumbsup", "wavehi", "clap", "shrug" }
+        if #emoteList > 0 and body.playEmote then
+            local emoteIndex = ((math.floor(NLNpcAuthority.tick / 240) + tonumber(id:byte(1) or 0)) % #emoteList) + 1
+            local pickedEmote = emoteList[emoteIndex]
+            pcall(body.playEmote, body, pickedEmote)
+            emit(string.format("IDLE EMOTE id=%s emote=%s", id, pickedEmote))
+        end
+    end
+
+    -- 5. Overhead thought bubble
+    if NLNpcAuthority.tick - (idle.lastBubbleTick or 0) >= 600 then
+        idle.lastBubbleTick = NLNpcAuthority.tick
+        if NLThoughtBubble and NLThoughtBubble.show then
+            local moodList = definition.idleMoods or { "happy", "neutral" }
+            local moodIndex = ((math.floor(NLNpcAuthority.tick / 600) + tonumber(id:byte(1) or 0)) % #moodList) + 1
+            local pickedMood = moodList[moodIndex]
+            pcall(NLThoughtBubble.show, id, pickedMood, 0, 3000)
+            emit(string.format("IDLE THOUGHT id=%s mood=%s", id, pickedMood))
+        end
+    end
+
+    -- 6. Autonomous wander within lot
+    if NLNpcAuthority.tick >= (idle.idleUntil or 0) and primaryTarget and behavior and behavior.pathToLocation then
+        local cell = type(getCell) == "function" and getCell() or nil
+        if cell then
+            local baseX = math.floor(primaryTarget.x)
+            local baseY = math.floor(primaryTarget.y)
+            local baseZ = math.floor(primaryTarget.z or 0)
+            local reserved = npcReservedSquares()
+            local wanderSquare = wanderSquareNear(cell, baseX, baseY, baseZ, 2, body:getX(), body:getY(), reserved)
+            if wanderSquare then
+                NLNpcAuthority.targets[id] = {
+                    x = wanderSquare:getX(),
+                    y = wanderSquare:getY(),
+                    z = wanderSquare:getZ(),
+                    waypoint = primaryIndex,
+                    routine = row.routine or "home",
+                    isWander = true,
+                    lastX = body:getX(),
+                    lastY = body:getY(),
+                    stall = 0
+                }
+                behavior:pathToLocation(wanderSquare:getX(), wanderSquare:getY(), wanderSquare:getZ())
+                emit(string.format("WANDER id=%s from=%.2f,%.2f to=%d,%d",
+                    id, body:getX(), body:getY(), wanderSquare:getX(), wanderSquare:getY()))
+            end
+        end
+        idle.idleUntil = NLNpcAuthority.tick + safeRandom(240, 450)
+    end
+end
+
+NLNpcAuthority.nearbyPlayer = nearbyPlayer
+NLNpcAuthority.nearbyNeighbor = nearbyNeighbor
+NLNpcAuthority.faceCoordinate = faceCoordinate
+NLNpcAuthority.wanderSquareNear = wanderSquareNear
+NLNpcAuthority.handleIdleBehavior = handleIdleBehavior
+
 local function nextWaypoint(row, body)
     if row.spawned and row.home then
         local target, index = routineTarget(row, row.routine or "home")
-        if target and body and body.getX and body.getY
-                and math.abs(body:getX() - (target.x + 0.5)) < 0.06
-                and math.abs(body:getY() - (target.y + 0.5)) < 0.06 then
-            return nil, index
+        if target and body and body.getX and body.getY then
+            local dx = math.abs(body:getX() - (target.x + 0.5))
+            local dy = math.abs(body:getY() - (target.y + 0.5))
+            local idle = NLNpcAuthority.idleStates and NLNpcAuthority.idleStates[row.id]
+            if dx < 0.06 and dy < 0.06 then
+                if idle then idle.arrived = true; idle.routine = row.routine or "home" end
+                return nil, index
+            elseif idle and idle.arrived and idle.routine == (row.routine or "home")
+                    and (dx * dx + dy * dy) <= 10.24 then
+                return nil, index
+            end
         end
         return target, index
     end
@@ -996,6 +1234,9 @@ function NLNpcAuthority.update()
                     behavior:pathToLocation(target.x, target.y, target.z)
                     emit(string.format("PATH id=%s from=%.2f,%.2f to=%.2f,%.2f waypoint=%d",
                         id, body:getX(), body:getY(), target.x, target.y, index))
+                else
+                    local primaryTarget, primaryIndex = routineTarget(row, row.routine or "home")
+                    handleIdleBehavior(id, body, row, primaryTarget, primaryIndex, behavior)
                 end
             end
             local target = NLNpcAuthority.targets and NLNpcAuthority.targets[id]
@@ -1087,6 +1328,7 @@ function NLNpcAuthority.reset()
     NLNpcAuthority.targets = {}
     NLNpcAuthority.offscreen = {}
     NLNpcAuthority.danger = {}
+    NLNpcAuthority.idleStates = {}
     NLNpcAuthority.started = false
     NLNpcAuthority.startAttempts = 0
     NLNpcAuthority.tick = 0

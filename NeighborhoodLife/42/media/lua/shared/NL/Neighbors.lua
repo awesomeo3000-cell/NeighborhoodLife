@@ -8,17 +8,23 @@ NLNeighbors = {
             onlineId=30001,
             outfit="Generic01", home={x=10780,y=10268,z=0},
             waypoints={{x=10780,y=10268,z=0},{x=10784,y=10268,z=0}},
-            schedule="tailor", workOffset={x=4,y=0}, workStart=8, workEnd=17 },
+            schedule="tailor", workOffset={x=4,y=0}, workStart=8, workEnd=17,
+            emotes={ "wavehi", "thumbsup", "clap", "thankyou", "shrug" },
+            idleMoods={ "happy", "neutral" } },
         kenji = { forename="Kenji", surname="Arakawa", name="Kenji Arakawa", female=false,
             onlineId=30002,
             outfit="Generic01", home={x=10786,y=10270,z=0},
             waypoints={{x=10786,y=10270,z=0},{x=10790,y=10270,z=0}},
-            schedule="carpenter", workOffset={x=0,y=4}, workStart=8, workEnd=17 },
+            schedule="carpenter", workOffset={x=0,y=4}, workStart=8, workEnd=17,
+            emotes={ "clap", "thumbsup", "wavehi", "salute", "shrug" },
+            idleMoods={ "happy", "neutral" } },
         amara = { forename="Amara", surname="Okonkwo", name="Amara Okonkwo", female=true,
             onlineId=30003,
             outfit="Generic01", home={x=10782,y=10274,z=0},
             waypoints={{x=10782,y=10274,z=0},{x=10786,y=10274,z=0}},
-            schedule="medic", workOffset={x=-4,y=0}, workStart=8, workEnd=17 }
+            schedule="medic", workOffset={x=-4,y=0}, workStart=8, workEnd=17,
+            emotes={ "thankyou", "thumbsup", "wavehi", "undecided", "clap" },
+            idleMoods={ "happy", "neutral" } }
     }
 }
 
